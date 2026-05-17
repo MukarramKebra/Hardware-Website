@@ -1,4 +1,4 @@
-﻿const U = (id) => `https://images.unsplash.com/photo-${id}?w=400&h=400&fit=crop&auto=format&q=80`;
+﻿const U = (id) => `https://picsum.photos/seed/${id}/400/400`;
 
 // ── SUPABASE CONFIG ───────────────────────────────────────────────────────
 const SB_URL = 'https://jjyhybulxixblpiixzkp.supabase.co';
