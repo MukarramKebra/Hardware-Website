@@ -6,25 +6,49 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const SB_H   = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 
 // Live data loaded from Supabase (falls back to localStorage if offline)
-let _sbStock  = {};
-let _sbPhotos = {};
+let _sbStock    = {};
+let _sbPhotos   = {};
+let _customProds = [];      // admin-added products from dhowtech_products table
+let _hiddenIds   = new Set(); // base product IDs hidden by admin
 
 async function loadSBData() {
   try {
-    const [sr, pr] = await Promise.all([
-      fetch(SB_URL + '/rest/v1/dhowtech_stock?select=*',  { headers: SB_H }),
-      fetch(SB_URL + '/rest/v1/dhowtech_photos?select=*', { headers: SB_H })
+    const [sr, pr, cr, hr] = await Promise.all([
+      fetch(SB_URL + '/rest/v1/dhowtech_stock?select=*',                         { headers: SB_H }),
+      fetch(SB_URL + '/rest/v1/dhowtech_photos?select=*',                        { headers: SB_H }),
+      fetch(SB_URL + '/rest/v1/dhowtech_products?select=*&order=created_at.asc', { headers: SB_H }),
+      fetch(SB_URL + '/rest/v1/dhowtech_hidden?select=product_id',               { headers: SB_H })
     ]);
-    const stockRows = await sr.json();
-    const photoRows = await pr.json();
-    if (Array.isArray(stockRows)) stockRows.forEach(r => { _sbStock[r.product_id]  = r.qty; });
-    if (Array.isArray(photoRows)) photoRows.forEach(r => { _sbPhotos[r.product_id] = r.url; });
+    const stockRows  = await sr.json();
+    const photoRows  = await pr.json();
+    const customRows = await cr.json();
+    const hiddenRows = await hr.json();
+    if (Array.isArray(stockRows))  stockRows.forEach(r  => { _sbStock[r.product_id]  = r.qty; });
+    if (Array.isArray(photoRows))  photoRows.forEach(r  => { _sbPhotos[r.product_id] = r.url; });
+    if (Array.isArray(customRows)) _customProds = customRows.filter(r => !r.hidden);
+    if (Array.isArray(hiddenRows)) _hiddenIds   = new Set(hiddenRows.map(r => r.product_id));
   } catch (e) {
     console.warn('Supabase offline — using localStorage fallback');
     try { _sbStock  = JSON.parse(localStorage.getItem('dhowtech_stock')  || '{}'); } catch(_) {}
     try { _sbPhotos = JSON.parse(localStorage.getItem('dhowtech_photos') || '{}'); } catch(_) {}
   }
   renderProducts();
+}
+
+// Merged base + admin-added products, with hidden ones removed
+function getAllProducts() {
+  const base  = PRODUCTS.filter(p => !_hiddenIds.has(p.id));
+  const extra = _customProds.map(p => ({
+    id:       p.id,
+    name:     p.name,
+    category: p.category,
+    price:    parseFloat(p.price),
+    img:      p.img_url || U('1581783898377-1c85bf937427'),
+    desc:     p.description || '',
+    badge:    p.badge || null,
+    stock:    'in-stock'
+  }));
+  return [...base, ...extra];
 }
 
 const PRODUCTS = [
@@ -150,7 +174,7 @@ function renderProducts() {
   const query = document.getElementById('searchInput').value.toLowerCase();
   const grid  = document.getElementById('productsGrid');
   const empty = document.getElementById('productsEmpty');
-  const filtered = PRODUCTS.filter(p => {
+  const filtered = getAllProducts().filter(p => {
     const matchCat    = activeFilter === 'all' || p.category === activeFilter;
     const matchSearch = !query || p.name.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query);
     return matchCat && matchSearch;
@@ -211,7 +235,7 @@ function openProduct(id) {
   trackView(id);
   _pmId  = id;
   _pmQty = 1;
-  const p           = PRODUCTS.find(x => x.id === id);
+  const p           = getAllProducts().find(x => x.id === id);
   const liveStatus  = getLiveStock(id) || p.stock;
   const liveQty     = getLiveQty(id);
   const isOut       = liveStatus === 'out-of-stock';
@@ -281,7 +305,7 @@ function pmChangeQty(delta) {
 }
 
 function pmAddToCart() {
-  const product  = PRODUCTS.find(p => p.id === _pmId);
+  const product  = getAllProducts().find(p => p.id === _pmId);
   const liveQty  = getLiveQty(_pmId);
   const inCart   = cart.find(c => c.id === _pmId);
   const cartQty  = inCart ? inCart.qty : 0;
@@ -309,7 +333,7 @@ document.addEventListener('keydown', function(e) {
 // ── CART ──────────────────────────────────────────────────────────────────
 function addToCart(id) {
   trackView(id);
-  const product  = PRODUCTS.find(p => p.id === id);
+  const product  = getAllProducts().find(p => p.id === id);
   const liveQty  = getLiveQty(id);
   const inCart   = cart.find(c => c.id === id);
   const cartQty  = inCart ? inCart.qty : 0;
