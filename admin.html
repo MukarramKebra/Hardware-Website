@@ -830,7 +830,7 @@ function renderTable() {
       '<td>' +
         '<button class="vis-btn '+visCls+'" onclick="toggleVisibility('+p.id+','+p.isBase+')">'+visLbl+'</button>' +
         '<button class="act-btn" onclick="setStock('+p.id+',0)"><i class="fa fa-times"></i> Clear</button>' +
-        '<button class="act-btn" onclick="setStock('+p.id+',50)"><i class="fa fa-plus"></i> +50</button>' +
+        '<button class="act-btn" onclick="addStock('+p.id+')"><i class="fa fa-plus"></i> +50</button>' +
         '<button class="act-btn blue" onclick="openPhoto('+p.id+')"><i class="fa fa-camera"></i> Photo</button>' +
         '<button class="act-btn purple" onclick="openStats('+p.id+')"><i class="fa fa-chart-bar"></i> Stats</button>' +
         '<button class="del-btn" onclick="deleteProduct('+p.id+','+p.isBase+')"><i class="fa fa-trash"></i></button>' +
@@ -853,6 +853,7 @@ function onStock(id) {
   renderStats();
 }
 function setStock(id, qty) { _pushUndo(); stockData[id]=qty; renderTable(); renderStats(); }
+function addStock(id) { _pushUndo(); const cur=stockData[id]||0; stockData[id]=Math.ceil((cur+1)/50)*50; renderTable(); renderStats(); }
 async function saveAll() {
   _pushUndo();
   PRODUCTS.forEach(function(p) { const el=document.getElementById('si'+p.id); if(el) stockData[p.id]=Math.max(0,parseInt(el.value)||0); });

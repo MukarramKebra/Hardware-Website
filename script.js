@@ -1,4 +1,5 @@
-﻿const U = (id) => `https://images.unsplash.com/photo-${id}?w=420&h=320&fit=crop&auto=format&q=80`;
+﻿const U   = (id) => `https://images.unsplash.com/photo-${id}?w=420&h=320&fit=crop&auto=format&q=80`;
+const UL  = (id) => `product-images/${id}.jpg`;   // local images
 
 // ── SUPABASE CONFIG ───────────────────────────────────────────────────────
 const SB_URL = 'https://jjyhybulxixblpiixzkp.supabase.co';
@@ -82,16 +83,16 @@ function getAllProducts() {
 }
 
 const PRODUCTS = [
-  { id:1,  name:'Cordless Drill 18V',           category:'power-tools', price:12.500, img:U('1777575764654-ffc22754c5d8'), desc:'18V lithium-ion cordless drill with 2-speed gearbox, 13mm keyless chuck and reverse function.', badge:'Best Seller', stock:'in-stock' },
-  { id:2,  name:'Angle Grinder 115mm',           category:'power-tools', price:8.900,  img:U('1776711763505-4105861e0d41'), desc:'900W angle grinder for cutting, grinding and polishing metal and masonry. 11,000 RPM.', badge:null, stock:'in-stock' },
-  { id:3,  name:'Circular Saw 185mm',            category:'power-tools', price:14.500, img:U('1775988821739-74c26a8a5585'), desc:'1200W circular saw with laser guide. Cuts wood up to 65mm depth. Bevel 0-45 degrees.', badge:null, stock:'in-stock' },
-  { id:4,  name:'Jigsaw 650W',                   category:'power-tools', price:9.800,  img:U('1773430273016-630960da6aa7'), desc:'650W jigsaw with pendulum action and variable speed. Cuts curves in wood, metal and plastic.', badge:null, stock:'in-stock' },
-  { id:5,  name:'Random Orbital Sander',         category:'power-tools', price:6.500,  img:U('1771491237067-5d108e956e73'), desc:'300W random orbital sander with dust bag. 125mm pad, 12,000 OPM for smooth finishing.', badge:null, stock:'in-stock' },
-  { id:6,  name:'Impact Driver 18V',             category:'power-tools', price:11.000, img:U('1770763233593-74dfd0da7bf0'), desc:'18V brushless impact driver with 180Nm torque. 3-speed settings. LED work light included.', badge:'Pro', stock:'in-stock' },
-  { id:7,  name:'Rotary Hammer Drill SDS',       category:'power-tools', price:18.500, img:U('1770386582823-3a7094e35b22'), desc:'800W SDS-plus rotary hammer for drilling concrete, brick and stone. 3-function switch.', badge:null, stock:'low-stock' },
-  { id:8,  name:'Heat Gun 2000W',                category:'power-tools', price:5.200,  img:U('1766096847418-9a2ae64c9621'), desc:'2000W dual temperature heat gun. 300C and 500C. Ideal for paint stripping and shrink wrap.', badge:null, stock:'in-stock' },
-  { id:9,  name:'Reciprocating Saw',             category:'power-tools', price:10.200, img:U('1764678714365-800554d1969c'), desc:'900W reciprocating saw with tool-free blade change. Variable speed for wood and metal.', badge:null, stock:'in-stock' },
-  { id:10, name:'Cordless Screwdriver 3.6V',     category:'power-tools', price:3.800,  img:U('1764699186048-e85b5f0e59fc'), desc:'Compact 3.6V cordless screwdriver with 15 torque settings and LED light.', badge:null, stock:'in-stock' },
+  { id:1,  name:'Cordless Drill 18V',           category:'power-tools', price:12.500, img:UL(1),  desc:'18V lithium-ion cordless drill with 2-speed gearbox, 13mm keyless chuck and reverse function.', badge:'Best Seller', stock:'in-stock' },
+  { id:2,  name:'Angle Grinder 115mm',           category:'power-tools', price:8.900,  img:UL(2),  desc:'900W angle grinder for cutting, grinding and polishing metal and masonry. 11,000 RPM.', badge:null, stock:'in-stock' },
+  { id:3,  name:'Circular Saw 185mm',            category:'power-tools', price:14.500, img:UL(3),  desc:'1200W circular saw with laser guide. Cuts wood up to 65mm depth. Bevel 0-45 degrees.', badge:null, stock:'in-stock' },
+  { id:4,  name:'Jigsaw 650W',                   category:'power-tools', price:9.800,  img:UL(4),  desc:'650W jigsaw with pendulum action and variable speed. Cuts curves in wood, metal and plastic.', badge:null, stock:'in-stock' },
+  { id:5,  name:'Random Orbital Sander',         category:'power-tools', price:6.500,  img:UL(5),  desc:'300W random orbital sander with dust bag. 125mm pad, 12,000 OPM for smooth finishing.', badge:null, stock:'in-stock' },
+  { id:6,  name:'Impact Driver 18V',             category:'power-tools', price:11.000, img:UL(6),  desc:'18V brushless impact driver with 180Nm torque. 3-speed settings. LED work light included.', badge:'Pro', stock:'in-stock' },
+  { id:7,  name:'Rotary Hammer Drill SDS',       category:'power-tools', price:18.500, img:UL(7),  desc:'800W SDS-plus rotary hammer for drilling concrete, brick and stone. 3-function switch.', badge:null, stock:'low-stock' },
+  { id:8,  name:'Heat Gun 2000W',                category:'power-tools', price:5.200,  img:UL(8),  desc:'2000W dual temperature heat gun. 300C and 500C. Ideal for paint stripping and shrink wrap.', badge:null, stock:'in-stock' },
+  { id:9,  name:'Reciprocating Saw',             category:'power-tools', price:10.200, img:UL(9),  desc:'900W reciprocating saw with tool-free blade change. Variable speed for wood and metal.', badge:null, stock:'in-stock' },
+  { id:10, name:'Cordless Screwdriver 3.6V',     category:'power-tools', price:3.800,  img:UL(10), desc:'Compact 3.6V cordless screwdriver with 15 torque settings and LED light.', badge:null, stock:'in-stock' },
   { id:11, name:'Claw Hammer 16oz',              category:'hand-tools',  price:2.200,  img:U('1581783898377-1c85bf937427'), desc:'Forged steel 16oz claw hammer with fibreglass handle and rubber grip. Reduces vibration.', badge:'Best Seller', stock:'in-stock' },
   { id:12, name:'Phillips Screwdriver Set 6pc',  category:'hand-tools',  price:3.500,  img:U('1777107508755-2ba7502b2b95'), desc:'6-piece chrome vanadium Phillips screwdrivers PH0 to PH3. Magnetic tips, ergonomic handles.', badge:null, stock:'in-stock' },
   { id:13, name:'Flathead Screwdriver Set 6pc',  category:'hand-tools',  price:3.200,  img:U('1777107508801-1aa0a4513780'), desc:'6-piece flathead screwdriver set with hardened steel blades and comfort grip handles.', badge:null, stock:'in-stock' },
