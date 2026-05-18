@@ -35,13 +35,34 @@ async function loadSBData() {
   renderProducts();
 }
 
+// Normalise category strings so "powertools", "power tools", "Power Tools" etc.
+// all map to the hyphenated slug used by the filter pills
+function normalizeCategory(raw) {
+  const c = (raw || '').toLowerCase().replace(/[\s_]+/g, '-').trim();
+  const map = {
+    'powertools':   'power-tools',
+    'handtools':    'hand-tools',
+    'hand':         'hand-tools',
+    'power':        'power-tools',
+    'safety-gear':  'safety',
+    'safetygear':   'safety',
+    'tool-storage': 'storage',
+    'toolstorage':  'storage',
+    'measuring-tools': 'measuring',
+    'measuringtools':  'measuring',
+    'cutting-tools':   'cutting',
+    'cuttingtools':    'cutting'
+  };
+  return map[c] || c;
+}
+
 // Merged base + admin-added products, with hidden ones removed
 function getAllProducts() {
   const base  = PRODUCTS.filter(p => !_hiddenIds.has(p.id));
   const extra = _customProds.map(p => ({
     id:       p.id,
     name:     p.name,
-    category: p.category,
+    category: normalizeCategory(p.category),
     price:    parseFloat(p.price),
     img:      p.img_url || U('1581783898377-1c85bf937427'),
     desc:     p.description || '',
