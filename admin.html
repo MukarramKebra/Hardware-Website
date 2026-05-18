@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DhowTech Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--orange:#FF6200;--dark:#1a1a1a;--charcoal:#2b2b2b;--steel:#3d3d3d;
+          --green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;--purple:#8b5cf6;
+          --light:#f4f4f4;--white:#fff;--gray:#666;--border:#e0e0e0;}
+    body{font-family:'Inter',sans-serif;background:var(--light);color:var(--dark);}
+
+    /* LOGIN */
+    #loginScreen{position:fixed;inset:0;background:var(--dark);display:flex;align-items:center;justify-content:center;z-index:9999;}
+    .login-box{background:#2b2b2b;border-radius:16px;padding:48px 40px;width:100%;max-width:380px;border-top:4px solid var(--orange);text-align:center;}
+    .login-box img{height:60px;margin-bottom:16px;}
+    .login-logo{font-size:26px;font-weight:900;color:#fff;margin-bottom:4px;}
+    .login-logo span{color:var(--orange);}
+    .login-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:28px;text-transform:uppercase;letter-spacing:1px;}
+    .login-box input{width:100%;padding:13px 16px;border:2px solid #444;border-radius:8px;background:#1a1a1a;color:#fff;font-size:15px;font-family:inherit;outline:none;margin-bottom:12px;transition:border-color .2s;}
+    .login-box input:focus{border-color:var(--orange);}
+    .login-btn{width:100%;padding:13px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:1px;}
+    .login-btn:hover{background:#cc4e00;}
+    .login-error{color:var(--red);font-size:13px;margin-top:10px;display:none;}
+
+    /* ADMIN LAYOUT */
+    #adminPanel{display:none;min-height:100vh;}
+    .top-bar{background:var(--dark);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--orange);position:sticky;top:0;z-index:100;}
+    .top-logo{font-size:18px;font-weight:900;color:#fff;display:flex;align-items:center;gap:12px;}
+    .top-logo span{color:var(--orange);}
+    .admin-badge{background:var(--orange);color:#fff;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;}
+    .top-right{display:flex;align-items:center;gap:14px;}
+    .clock-txt{color:rgba(255,255,255,0.45);font-size:12px;}
+    .logout-btn{background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;}
+    .logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+    /* TAB BAR */
+    .tab-bar{background:var(--charcoal);padding:0 28px;display:flex;gap:0;border-bottom:1px solid var(--steel);position:sticky;top:64px;z-index:99;}
+    .tab-btn{padding:14px 22px;font-size:13px;font-weight:700;color:rgba(255,255,255,0.45);background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:0.5px;}
+    .tab-btn:hover{color:rgba(255,255,255,0.75);}
+    .tab-btn.active{color:var(--orange);border-bottom-color:var(--orange);}
+
+    .main{padding:28px;max-width:1400px;margin:0 auto;}
+
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .stat-card{background:var(--white);border-radius:12px;padding:20px 22px;border:2px solid var(--border);display:flex;align-items:center;gap:16px;}
+    .stat-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .ic-orange{background:rgba(255,98,0,.12);color:var(--orange);}
+    .ic-blue{background:rgba(59,130,246,.12);color:var(--blue);}
+    .ic-green{background:rgba(34,197,94,.12);color:var(--green);}
+    .ic-red{background:rgba(239,68,68,.12);color:var(--red);}
+    .ic-purple{background:rgba(139,92,246,.12);color:var(--purple);}
+    .stat-info label{font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;}
+    .stat-info strong{font-size:24px;font-weight:900;color:var(--dark);line-height:1;display:block;}
+    .stat-info small{font-size:11px;color:var(--gray);margin-top:2px;display:block;}
+
+    /* ALERTS */
+    .alerts-box{background:var(--white);border-radius:12px;border:2px solid var(--red);padding:16px 20px;margin-bottom:24px;display:none;}
+    .alerts-box.show{display:block;}
+    .alerts-title{font-size:12px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+    .alert-items{display:flex;flex-wrap:wrap;gap:8px;}
+    .alert-chip{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--red);padding:4px 11px;border-radius:6px;font-size:12px;font-weight:600;}
+
+    /* CONTROLS */
+    .table-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .table-top h2{font-size:17px;font-weight:900;color:var(--dark);}
+    .ctrl-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .search-bar{display:flex;align-items:center;gap:8px;background:var(--white);border:2px solid var(--border);border-radius:8px;padding:8px 14px;}
+    .search-bar input{border:none;outline:none;font-size:13px;width:180px;font-family:inherit;}
+    .filter-sel{padding:9px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:var(--white);font-weight:600;cursor:pointer;}
+    .save-btn{background:var(--green);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px;}
+    .save-btn:hover{background:#16a34a;}
+
+    /* TABLE */
+    .tbl-wrap{background:var(--white);border-radius:12px;border:2px solid var(--border);overflow:hidden;}
+    table{width:100%;border-collapse:collapse;}
+    thead{background:var(--dark);}
+    thead th{padding:12px 14px;text-align:left;font-size:10px;font-weight:800;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:1px;}
+    tbody tr{border-bottom:1px solid var(--border);}
+    tbody tr:last-child{border-bottom:none;}
+    tbody tr:hover{background:#fafafa;}
+    tbody td{padding:11px 14px;font-size:13px;vertical-align:middle;}
+    .prod-img{width:42px;height:42px;border-radius:7px;object-fit:cover;border:1px solid var(--border);}
+    .prod-name{font-weight:700;color:var(--dark);font-size:13px;}
+    .prod-sku{font-size:10px;color:var(--gray);}
+    .cat-pill{background:rgba(255,98,0,.1);color:var(--orange);font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;text-transform:uppercase;}
+    .price-cell{font-weight:800;font-size:14px;}
+    .stock-input{width:76px;padding:7px 10px;border:2px solid var(--border);border-radius:7px;font-size:14px;font-weight:700;text-align:center;font-family:inherit;outline:none;transition:border-color .2s;}
+    .stock-input:focus{border-color:var(--orange);}
+    .stock-input.low{border-color:var(--yellow);background:rgba(245,158,11,.05);}
+    .stock-input.out{border-color:var(--red);background:rgba(239,68,68,.05);}
+    .status-dot{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;}
+    .dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+    .dot-green{background:var(--green);}
+    .dot-yellow{background:var(--yellow);}
+    .dot-red{background:var(--red);}
+    .val-cell{font-size:12px;color:var(--gray);font-weight:600;}
+    .act-btn{background:none;border:1px solid var(--border);color:var(--gray);padding:5px 9px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;transition:all .15s;margin-right:3px;}
+    .act-btn:hover{border-color:var(--orange);color:var(--orange);}
+    .act-btn.blue:hover{border-color:var(--blue);color:var(--blue);}
+    .act-btn.purple:hover{border-color:var(--purple);color:var(--purple);}
+    .tfoot-row{background:var(--dark) !important;}
+    .tfoot-row td{color:#fff;font-weight:800;font-size:14px;padding:14px;}
+
+    /* ANALYTICS SECTION */
+    #analyticsSection{display:none;}
+    .analytics-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+    .an-section{background:var(--white);border-radius:12px;border:2px solid var(--border);overflow:hidden;margin-bottom:24px;}
+    .an-header{background:var(--dark);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
+    .an-header h3{color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;gap:10px;}
+    .an-header h3 i{color:var(--orange);}
+    .an-sub{color:rgba(255,255,255,0.4);font-size:11px;}
+    .an-table{width:100%;border-collapse:collapse;}
+    .an-table thead th{padding:10px 16px;background:#f8f8f8;font-size:10px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:2px solid var(--border);}
+    .an-table tbody tr{border-bottom:1px solid var(--border);}
+    .an-table tbody tr:last-child{border-bottom:none;}
+    .an-table tbody tr:hover{background:#fafafa;}
+    .an-table tbody td{padding:11px 16px;font-size:13px;vertical-align:middle;}
+    .rank-badge{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0;}
+    .rank-1{background:rgba(255,184,0,.15);color:#b45309;}
+    .rank-2{background:rgba(148,163,184,.15);color:#475569;}
+    .rank-3{background:rgba(205,127,50,.12);color:#92400e;}
+    .rank-n{background:rgba(0,0,0,.06);color:var(--gray);}
+    .an-bar-wrap{width:120px;background:#f0f0f0;border-radius:4px;height:8px;overflow:hidden;}
+    .an-bar{height:8px;border-radius:4px;transition:width .5s;}
+    .bar-orange{background:var(--orange);}
+    .bar-purple{background:var(--purple);}
+    .an-count{font-weight:900;font-size:15px;color:var(--dark);}
+    .an-count small{font-size:11px;font-weight:600;color:var(--gray);margin-left:3px;}
+    .no-data{text-align:center;padding:48px;color:var(--gray);}
+    .no-data i{font-size:36px;margin-bottom:10px;display:block;color:#ddd;}
+    .no-data p{font-size:14px;}
+    .no-data small{font-size:12px;color:#bbb;}
+    .an-2col{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+    .reset-btn{background:none;border:1px solid rgba(255,255,255,0.25);color:rgba(255,255,255,0.5);padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;transition:all .2s;}
+    .reset-btn:hover{border-color:var(--red);color:var(--red);}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:13px 20px;border-radius:10px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:9px;box-shadow:0 8px 24px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;}
+    .toast.show{transform:translateY(0);opacity:1;}
+
+    /* PHOTO MODAL */
+    .photo-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px;}
+    .photo-overlay.open{display:flex;}
+    .photo-box{background:#fff;border-radius:14px;width:100%;max-width:450px;border-top:4px solid var(--orange);overflow:hidden;}
+    .ph-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--dark);}
+    .ph-header h3{color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px;}
+    .ph-header h3 i{color:var(--orange);}
+    .ph-header button{background:none;border:none;color:#aaa;font-size:18px;cursor:pointer;}
+    .ph-body{padding:22px;}
+    .ph-prod-name{font-size:13px;font-weight:800;color:var(--dark);margin-bottom:14px;padding:8px 12px;background:var(--light);border-radius:7px;}
+    .ph-preview{width:100%;height:180px;object-fit:cover;border-radius:9px;border:2px solid var(--border);display:block;margin-bottom:18px;}
+    .ph-fallback{width:100%;height:180px;background:var(--charcoal);border-radius:9px;display:none;align-items:center;justify-content:center;font-size:44px;color:var(--orange);margin-bottom:18px;}
+    .ph-label{font-size:10px;font-weight:800;color:var(--dark);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;}
+    .ph-url-row{display:flex;gap:8px;margin-bottom:14px;}
+    .ph-url-input{flex:1;padding:10px 12px;border:2px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;outline:none;}
+    .ph-url-input:focus{border-color:var(--orange);}
+    .ph-prev-btn{padding:10px 14px;background:var(--dark);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+    .ph-divider{text-align:center;color:#aaa;font-size:11px;font-weight:700;margin:14px 0;position:relative;}
+    .ph-divider::before,.ph-divider::after{content:'';position:absolute;top:50%;width:43%;height:1px;background:var(--border);}
+    .ph-divider::before{left:0;}.ph-divider::after{right:0;}
+    .ph-upload-lbl{display:block;width:100%;padding:11px;border:2px dashed var(--border);border-radius:7px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:var(--gray);transition:all .2s;margin-bottom:14px;}
+    .ph-upload-lbl:hover{border-color:var(--orange);color:var(--orange);}
+    .ph-upload-input{display:none;}
+    .ph-save-btn{width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;text-transform:uppercase;}
+    .ph-save-btn:hover{background:#cc4e00;}
+
+    /* STATS MODAL */
+    .stats-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px;}
+    .stats-overlay.open{display:flex;}
+    .stats-box{background:#fff;border-radius:16px;width:100%;max-width:480px;border-top:4px solid var(--purple);overflow:hidden;}
+    .sm-header{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:var(--dark);}
+    .sm-header h3{color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px;}
+    .sm-header h3 i{color:var(--purple);}
+    .sm-header button{background:none;border:none;color:#aaa;font-size:18px;cursor:pointer;}
+    .sm-body{padding:24px;}
+    .sm-prod-row{display:flex;align-items:center;gap:14px;margin-bottom:22px;padding:12px 14px;background:var(--light);border-radius:10px;}
+    .sm-prod-row img{width:54px;height:54px;border-radius:9px;object-fit:cover;border:2px solid var(--border);}
+    .sm-prod-info strong{font-size:14px;font-weight:800;color:var(--dark);display:block;}
+    .sm-prod-info span{font-size:11px;color:var(--gray);}
+    .sm-metrics{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+    .sm-metric{border:2px solid var(--border);border-radius:12px;padding:18px 16px;text-align:center;}
+    .sm-metric i{font-size:22px;margin-bottom:8px;display:block;}
+    .sm-metric .sm-val{font-size:30px;font-weight:900;color:var(--dark);line-height:1;display:block;}
+    .sm-metric .sm-lbl{font-size:11px;color:var(--gray);margin-top:4px;display:block;text-transform:uppercase;letter-spacing:0.5px;}
+    .sm-rank-row{display:flex;gap:10px;margin-bottom:20px;}
+    .sm-rank-chip{flex:1;padding:10px 14px;border-radius:8px;text-align:center;font-size:12px;font-weight:700;}
+    .sm-rank-chip.orange{background:rgba(255,98,0,.1);color:var(--orange);border:1px solid rgba(255,98,0,.2);}
+    .sm-rank-chip.purple{background:rgba(139,92,246,.1);color:var(--purple);border:1px solid rgba(139,92,246,.2);}
+    .sm-note{font-size:12px;color:var(--gray);text-align:center;padding:0 8px;}
+    .sm-close-btn{width:100%;padding:11px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:18px;text-transform:uppercase;}
+
+    @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr);}.tbl-wrap{overflow-x:auto;}.an-2col{grid-template-columns:1fr;}.analytics-stats{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:600px){.main{padding:14px;}}
+
+    /* ADD / CSV BUTTONS */
+    .add-prod-btn{background:var(--orange);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.5px;}
+    .add-prod-btn:hover{background:#cc4e00;}
+    .csv-btn{background:none;border:1.5px solid var(--blue);color:var(--blue);padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;}
+    .csv-btn:hover{background:rgba(59,130,246,.08);}
+
+    /* VISIBILITY */
+    .vis-btn{background:none;border:1px solid var(--border);padding:5px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;transition:all .15s;margin-right:3px;}
+    .vis-btn.visible{color:var(--green);border-color:var(--green);}
+    .vis-btn.hidden-p{color:#aaa;border-color:#ddd;}
+    tr.row-hidden{opacity:0.45;background:repeating-linear-gradient(45deg,transparent,transparent 6px,rgba(0,0,0,.02) 6px,rgba(0,0,0,.02) 12px);}
+    tr.row-hidden .prod-name::after{content:' [Hidden]';color:#aaa;font-size:10px;font-weight:600;}
+    .del-btn{background:none;border:1px solid var(--border);color:#aaa;padding:5px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;}
+    .del-btn:hover{border-color:var(--red);color:var(--red);}
+
+    /* ADD PRODUCT MODAL */
+    .ap-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+    .ap-overlay.open{opacity:1;pointer-events:all;}
+    .ap-modal{background:#fff;border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+    .ap-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .ap-header h3{font-size:16px;font-weight:900;color:var(--dark);display:flex;align-items:center;gap:8px;}
+    .ap-header h3 i{color:var(--orange);}
+    .ap-header button{background:none;border:none;font-size:18px;cursor:pointer;color:#aaa;}
+    .ap-body{padding:22px;}
+    .ap-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+    .ap-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+    .ap-field label{font-size:11px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;}
+    .ap-field input,.ap-field select,.ap-field textarea{padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:var(--dark);transition:border-color .2s;resize:vertical;}
+    .ap-field input:focus,.ap-field select:focus,.ap-field textarea:focus{border-color:var(--orange);}
+    .ap-save-btn{width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+    .ap-save-btn:hover{background:#cc4e00;}
+
+    /* CSV MODAL */
+    .csv-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+    .csv-overlay.open{opacity:1;pointer-events:all;}
+    .csv-modal{background:#fff;border-radius:16px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+    .csv-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .csv-header h3{font-size:16px;font-weight:900;color:var(--dark);display:flex;align-items:center;gap:8px;}
+    .csv-header h3 i{color:var(--blue);}
+    .csv-header button{background:none;border:none;font-size:18px;cursor:pointer;color:#aaa;}
+    .csv-body{padding:22px;}
+    .help-btn{background:none;border:1.5px solid var(--blue);color:var(--blue);padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;}
+    .csv-drop{border:2px dashed var(--border);border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:14px;}
+    .csv-drop:hover,.csv-drop.drag{border-color:var(--blue);}
+    .csv-drop i{font-size:32px;color:var(--blue);margin-bottom:8px;display:block;}
+    .csv-drop span{font-size:14px;font-weight:700;color:var(--dark);display:block;}
+    .csv-drop small{font-size:11px;color:var(--gray);}
+    .csv-count{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+    .csv-prev-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;}
+    .csv-prev-tbl th{background:var(--light);padding:7px 10px;text-align:left;font-weight:700;font-size:11px;color:var(--gray);text-transform:uppercase;}
+    .csv-prev-tbl td{padding:7px 10px;border-bottom:1px solid var(--border);}
+    .csv-import-btn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .csv-import-btn:hover{background:#2563eb;}
+    .csv-import-btn:disabled{opacity:0.6;cursor:not-allowed;}
+
+    /* FORMAT HELP MODAL */
+    .help-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+    .help-overlay.open{opacity:1;pointer-events:all;}
+    .help-modal{background:#fff;border-radius:16px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+    .help-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .help-header h3{font-size:16px;font-weight:900;color:var(--dark);display:flex;align-items:center;gap:8px;}
+    .help-header h3 i{color:var(--blue);}
+    .help-header button{background:none;border:none;font-size:18px;cursor:pointer;color:#aaa;}
+    .help-body{padding:22px;}
+    .help-body p{font-size:13px;color:var(--gray);margin-bottom:14px;}
+    .fmt-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;}
+    .fmt-table th{background:var(--light);padding:8px 12px;text-align:left;font-weight:700;font-size:11px;color:var(--gray);text-transform:uppercase;}
+    .fmt-table td{padding:8px 12px;border-bottom:1px solid var(--border);}
+    .fmt-table tr td:first-child{font-weight:700;font-family:monospace;color:var(--orange);}
+    .fmt-cats{font-size:12px;color:var(--dark);background:var(--light);padding:10px 14px;border-radius:8px;margin-bottom:14px;line-height:1.7;}
+    .fmt-cats strong{display:block;font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+    .help-dl-btn{width:100%;padding:11px;background:var(--dark);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .help-dl-btn:hover{background:#333;}
+
+    /* UNDO / REDO BUTTONS */
+    .ur-btn{background:none;border:1.5px solid var(--border);color:var(--gray);padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;}
+    .ur-btn:hover:not(:disabled){border-color:var(--orange);color:var(--orange);}
+    .ur-btn:disabled{opacity:0.3;cursor:not-allowed;}
+    .ur-group{display:flex;gap:6px;}
+
+    /* CROP CANVAS */
+    .crop-section{margin-top:14px;display:none;}
+    .crop-section.show{display:block;}
+    .crop-title{font-size:11px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+    .crop-canvas-wrap{border:2px solid var(--border);border-radius:10px;overflow:hidden;background:#111;display:flex;align-items:center;justify-content:center;max-height:320px;cursor:crosshair;position:relative;}
+    #cropCanvas{display:block;max-width:100%;max-height:316px;}
+    .crop-hint{font-size:11px;color:var(--gray);text-align:center;margin-top:6px;}
+    .crop-actions{display:flex;gap:8px;margin-top:10px;}
+    .crop-apply-btn{flex:1;padding:9px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;}
+    .crop-apply-btn:hover{background:#cc4e00;}
+    .crop-reset-btn{padding:9px 14px;background:none;border:1.5px solid var(--border);color:var(--gray);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
+    .crop-reset-btn:hover{border-color:var(--dark);color:var(--dark);}
+    .crop-locked-badge{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;display:none;align-items:center;gap:5px;}
+    .crop-locked-badge.show{display:flex;}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <img src="loooooooo.png" alt="DhowTech" onerror="this.style.display='none'" />
+    <div class="login-logo">Dhow<span>Tech</span></div>
+    <div class="login-sub">Owner Admin Panel</div>
+    <input type="text" id="loginUser" placeholder="Username" />
+    <input type="password" id="loginPass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="login-btn" onclick="doLogin()"><i class="fa fa-lock"></i>&nbsp; Login</button>
+    <div class="login-error" id="loginError">Wrong username or password.</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel">
+  <div class="top-bar">
+    <div class="top-logo">Dhow<span>Tech</span> <div class="admin-badge"><i class="fa fa-shield-alt"></i> Admin</div></div>
+    <div class="top-right">
+      <div class="clock-txt" id="clockEl"></div>
+      <button class="logout-btn" onclick="logout()"><i class="fa fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabInventory" onclick="switchTab('inventory')">
+      <i class="fa fa-boxes"></i> Inventory
+    </button>
+    <button class="tab-btn" id="tabAnalytics" onclick="switchTab('analytics')">
+      <i class="fa fa-chart-bar"></i> Analytics
+    </button>
+  </div>
+
+  <!-- INVENTORY SECTION -->
+  <div id="inventorySection" class="main">
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="alerts-box" id="alertsBox">
+      <div class="alerts-title"><i class="fa fa-exclamation-triangle"></i> Low / Out of Stock Alerts</div>
+      <div class="alert-items" id="alertItems"></div>
+    </div>
+
+    <div class="table-top">
+      <h2><i class="fa fa-boxes" style="color:var(--orange);margin-right:8px"></i>Inventory Management</h2>
+      <div class="ctrl-right">
+        <button class="add-prod-btn" onclick="openAddProduct()"><i class="fa fa-plus"></i> Add Product</button>
+        <button class="csv-btn" onclick="openCSV()"><i class="fa fa-file-csv"></i> Import CSV/Excel</button>
+        <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="adminSearch" placeholder="Search products..." oninput="renderTable()" /></div>
+        <select class="filter-sel" id="catFilter" onchange="renderTable()">
+          <option value="all">All Categories</option>
+          <option value="power-tools">Power Tools</option>
+          <option value="hand-tools">Hand Tools</option>
+          <option value="fasteners">Fasteners</option>
+          <option value="measuring">Measuring</option>
+          <option value="safety">Safety</option>
+          <option value="cutting">Cutting</option>
+          <option value="storage">Storage</option>
+        </select>
+        <div class="ur-group">
+          <button class="ur-btn" id="undoBtn" onclick="undo()" disabled title="Undo (Ctrl+Z)"><i class="fa fa-undo"></i> Undo</button>
+          <button class="ur-btn" id="redoBtn" onclick="redo()" disabled title="Redo (Ctrl+Y)"><i class="fa fa-redo"></i> Redo</button>
+        </div>
+        <button class="save-btn" onclick="saveAll()"><i class="fa fa-save"></i> Save Changes</button>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Product</th><th>Category</th><th>Price KWD</th>
+            <th>Stock Qty</th><th>Status</th><th>Value KWD</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tblBody"></tbody>
+        <tfoot id="tblFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- ANALYTICS SECTION -->
+  <div id="analyticsSection" class="main">
+
+    <div class="analytics-stats" id="analyticsStats"></div>
+
+    <div class="an-2col">
+
+      <!-- TOP 10 VIEWED -->
+      <div class="an-section">
+        <div class="an-header">
+          <h3><i class="fa fa-eye"></i> Top 10 Most Viewed</h3>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="an-sub">Products added to cart</span>
+            <button class="reset-btn" onclick="resetViews()"><i class="fa fa-trash"></i> Reset</button>
+          </div>
+        </div>
+        <div id="viewsTable"></div>
+      </div>
+
+      <!-- TOP 10 SEARCHED -->
+      <div class="an-section">
+        <div class="an-header">
+          <h3><i class="fa fa-search"></i> Top 10 Most Searched</h3>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="an-sub">Search appearances</span>
+            <button class="reset-btn" onclick="resetSearches()"><i class="fa fa-trash"></i> Reset</button>
+          </div>
+        </div>
+        <div id="searchesTable"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ADD PRODUCT MODAL -->
+<div class="ap-overlay" id="apOverlay" onclick="if(event.target===this)closeAddProduct()">
+  <div class="ap-modal">
+    <div class="ap-header">
+      <h3><i class="fa fa-plus-circle"></i> Add New Product</h3>
+      <button onclick="closeAddProduct()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="ap-body">
+      <div class="ap-row">
+        <div class="ap-field"><label>Product Name *</label><input type="text" id="apName" placeholder="e.g. Cordless Drill 20V" /></div>
+        <div class="ap-field"><label>Category *</label>
+          <select id="apCat">
+            <option value="power-tools">Power Tools</option>
+            <option value="hand-tools">Hand Tools</option>
+            <option value="fasteners">Fasteners</option>
+            <option value="measuring">Measuring</option>
+            <option value="safety">Safety</option>
+            <option value="cutting">Cutting</option>
+            <option value="storage">Storage</option>
+          </select>
+        </div>
+      </div>
+      <div class="ap-row">
+        <div class="ap-field"><label>Price (KWD) *</label><input type="number" id="apPrice" placeholder="0.000" step="0.001" min="0" /></div>
+        <div class="ap-field"><label>Initial Stock Qty</label><input type="number" id="apStock" placeholder="50" min="0" value="50" /></div>
+      </div>
+      <div class="ap-field"><label>Description</label><textarea id="apDesc" rows="3" placeholder="Short product description..."></textarea></div>
+      <div class="ap-row">
+        <div class="ap-field"><label>Badge <small style="font-weight:400;text-transform:none">(optional)</small></label>
+          <select id="apBadge">
+            <option value="">None</option>
+            <option value="Best Seller">Best Seller</option>
+            <option value="Popular">Popular</option>
+            <option value="Pro">Pro</option>
+            <option value="New">New</option>
+            <option value="Sale">Sale</option>
+          </select>
+        </div>
+        <div class="ap-field"><label>Image URL <small style="font-weight:400;text-transform:none">(optional)</small></label><input type="text" id="apImg" placeholder="https://..." /></div>
+      </div>
+      <button class="ap-save-btn" onclick="saveNewProduct()"><i class="fa fa-plus"></i>&nbsp; Add Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- CSV IMPORT MODAL -->
+<div class="csv-overlay" id="csvOverlay" onclick="if(event.target===this)closeCSV()">
+  <div class="csv-modal">
+    <div class="csv-header">
+      <h3><i class="fa fa-file-csv"></i> Import Products — CSV / Excel</h3>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="help-btn" onclick="showFormatHelp()"><i class="fa fa-question-circle"></i> Format Help</button>
+        <button onclick="closeCSV()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#aaa"><i class="fa fa-times"></i></button>
+      </div>
+    </div>
+    <div class="csv-body">
+      <label class="csv-drop" id="csvDrop" for="csvFile" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleCSVDrop(event)">
+        <i class="fa fa-cloud-upload-alt"></i>
+        <span>Click to choose file or drag &amp; drop here</span>
+        <small>Supports .csv and .xlsx (Excel) files</small>
+      </label>
+      <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" onchange="handleCSVFile(event)" style="display:none" />
+      <div id="csvPreview"></div>
+      <button class="csv-import-btn" id="csvImportBtn" onclick="importCSVProducts()" style="display:none">
+        <i class="fa fa-download"></i> Import All Products
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FORMAT HELP MODAL -->
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="help-modal">
+    <div class="help-header">
+      <h3><i class="fa fa-question-circle"></i> CSV Format Guide</h3>
+      <button onclick="closeHelp()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#aaa"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="help-body">
+      <p>Your file must have a header row with these column names. Only the first 3 are required — the rest are optional.</p>
+      <table class="fmt-table">
+        <thead><tr><th>Column name</th><th>Required?</th><th>Example value</th></tr></thead>
+        <tbody>
+          <tr><td>name</td><td>✅ Yes</td><td>Cordless Drill 20V</td></tr>
+          <tr><td>category</td><td>✅ Yes</td><td>power-tools</td></tr>
+          <tr><td>price</td><td>✅ Yes</td><td>12.500</td></tr>
+          <tr><td>stock</td><td>Optional</td><td>50</td></tr>
+          <tr><td>description</td><td>Optional</td><td>20V drill with keyless chuck</td></tr>
+          <tr><td>badge</td><td>Optional</td><td>Best Seller</td></tr>
+          <tr><td>image_url</td><td>Optional</td><td>https://images.unsplash.com/...</td></tr>
+        </tbody>
+      </table>
+      <div class="fmt-cats">
+        <strong>Valid category values:</strong>
+        power-tools &nbsp;·&nbsp; hand-tools &nbsp;·&nbsp; fasteners &nbsp;·&nbsp; measuring &nbsp;·&nbsp; safety &nbsp;·&nbsp; cutting &nbsp;·&nbsp; storage
+      </div>
+      <button class="help-dl-btn" onclick="downloadTemplate()"><i class="fa fa-download"></i>&nbsp; Download Template File</button>
+    </div>
+  </div>
+</div>
+
+<!-- PHOTO MODAL -->
+<div class="photo-overlay" id="photoOverlay" onclick="if(event.target===this)closePhoto()">
+  <div class="photo-box">
+    <div class="ph-header">
+      <h3><i class="fa fa-camera"></i> Change Product Photo</h3>
+      <button onclick="closePhoto()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="ph-body">
+      <div class="ph-prod-name" id="phProdName"></div>
+      <img class="ph-preview" id="phPreviewImg" src="" alt="Preview" onerror="this.style.display='none';document.getElementById('phFallback').style.display='flex'" />
+      <div class="ph-fallback" id="phFallback"><i class="fa fa-image"></i></div>
+      <label class="ph-label"><i class="fa fa-link"></i> Paste Image URL</label>
+      <div class="ph-url-row">
+        <input class="ph-url-input" id="phUrlInput" type="text" placeholder="https://..." />
+        <button class="ph-prev-btn" onclick="previewUrl()"><i class="fa fa-eye"></i> Preview</button>
+      </div>
+      <div class="ph-divider">OR</div>
+      <label class="ph-upload-lbl" for="phFileInput"><i class="fa fa-upload"></i>&nbsp; Upload from your computer</label>
+      <input class="ph-upload-input" id="phFileInput" type="file" accept="image/*" onchange="handleUpload(event)" />
+
+      <!-- CROP SECTION -->
+      <div class="crop-section" id="cropSection">
+        <div class="crop-title">
+          <i class="fa fa-crop-alt" style="color:var(--orange)"></i> Crop Photo — Click &amp; drag to select area
+          <span class="crop-locked-badge" id="cropLockedBadge"><i class="fa fa-check-circle"></i> Crop Applied</span>
+        </div>
+        <div class="crop-canvas-wrap" id="cropWrap">
+          <canvas id="cropCanvas"></canvas>
+        </div>
+        <div class="crop-hint" id="cropHint">Drag on the image to select the area you want to keep</div>
+        <div class="crop-actions">
+          <button class="crop-apply-btn" onclick="applyCrop()"><i class="fa fa-crop-alt"></i>&nbsp; Apply Crop</button>
+          <button class="crop-reset-btn" onclick="resetCrop()"><i class="fa fa-expand"></i> Reset</button>
+        </div>
+      </div>
+
+      <button class="ph-save-btn" onclick="savePhoto()"><i class="fa fa-check"></i>&nbsp; Save Photo</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT STATS MODAL -->
+<div class="stats-overlay" id="statsOverlay" onclick="if(event.target===this)closeStats()">
+  <div class="stats-box">
+    <div class="sm-header">
+      <h3><i class="fa fa-chart-bar"></i> Product Analytics</h3>
+      <button onclick="closeStats()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="sm-body" id="smBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="fa fa-check-circle"></i> <span id="toastMsg">Saved!</span></div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script>
+const ADMIN_USER = 'dhowtech';
+const ADMIN_PASS = 'admin1234';
+
+// ── SUPABASE ─────────────────────────────────────────────────────────────
+const SB_URL  = 'https://jjyhybulxixblpiixzkp.supabase.co';
+const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqeWh5YnVseGl4YmxwaWl4emtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMjgxNTIsImV4cCI6MjA5NDYwNDE1Mn0.CdI1UcV4pIvdUU9xISJgbIqjfZunAgsiiIj0PntJm4I';
+const SB_HDRS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+
+// ── SUPABASE FETCH WRAPPER ────────────────────────────────────────────────
+async function sbFetch(url, options) {
+  try {
+    const res  = await fetch(url, options);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { data: null, error: (data && (data.error || data.message)) || ('HTTP ' + res.status) };
+    return { data, error: null };
+  } catch (e) {
+    return { data: null, error: e.message };
+  }
+}
+
+let _customProductRows = [];
+let _hiddenBaseIds     = new Set();
+
+async function loadFromSupabase() {
+  showToast('Loading from cloud…');
+  const [s, p, c, h] = await Promise.all([
+    sbFetch(SB_URL + '/rest/v1/dhowtech_stock?select=*',                         { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/dhowtech_photos?select=*',                        { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/dhowtech_products?select=*&order=created_at.asc', { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/dhowtech_hidden?select=product_id',               { headers: SB_HDRS })
+  ]);
+  if (s.error) {
+    console.warn('Supabase load failed:', s.error);
+    showToast('Offline — using local data');
+  } else {
+    if (Array.isArray(s.data)) s.data.forEach(function(r) { stockData[r.product_id] = r.qty; });
+    if (Array.isArray(p.data)) {
+      const ph = JSON.parse(localStorage.getItem('dhowtech_photos') || '{}');
+      p.data.forEach(function(r) { ph[r.product_id] = r.url; });
+      localStorage.setItem('dhowtech_photos', JSON.stringify(ph));
+    }
+    if (Array.isArray(c.data)) _customProductRows = c.data;
+    if (Array.isArray(h.data)) _hiddenBaseIds = new Set(h.data.map(function(r) { return r.product_id; }));
+    localStorage.setItem('dhowtech_stock', JSON.stringify(stockData));
+    showToast('Loaded from cloud ☁️');
+  }
+  renderStats(); renderTable();
+}
+
+// Merged list of all products (base + custom)
+function getAllAdminProducts() {
+  const base = PRODUCTS.map(function(p) {
+    return { id: p.id, name: p.name, cat: p.cat, price: p.price, img: p.img, isBase: true, hidden: _hiddenBaseIds.has(p.id) };
+  });
+  const custom = _customProductRows.map(function(p) {
+    return { id: p.id, name: p.name, cat: p.category, price: parseFloat(p.price), img: p.img_url||'', isBase: false, hidden: p.hidden||false };
+  });
+  return [...base, ...custom];
+}
+
+const U = id => 'https://picsum.photos/seed/' + id + '/80/80';
+const PRODUCTS = [
+  {id:1, name:'Cordless Drill 18V',          cat:'power-tools', price:12.500, img:U('1777575764654-ffc22754c5d8')},
+  {id:2, name:'Angle Grinder 115mm',          cat:'power-tools', price:8.900,  img:U('1776711763505-4105861e0d41')},
+  {id:3, name:'Circular Saw 185mm',           cat:'power-tools', price:14.500, img:U('1775988821739-74c26a8a5585')},
+  {id:4, name:'Jigsaw 650W',                  cat:'power-tools', price:9.800,  img:U('1773430273016-630960da6aa7')},
+  {id:5, name:'Random Orbital Sander',        cat:'power-tools', price:6.500,  img:U('1771491237067-5d108e956e73')},
+  {id:6, name:'Impact Driver 18V',            cat:'power-tools', price:11.000, img:U('1770763233593-74dfd0da7bf0')},
+  {id:7, name:'Rotary Hammer Drill SDS',      cat:'power-tools', price:18.500, img:U('1770386582823-3a7094e35b22')},
+  {id:8, name:'Heat Gun 2000W',               cat:'power-tools', price:5.200,  img:U('1766096847418-9a2ae64c9621')},
+  {id:9, name:'Reciprocating Saw',            cat:'power-tools', price:10.200, img:U('1764678714365-800554d1969c')},
+  {id:10,name:'Cordless Screwdriver 3.6V',   cat:'power-tools', price:3.800,  img:U('1764699186048-e85b5f0e59fc')},
+  {id:11,name:'Claw Hammer 16oz',             cat:'hand-tools',  price:2.200,  img:U('1581783898377-1c85bf937427')},
+  {id:12,name:'Phillips Screwdriver Set 6pc', cat:'hand-tools',  price:3.500,  img:U('1777107508755-2ba7502b2b95')},
+  {id:13,name:'Flathead Screwdriver Set 6pc', cat:'hand-tools',  price:3.200,  img:U('1777107508801-1aa0a4513780')},
+  {id:14,name:'Adjustable Wrench 12"',        cat:'hand-tools',  price:2.800,  img:U('1775396042188-64ec280ca175')},
+  {id:15,name:'Combination Spanner Set 12pc', cat:'hand-tools',  price:5.500,  img:U('1774963711952-713bb7a52c4e')},
+  {id:16,name:'Pliers Set 3pc',               cat:'hand-tools',  price:4.200,  img:U('1774645215883-14d1553f3fa0')},
+  {id:17,name:'Allen Key Hex Set 9pc',        cat:'hand-tools',  price:1.500,  img:U('1774654343530-7e04733e478d')},
+  {id:18,name:'Socket Set 40pc 1/2"',         cat:'hand-tools',  price:9.800,  img:U('1772207896656-4210003d65ee')},
+  {id:19,name:'Rubber Mallet 32oz',           cat:'hand-tools',  price:1.800,  img:U('1607870411590-d5e9e06da09a')},
+  {id:20,name:'Chisel Set 4pc',               cat:'hand-tools',  price:3.900,  img:U('1770657986086-c1f20eef30ff')},
+  {id:21,name:'Wire Nails 50mm 1kg',          cat:'fasteners',   price:0.650,  img:U('1778616364855-993b778bfce9')},
+  {id:22,name:'Wire Nails 75mm 1kg',          cat:'fasteners',   price:0.750,  img:U('1777882660356-38788724160b')},
+  {id:23,name:'Wire Nails 100mm 1kg',         cat:'fasteners',   price:0.850,  img:U('1778362561378-f54b1d601af0')},
+  {id:24,name:'Wood Screws 4x50mm 200pc',     cat:'fasteners',   price:1.200,  img:U('1777460079856-9c448a770644')},
+  {id:25,name:'Drywall Screws 3.5x35mm',      cat:'fasteners',   price:0.900,  img:U('1777647293690-075448f3ff4d')},
+  {id:26,name:'Self-Drilling Screws 200pc',   cat:'fasteners',   price:1.400,  img:U('1777732786166-d922fe29d62f')},
+  {id:27,name:'Hex Bolts M10x60mm 25pc',      cat:'fasteners',   price:1.100,  img:U('1777050967684-510b836d7b7d')},
+  {id:28,name:'Masonry Anchors 8mm 50pc',     cat:'fasteners',   price:1.600,  img:U('1776773299716-1ebcd15ac61b')},
+  {id:29,name:'Nuts Bolts Washers 500pc',     cat:'fasteners',   price:2.500,  img:U('1776774706515-c4dfcaa64891')},
+  {id:30,name:'Cable Ties 200pc Mixed',       cat:'fasteners',   price:0.600,  img:U('1776774706533-3af36fca44f7')},
+  {id:31,name:'Tape Measure 8m',              cat:'measuring',   price:1.800,  img:U('1776361460587-e5f9396ebf88')},
+  {id:32,name:'Spirit Level 1200mm',          cat:'measuring',   price:3.200,  img:U('1776254387430-21601edab5b3')},
+  {id:33,name:'Laser Level Cross Line',       cat:'measuring',   price:8.500,  img:U('1775493215727-8a81311b39d8')},
+  {id:34,name:'Digital Stud Finder',          cat:'measuring',   price:4.200,  img:U('1775345507804-2b44a1046873')},
+  {id:35,name:'Steel Square 300mm',           cat:'measuring',   price:1.400,  img:U('1763202282638-371d7060ee51')},
+  {id:36,name:'Chalk Line 30m',               cat:'measuring',   price:1.100,  img:U('1761682752575-c31ad0a16a50')},
+  {id:37,name:'Safety Goggles Clear',         cat:'safety',      price:0.800,  img:U('1778577177321-3bff951a9ac5')},
+  {id:38,name:'Leather Work Gloves',          cat:'safety',      price:1.200,  img:U('1778576835371-596da992a395')},
+  {id:39,name:'Dust Mask N95 10pc',           cat:'safety',      price:1.500,  img:U('1778868001879-50a970759f98')},
+  {id:40,name:'Hard Hat Yellow',              cat:'safety',      price:2.200,  img:U('1778317764727-8cb931bbf1e8')},
+  {id:41,name:'Hi-Vis Safety Vest',           cat:'safety',      price:0.900,  img:U('1778291114453-b215fa0957a3')},
+  {id:42,name:'Steel Toe Safety Boots',       cat:'safety',      price:8.500,  img:U('1777867445652-5a01f71c9d70')},
+  {id:43,name:'Hand Saw 550mm',               cat:'cutting',     price:2.800,  img:U('1778226818301-e4cd2cf295a2')},
+  {id:44,name:'Hacksaw + 5 Blades',           cat:'cutting',     price:2.200,  img:U('1778388804110-5beae7d35662')},
+  {id:45,name:'Utility Knife + 10 Blades',   cat:'cutting',     price:1.100,  img:U('1777892029843-8b66da1d09e7')},
+  {id:46,name:'Tin Snips Aviation 250mm',     cat:'cutting',     price:3.200,  img:U('1777891733988-540ac2abbd40')},
+  {id:47,name:'PVC Pipe Cutter 42mm',         cat:'cutting',     price:2.600,  img:U('1778388804089-c78419e188f2')},
+  {id:48,name:'Tool Bag 16" Heavy Duty',      cat:'storage',     price:5.500,  img:U('1778066994998-97f74a5bf901')},
+  {id:49,name:'Extension Cord 10m 4-Way',     cat:'storage',     price:4.200,  img:U('1777919394037-9a2968966310')},
+  {id:50,name:'Tool Box 16" Metal',           cat:'storage',     price:6.800,  img:U('1777919393727-cb35adbdc5e0')}
+];
+
+// ── STOCK ────────────────────────────────────────────────────────────────
+function getStock() {
+  const s = localStorage.getItem('dhowtech_stock');
+  if (s) return JSON.parse(s);
+  const d = {};
+  PRODUCTS.forEach(p => { d[p.id] = p.price > 10 ? 15 : p.price > 5 ? 30 : 50; });
+  return d;
+}
+let stockData = getStock();
+
+// ── UNDO / REDO ──────────────────────────────────────────────────────────
+let _undoStack = [];
+let _redoStack = [];
+function _pushUndo() {
+  _undoStack.push(JSON.stringify(stockData));
+  if (_undoStack.length > 50) _undoStack.shift();
+  _redoStack = [];
+  _syncUrBtns();
+}
+function _syncUrBtns() {
+  document.getElementById('undoBtn').disabled = _undoStack.length === 0;
+  document.getElementById('redoBtn').disabled = _redoStack.length === 0;
+}
+function undo() {
+  if (!_undoStack.length) return;
+  _redoStack.push(JSON.stringify(stockData));
+  stockData = JSON.parse(_undoStack.pop());
+  localStorage.setItem('dhowtech_stock', JSON.stringify(stockData));
+  renderTable(); renderStats(); _syncUrBtns();
+  showToast('Undone ↩');
+}
+function redo() {
+  if (!_redoStack.length) return;
+  _undoStack.push(JSON.stringify(stockData));
+  stockData = JSON.parse(_redoStack.pop());
+  localStorage.setItem('dhowtech_stock', JSON.stringify(stockData));
+  renderTable(); renderStats(); _syncUrBtns();
+  showToast('Redone ↪');
+}
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey||e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
+  if ((e.ctrlKey||e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) { e.preventDefault(); redo(); }
+});
+
+// ── LOGIN ────────────────────────────────────────────────────────────────
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    loadFromSupabase();
+  } else {
+    const err = document.getElementById('loginError');
+    err.style.display = 'block';
+    setTimeout(function() { err.style.display = 'none'; }, 3000);
+  }
+}
+function logout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('adminPanel').style.display = 'none';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+// ── CLOCK ────────────────────────────────────────────────────────────────
+function tick() {
+  const n = new Date();
+  document.getElementById('clockEl').textContent =
+    n.toLocaleDateString('en-KW',{weekday:'short',day:'numeric',month:'short'}) + ' — ' +
+    n.toLocaleTimeString('en-KW',{hour:'2-digit',minute:'2-digit'});
+}
+setInterval(tick, 1000); tick();
+
+// ── TABS ────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  const isInv = tab === 'inventory';
+  document.getElementById('inventorySection').style.display = isInv ? 'block' : 'none';
+  document.getElementById('analyticsSection').style.display = isInv ? 'none' : 'block';
+  document.getElementById('tabInventory').classList.toggle('active', isInv);
+  document.getElementById('tabAnalytics').classList.toggle('active', !isInv);
+  if (!isInv) renderAnalytics();
+}
+
+// ── STATS ────────────────────────────────────────────────────────────────
+function renderStats() {
+  const total  = PRODUCTS.length;
+  const units  = PRODUCTS.reduce(function(s,p) { return s+(stockData[p.id]||0); }, 0);
+  const value  = PRODUCTS.reduce(function(s,p) { return s+p.price*(stockData[p.id]||0); }, 0);
+  const low    = PRODUCTS.filter(function(p) { return (stockData[p.id]||0) > 0 && (stockData[p.id]||0) <= 10; }).length;
+  const out    = PRODUCTS.filter(function(p) { return (stockData[p.id]||0) === 0; }).length;
+  document.getElementById('statsGrid').innerHTML =
+    card('fa-boxes','ic-orange','Total Products', total, '50 product lines') +
+    card('fa-layer-group','ic-blue','Total Units', units.toLocaleString(), 'In stock') +
+    card('fa-coins','ic-green','Inventory Value', value.toFixed(2)+' KWD', 'Total stock value') +
+    card('fa-exclamation-triangle','ic-red','Alerts', low+out, low+' low &nbsp;|&nbsp; '+out+' out');
+  const lowList = PRODUCTS.filter(function(p) { return (stockData[p.id]||0) <= 10; });
+  const box = document.getElementById('alertsBox');
+  if (lowList.length) {
+    box.classList.add('show');
+    document.getElementById('alertItems').innerHTML = lowList.map(function(p) {
+      return '<div class="alert-chip"><i class="fa fa-warning"></i> '+p.name+' &mdash; '+(stockData[p.id]||0)+' left</div>';
+    }).join('');
+  } else { box.classList.remove('show'); }
+}
+function card(icon, cls, label, val, sub) {
+  return '<div class="stat-card"><div class="stat-icon '+cls+'"><i class="fa '+icon+'"></i></div>' +
+    '<div class="stat-info"><label>'+label+'</label><strong>'+val+'</strong><small>'+sub+'</small></div></div>';
+}
+
+// ── TABLE ────────────────────────────────────────────────────────────────
+function renderTable() {
+  const photos   = JSON.parse(localStorage.getItem('dhowtech_photos')||'{}');
+  const views    = JSON.parse(localStorage.getItem('dhowtech_views')||'{}');
+  const searches = JSON.parse(localStorage.getItem('dhowtech_searches')||'{}');
+  const q   = document.getElementById('adminSearch').value.toLowerCase();
+  const cat = document.getElementById('catFilter').value;
+  const list = getAllAdminProducts().filter(function(p) {
+    return (cat==='all'||p.cat===cat) && (!q||p.name.toLowerCase().includes(q));
+  });
+  const rows = list.map(function(p) {
+    const qty    = stockData[p.id]||0;
+    const cls    = qty===0?'out':qty<=10?'low':'';
+    const dotCls = qty===0?'dot-red':qty<=10?'dot-yellow':'dot-green';
+    const status = qty===0?'Out of Stock':qty<=10?'Low Stock':'In Stock';
+    const val    = (p.price*qty).toFixed(3);
+    const thumb  = photos[p.id] || p.img || ('https://picsum.photos/seed/dhow'+p.id+'/80/80');
+    const vCount = views[p.id]||0;
+    const sCount = searches[p.id]||0;
+    const visLbl = p.hidden ? '<i class="fa fa-eye-slash"></i> Show' : '<i class="fa fa-eye"></i> Hide';
+    const visCls = p.hidden ? 'hidden-p' : 'visible';
+    return '<tr class="'+(p.hidden?'row-hidden':'')+'">' +
+      '<td style="color:#aaa;font-size:11px;font-weight:700">#'+p.id+'</td>' +
+      '<td><div style="display:flex;align-items:center;gap:11px">' +
+        '<img class="prod-img" id="thumb'+p.id+'" src="'+thumb+'" alt="'+p.name+'" onerror="this.style.opacity=0.3" />' +
+        '<div><div class="prod-name">'+p.name+'</div>' +
+        '<div class="prod-sku" style="display:flex;gap:8px;margin-top:2px">' +
+          '<span>SKU-'+String(p.id).padStart(3,'0')+'</span>' +
+          (vCount>0 ? '<span style="color:var(--orange)"><i class="fa fa-eye"></i> '+vCount+'</span>' : '') +
+          (sCount>0 ? '<span style="color:var(--purple)"><i class="fa fa-search"></i> '+sCount+'</span>' : '') +
+        '</div></div>' +
+      '</div></td>' +
+      '<td><span class="cat-pill">'+p.cat.replace('-',' ')+'</span></td>' +
+      '<td class="price-cell">'+p.price.toFixed(3)+'</td>' +
+      '<td><input type="number" class="stock-input '+cls+'" id="si'+p.id+'" value="'+qty+'" min="0" oninput="onStock('+p.id+')" /></td>' +
+      '<td><span class="status-dot"><span class="dot '+dotCls+'"></span>'+status+'</span></td>' +
+      '<td class="val-cell">'+val+'</td>' +
+      '<td>' +
+        '<button class="vis-btn '+visCls+'" onclick="toggleVisibility('+p.id+','+p.isBase+')">'+visLbl+'</button>' +
+        '<button class="act-btn" onclick="setStock('+p.id+',0)"><i class="fa fa-times"></i> Clear</button>' +
+        '<button class="act-btn" onclick="setStock('+p.id+',50)"><i class="fa fa-plus"></i> +50</button>' +
+        '<button class="act-btn blue" onclick="openPhoto('+p.id+')"><i class="fa fa-camera"></i> Photo</button>' +
+        '<button class="act-btn purple" onclick="openStats('+p.id+')"><i class="fa fa-chart-bar"></i> Stats</button>' +
+        '<button class="del-btn" onclick="deleteProduct('+p.id+','+p.isBase+')"><i class="fa fa-trash"></i></button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+  document.getElementById('tblBody').innerHTML = rows;
+  const tv = list.reduce(function(s,p){ return s+p.price*(stockData[p.id]||0); },0);
+  const tu = list.reduce(function(s,p){ return s+(stockData[p.id]||0); },0);
+  document.getElementById('tblFoot').innerHTML =
+    '<tr class="tfoot-row"><td colspan="4">TOTAL ('+list.length+' shown, '+list.filter(function(p){return p.hidden;}).length+' hidden)</td>' +
+    '<td>'+tu+' units</td><td></td><td>'+tv.toFixed(3)+' KWD</td><td></td></tr>';
+}
+function onStock(id) {
+  const el = document.getElementById('si'+id);
+  const v = Math.max(0, parseInt(el.value)||0);
+  if (stockData[id] !== v) _pushUndo();
+  stockData[id] = v;
+  el.className = 'stock-input' + (v===0?' out':v<=10?' low':'');
+  renderStats();
+}
+function setStock(id, qty) { _pushUndo(); stockData[id]=qty; renderTable(); renderStats(); }
+async function saveAll() {
+  _pushUndo();
+  PRODUCTS.forEach(function(p) { const el=document.getElementById('si'+p.id); if(el) stockData[p.id]=Math.max(0,parseInt(el.value)||0); });
+  localStorage.setItem('dhowtech_stock', JSON.stringify(stockData));
+  const rows = PRODUCTS.map(function(p) { return { product_id: p.id, qty: stockData[p.id]||0 }; });
+  const { error } = await sbFetch(SB_URL + '/rest/v1/dhowtech_stock', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify(rows)
+  });
+  showToast(error ? 'Saved locally (cloud error)' : 'Saved to cloud ☁️');
+  renderStats();
+}
+
+// ── ANALYTICS ────────────────────────────────────────────────────────────
+function renderAnalytics() {
+  const views   = JSON.parse(localStorage.getItem('dhowtech_views')||'{}');
+  const searches= JSON.parse(localStorage.getItem('dhowtech_searches')||'{}');
+  const photos  = JSON.parse(localStorage.getItem('dhowtech_photos')||'{}');
+
+  const totalViews   = Object.values(views).reduce(function(a,b){return a+b;},0);
+  const totalSearches= Object.values(searches).reduce(function(a,b){return a+b;},0);
+
+  // Most viewed
+  const topV = PRODUCTS.slice().sort(function(a,b){ return (views[b.id]||0)-(views[a.id]||0); })[0];
+  const topS = PRODUCTS.slice().sort(function(a,b){ return (searches[b.id]||0)-(searches[a.id]||0); })[0];
+
+  document.getElementById('analyticsStats').innerHTML =
+    aCard('fa-eye','ic-orange','Total Views', totalViews, 'Add-to-cart clicks') +
+    aCard('fa-search','ic-purple','Total Searches', totalSearches, 'Search appearances') +
+    aCard('fa-fire','ic-orange','Most Viewed', topV ? (views[topV.id]||0)+' views' : '—', topV ? topV.name : 'No data yet') +
+    aCard('fa-trophy','ic-purple','Most Searched', topS ? (searches[topS.id]||0)+' times' : '—', topS ? topS.name : 'No data yet');
+
+  // Top 10 viewed
+  const sortedViews = PRODUCTS.slice().sort(function(a,b){ return (views[b.id]||0)-(views[a.id]||0); }).slice(0,10);
+  const maxV = views[sortedViews[0] && sortedViews[0].id] || 1;
+  document.getElementById('viewsTable').innerHTML = buildAnTable(sortedViews, views, photos, maxV, 'bar-orange', 'views');
+
+  // Top 10 searched
+  const sortedSearches = PRODUCTS.slice().sort(function(a,b){ return (searches[b.id]||0)-(searches[a.id]||0); }).slice(0,10);
+  const maxS = searches[sortedSearches[0] && sortedSearches[0].id] || 1;
+  document.getElementById('searchesTable').innerHTML = buildAnTable(sortedSearches, searches, photos, maxS, 'bar-purple', 'searches');
+}
+function aCard(icon, cls, label, val, sub) {
+  return '<div class="stat-card"><div class="stat-icon '+cls+'"><i class="fa '+icon+'"></i></div>' +
+    '<div class="stat-info"><label>'+label+'</label><strong>'+val+'</strong><small>'+sub+'</small></div></div>';
+}
+function buildAnTable(list, counts, photos, maxCount, barCls, unit) {
+  const hasData = list.some(function(p) { return (counts[p.id]||0) > 0; });
+  if (!hasData) {
+    return '<div class="no-data"><i class="fa fa-chart-bar"></i><p>No data yet</p>' +
+      '<small>Data will appear as customers browse and search products</small></div>';
+  }
+  const rankCls = function(i) { return i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n'; };
+  const rows = list.map(function(p, i) {
+    const count = counts[p.id]||0;
+    const pct = Math.round((count/maxCount)*100);
+    const thumb = photos[p.id] || p.img || ('https://picsum.photos/seed/dhow'+p.id+'/80/80');
+    return '<tr>' +
+      '<td><div class="rank-badge '+rankCls(i)+'">'+(i+1)+'</div></td>' +
+      '<td><div style="display:flex;align-items:center;gap:10px">' +
+        '<img src="'+thumb+'" style="width:36px;height:36px;border-radius:6px;object-fit:cover;border:1px solid #eee" onerror="this.style.opacity=0.2" />' +
+        '<div><div style="font-weight:700;font-size:13px;color:var(--dark)">'+p.name+'</div>' +
+        '<div style="font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px">'+p.cat.replace('-',' ')+'</div></div>' +
+      '</div></td>' +
+      '<td><div class="an-bar-wrap"><div class="an-bar '+barCls+'" style="width:'+pct+'%"></div></div></td>' +
+      '<td><span class="an-count">'+count+'<small>'+unit+'</small></span></td>' +
+      '<td><button class="act-btn" onclick="openStats('+p.id+')" style="font-size:10px;padding:4px 8px"><i class="fa fa-chart-bar"></i></button></td>' +
+    '</tr>';
+  }).join('');
+  return '<table class="an-table">' +
+    '<thead><tr><th>Rank</th><th>Product</th><th style="width:130px">Activity</th><th>Count</th><th></th></tr></thead>' +
+    '<tbody>'+rows+'</tbody></table>';
+}
+function resetViews() {
+  if (!confirm('Reset all view data?')) return;
+  localStorage.removeItem('dhowtech_views');
+  renderAnalytics(); renderTable();
+  showToast('View data reset');
+}
+function resetSearches() {
+  if (!confirm('Reset all search data?')) return;
+  localStorage.removeItem('dhowtech_searches');
+  renderAnalytics(); renderTable();
+  showToast('Search data reset');
+}
+
+// ── PRODUCT STATS MODAL ──────────────────────────────────────────────────
+function openStats(id) {
+  const p = PRODUCTS.find(function(x) { return x.id===id; });
+  const views   = JSON.parse(localStorage.getItem('dhowtech_views')||'{}');
+  const searches= JSON.parse(localStorage.getItem('dhowtech_searches')||'{}');
+  const photos  = JSON.parse(localStorage.getItem('dhowtech_photos')||'{}');
+  const vCount  = views[id]||0;
+  const sCount  = searches[id]||0;
+
+  // Compute ranks
+  const sortedV = PRODUCTS.slice().sort(function(a,b){ return (views[b.id]||0)-(views[a.id]||0); });
+  const sortedS = PRODUCTS.slice().sort(function(a,b){ return (searches[b.id]||0)-(searches[a.id]||0); });
+  const vRank   = sortedV.findIndex(function(x){ return x.id===id; })+1;
+  const sRank   = sortedS.findIndex(function(x){ return x.id===id; })+1;
+  const thumb   = photos[id] || p.img || ('https://picsum.photos/seed/dhow'+id+'/80/80');
+
+  document.getElementById('smBody').innerHTML =
+    '<div class="sm-prod-row">' +
+      '<img src="'+thumb+'" onerror="this.style.opacity=0.2" />' +
+      '<div class="sm-prod-info"><strong>'+p.name+'</strong><span>#'+id+' &nbsp;•&nbsp; '+p.cat.replace('-',' ')+'</span></div>' +
+    '</div>' +
+    '<div class="sm-metrics">' +
+      '<div class="sm-metric"><i class="fa fa-eye" style="color:var(--orange)"></i>' +
+        '<span class="sm-val">'+vCount+'</span><span class="sm-lbl">Total Views</span>' +
+      '</div>' +
+      '<div class="sm-metric"><i class="fa fa-search" style="color:var(--purple)"></i>' +
+        '<span class="sm-val">'+sCount+'</span><span class="sm-lbl">Search Hits</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="sm-rank-row">' +
+      '<div class="sm-rank-chip orange"><i class="fa fa-eye"></i>&nbsp; Rank #'+vRank+' Most Viewed</div>' +
+      '<div class="sm-rank-chip purple"><i class="fa fa-search"></i>&nbsp; Rank #'+sRank+' Most Searched</div>' +
+    '</div>' +
+    '<p class="sm-note">Views = times customers added this product to cart. Search hits = times this product appeared in a customer search.</p>' +
+    '<button class="sm-close-btn" onclick="closeStats()"><i class="fa fa-times"></i>&nbsp; Close</button>';
+
+  document.getElementById('statsOverlay').classList.add('open');
+}
+function closeStats() { document.getElementById('statsOverlay').classList.remove('open'); }
+
+// ── VISIBILITY TOGGLE ────────────────────────────────────────────────────
+async function toggleVisibility(id, isBase) {
+  let err = null;
+  if (isBase) {
+    if (_hiddenBaseIds.has(id)) {
+      ({ error: err } = await sbFetch(SB_URL + '/rest/v1/dhowtech_hidden?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS }));
+      if (!err) _hiddenBaseIds.delete(id);
+    } else {
+      ({ error: err } = await sbFetch(SB_URL + '/rest/v1/dhowtech_hidden', {
+        method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
+        body:JSON.stringify([{product_id:id, hidden:true}])
+      }));
+      if (!err) _hiddenBaseIds.add(id);
+    }
+  } else {
+    const row = _customProductRows.find(function(p){ return p.id===id; });
+    if (!row) return;
+    const newHidden = !row.hidden;
+    ({ error: err } = await sbFetch(SB_URL + '/rest/v1/dhowtech_products?id=eq.' + id, {
+      method:'PATCH', headers:SB_HDRS, body:JSON.stringify({hidden:newHidden})
+    }));
+    if (!err) row.hidden = newHidden;
+  }
+  if (err) { showToast('Error updating visibility'); return; }
+  const isNowHidden = isBase ? _hiddenBaseIds.has(id) : !!(_customProductRows.find(function(p){return p.id===id;})?.hidden);
+  showToast(isNowHidden ? 'Product hidden from store' : 'Product now visible');
+  renderTable();
+}
+
+// ── ADD PRODUCT ──────────────────────────────────────────────────────────
+function openAddProduct() {
+  ['apName','apDesc','apImg','apPrice'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('apStock').value = '50';
+  document.getElementById('apBadge').value = '';
+  document.getElementById('apCat').value   = 'power-tools';
+  document.getElementById('apOverlay').classList.add('open');
+}
+function closeAddProduct() { document.getElementById('apOverlay').classList.remove('open'); }
+async function saveNewProduct() {
+  const name  = document.getElementById('apName').value.trim();
+  const cat   = document.getElementById('apCat').value;
+  const price = parseFloat(document.getElementById('apPrice').value);
+  if (!name || !cat || isNaN(price) || price < 0) { showToast('Name, category and price are required'); return; }
+  const btn = document.querySelector('#apOverlay .ap-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/dhowtech_products', {
+    method:'POST',
+    headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}),
+    body:JSON.stringify([{
+      name, category:cat, price, hidden:false,
+      description: document.getElementById('apDesc').value.trim(),
+      badge:  document.getElementById('apBadge').value || null,
+      img_url:document.getElementById('apImg').value.trim()
+    }])
+  });
+  if (error) {
+    showToast('Error: ' + error);
+  } else if (rows && rows[0]) {
+    const newId = rows[0].id;
+    const qty   = parseInt(document.getElementById('apStock').value) || 50;
+    stockData[newId] = qty;
+    await sbFetch(SB_URL + '/rest/v1/dhowtech_stock', {
+      method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
+      body:JSON.stringify([{product_id:newId, qty}])
+    });
+    showToast('Product added!');
+    closeAddProduct();
+    await loadFromSupabase();
+  }
+  btn.disabled = false; btn.innerHTML = '<i class="fa fa-plus"></i>&nbsp; Add Product';
+}
+
+// ── DELETE PRODUCT ───────────────────────────────────────────────────────
+async function deleteProduct(id, isBase) {
+  const msg = isBase
+    ? 'Hide this product permanently from the website? (You can un-hide it later via the visibility toggle.)'
+    : 'Delete this product permanently? This cannot be undone.';
+  if (!confirm(msg)) return;
+  if (isBase) {
+    const { error } = await sbFetch(SB_URL + '/rest/v1/dhowtech_hidden', {
+      method: 'POST',
+      headers: { ...SB_HDRS, 'Prefer': 'resolution=ignore-duplicates' },
+      body: JSON.stringify({ product_id: id })
+    });
+    if (error) { showToast('Delete failed: ' + error); return; }
+    _hiddenBaseIds.add(id);
+    showToast('Product hidden from website');
+  } else {
+    const results = await Promise.all([
+      sbFetch(SB_URL + '/rest/v1/dhowtech_products?id=eq.' + id,         { method:'DELETE', headers:SB_HDRS }),
+      sbFetch(SB_URL + '/rest/v1/dhowtech_stock?product_id=eq.' + id,    { method:'DELETE', headers:SB_HDRS }),
+      sbFetch(SB_URL + '/rest/v1/dhowtech_photos?product_id=eq.' + id,   { method:'DELETE', headers:SB_HDRS })
+    ]);
+    const failed = results.find(function(r) { return r.error; });
+    if (failed) { showToast('Delete failed: ' + failed.error); return; }
+    showToast('Product deleted');
+  }
+  await loadFromSupabase();
+}
+
+// ── CSV / EXCEL IMPORT ───────────────────────────────────────────────────
+let _csvParsedRows = [];
+function openCSV() {
+  _csvParsedRows = [];
+  document.getElementById('csvFile').value = '';
+  document.getElementById('csvPreview').innerHTML = '';
+  document.getElementById('csvImportBtn').style.display = 'none';
+  document.getElementById('csvOverlay').classList.add('open');
+}
+function closeCSV() { document.getElementById('csvOverlay').classList.remove('open'); }
+function showFormatHelp() { document.getElementById('helpOverlay').classList.add('open'); }
+function closeHelp()      { document.getElementById('helpOverlay').classList.remove('open'); }
+
+function handleCSVDrop(e) {
+  e.preventDefault();
+  document.getElementById('csvDrop').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) processCSVFile(file);
+}
+function handleCSVFile(e) {
+  const file = e.target.files[0];
+  if (file) processCSVFile(file);
+}
+function processCSVFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      let rows;
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        rows = parseCSVText(ev.target.result);
+      } else {
+        if (typeof XLSX === 'undefined') { showToast('Excel support loading — try again'); return; }
+        const wb = XLSX.read(ev.target.result, {type:'binary'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const raw = XLSX.utils.sheet_to_json(ws, {defval:''});
+        rows = raw.map(function(r) {
+          const out = {};
+          Object.keys(r).forEach(function(k){ out[k.toLowerCase().trim().replace(/\s+/g,'_')] = String(r[k]); });
+          return out;
+        });
+      }
+      previewCSVRows(rows);
+    } catch(err) { showToast('Parse error: ' + err.message); }
+  };
+  file.name.toLowerCase().endsWith('.csv') ? reader.readAsText(file) : reader.readAsBinaryString(file);
+}
+function parseCSVText(text) {
+  const lines = text.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean);
+  if (!lines.length) return [];
+  const headers = lines[0].split(',').map(function(h){return h.trim().toLowerCase().replace(/['"]/g,'').replace(/\s+/g,'_');});
+  return lines.slice(1).map(function(line) {
+    const vals = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|(?<=,)$|^(?=,))/g) || line.split(',');
+    const obj  = {};
+    headers.forEach(function(h,i){ obj[h] = (vals[i]||'').trim().replace(/^"|"$/g,''); });
+    return obj;
+  });
+}
+function previewCSVRows(rows) {
+  _csvParsedRows = rows.filter(function(r){ return r.name && r.category && r.price && !isNaN(parseFloat(r.price)); });
+  const preview = document.getElementById('csvPreview');
+  if (!_csvParsedRows.length) {
+    preview.innerHTML = '<div style="color:var(--red);font-size:13px;padding:10px 0"><i class="fa fa-exclamation-triangle"></i> No valid rows found. Make sure columns are named: name, category, price</div>';
+    document.getElementById('csvImportBtn').style.display = 'none';
+    return;
+  }
+  const show = _csvParsedRows.slice(0,5);
+  preview.innerHTML =
+    '<div class="csv-count"><i class="fa fa-check-circle"></i> '+_csvParsedRows.length+' product'+(+_csvParsedRows.length!==1?'s':'')+' ready to import</div>' +
+    '<table class="csv-prev-tbl"><thead><tr><th>Name</th><th>Category</th><th>Price KWD</th><th>Stock</th></tr></thead><tbody>' +
+    show.map(function(r){ return '<tr><td>'+r.name+'</td><td>'+r.category+'</td><td>'+parseFloat(r.price).toFixed(3)+'</td><td>'+(r.stock||'50')+'</td></tr>'; }).join('') +
+    (_csvParsedRows.length>5 ? '<tr><td colspan="4" style="text-align:center;color:#aaa;font-style:italic">… and '+(_csvParsedRows.length-5)+' more</td></tr>' : '') +
+    '</tbody></table>';
+  document.getElementById('csvImportBtn').style.display = 'flex';
+}
+async function importCSVProducts() {
+  if (!_csvParsedRows.length) return;
+  const btn = document.getElementById('csvImportBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Importing…';
+  let count = 0;
+  for (const r of _csvParsedRows) {
+    const { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/dhowtech_products', {
+      method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}),
+      body:JSON.stringify([{
+        name: r.name, category: r.category,
+        price: parseFloat(r.price)||0,
+        description: r.description||r.desc||'',
+        badge: r.badge||null,
+        img_url: r.image_url||r.img_url||r.img||'',
+        hidden: false
+      }])
+    });
+    if (error) { console.warn('Row import failed:', r.name, error); continue; }
+    if (rows && rows[0]) {
+      const qty = parseInt(r.stock)||50;
+      stockData[rows[0].id] = qty;
+      await sbFetch(SB_URL + '/rest/v1/dhowtech_stock', {
+        method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
+        body:JSON.stringify([{product_id:rows[0].id, qty}])
+      });
+      count++;
+    }
+  }
+  showToast(count + ' product'+(count!==1?'s':'')+' imported! ✅');
+  closeCSV();
+  await loadFromSupabase();
+  btn.disabled = false; btn.innerHTML = '<i class="fa fa-download"></i> Import All Products';
+}
+function downloadTemplate() {
+  const csv = [
+    'name,category,price,stock,description,badge,image_url',
+    'Cordless Drill 20V,power-tools,12.500,50,20V drill with keyless chuck and LED light,Best Seller,https://images.unsplash.com/photo-1777575764654-ffc22754c5d8?w=400&h=400&fit=crop',
+    'Heavy Duty Hammer,hand-tools,3.200,100,16oz forged steel claw hammer,,',
+    'Wood Screws 200pc,fasteners,1.500,200,Self-tapping wood screws assorted sizes,Popular,'
+  ].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'dhowtech_import_template.csv';
+  a.click();
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  document.getElementById('toastMsg').textContent = msg||'Saved!';
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+// ── PHOTO EDITOR + CROP ──────────────────────────────────────────────────
+let currentPhotoId = null;
+let _cropImg = null, _cropCanvas = null, _cropCtx = null;
+let _cX=0, _cY=0, _cW=0, _cH=0;         // selection in canvas coords
+let _iW=0, _iH=0, _dW=0, _dH=0;          // natural size, display size
+let _dragging=false, _sx=0, _sy=0;
+let _croppedDataUrl = null;               // set after applyCrop, used by savePhoto
+
+function openPhoto(id) {
+  currentPhotoId = id;
+  _croppedDataUrl = null;
+  const p = getAllAdminProducts().find(function(x){ return x.id===id; });
+  if (!p) return;
+  const photos = JSON.parse(localStorage.getItem('dhowtech_photos')||'{}');
+  const src = photos[id] || p.img || '';
+  document.getElementById('phProdName').textContent = '#'+id+' — '+p.name;
+  document.getElementById('phUrlInput').value = src.startsWith('data:') ? '' : src;
+  document.getElementById('cropSection').classList.remove('show');
+  document.getElementById('cropLockedBadge').classList.remove('show');
+  showPreview(src);
+  document.getElementById('photoOverlay').classList.add('open');
+}
+function closePhoto() {
+  document.getElementById('photoOverlay').classList.remove('open');
+  currentPhotoId = null; _croppedDataUrl = null; _pendingFile = null;
+  document.getElementById('phFileInput').value = '';
+}
+function showPreview(src) {
+  const img = document.getElementById('phPreviewImg');
+  const fb  = document.getElementById('phFallback');
+  img.style.display='block'; fb.style.display='none';
+  img.src = src;
+  // auto-init crop once image loads
+  img.onload = function() { initCrop(src); };
+  img.onerror = function() { document.getElementById('cropSection').classList.remove('show'); };
+}
+function previewUrl() {
+  const u = document.getElementById('phUrlInput').value.trim();
+  if (u) { _croppedDataUrl=null; document.getElementById('cropLockedBadge').classList.remove('show'); showPreview(u); }
+}
+let _pendingFile = null;   // actual File object for Supabase Storage upload
+
+function handleUpload(e) {
+  const file = e.target.files[0]; if (!file) return;
+  _pendingFile = file;
+  _croppedDataUrl = null;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById('cropLockedBadge').classList.remove('show');
+    document.getElementById('phUrlInput').value = '';
+    showPreview(ev.target.result);   // base64 used for preview/crop only
+  };
+  reader.readAsDataURL(file);
+}
+
+// Helper: convert base64 data URL → Blob (for cropped images)
+function dataURLtoBlob(dataURL) {
+  const arr = dataURL.split(','), mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]); let n = bstr.length;
+  const u8 = new Uint8Array(n);
+  while (n--) u8[n] = bstr.charCodeAt(n);
+  return new Blob([u8], { type: mime });
+}
+
+// Upload a Blob/File to Supabase Storage → return public URL
+async function uploadToStorage(fileOrBlob, productId, ext) {
+  const path = 'product-' + productId + '.' + (ext || 'jpg');
+  const { error } = await sbFetch(SB_URL + '/storage/v1/object/product-photos/' + path, {
+    method: 'POST',
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY,
+               'Content-Type': fileOrBlob.type || 'image/jpeg', 'x-upsert': 'true' },
+    body: fileOrBlob
+  });
+  if (error) throw new Error(error);
+  return SB_URL + '/storage/v1/object/public/product-photos/' + path;
+}
+
+// ── CROP ENGINE ───────────────────────────────────────────────────────────
+function initCrop(src) {
+  const section = document.getElementById('cropSection');
+  const canvas  = document.getElementById('cropCanvas');
+  const wrap    = document.getElementById('cropWrap');
+  _cropCanvas = canvas;
+  _cropCtx    = canvas.getContext('2d');
+
+  const tempImg = new Image();
+  tempImg.crossOrigin = 'anonymous';
+  tempImg.onload = function() {
+    _cropImg = tempImg;
+    _iW = tempImg.naturalWidth;
+    _iH = tempImg.naturalHeight;
+    const maxW = wrap.clientWidth  || 480;
+    const maxH = 300;
+    const ratio = Math.min(maxW / _iW, maxH / _iH, 1);
+    _dW = Math.round(_iW * ratio);
+    _dH = Math.round(_iH * ratio);
+    canvas.width  = _dW;
+    canvas.height = _dH;
+    _cX=0; _cY=0; _cW=_dW; _cH=_dH;  // default = full image
+    _drawCrop();
+    section.classList.add('show');
+    document.getElementById('cropHint').textContent = 'Drag on the image to select the area you want to keep';
+  };
+  tempImg.onerror = function() { section.classList.remove('show'); };
+  tempImg.src = src;
+
+  // Mouse events (added once; guard with flag)
+  if (!canvas._cropEvt) {
+    canvas._cropEvt = true;
+    canvas.addEventListener('mousedown', function(e) {
+      const r = canvas.getBoundingClientRect();
+      _sx = e.clientX - r.left; _sy = e.clientY - r.top;
+      _dragging = true;
+    });
+    canvas.addEventListener('mousemove', function(e) {
+      if (!_dragging) return;
+      const r = canvas.getBoundingClientRect();
+      const ex = Math.max(0, Math.min(_dW, e.clientX - r.left));
+      const ey = Math.max(0, Math.min(_dH, e.clientY - r.top));
+      _cX = Math.min(_sx, ex); _cY = Math.min(_sy, ey);
+      _cW = Math.abs(ex - _sx); _cH = Math.abs(ey - _sy);
+      _drawCrop();
+    });
+    canvas.addEventListener('mouseup', function() { _dragging = false; });
+    canvas.addEventListener('mouseleave', function() { _dragging = false; });
+    // Touch support
+    canvas.addEventListener('touchstart', function(e) {
+      const t=e.touches[0]; const r=canvas.getBoundingClientRect();
+      _sx=t.clientX-r.left; _sy=t.clientY-r.top; _dragging=true; e.preventDefault();
+    },{passive:false});
+    canvas.addEventListener('touchmove', function(e) {
+      if(!_dragging) return;
+      const t=e.touches[0]; const r=canvas.getBoundingClientRect();
+      const ex=Math.max(0,Math.min(_dW,t.clientX-r.left));
+      const ey=Math.max(0,Math.min(_dH,t.clientY-r.top));
+      _cX=Math.min(_sx,ex); _cY=Math.min(_sy,ey);
+      _cW=Math.abs(ex-_sx); _cH=Math.abs(ey-_sy);
+      _drawCrop(); e.preventDefault();
+    },{passive:false});
+    canvas.addEventListener('touchend', function(){ _dragging=false; });
+  }
+}
+
+function _drawCrop() {
+  if (!_cropImg) return;
+  const ctx = _cropCtx, c = _cropCanvas;
+  ctx.clearRect(0, 0, c.width, c.height);
+  // Draw full image dimmed
+  ctx.globalAlpha = 1; ctx.drawImage(_cropImg, 0, 0, _dW, _dH);
+  ctx.globalAlpha = 0.55; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, _dW, _dH);
+  ctx.globalAlpha = 1;
+  // Draw selected region bright
+  if (_cW > 2 && _cH > 2) {
+    const srcX = (_cX/_dW)*_iW, srcY = (_cY/_dH)*_iH;
+    const srcW = (_cW/_dW)*_iW, srcH = (_cH/_dH)*_iH;
+    ctx.drawImage(_cropImg, srcX, srcY, srcW, srcH, _cX, _cY, _cW, _cH);
+    // Border
+    ctx.strokeStyle = '#FF6200'; ctx.lineWidth = 2; ctx.setLineDash([6,3]);
+    ctx.strokeRect(_cX+1, _cY+1, _cW-2, _cH-2); ctx.setLineDash([]);
+    // Corner handles
+    const s=8; ctx.fillStyle='#FF6200';
+    [[_cX,_cY],[_cX+_cW-s,_cY],[_cX,_cY+_cH-s],[_cX+_cW-s,_cY+_cH-s]].forEach(function(pt){
+      ctx.fillRect(pt[0], pt[1], s, s);
+    });
+    // Size label
+    const lw = Math.round((_cW/_dW)*_iW), lh = Math.round((_cH/_dH)*_iH);
+    ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(_cX, _cY, 80, 18);
+    ctx.fillStyle='#fff'; ctx.font='11px monospace'; ctx.fillText(lw+'×'+lh, _cX+4, _cY+13);
+  }
+}
+
+function applyCrop() {
+  if (!_cropImg || _cW < 5 || _cH < 5) { showToast('Drag to select an area first'); return; }
+  const out = document.createElement('canvas');
+  const srcX = Math.round((_cX/_dW)*_iW), srcY = Math.round((_cY/_dH)*_iH);
+  const srcW = Math.round((_cW/_dW)*_iW), srcH = Math.round((_cH/_dH)*_iH);
+  out.width = srcW; out.height = srcH;
+  out.getContext('2d').drawImage(_cropImg, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
+  _croppedDataUrl = out.toDataURL('image/jpeg', 0.92);
+  // Update preview image with cropped result
+  document.getElementById('phPreviewImg').src = _croppedDataUrl;
+  document.getElementById('cropLockedBadge').classList.add('show');
+  document.getElementById('cropHint').textContent = 'Crop applied — click "Save Photo" to confirm';
+  showToast('Crop applied!');
+}
+
+function resetCrop() {
+  if (!_cropImg) return;
+  _cX=0; _cY=0; _cW=_dW; _cH=_dH; _croppedDataUrl=null;
+  document.getElementById('cropLockedBadge').classList.remove('show');
+  document.getElementById('cropHint').textContent = 'Drag on the image to select the area you want to keep';
+  document.getElementById('phPreviewImg').src = _cropImg.src;
+  _drawCrop();
+}
+
+async function savePhoto() {
+  if (!currentPhotoId) return;
+
+  const inputUrl    = document.getElementById('phUrlInput').value.trim();
+  const hasCrop     = !!_croppedDataUrl;
+  const hasFile     = !!_pendingFile;
+  const previewSrc  = document.getElementById('phPreviewImg').src;
+
+  // Nothing was changed
+  if (!inputUrl && !hasCrop && !hasFile && (!previewSrc || previewSrc === window.location.href)) {
+    closePhoto(); return;
+  }
+
+  let finalUrl = null;
+
+  // Case 1: URL was pasted — use it directly
+  if (inputUrl && !hasCrop && !hasFile) {
+    finalUrl = inputUrl;
+  }
+  // Case 2: File uploaded + crop applied → upload cropped blob to Storage
+  else if (hasCrop) {
+    showToast('Uploading…');
+    try {
+      const blob = dataURLtoBlob(_croppedDataUrl);
+      finalUrl   = await uploadToStorage(blob, currentPhotoId, 'jpg');
+    } catch(e) {
+      showToast('Upload failed: ' + e.message);
+      return;
+    }
+  }
+  // Case 3: File uploaded (no crop) → upload raw file to Storage
+  else if (hasFile) {
+    showToast('Uploading…');
+    try {
+      const ext  = (_pendingFile.name.split('.').pop() || 'jpg').toLowerCase();
+      finalUrl   = await uploadToStorage(_pendingFile, currentPhotoId, ext);
+    } catch(e) {
+      showToast('Upload failed: ' + e.message);
+      return;
+    }
+  }
+  // Fallback: use whatever is in the preview
+  else {
+    finalUrl = previewSrc;
+  }
+
+  if (!finalUrl) return;
+
+  // Save URL to localStorage + thumbnail
+  const photos = JSON.parse(localStorage.getItem('dhowtech_photos')||'{}');
+  photos[currentPhotoId] = finalUrl;
+  localStorage.setItem('dhowtech_photos', JSON.stringify(photos));
+  const th = document.getElementById('thumb'+currentPhotoId);
+  if (th) th.src = finalUrl;
+
+  // Save URL to Supabase dhowtech_photos table
+  const { error: dbErr } = await sbFetch(SB_URL + '/rest/v1/dhowtech_photos', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ product_id: currentPhotoId, url: finalUrl }])
+  });
+  if (dbErr) console.warn('Photo DB save failed:', dbErr);
+
+  _pendingFile = null;
+  closePhoto();
+  showToast('Photo saved!');
+}
+</script>
+</body>
+</html>
