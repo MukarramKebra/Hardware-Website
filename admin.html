@@ -271,6 +271,29 @@
     .help-dl-btn{width:100%;padding:11px;background:var(--dark);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
     .help-dl-btn:hover{background:#333;}
 
+    /* NEW CATEGORY */
+    .newcat-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+    .newcat-overlay.open{opacity:1;pointer-events:all;}
+    .newcat-modal{background:#fff;border-radius:14px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3);border-top:4px solid var(--orange);}
+    .newcat-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+    .newcat-header h3{font-size:15px;font-weight:900;color:var(--dark);display:flex;align-items:center;gap:8px;}
+    .newcat-header h3 i{color:var(--orange);}
+    .newcat-header button{background:none;border:none;font-size:18px;cursor:pointer;color:#aaa;}
+    .newcat-body{padding:20px;}
+    .newcat-body label{font-size:11px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;}
+    .newcat-body input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;margin-bottom:6px;}
+    .newcat-body input:focus{border-color:var(--orange);}
+    .newcat-slug{font-size:11px;color:var(--gray);margin-bottom:14px;}
+    .newcat-slug span{font-weight:700;color:var(--orange);}
+    .newcat-save{width:100%;padding:11px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;}
+    .newcat-save:hover{background:#cc4e00;}
+    .cat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+    .cat-chip{display:flex;align-items:center;gap:5px;background:rgba(255,98,0,.08);border:1px solid rgba(255,98,0,.2);color:var(--orange);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .cat-chip .del-cat{background:none;border:none;color:var(--orange);cursor:pointer;font-size:12px;padding:0;line-height:1;}
+    .cat-chip.default-cat{background:rgba(0,0,0,.04);border-color:#ddd;color:var(--gray);}
+    .newcat-btn{background:none;border:1.5px solid var(--orange);color:var(--orange);padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;}
+    .newcat-btn:hover{background:rgba(255,98,0,.06);}
+
     /* UNDO / REDO BUTTONS */
     .ur-btn{background:none;border:1.5px solid var(--border);color:var(--gray);padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;}
     .ur-btn:hover:not(:disabled){border-color:var(--orange);color:var(--orange);}
@@ -343,16 +366,8 @@
         <button class="add-prod-btn" onclick="openAddProduct()"><i class="fa fa-plus"></i> Add Product</button>
         <button class="csv-btn" onclick="openCSV()"><i class="fa fa-file-csv"></i> Import CSV/Excel</button>
         <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="adminSearch" placeholder="Search products..." oninput="renderTable()" /></div>
-        <select class="filter-sel" id="catFilter" onchange="renderTable()">
-          <option value="all">All Categories</option>
-          <option value="power-tools">Power Tools</option>
-          <option value="hand-tools">Hand Tools</option>
-          <option value="fasteners">Fasteners</option>
-          <option value="measuring">Measuring</option>
-          <option value="safety">Safety</option>
-          <option value="cutting">Cutting</option>
-          <option value="storage">Storage</option>
-        </select>
+        <select class="filter-sel" id="catFilter" onchange="renderTable()"></select>
+        <button class="newcat-btn" onclick="openNewCat()"><i class="fa fa-plus"></i> Category</button>
         <div class="ur-group">
           <button class="ur-btn" id="undoBtn" onclick="undo()" disabled title="Undo (Ctrl+Z)"><i class="fa fa-undo"></i> Undo</button>
           <button class="ur-btn" id="redoBtn" onclick="redo()" disabled title="Redo (Ctrl+Y)"><i class="fa fa-redo"></i> Redo</button>
@@ -421,15 +436,7 @@
       <div class="ap-row">
         <div class="ap-field"><label>Product Name *</label><input type="text" id="apName" placeholder="e.g. Cordless Drill 20V" /></div>
         <div class="ap-field"><label>Category *</label>
-          <select id="apCat">
-            <option value="power-tools">Power Tools</option>
-            <option value="hand-tools">Hand Tools</option>
-            <option value="fasteners">Fasteners</option>
-            <option value="measuring">Measuring</option>
-            <option value="safety">Safety</option>
-            <option value="cutting">Cutting</option>
-            <option value="storage">Storage</option>
-          </select>
+          <select id="apCat"></select>
         </div>
       </div>
       <div class="ap-row">
@@ -562,6 +569,23 @@
   </div>
 </div>
 
+<!-- NEW CATEGORY MODAL -->
+<div class="newcat-overlay" id="newcatOverlay" onclick="if(event.target===this)closeNewCat()">
+  <div class="newcat-modal">
+    <div class="newcat-header">
+      <h3><i class="fa fa-tags"></i> Manage Categories</h3>
+      <button onclick="closeNewCat()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="newcat-body">
+      <div class="cat-chips" id="catChips"></div>
+      <label>New Category Name</label>
+      <input type="text" id="newCatInput" placeholder="e.g. Electrical Tools" oninput="updateSlugPreview()" onkeydown="if(event.key==='Enter')saveNewCat()" />
+      <div class="newcat-slug">Slug: <span id="newCatSlug">—</span></div>
+      <button class="newcat-save" onclick="saveNewCat()"><i class="fa fa-plus"></i>&nbsp; Add Category</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><i class="fa fa-check-circle"></i> <span id="toastMsg">Saved!</span></div>
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
@@ -612,7 +636,7 @@ async function loadFromSupabase() {
     localStorage.setItem('dhowtech_stock', JSON.stringify(stockData));
     showToast('Loaded from cloud ☁️');
   }
-  renderStats(); renderTable();
+  refreshCategorySelects(); renderStats(); renderTable();
 }
 
 // Merged list of all products (base + custom)
@@ -626,38 +650,39 @@ function getAllAdminProducts() {
   return [...base, ...custom];
 }
 
-const U = id => 'https://picsum.photos/seed/' + id + '/80/80';
+const U  = id => 'https://picsum.photos/seed/' + id + '/80/80';
+const UL = id => 'product-images/' + id + '.jpg';
 const PRODUCTS = [
-  {id:1, name:'Cordless Drill 18V',          cat:'power-tools', price:12.500, img:U('1777575764654-ffc22754c5d8')},
-  {id:2, name:'Angle Grinder 115mm',          cat:'power-tools', price:8.900,  img:U('1776711763505-4105861e0d41')},
-  {id:3, name:'Circular Saw 185mm',           cat:'power-tools', price:14.500, img:U('1775988821739-74c26a8a5585')},
-  {id:4, name:'Jigsaw 650W',                  cat:'power-tools', price:9.800,  img:U('1773430273016-630960da6aa7')},
-  {id:5, name:'Random Orbital Sander',        cat:'power-tools', price:6.500,  img:U('1771491237067-5d108e956e73')},
-  {id:6, name:'Impact Driver 18V',            cat:'power-tools', price:11.000, img:U('1770763233593-74dfd0da7bf0')},
-  {id:7, name:'Rotary Hammer Drill SDS',      cat:'power-tools', price:18.500, img:U('1770386582823-3a7094e35b22')},
-  {id:8, name:'Heat Gun 2000W',               cat:'power-tools', price:5.200,  img:U('1766096847418-9a2ae64c9621')},
-  {id:9, name:'Reciprocating Saw',            cat:'power-tools', price:10.200, img:U('1764678714365-800554d1969c')},
-  {id:10,name:'Cordless Screwdriver 3.6V',   cat:'power-tools', price:3.800,  img:U('1764699186048-e85b5f0e59fc')},
-  {id:11,name:'Claw Hammer 16oz',             cat:'hand-tools',  price:2.200,  img:U('1581783898377-1c85bf937427')},
-  {id:12,name:'Phillips Screwdriver Set 6pc', cat:'hand-tools',  price:3.500,  img:U('1777107508755-2ba7502b2b95')},
-  {id:13,name:'Flathead Screwdriver Set 6pc', cat:'hand-tools',  price:3.200,  img:U('1777107508801-1aa0a4513780')},
-  {id:14,name:'Adjustable Wrench 12"',        cat:'hand-tools',  price:2.800,  img:U('1775396042188-64ec280ca175')},
-  {id:15,name:'Combination Spanner Set 12pc', cat:'hand-tools',  price:5.500,  img:U('1774963711952-713bb7a52c4e')},
-  {id:16,name:'Pliers Set 3pc',               cat:'hand-tools',  price:4.200,  img:U('1774645215883-14d1553f3fa0')},
-  {id:17,name:'Allen Key Hex Set 9pc',        cat:'hand-tools',  price:1.500,  img:U('1774654343530-7e04733e478d')},
-  {id:18,name:'Socket Set 40pc 1/2"',         cat:'hand-tools',  price:9.800,  img:U('1772207896656-4210003d65ee')},
-  {id:19,name:'Rubber Mallet 32oz',           cat:'hand-tools',  price:1.800,  img:U('1607870411590-d5e9e06da09a')},
-  {id:20,name:'Chisel Set 4pc',               cat:'hand-tools',  price:3.900,  img:U('1770657986086-c1f20eef30ff')},
-  {id:21,name:'Wire Nails 50mm 1kg',          cat:'fasteners',   price:0.650,  img:U('1778616364855-993b778bfce9')},
-  {id:22,name:'Wire Nails 75mm 1kg',          cat:'fasteners',   price:0.750,  img:U('1777882660356-38788724160b')},
-  {id:23,name:'Wire Nails 100mm 1kg',         cat:'fasteners',   price:0.850,  img:U('1778362561378-f54b1d601af0')},
-  {id:24,name:'Wood Screws 4x50mm 200pc',     cat:'fasteners',   price:1.200,  img:U('1777460079856-9c448a770644')},
-  {id:25,name:'Drywall Screws 3.5x35mm',      cat:'fasteners',   price:0.900,  img:U('1777647293690-075448f3ff4d')},
-  {id:26,name:'Self-Drilling Screws 200pc',   cat:'fasteners',   price:1.400,  img:U('1777732786166-d922fe29d62f')},
-  {id:27,name:'Hex Bolts M10x60mm 25pc',      cat:'fasteners',   price:1.100,  img:U('1777050967684-510b836d7b7d')},
-  {id:28,name:'Masonry Anchors 8mm 50pc',     cat:'fasteners',   price:1.600,  img:U('1776773299716-1ebcd15ac61b')},
-  {id:29,name:'Nuts Bolts Washers 500pc',     cat:'fasteners',   price:2.500,  img:U('1776774706515-c4dfcaa64891')},
-  {id:30,name:'Cable Ties 200pc Mixed',       cat:'fasteners',   price:0.600,  img:U('1776774706533-3af36fca44f7')},
+  {id:1, name:'Cordless Drill 18V',          cat:'power-tools', price:12.500, img:UL(1)},
+  {id:2, name:'Angle Grinder 115mm',          cat:'power-tools', price:8.900,  img:UL(2)},
+  {id:3, name:'Circular Saw 185mm',           cat:'power-tools', price:14.500, img:UL(3)},
+  {id:4, name:'Jigsaw 650W',                  cat:'power-tools', price:9.800,  img:UL(4)},
+  {id:5, name:'Random Orbital Sander',        cat:'power-tools', price:6.500,  img:UL(5)},
+  {id:6, name:'Impact Driver 18V',            cat:'power-tools', price:11.000, img:UL(6)},
+  {id:7, name:'Rotary Hammer Drill SDS',      cat:'power-tools', price:18.500, img:UL(7)},
+  {id:8, name:'Heat Gun 2000W',               cat:'power-tools', price:5.200,  img:UL(8)},
+  {id:9, name:'Reciprocating Saw',            cat:'power-tools', price:10.200, img:UL(9)},
+  {id:10,name:'Cordless Screwdriver 3.6V',   cat:'power-tools', price:3.800,  img:UL(10)},
+  {id:11,name:'Claw Hammer 16oz',             cat:'hand-tools',  price:2.200,  img:UL(11)},
+  {id:12,name:'Phillips Screwdriver Set 6pc', cat:'hand-tools',  price:3.500,  img:UL(12)},
+  {id:13,name:'Flathead Screwdriver Set 6pc', cat:'hand-tools',  price:3.200,  img:UL(13)},
+  {id:14,name:'Adjustable Wrench 12"',        cat:'hand-tools',  price:2.800,  img:UL(14)},
+  {id:15,name:'Combination Spanner Set 12pc', cat:'hand-tools',  price:5.500,  img:UL(15)},
+  {id:16,name:'Pliers Set 3pc',               cat:'hand-tools',  price:4.200,  img:UL(16)},
+  {id:17,name:'Allen Key Hex Set 9pc',        cat:'hand-tools',  price:1.500,  img:UL(17)},
+  {id:18,name:'Socket Set 40pc 1/2"',         cat:'hand-tools',  price:9.800,  img:UL(18)},
+  {id:19,name:'Rubber Mallet 32oz',           cat:'hand-tools',  price:1.800,  img:UL(19)},
+  {id:20,name:'Chisel Set 4pc',               cat:'hand-tools',  price:3.900,  img:UL(20)},
+  {id:21,name:'Wire Nails 50mm 1kg',          cat:'fasteners',   price:0.650,  img:UL(21)},
+  {id:22,name:'Wire Nails 75mm 1kg',          cat:'fasteners',   price:0.750,  img:UL(22)},
+  {id:23,name:'Wire Nails 100mm 1kg',         cat:'fasteners',   price:0.850,  img:UL(23)},
+  {id:24,name:'Wood Screws 4x50mm 200pc',     cat:'fasteners',   price:1.200,  img:UL(24)},
+  {id:25,name:'Drywall Screws 3.5x35mm',      cat:'fasteners',   price:0.900,  img:UL(25)},
+  {id:26,name:'Self-Drilling Screws 200pc',   cat:'fasteners',   price:1.400,  img:UL(26)},
+  {id:27,name:'Hex Bolts M10x60mm 25pc',      cat:'fasteners',   price:1.100,  img:UL(27)},
+  {id:28,name:'Masonry Anchors 8mm 50pc',     cat:'fasteners',   price:1.600,  img:UL(28)},
+  {id:29,name:'Nuts Bolts Washers 500pc',     cat:'fasteners',   price:2.500,  img:UL(29)},
+  {id:30,name:'Cable Ties 200pc Mixed',       cat:'fasteners',   price:0.600,  img:UL(30)},
   {id:31,name:'Tape Measure 8m',              cat:'measuring',   price:1.800,  img:U('1776361460587-e5f9396ebf88')},
   {id:32,name:'Spirit Level 1200mm',          cat:'measuring',   price:3.200,  img:U('1776254387430-21601edab5b3')},
   {id:33,name:'Laser Level Cross Line',       cat:'measuring',   price:8.500,  img:U('1775493215727-8a81311b39d8')},
@@ -1207,6 +1232,83 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.classList.add('show');
   setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+// ── CATEGORY MANAGEMENT ──────────────────────────────────────────────────
+const DEFAULT_CATS = [
+  { slug:'power-tools', label:'Power Tools' },
+  { slug:'hand-tools',  label:'Hand Tools' },
+  { slug:'fasteners',   label:'Fasteners' },
+  { slug:'measuring',   label:'Measuring' },
+  { slug:'safety',      label:'Safety' },
+  { slug:'cutting',     label:'Cutting' },
+  { slug:'storage',     label:'Storage' }
+];
+
+function getCustomCats() {
+  return JSON.parse(localStorage.getItem('dhowtech_categories') || '[]');
+}
+function getAllCats() {
+  return [...DEFAULT_CATS, ...getCustomCats()];
+}
+function slugify(str) {
+  return str.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+function refreshCategorySelects() {
+  const cats = getAllCats();
+  const filterOpts = '<option value="all">All Categories</option>' +
+    cats.map(c => '<option value="'+c.slug+'">'+c.label+'</option>').join('');
+  document.getElementById('catFilter').innerHTML = filterOpts;
+
+  const prodOpts = cats.map(c => '<option value="'+c.slug+'">'+c.label+'</option>').join('');
+  const apCat = document.getElementById('apCat');
+  if (apCat) apCat.innerHTML = prodOpts;
+}
+function openNewCat() {
+  document.getElementById('newCatInput').value = '';
+  document.getElementById('newCatSlug').textContent = '—';
+  renderCatChips();
+  document.getElementById('newcatOverlay').classList.add('open');
+  setTimeout(function(){ document.getElementById('newCatInput').focus(); }, 100);
+}
+function closeNewCat() { document.getElementById('newcatOverlay').classList.remove('open'); }
+function updateSlugPreview() {
+  const val = document.getElementById('newCatInput').value;
+  document.getElementById('newCatSlug').textContent = val ? slugify(val) : '—';
+}
+function renderCatChips() {
+  const custom = getCustomCats();
+  const defaultHtml = DEFAULT_CATS.map(c =>
+    '<div class="cat-chip default-cat"><i class="fa fa-lock" style="font-size:9px"></i> '+c.label+'</div>'
+  ).join('');
+  const customHtml = custom.map(c =>
+    '<div class="cat-chip">'+c.label+
+    ' <button class="del-cat" onclick="deleteCustomCat(\''+c.slug+'\')"><i class="fa fa-times"></i></button></div>'
+  ).join('');
+  document.getElementById('catChips').innerHTML = defaultHtml + customHtml;
+}
+function saveNewCat() {
+  const name = document.getElementById('newCatInput').value.trim();
+  if (!name) { showToast('Enter a category name'); return; }
+  const slug = slugify(name);
+  const all = getAllCats();
+  if (all.find(c => c.slug === slug)) { showToast('Category already exists'); return; }
+  const custom = getCustomCats();
+  custom.push({ slug, label: name });
+  localStorage.setItem('dhowtech_categories', JSON.stringify(custom));
+  document.getElementById('newCatInput').value = '';
+  document.getElementById('newCatSlug').textContent = '—';
+  renderCatChips();
+  refreshCategorySelects();
+  showToast('Category "' + name + '" added!');
+}
+function deleteCustomCat(slug) {
+  if (!confirm('Delete this category? Products using it won\'t be affected.')) return;
+  const custom = getCustomCats().filter(c => c.slug !== slug);
+  localStorage.setItem('dhowtech_categories', JSON.stringify(custom));
+  renderCatChips();
+  refreshCategorySelects();
+  showToast('Category deleted');
 }
 
 // ── PHOTO EDITOR + CROP ──────────────────────────────────────────────────
