@@ -22,7 +22,17 @@ async function sbFetch(url, options) {
 // Live data loaded from Supabase (falls back to localStorage if offline)
 let _sbStock    = {};
 let _sbPhotos   = {};
-let _customProds = [];      // admin-added products from dhowtech_products table
+let _customProds = [  { id:51, name:'Drill Bit Set HSS 20pc',     category:'power-tools', price:4.500,  img:UL(51), desc:'20-piece HSS drill bit set 1-10mm. For wood, metal and plastic. Titanium coated.', badge:'Popular', stock:'in-stock' },
+  { id:52, name:'Sanding Sheet Set 40pc',      category:'power-tools', price:1.800,  img:UL(52), desc:'40 assorted sanding sheets 60/80/120/240 grit. For orbital and hand sanding.', badge:null, stock:'in-stock' },
+  { id:53, name:'Pipe Wrench 14 inch',          category:'hand-tools',  price:3.500,  img:UL(53), desc:'14-inch heavy duty pipe wrench with aluminium body and hardened steel jaw. 0-50mm.', badge:null, stock:'in-stock' },
+  { id:54, name:'Staple Gun + 1000 Staples',   category:'hand-tools',  price:4.200,  img:UL(54), desc:'Heavy-duty staple gun with 1000 staples included. For fabric, wood and insulation.', badge:null, stock:'in-stock' },
+  { id:55, name:'Duct Tape 50mm x 50m',        category:'fasteners',   price:0.900,  img:UL(55), desc:'Heavy-duty silver duct tape 50mm wide x 50m long. Waterproof and UV resistant.', badge:null, stock:'in-stock' },
+  { id:56, name:'Digital Laser Measurer 40m',  category:'measuring',   price:8.500,  img:UL(56), desc:'Laser distance measurer up to 40m. Area and volume calculations. LCD display.', badge:'Pro', stock:'in-stock' },
+  { id:57, name:'Knee Pads Professional',      category:'safety',      price:3.200,  img:UL(57), desc:'Professional knee pads with gel cushion and EVA foam. Adjustable straps. EN14404.', badge:null, stock:'in-stock' },
+  { id:58, name:'Cutting Discs 115mm 10pc',   category:'cutting',     price:2.800,  img:UL(58), desc:'10-pack 115mm angle grinder cutting discs for metal and inox. 1mm thin kerf.', badge:null, stock:'in-stock' },
+  { id:59, name:'5-Pocket Tool Belt',          category:'storage',     price:4.500,  img:UL(59), desc:'Heavy-duty 5-pocket tool belt with hammer holder. Adjustable waist up to 122cm.', badge:null, stock:'in-stock' },
+  { id:60, name:'Wall Plugs 100pc Assorted',  category:'fasteners',   price:0.750,  img:UL(60), desc:'100-piece assorted nylon wall plugs 6mm, 8mm and 10mm. For brick and concrete.', badge:null, stock:'in-stock' }
+];      // admin-added products from dhowtech_products table
 let _hiddenIds   = new Set(); // base product IDs hidden by admin
 
 async function loadSBData() {
@@ -113,26 +123,26 @@ const PRODUCTS = [
   { id:28, name:'Masonry Anchors 8mm 50pc',      category:'fasteners',   price:1.600,  img:UL(28), desc:'50-pack nylon masonry anchors 8mm with screws. For brick, concrete and block.', badge:null, stock:'in-stock' },
   { id:29, name:'Nuts Bolts Washers 500pc',      category:'fasteners',   price:2.500,  img:UL(29), desc:'500-piece assorted metric nuts, bolts and washers. M4 to M8. Organiser box.', badge:'Popular', stock:'in-stock' },
   { id:30, name:'Cable Ties 200pc Mixed',        category:'fasteners',   price:0.600,  img:UL(30), desc:'200-piece mixed cable ties 100, 200, 300mm lengths. Black UV-resistant nylon.', badge:null, stock:'in-stock' },
-  { id:31, name:'Tape Measure 8m',               category:'measuring',   price:1.800,  img:U('1776361460587-e5f9396ebf88'), desc:'8-metre steel tape measure with metric and imperial markings. Auto-lock and belt clip.', badge:null, stock:'in-stock' },
-  { id:32, name:'Spirit Level 1200mm',           category:'measuring',   price:3.200,  img:U('1776254387430-21601edab5b3'), desc:'1200mm aluminium spirit level with 3 bubble vials. Horizontal, vertical and 45-degree.', badge:null, stock:'in-stock' },
-  { id:33, name:'Laser Level Cross Line',        category:'measuring',   price:8.500,  img:U('1775493215727-8a81311b39d8'), desc:'Self-levelling cross-line laser with horizontal and vertical beams. 15m working range.', badge:'Pro', stock:'low-stock' },
-  { id:34, name:'Digital Stud Finder',           category:'measuring',   price:4.200,  img:U('1775345507804-2b44a1046873'), desc:'Electronic stud finder detects wood and metal stusts behind walls up to 38mm deep.', badge:null, stock:'in-stock' },
-  { id:35, name:'Steel Square 300mm',            category:'measuring',   price:1.400,  img:U('1763202282638-371d7060ee51'), desc:'300mm stainless steel try square for marking and checking right angles.', badge:null, stock:'in-stock' },
-  { id:36, name:'Chalk Line 30m',                category:'measuring',   price:1.100,  img:U('1761682752575-c31ad0a16a50'), desc:'30-metre chalk line reel with blue chalk powder. For marking long straight lines.', badge:null, stock:'in-stock' },
-  { id:37, name:'Safety Goggles Clear',          category:'safety',      price:0.800,  img:U('1778577177321-3bff951a9ac5'), desc:'Clear anti-scratch safety goggles with indirect ventilation. EN166 certified.', badge:null, stock:'in-stock' },
-  { id:38, name:'Leather Work Gloves',           category:'safety',      price:1.200,  img:U('1778576835371-596da992a395'), desc:'Leather palm work gloves with breathable spandex back. Cut and abrasion resistant.', badge:'Best Seller', stock:'in-stock' },
-  { id:39, name:'Dust Mask N95 10pc',            category:'safety',      price:1.500,  img:U('1778868001879-50a970759f98'), desc:'Pack of 10 N95 dust masks with valve. Filters 95% of airborne particles.', badge:null, stock:'in-stock' },
-  { id:40, name:'Hard Hat Yellow',               category:'safety',      price:2.200,  img:U('1778317764727-8cb931bbf1e8'), desc:'Yellow construction hard hat with adjustable ratchet harness. EN397 certified.', badge:null, stock:'in-stock' },
-  { id:41, name:'Hi-Vis Safety Vest',            category:'safety',      price:0.900,  img:U('1778291114453-b215fa0957a3'), desc:'High-visibility orange safety vest with reflective strips. EN471 Class 2.', badge:null, stock:'in-stock' },
-  { id:42, name:'Steel Toe Safety Boots',        category:'safety',      price:8.500,  img:U('1777867445652-5a01f71c9d70'), desc:'S3 steel toe cap safety boots with midsole protection and slip-resistant sole. Sizes 40-46.', badge:null, stock:'low-stock' },
-  { id:43, name:'Hand Saw 550mm',                category:'cutting',     price:2.800,  img:U('1778226818301-e4cd2cf295a2'), desc:'550mm hardpoint hand saw, 8TPI for fast cross-cutting of timber. Comfortable grip.', badge:null, stock:'in-stock' },
-  { id:44, name:'Hacksaw + 5 Blades',            category:'cutting',     price:2.200,  img:U('1778388804110-5beae7d35662'), desc:'Heavy-duty hacksaw frame with 5 bi-metal blades. Adjustable tension. Cuts metal and plastic.', badge:null, stock:'in-stock' },
-  { id:45, name:'Utility Knife + 10 Blades',    category:'cutting',     price:1.100,  img:U('1777892029843-8b66da1d09e7'), desc:'Heavy-duty retractable utility knife with rubber grip and 10 extra snap-off blades.', badge:'Popular', stock:'in-stock' },
-  { id:46, name:'Tin Snips Aviation 250mm',      category:'cutting',     price:3.200,  img:U('1777891733988-540ac2abbd40'), desc:'250mm aviation tin snips for straight and curved cuts in sheet metal up to 1.2mm.', badge:null, stock:'in-stock' },
-  { id:47, name:'PVC Pipe Cutter 42mm',          category:'cutting',     price:2.600,  img:U('1778388804089-c78419e188f2'), desc:'Ratchet pipe cutter for clean cuts on PVC, CPVC and PEX pipes up to 42mm diameter.', badge:null, stock:'in-stock' },
-  { id:48, name:'Tool Bag 16" Heavy Duty',       category:'storage',     price:5.500,  img:U('1778066994998-97f74a5bf901'), desc:'16-inch heavy-duty canvas tool bag with 20 pockets and reinforced base. Padded strap.', badge:null, stock:'in-stock' },
-  { id:49, name:'Extension Cord 10m 4-Way',      category:'storage',     price:4.200,  img:U('1777919394037-9a2968966310'), desc:'10-metre extension cord with 4 sockets and surge protection. 1.5mm cable, 13A rating.', badge:'Popular', stock:'in-stock' },
-  { id:50, name:'Tool Box 16" Metal',            category:'storage',     price:6.800,  img:U('1777919393727-cb35adbdc5e0'), desc:'16-inch metal tool box with removable tray and strong locking clasp. Powder coat finish.', badge:null, stock:'in-stock' }
+  { id:31, name:'Tape Measure 8m',               category:'measuring',   price:1.800,  img:UL(31), desc:'8-metre steel tape measure with metric and imperial markings. Auto-lock and belt clip.', badge:null, stock:'in-stock' },
+  { id:32, name:'Spirit Level 1200mm',           category:'measuring',   price:3.200,  img:UL(32), desc:'1200mm aluminium spirit level with 3 bubble vials. Horizontal, vertical and 45-degree.', badge:null, stock:'in-stock' },
+  { id:33, name:'Laser Level Cross Line',        category:'measuring',   price:8.500,  img:UL(33), desc:'Self-levelling cross-line laser with horizontal and vertical beams. 15m working range.', badge:'Pro', stock:'low-stock' },
+  { id:34, name:'Digital Stud Finder',           category:'measuring',   price:4.200,  img:UL(34), desc:'Electronic stud finder detects wood and metal stusts behind walls up to 38mm deep.', badge:null, stock:'in-stock' },
+  { id:35, name:'Steel Square 300mm',            category:'measuring',   price:1.400,  img:UL(35), desc:'300mm stainless steel try square for marking and checking right angles.', badge:null, stock:'in-stock' },
+  { id:36, name:'Chalk Line 30m',                category:'measuring',   price:1.100,  img:UL(36), desc:'30-metre chalk line reel with blue chalk powder. For marking long straight lines.', badge:null, stock:'in-stock' },
+  { id:37, name:'Safety Goggles Clear',          category:'safety',      price:0.800,  img:UL(37), desc:'Clear anti-scratch safety goggles with indirect ventilation. EN166 certified.', badge:null, stock:'in-stock' },
+  { id:38, name:'Leather Work Gloves',           category:'safety',      price:1.200,  img:UL(38), desc:'Leather palm work gloves with breathable spandex back. Cut and abrasion resistant.', badge:'Best Seller', stock:'in-stock' },
+  { id:39, name:'Dust Mask N95 10pc',            category:'safety',      price:1.500,  img:UL(39), desc:'Pack of 10 N95 dust masks with valve. Filters 95% of airborne particles.', badge:null, stock:'in-stock' },
+  { id:40, name:'Hard Hat Yellow',               category:'safety',      price:2.200,  img:UL(40), desc:'Yellow construction hard hat with adjustable ratchet harness. EN397 certified.', badge:null, stock:'in-stock' },
+  { id:41, name:'Hi-Vis Safety Vest',            category:'safety',      price:0.900,  img:UL(41), desc:'High-visibility orange safety vest with reflective strips. EN471 Class 2.', badge:null, stock:'in-stock' },
+  { id:42, name:'Steel Toe Safety Boots',        category:'safety',      price:8.500,  img:UL(42), desc:'S3 steel toe cap safety boots with midsole protection and slip-resistant sole. Sizes 40-46.', badge:null, stock:'low-stock' },
+  { id:43, name:'Hand Saw 550mm',                category:'cutting',     price:2.800,  img:UL(43), desc:'550mm hardpoint hand saw, 8TPI for fast cross-cutting of timber. Comfortable grip.', badge:null, stock:'in-stock' },
+  { id:44, name:'Hacksaw + 5 Blades',            category:'cutting',     price:2.200,  img:UL(44), desc:'Heavy-duty hacksaw frame with 5 bi-metal blades. Adjustable tension. Cuts metal and plastic.', badge:null, stock:'in-stock' },
+  { id:45, name:'Utility Knife + 10 Blades',    category:'cutting',     price:1.100,  img:UL(45), desc:'Heavy-duty retractable utility knife with rubber grip and 10 extra snap-off blades.', badge:'Popular', stock:'in-stock' },
+  { id:46, name:'Tin Snips Aviation 250mm',      category:'cutting',     price:3.200,  img:UL(46), desc:'250mm aviation tin snips for straight and curved cuts in sheet metal up to 1.2mm.', badge:null, stock:'in-stock' },
+  { id:47, name:'PVC Pipe Cutter 42mm',          category:'cutting',     price:2.600,  img:UL(47), desc:'Ratchet pipe cutter for clean cuts on PVC, CPVC and PEX pipes up to 42mm diameter.', badge:null, stock:'in-stock' },
+  { id:48, name:'Tool Bag 16" Heavy Duty',       category:'storage',     price:5.500,  img:UL(48), desc:'16-inch heavy-duty canvas tool bag with 20 pockets and reinforced base. Padded strap.', badge:null, stock:'in-stock' },
+  { id:49, name:'Extension Cord 10m 4-Way',      category:'storage',     price:4.200,  img:UL(49), desc:'10-metre extension cord with 4 sockets and surge protection. 1.5mm cable, 13A rating.', badge:'Popular', stock:'in-stock' },
+  { id:50, name:'Tool Box 16" Metal',            category:'storage',     price:6.800,  img:UL(50), desc:'16-inch metal tool box with removable tray and strong locking clasp. Powder coat finish.', badge:null, stock:'in-stock' }
 ];
 
 let cart = [];

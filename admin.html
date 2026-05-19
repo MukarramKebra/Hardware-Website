@@ -324,9 +324,11 @@
     <img src="loooooooo.png" alt="DhowTech" onerror="this.style.display='none'" />
     <div class="login-logo">Dhow<span>Tech</span></div>
     <div class="login-sub">Owner Admin Panel</div>
-    <input type="text" id="loginUser" placeholder="Username" />
-    <input type="password" id="loginPass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()" />
-    <button class="login-btn" onclick="doLogin()"><i class="fa fa-lock"></i>&nbsp; Login</button>
+    <form id="loginForm" onsubmit="doLogin(); return false;" autocomplete="on">
+      <input type="text"     id="loginUser" name="username" placeholder="Username" autocomplete="username" />
+      <input type="password" id="loginPass" name="password" placeholder="Password" autocomplete="current-password" />
+      <button type="submit" class="login-btn"><i class="fa fa-lock"></i>&nbsp; Login</button>
+    </form>
     <div class="login-error" id="loginError">Wrong username or password.</div>
   </div>
 </div>
@@ -610,7 +612,17 @@ async function sbFetch(url, options) {
   }
 }
 
-let _customProductRows = [];
+let _customProductRows = [  {id:51,name:'Drill Bit Set HSS 20pc',     cat:'power-tools', price:4.500, img:UL(51)},
+  {id:52,name:'Sanding Sheet Set 40pc',      cat:'power-tools', price:1.800, img:UL(52)},
+  {id:53,name:'Pipe Wrench 14 inch',          cat:'hand-tools',  price:3.500, img:UL(53)},
+  {id:54,name:'Staple Gun + 1000 Staples',   cat:'hand-tools',  price:4.200, img:UL(54)},
+  {id:55,name:'Duct Tape 50mm x 50m',        cat:'fasteners',   price:0.900, img:UL(55)},
+  {id:56,name:'Digital Laser Measurer 40m',  cat:'measuring',   price:8.500, img:UL(56)},
+  {id:57,name:'Knee Pads Professional',      cat:'safety',      price:3.200, img:UL(57)},
+  {id:58,name:'Cutting Discs 115mm 10pc',   cat:'cutting',     price:2.800, img:UL(58)},
+  {id:59,name:'5-Pocket Tool Belt',          cat:'storage',     price:4.500, img:UL(59)},
+  {id:60,name:'Wall Plugs 100pc Assorted',  cat:'fasteners',   price:0.750, img:UL(60)}
+];
 let _hiddenBaseIds     = new Set();
 
 async function loadFromSupabase() {
@@ -683,26 +695,26 @@ const PRODUCTS = [
   {id:28,name:'Masonry Anchors 8mm 50pc',     cat:'fasteners',   price:1.600,  img:UL(28)},
   {id:29,name:'Nuts Bolts Washers 500pc',     cat:'fasteners',   price:2.500,  img:UL(29)},
   {id:30,name:'Cable Ties 200pc Mixed',       cat:'fasteners',   price:0.600,  img:UL(30)},
-  {id:31,name:'Tape Measure 8m',              cat:'measuring',   price:1.800,  img:U('1776361460587-e5f9396ebf88')},
-  {id:32,name:'Spirit Level 1200mm',          cat:'measuring',   price:3.200,  img:U('1776254387430-21601edab5b3')},
-  {id:33,name:'Laser Level Cross Line',       cat:'measuring',   price:8.500,  img:U('1775493215727-8a81311b39d8')},
-  {id:34,name:'Digital Stud Finder',          cat:'measuring',   price:4.200,  img:U('1775345507804-2b44a1046873')},
-  {id:35,name:'Steel Square 300mm',           cat:'measuring',   price:1.400,  img:U('1763202282638-371d7060ee51')},
-  {id:36,name:'Chalk Line 30m',               cat:'measuring',   price:1.100,  img:U('1761682752575-c31ad0a16a50')},
-  {id:37,name:'Safety Goggles Clear',         cat:'safety',      price:0.800,  img:U('1778577177321-3bff951a9ac5')},
-  {id:38,name:'Leather Work Gloves',          cat:'safety',      price:1.200,  img:U('1778576835371-596da992a395')},
-  {id:39,name:'Dust Mask N95 10pc',           cat:'safety',      price:1.500,  img:U('1778868001879-50a970759f98')},
-  {id:40,name:'Hard Hat Yellow',              cat:'safety',      price:2.200,  img:U('1778317764727-8cb931bbf1e8')},
-  {id:41,name:'Hi-Vis Safety Vest',           cat:'safety',      price:0.900,  img:U('1778291114453-b215fa0957a3')},
-  {id:42,name:'Steel Toe Safety Boots',       cat:'safety',      price:8.500,  img:U('1777867445652-5a01f71c9d70')},
-  {id:43,name:'Hand Saw 550mm',               cat:'cutting',     price:2.800,  img:U('1778226818301-e4cd2cf295a2')},
-  {id:44,name:'Hacksaw + 5 Blades',           cat:'cutting',     price:2.200,  img:U('1778388804110-5beae7d35662')},
-  {id:45,name:'Utility Knife + 10 Blades',   cat:'cutting',     price:1.100,  img:U('1777892029843-8b66da1d09e7')},
-  {id:46,name:'Tin Snips Aviation 250mm',     cat:'cutting',     price:3.200,  img:U('1777891733988-540ac2abbd40')},
-  {id:47,name:'PVC Pipe Cutter 42mm',         cat:'cutting',     price:2.600,  img:U('1778388804089-c78419e188f2')},
-  {id:48,name:'Tool Bag 16" Heavy Duty',      cat:'storage',     price:5.500,  img:U('1778066994998-97f74a5bf901')},
-  {id:49,name:'Extension Cord 10m 4-Way',     cat:'storage',     price:4.200,  img:U('1777919394037-9a2968966310')},
-  {id:50,name:'Tool Box 16" Metal',           cat:'storage',     price:6.800,  img:U('1777919393727-cb35adbdc5e0')}
+  {id:31,name:'Tape Measure 8m',              cat:'measuring',   price:1.800,  img:UL(31)},
+  {id:32,name:'Spirit Level 1200mm',          cat:'measuring',   price:3.200,  img:UL(32)},
+  {id:33,name:'Laser Level Cross Line',       cat:'measuring',   price:8.500,  img:UL(33)},
+  {id:34,name:'Digital Stud Finder',          cat:'measuring',   price:4.200,  img:UL(34)},
+  {id:35,name:'Steel Square 300mm',           cat:'measuring',   price:1.400,  img:UL(35)},
+  {id:36,name:'Chalk Line 30m',               cat:'measuring',   price:1.100,  img:UL(36)},
+  {id:37,name:'Safety Goggles Clear',         cat:'safety',      price:0.800,  img:UL(37)},
+  {id:38,name:'Leather Work Gloves',          cat:'safety',      price:1.200,  img:UL(38)},
+  {id:39,name:'Dust Mask N95 10pc',           cat:'safety',      price:1.500,  img:UL(39)},
+  {id:40,name:'Hard Hat Yellow',              cat:'safety',      price:2.200,  img:UL(40)},
+  {id:41,name:'Hi-Vis Safety Vest',           cat:'safety',      price:0.900,  img:UL(41)},
+  {id:42,name:'Steel Toe Safety Boots',       cat:'safety',      price:8.500,  img:UL(42)},
+  {id:43,name:'Hand Saw 550mm',               cat:'cutting',     price:2.800,  img:UL(43)},
+  {id:44,name:'Hacksaw + 5 Blades',           cat:'cutting',     price:2.200,  img:UL(44)},
+  {id:45,name:'Utility Knife + 10 Blades',   cat:'cutting',     price:1.100,  img:UL(45)},
+  {id:46,name:'Tin Snips Aviation 250mm',     cat:'cutting',     price:3.200,  img:UL(46)},
+  {id:47,name:'PVC Pipe Cutter 42mm',         cat:'cutting',     price:2.600,  img:UL(47)},
+  {id:48,name:'Tool Bag 16" Heavy Duty',      cat:'storage',     price:5.500,  img:UL(48)},
+  {id:49,name:'Extension Cord 10m 4-Way',     cat:'storage',     price:4.200,  img:UL(49)},
+  {id:50,name:'Tool Box 16" Metal',           cat:'storage',     price:6.800,  img:UL(50)}
 ];
 
 // ── STOCK ────────────────────────────────────────────────────────────────
@@ -754,21 +766,28 @@ function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value;
   if (u === ADMIN_USER && p === ADMIN_PASS) {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'block';
-    loadFromSupabase();
+    sessionStorage.setItem('dhowtech_auth', '1');
+    showAdmin();
   } else {
     const err = document.getElementById('loginError');
     err.style.display = 'block';
     setTimeout(function() { err.style.display = 'none'; }, 3000);
   }
 }
+function showAdmin() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminPanel').style.display = 'block';
+  loadFromSupabase();
+}
 function logout() {
+  sessionStorage.removeItem('dhowtech_auth');
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('adminPanel').style.display = 'none';
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
 }
+// Auto-login if session is still active (survives page refresh)
+if (sessionStorage.getItem('dhowtech_auth') === '1') { showAdmin(); }
 
 // ── CLOCK ────────────────────────────────────────────────────────────────
 function tick() {
