@@ -1,6 +1,17 @@
 ﻿const U   = (id) => `https://images.unsplash.com/photo-${id}?w=420&h=320&fit=crop&auto=format&q=80`;
 const UL  = (id) => `product-images/${id}.jpg`;   // local images
 
+// ── SKU HELPER ────────────────────────────────────────────────────────────
+// SKU is a separate display label from the internal product ID.
+// Admin can set a custom SKU; it's stored in dhowtech_sku_map in localStorage.
+function getProductSku(id) {
+  try {
+    var map = JSON.parse(localStorage.getItem('dhowtech_sku_map') || '{}');
+    var val = map[String(id)];
+    return 'SKU-' + String(val !== undefined ? val : id).padStart(4, '0');
+  } catch(e) { return 'SKU-' + String(id).padStart(4, '0'); }
+}
+
 // ── SUPABASE CONFIG ───────────────────────────────────────────────────────
 const SB_URL = 'https://jjyhybulxixblpiixzkp.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqeWh5YnVseGl4YmxwaWl4emtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMjgxNTIsImV4cCI6MjA5NDYwNDE1Mn0.CdI1UcV4pIvdUU9xISJgbIqjfZunAgsiiIj0PntJm4I';
@@ -22,24 +33,14 @@ async function sbFetch(url, options) {
 // Live data loaded from Supabase (falls back to localStorage if offline)
 let _sbStock    = {};
 let _sbPhotos   = {};
-let _customProds = [  { id:51, name:'Drill Bit Set HSS 20pc',     category:'power-tools', price:4.500,  img:UL(51), desc:'20-piece HSS drill bit set 1-10mm. For wood, metal and plastic. Titanium coated.', badge:'Popular', stock:'in-stock' },
-  { id:52, name:'Sanding Sheet Set 40pc',      category:'power-tools', price:1.800,  img:UL(52), desc:'40 assorted sanding sheets 60/80/120/240 grit. For orbital and hand sanding.', badge:null, stock:'in-stock' },
-  { id:53, name:'Pipe Wrench 14 inch',          category:'hand-tools',  price:3.500,  img:UL(53), desc:'14-inch heavy duty pipe wrench with aluminium body and hardened steel jaw. 0-50mm.', badge:null, stock:'in-stock' },
-  { id:54, name:'Staple Gun + 1000 Staples',   category:'hand-tools',  price:4.200,  img:UL(54), desc:'Heavy-duty staple gun with 1000 staples included. For fabric, wood and insulation.', badge:null, stock:'in-stock' },
-  { id:55, name:'Duct Tape 50mm x 50m',        category:'fasteners',   price:0.900,  img:UL(55), desc:'Heavy-duty silver duct tape 50mm wide x 50m long. Waterproof and UV resistant.', badge:null, stock:'in-stock' },
-  { id:56, name:'Digital Laser Measurer 40m',  category:'measuring',   price:8.500,  img:UL(56), desc:'Laser distance measurer up to 40m. Area and volume calculations. LCD display.', badge:'Pro', stock:'in-stock' },
-  { id:57, name:'Knee Pads Professional',      category:'safety',      price:3.200,  img:UL(57), desc:'Professional knee pads with gel cushion and EVA foam. Adjustable straps. EN14404.', badge:null, stock:'in-stock' },
-  { id:58, name:'Cutting Discs 115mm 10pc',   category:'cutting',     price:2.800,  img:UL(58), desc:'10-pack 115mm angle grinder cutting discs for metal and inox. 1mm thin kerf.', badge:null, stock:'in-stock' },
-  { id:59, name:'5-Pocket Tool Belt',          category:'storage',     price:4.500,  img:UL(59), desc:'Heavy-duty 5-pocket tool belt with hammer holder. Adjustable waist up to 122cm.', badge:null, stock:'in-stock' },
-  { id:60, name:'Wall Plugs 100pc Assorted',  category:'fasteners',   price:0.750,  img:UL(60), desc:'100-piece assorted nylon wall plugs 6mm, 8mm and 10mm. For brick and concrete.', badge:null, stock:'in-stock' }
-];      // admin-added products from dhowtech_products table
+let _customProds = [];      // admin-added products from dhowtech_products table
 let _hiddenIds   = new Set(); // base product IDs hidden by admin
 
 async function loadSBData() {
   const [s, p, c, h] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/dhowtech_stock?select=*',                         { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/dhowtech_photos?select=*',                        { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/dhowtech_products?select=*&order=created_at.asc', { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/dhowtech_products?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/dhowtech_hidden?select=product_id',               { headers: SB_H })
   ]);
   if (s.error) {
@@ -49,7 +50,7 @@ async function loadSBData() {
   } else {
     if (Array.isArray(s.data)) s.data.forEach(r => { _sbStock[r.product_id]  = r.qty; });
     if (Array.isArray(p.data)) p.data.forEach(r => { _sbPhotos[r.product_id] = r.url; });
-    if (Array.isArray(c.data)) _customProds = c.data.filter(r => !r.hidden);
+    if (Array.isArray(c.data) && c.data.length > 0) _customProds = c.data.filter(r => !r.hidden);
     if (Array.isArray(h.data)) _hiddenIds   = new Set(h.data.map(r => r.product_id));
   }
   renderProducts();
@@ -78,14 +79,16 @@ function normalizeCategory(raw) {
 
 // Merged base + admin-added products, with hidden ones removed
 function getAllProducts() {
+  const baseIds = new Set(PRODUCTS.map(p => p.id));  // IDs 1-60 are authoritative
   const base  = PRODUCTS.filter(p => !_hiddenIds.has(p.id));
-  const extra = _customProds.map(p => ({
+  // Only show custom products with safe IDs > 60 (ID fix in admin handles conflicts)
+  const extra = _customProds.filter(p => !baseIds.has(p.id) && p.id > 60).map(p => ({
     id:       p.id,
     name:     p.name,
     category: normalizeCategory(p.category),
     price:    parseFloat(p.price),
-    img:      p.img_url || `https://picsum.photos/seed/dt${p.id}/420/320`,
-    desc:     p.description || '',
+    img:      p.img_url || p.img || `https://picsum.photos/seed/dt${p.id}/420/320`,
+    desc:     p.description || p.desc || '',
     badge:    p.badge || null,
     stock:    'in-stock'
   }));
@@ -142,7 +145,17 @@ const PRODUCTS = [
   { id:47, name:'PVC Pipe Cutter 42mm',          category:'cutting',     price:2.600,  img:UL(47), desc:'Ratchet pipe cutter for clean cuts on PVC, CPVC and PEX pipes up to 42mm diameter.', badge:null, stock:'in-stock' },
   { id:48, name:'Tool Bag 16" Heavy Duty',       category:'storage',     price:5.500,  img:UL(48), desc:'16-inch heavy-duty canvas tool bag with 20 pockets and reinforced base. Padded strap.', badge:null, stock:'in-stock' },
   { id:49, name:'Extension Cord 10m 4-Way',      category:'storage',     price:4.200,  img:UL(49), desc:'10-metre extension cord with 4 sockets and surge protection. 1.5mm cable, 13A rating.', badge:'Popular', stock:'in-stock' },
-  { id:50, name:'Tool Box 16" Metal',            category:'storage',     price:6.800,  img:UL(50), desc:'16-inch metal tool box with removable tray and strong locking clasp. Powder coat finish.', badge:null, stock:'in-stock' }
+  { id:50, name:'Tool Box 16" Metal',            category:'storage',     price:6.800,  img:UL(50), desc:'16-inch metal tool box with removable tray and strong locking clasp. Powder coat finish.', badge:null, stock:'in-stock' },
+  { id:51, name:'Drill Bit Set HSS 20pc',       category:'power-tools', price:4.500,  img:UL(51), desc:'20-piece HSS drill bit set 1-10mm. For wood, metal and plastic. Titanium coated.', badge:'Popular', stock:'in-stock' },
+  { id:52, name:'Sanding Sheet Set 40pc',       category:'power-tools', price:1.800,  img:UL(52), desc:'40 assorted sanding sheets 60/80/120/240 grit. For orbital and hand sanding.', badge:null, stock:'in-stock' },
+  { id:53, name:'Pipe Wrench 14 inch',          category:'hand-tools',  price:3.500,  img:UL(53), desc:'14-inch heavy duty pipe wrench with aluminium body and hardened steel jaw. 0-50mm.', badge:null, stock:'in-stock' },
+  { id:54, name:'Staple Gun + 1000 Staples',    category:'hand-tools',  price:4.200,  img:UL(54), desc:'Heavy-duty staple gun with 1000 staples included. For fabric, wood and insulation.', badge:null, stock:'in-stock' },
+  { id:55, name:'Duct Tape 50mm x 50m',         category:'fasteners',   price:0.900,  img:UL(55), desc:'Heavy-duty silver duct tape 50mm wide x 50m long. Waterproof and UV resistant.', badge:null, stock:'in-stock' },
+  { id:56, name:'Digital Laser Measurer 40m',   category:'measuring',   price:8.500,  img:UL(56), desc:'Laser distance measurer up to 40m. Area and volume calculations. LCD display.', badge:'Pro', stock:'in-stock' },
+  { id:57, name:'Knee Pads Professional',       category:'safety',      price:3.200,  img:UL(57), desc:'Professional knee pads with gel cushion and EVA foam. Adjustable straps. EN14404.', badge:null, stock:'in-stock' },
+  { id:58, name:'Cutting Discs 115mm 10pc',     category:'cutting',     price:2.800,  img:UL(58), desc:'10-pack 115mm angle grinder cutting discs for metal and inox. 1mm thin kerf.', badge:null, stock:'in-stock' },
+  { id:59, name:'5-Pocket Tool Belt',           category:'storage',     price:4.500,  img:UL(59), desc:'Heavy-duty 5-pocket tool belt with hammer holder. Adjustable waist up to 122cm.', badge:null, stock:'in-stock' },
+  { id:60, name:'Wall Plugs 100pc Assorted',    category:'fasteners',   price:0.750,  img:UL(60), desc:'100-piece assorted nylon wall plugs 6mm, 8mm and 10mm. For brick and concrete.', badge:null, stock:'in-stock' }
 ];
 
 let cart = [];
@@ -259,6 +272,7 @@ function renderProducts() {
         </div>
         <div class="product-info">
           <div class="product-cat">${p.category.replace('-',' ')}</div>
+          <div style="font-size:10px;font-weight:700;color:#aaa;letter-spacing:0.5px;margin-bottom:3px">${getProductSku(p.id)}</div>
           <h3>${p.name}</h3>
           <p>${p.desc}</p>
           <div class="product-footer">
@@ -297,7 +311,7 @@ function openProduct(id) {
   else if (isLow) { stockIcon = 'fa-exclamation-circle'; stockTxt = 'Low Stock — only ' + (liveQty||'few') + ' left!'; stockCls = 'low-stock'; }
   else            { stockIcon = 'fa-check-circle'; stockTxt = 'In Stock' + (liveQty !== null ? ' — ' + liveQty + ' available' : ''); stockCls = 'in-stock'; }
 
-  document.getElementById('prodModalSku').textContent = 'SKU-' + String(id).padStart(3, '0');
+  document.getElementById('prodModalSku').textContent = getProductSku(id);
   document.getElementById('prodModalBody').innerHTML =
     '<div class="pm-img-col">' +
       '<img src="' + bigImg + '" alt="' + p.name + '" onerror="imgError(this)" />' +
@@ -520,3 +534,21 @@ document.getElementById('contactForm').addEventListener('submit', e => {
 });
 // Load stock + photos from Supabase then render
 loadSBData();
+
+// ── MARQUEE AUTO-FILL ─────────────────────────────────────────────────────
+// Measures the 9-item base set, copies it until one "half" is wider than
+// the viewport, then mirrors it — so the CSS -50% animation loops with
+// zero gap on any screen size.
+(function () {
+  var track = document.querySelector('.marquee-track');
+  if (!track) return;
+  var origHTML = track.innerHTML;
+  var singleW  = track.scrollWidth;        // width of the 9 base items
+  if (!singleW) return;
+  var vw      = window.innerWidth || 1280;
+  var copies  = Math.max(3, Math.ceil(vw / singleW) + 2); // always > viewport
+  var half = '';
+  for (var i = 0; i < copies; i++) half += origHTML;
+  track.innerHTML = half + half;           // two identical halves → -50% loops clean
+  track.style.animationDuration = Math.round((singleW * copies) / 100) + 's'; // ~100px/s
+})();
