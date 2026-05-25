@@ -33,7 +33,7 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 .section-header h2 { font-size: clamp(22px, 3.5vw, 34px); font-weight: 800; color: var(--dark); line-height: 1.2; margin-top: 8px; }
 
 /* ── HEADER ─────────────────────────────────────────────────────────── */
-#header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: #fff; border-bottom: 1px solid var(--border); transition: box-shadow 0.3s; }
+#header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: #000; border-bottom: 2px solid #FFD700; transition: box-shadow 0.3s; }
 #header.scrolled { box-shadow: 0 2px 16px rgba(0,0,0,0.10); }
 .header-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 24px; }
 .logo-wrap { display: flex; align-items: center; text-decoration: none; gap: 10px; }
@@ -43,7 +43,7 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 .logo-tech { color: var(--orange); }
 
 #nav { display: flex; gap: 30px; }
-#nav a { color: var(--charcoal); text-decoration: none; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; transition: color 0.2s; text-transform: uppercase; }
+#nav a { color: #FFD700; text-decoration: none; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; transition: color 0.2s; text-transform: uppercase; }
 #nav a:hover { color: var(--orange); }
 
 .header-actions { display: flex; align-items: center; gap: 12px; }
@@ -73,6 +73,8 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 .stat { display: flex; flex-direction: column; border-left: 3px solid var(--orange); padding-left: 14px; }
 .stat span { font-size: 26px; font-weight: 900; color: var(--dark); line-height: 1; }
 .stat small { font-size: 11px; color: var(--gray-400); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+.hero-left-ad { margin-top: 32px; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.12); }
+.hero-left-ad img { width: 100%; height: auto; display: block; border-radius: 12px; }
 
 /* ── MARQUEE ─────────────────────────────────────────────────────────── */
 .marquee-wrap { background: var(--orange); padding: 11px 0; overflow: hidden; }
