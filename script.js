@@ -331,7 +331,7 @@ function openProduct(id) {
           '<span class="pm-qty-lbl">Quantity</span>' +
           '<div class="pm-qty-ctrl">' +
             '<button onclick="pmChangeQty(-1)"><i class="fa fa-minus"></i></button>' +
-            '<span id="pmQtyDisplay">1</span>' +
+            '<input type="number" id="pmQtyDisplay" value="1" min="1" oninput="pmQtyInput(this)" onblur="pmQtyBlur(this)" />' +
             '<button onclick="pmChangeQty(1)"><i class="fa fa-plus"></i></button>' +
           '</div>' +
         '</div>'
@@ -363,7 +363,27 @@ function pmChangeQty(delta) {
   const liveQty = getLiveQty(_pmId);
   const max = liveQty !== null ? liveQty : 999;
   _pmQty = Math.max(1, Math.min(max, _pmQty + delta));
-  document.getElementById('pmQtyDisplay').textContent = _pmQty;
+  var el = document.getElementById('pmQtyDisplay');
+  if (el) el.value = _pmQty;
+}
+
+function pmQtyInput(el) {
+  const liveQty = getLiveQty(_pmId);
+  const max = liveQty !== null ? liveQty : 999;
+  var v = parseInt(el.value, 10);
+  if (isNaN(v) || v < 1) { _pmQty = 1; return; }
+  if (v > max) { v = max; el.value = max; }
+  _pmQty = v;
+}
+
+function pmQtyBlur(el) {
+  // Snap to valid value when user leaves the field
+  var v = parseInt(el.value, 10);
+  if (isNaN(v) || v < 1) v = 1;
+  const liveQty = getLiveQty(_pmId);
+  const max = liveQty !== null ? liveQty : 999;
+  _pmQty = Math.min(v, max);
+  el.value = _pmQty;
 }
 
 function pmAddToCart() {

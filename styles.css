@@ -440,6 +440,11 @@ footer { background: var(--dark); padding: 64px 0 0; border-top: 1px solid rgba(
 .pm-qty-ctrl button { width:38px; height:38px; background:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer; color:var(--dark); transition:all .18s; display:flex; align-items:center; justify-content:center; font-family:inherit; }
 .pm-qty-ctrl button:hover { background:var(--orange); color:#fff; }
 .pm-qty-ctrl span { width:46px; text-align:center; font-size:15px; font-weight:800; color:var(--dark); border-left:1px solid var(--border); border-right:1px solid var(--border); height:38px; display:flex; align-items:center; justify-content:center; }
+.pm-qty-ctrl input[type="number"] { width:56px; text-align:center; font-size:15px; font-weight:800; color:var(--dark); border:none; border-left:1px solid var(--border); border-right:1px solid var(--border); height:38px; background:#fff; outline:none; font-family:inherit; padding:0; }
+.pm-qty-ctrl input[type="number"]:focus { background:#fff8f5; border-color:var(--orange); }
+.pm-qty-ctrl input[type="number"]::-webkit-inner-spin-button,
+.pm-qty-ctrl input[type="number"]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+.pm-qty-ctrl input[type="number"] { -moz-appearance:textfield; }
 .pm-add-btn { width:100%; padding:14px 20px; background:var(--orange); color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px; transition:all .2s; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:16px; font-family:inherit; }
 .pm-add-btn:hover:not(:disabled) { background:var(--orange-dark); transform:translateY(-1px); box-shadow:0 8px 22px rgba(255,98,0,.3); }
 .pm-add-btn:disabled { background:#e5e7eb; color:#9ca3af; cursor:not-allowed; }
