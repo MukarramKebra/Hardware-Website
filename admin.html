@@ -271,6 +271,15 @@
     .csv-import-btn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
     .csv-import-btn:hover{background:#2563eb;}
     .csv-import-btn:disabled{opacity:0.6;cursor:not-allowed;}
+    .csv-img-zone{border:2px dashed #c084fc;border-radius:12px;padding:18px 20px;text-align:center;cursor:pointer;transition:border-color .2s;background:#faf5ff;}
+    .csv-img-zone:hover{border-color:#9333ea;}
+    .csv-img-zone i{font-size:24px;color:#9333ea;margin-bottom:6px;display:block;}
+    .csv-img-zone span{font-size:13px;font-weight:700;color:#4b1f8a;display:block;}
+    .csv-img-zone small{font-size:11px;color:#9333ea;}
+    .csv-img-thumbs{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;}
+    .csv-img-thumb{width:54px;height:54px;border-radius:7px;object-fit:cover;border:2px solid #e9d5ff;}
+    .csv-section-label{font-size:11px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+    .csv-divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
 
     /* FORMAT HELP MODAL */
     .help-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
@@ -582,12 +591,25 @@
       </div>
     </div>
     <div class="csv-body">
+      <div class="csv-section-label"><i class="fa fa-file-csv" style="color:var(--blue)"></i> Step 1 — Choose your CSV / Excel file</div>
       <label class="csv-drop" id="csvDrop" for="csvFile" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleCSVDrop(event)">
         <i class="fa fa-cloud-upload-alt"></i>
         <span>Click to choose file or drag &amp; drop here</span>
         <small>Supports .csv and .xlsx (Excel) files</small>
       </label>
       <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" onchange="handleCSVFile(event)" style="display:none" />
+
+      <hr class="csv-divider" />
+      <div class="csv-section-label"><i class="fa fa-images" style="color:#9333ea"></i> Step 2 — Upload product images (optional)</div>
+      <label class="csv-img-zone" for="csvImages">
+        <i class="fa fa-image"></i>
+        <span>Click to select image files</span>
+        <small>Name each image to match the "image" column in your CSV (e.g. drill.jpg)</small>
+      </label>
+      <input type="file" id="csvImages" accept="image/*" multiple onchange="handleCSVImages(event)" style="display:none" />
+      <div class="csv-img-thumbs" id="csvImgThumbs"></div>
+
+      <hr class="csv-divider" />
       <div id="csvPreview"></div>
       <button class="csv-import-btn" id="csvImportBtn" onclick="importCSVProducts()" style="display:none">
         <i class="fa fa-download"></i> Import All Products
@@ -614,7 +636,7 @@
           <tr><td>stock</td><td>Optional</td><td>50</td></tr>
           <tr><td>description</td><td>Optional</td><td>20V drill with keyless chuck</td></tr>
           <tr><td>badge</td><td>Optional</td><td>Best Seller</td></tr>
-          <tr><td>image_url</td><td>Optional</td><td>https://images.unsplash.com/...</td></tr>
+          <tr><td>image</td><td>Optional</td><td>drill.jpg (filename of uploaded image)</td></tr>
         </tbody>
       </table>
       <div class="fmt-cats">
@@ -1656,10 +1678,14 @@ function renderDeletedTab() {
 
 // â”€â”€ CSV / EXCEL IMPORT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _csvParsedRows = [];
+let _csvImageMap   = {}; // filename (lowercase) → compressed base64 data URL
 function openCSV() {
   _csvParsedRows = [];
-  document.getElementById('csvFile').value = '';
-  document.getElementById('csvPreview').innerHTML = '';
+  _csvImageMap   = {};
+  document.getElementById('csvFile').value   = '';
+  document.getElementById('csvImages').value = '';
+  document.getElementById('csvPreview').innerHTML    = '';
+  document.getElementById('csvImgThumbs').innerHTML  = '';
   document.getElementById('csvImportBtn').style.display = 'none';
   document.getElementById('csvOverlay').classList.add('open');
 }
@@ -1676,6 +1702,45 @@ function handleCSVDrop(e) {
 function handleCSVFile(e) {
   const file = e.target.files[0];
   if (file) processCSVFile(file);
+}
+
+// ── CSV IMAGE UPLOAD ───────────────────────────────────────────────────────
+function handleCSVImages(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  const thumbs = document.getElementById('csvImgThumbs');
+  files.forEach(function(file) {
+    _compressCSVImage(file, function(dataUrl) {
+      const key = file.name.toLowerCase();
+      _csvImageMap[key] = dataUrl;
+      // Show thumbnail
+      var img = document.createElement('img');
+      img.src = dataUrl;
+      img.className = 'csv-img-thumb';
+      img.title = file.name;
+      thumbs.appendChild(img);
+    });
+  });
+}
+function _compressCSVImage(file, callback) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var image = new Image();
+    image.onload = function() {
+      var MAX = 700;
+      var w = image.width, h = image.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(image, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    image.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 function processCSVFile(file) {
   const reader = new FileReader();
@@ -1731,9 +1796,18 @@ function previewCSVRows(rows) {
 async function importCSVProducts() {
   if (!_csvParsedRows.length) return;
   const btn = document.getElementById('csvImportBtn');
-  btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Importingâ€¦';
+  btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Importing…';
   let count = 0;
+  // Load existing localStorage photos map
+  let localPhotos = {};
+  try { localPhotos = JSON.parse(localStorage.getItem('dhowtech_photos') || '{}'); } catch(_) {}
+
   for (const r of _csvParsedRows) {
+    // Resolve image: first check uploaded files by filename, then fall back to URL column
+    const imgFilename = (r.image || r.img || '').trim().toLowerCase();
+    const imgDataUrl  = imgFilename && _csvImageMap[imgFilename] ? _csvImageMap[imgFilename] : '';
+    const imgUrl      = imgDataUrl || r.image_url || r.img_url || '';
+
     const { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/dhowtech_products', {
       method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}),
       body:JSON.stringify([{
@@ -1741,32 +1815,45 @@ async function importCSVProducts() {
         price: parseFloat(r.price)||0,
         description: r.description||r.desc||'',
         badge: r.badge||null,
-        img_url: r.image_url||r.img_url||r.img||'',
+        img_url: imgUrl,
         hidden: false
       }])
     });
     if (error) { console.warn('Row import failed:', r.name, error); continue; }
     if (rows && rows[0]) {
-      const qty = parseInt(r.stock)||50;
-      stockData[rows[0].id] = qty;
+      const newId = rows[0].id;
+      const qty   = parseInt(r.stock)||50;
+      stockData[newId] = qty;
       await sbFetch(SB_URL + '/rest/v1/dhowtech_stock', {
         method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
-        body:JSON.stringify([{product_id:rows[0].id, qty}])
+        body:JSON.stringify([{product_id:newId, qty}])
       });
+      // Save image to localStorage photos store (so storefront picks it up offline too)
+      if (imgDataUrl) {
+        localPhotos[String(newId)] = imgDataUrl;
+        // Also save to Supabase photos table
+        sbFetch(SB_URL + '/rest/v1/dhowtech_photos', {
+          method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
+          body:JSON.stringify([{product_id:newId, url:imgDataUrl}])
+        });
+      }
       count++;
     }
   }
-  showToast(count + ' product'+(count!==1?'s':'')+' imported! âœ…');
+  // Persist photos to localStorage
+  localStorage.setItem('dhowtech_photos', JSON.stringify(localPhotos));
+  const imgCount = Object.keys(_csvImageMap).length;
+  showToast(count + ' product'+(count!==1?'s':'')+' imported' + (imgCount ? ' with '+imgCount+' image'+(imgCount!==1?'s':'') : '') + '! ✅');
   closeCSV();
   await loadFromSupabase();
   btn.disabled = false; btn.innerHTML = '<i class="fa fa-download"></i> Import All Products';
 }
 function downloadTemplate() {
   const csv = [
-    'name,category,price,stock,description,badge,image_url',
-    'Cordless Drill 20V,power-tools,12.500,50,20V drill with keyless chuck and LED light,Best Seller,https://images.unsplash.com/photo-1777575764654-ffc22754c5d8?w=400&h=400&fit=crop',
-    'Heavy Duty Hammer,hand-tools,3.200,100,16oz forged steel claw hammer,,',
-    'Wood Screws 200pc,fasteners,1.500,200,Self-tapping wood screws assorted sizes,Popular,'
+    'name,category,price,stock,description,badge,image',
+    'Cordless Drill 20V,power-tools,12.500,50,20V drill with keyless chuck and LED light,Best Seller,drill.jpg',
+    'Heavy Duty Hammer,hand-tools,3.200,100,16oz forged steel claw hammer,,hammer.jpg',
+    'Wood Screws 200pc,fasteners,1.500,200,Self-tapping wood screws assorted sizes,Popular,screws.jpg'
   ].join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
