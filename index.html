@@ -1,5 +1,5 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
 </head>
 <body>
 
@@ -17,14 +18,15 @@
         <div class="logo-text-fallback" style="display:none"><span class="logo-dhow">Dhow</span><span class="logo-tech">Tech</span></div>
       </a>
       <nav id="nav">
-        <a href="#hero">Home</a>
-        <a href="#about">About</a>
-        <a href="#products">Products</a>
-        <a href="#categories">Categories</a>
-        <a href="#contact">Contact</a>
+        <a href="#hero" data-i18n="nav_home">Home</a>
+        <a href="#about" data-i18n="nav_about">About</a>
+        <a href="#products" data-i18n="nav_products">Products</a>
+        <a href="#categories" data-i18n="nav_categories">Categories</a>
+        <a href="#contact" data-i18n="nav_contact">Contact</a>
       </nav>
       <div class="header-actions">
-        <button class="btn-cart" id="cartBtn"><i class="fa fa-shopping-cart"></i><span class="cart-label"> Cart</span> <span id="cartCount">0</span></button>
+        <button class="lang-btn" id="langBtn" onclick="toggleLang()">عربي</button>
+        <button class="btn-cart" id="cartBtn"><i class="fa fa-shopping-cart"></i><span class="cart-label" data-i18n="cart_label"> Cart</span> <span id="cartCount">0</span></button>
         <button class="hamburger" id="hamburger"><i class="fa fa-bars"></i></button>
       </div>
     </div>
@@ -32,17 +34,17 @@
 
   <section id="hero">
     <div class="hero-content">
-      <span class="hero-tag"><i class="fa fa-tools"></i> Kuwait's #1 Hardware Store</span>
-      <h1>Built <span>Tough.</span><br/>Built for <span>Kuwait.</span></h1>
-      <p>Power tools, hand tools, fasteners, safety gear and more. Everything you need to build, fix and create — delivered fast across Kuwait and the GCC.</p>
+      <span class="hero-tag" data-i18n-html="hero_tag"><i class="fa fa-tools"></i> Kuwait's #1 Hardware Store</span>
+      <h1 data-i18n-html="hero_h1">Built <span>Tough.</span><br/>Built for <span>Kuwait.</span></h1>
+      <p data-i18n="hero_p">Power tools, hand tools, fasteners, safety gear and more. Everything you need to build, fix and create — delivered fast across Kuwait and the GCC.</p>
       <div class="hero-btns">
-        <a href="#products" class="btn btn-primary"><i class="fa fa-th-large"></i> Shop Now</a>
-        <a href="#contact" class="btn btn-outline"><i class="fa fa-phone"></i> Get a Quote</a>
+        <a href="#products" class="btn btn-primary"><i class="fa fa-th-large"></i> <span data-i18n="hero_shop">Shop Now</span></a>
+        <a href="#contact" class="btn btn-outline"><i class="fa fa-phone"></i> <span data-i18n="hero_quote">Get a Quote</span></a>
       </div>
       <div class="hero-stats">
-        <div class="stat"><span>50+</span><small>Products</small></div>
-        <div class="stat"><span>100%</span><small>Genuine</small></div>
-        <div class="stat"><span>GCC</span><small>Delivery</small></div>
+        <div class="stat"><span>50+</span><small data-i18n="stat_products">Products</small></div>
+        <div class="stat"><span>100%</span><small data-i18n="stat_genuine">Genuine</small></div>
+        <div class="stat"><span>GCC</span><small data-i18n="stat_delivery">Delivery</small></div>
       </div>
     </div>
   </section>
@@ -65,28 +67,28 @@
   <nav id="cat-nav">
     <div class="cat-nav-row">
       <div class="cn-item active" data-cat="all" onclick="jumpCat('all')">
-        <div class="cn-icon"><i class="fa fa-th-large"></i></div><span>All</span>
+        <div class="cn-icon"><i class="fa fa-th-large"></i></div><span data-i18n="pill_all">All</span>
       </div>
       <div class="cn-item" data-cat="power-tools" onclick="jumpCat('power-tools')">
-        <div class="cn-icon"><i class="fa fa-bolt"></i></div><span>Power Tools</span>
+        <div class="cn-icon"><i class="fa fa-bolt"></i></div><span data-i18n="cat_power">Power Tools</span>
       </div>
       <div class="cn-item" data-cat="hand-tools" onclick="jumpCat('hand-tools')">
-        <div class="cn-icon"><i class="fa fa-hammer"></i></div><span>Hand Tools</span>
+        <div class="cn-icon"><i class="fa fa-hammer"></i></div><span data-i18n="cat_hand">Hand Tools</span>
       </div>
       <div class="cn-item" data-cat="fasteners" onclick="jumpCat('fasteners')">
-        <div class="cn-icon"><i class="fa fa-screwdriver"></i></div><span>Fasteners</span>
+        <div class="cn-icon"><i class="fa fa-screwdriver"></i></div><span data-i18n="cat_fasteners">Fasteners</span>
       </div>
       <div class="cn-item" data-cat="measuring" onclick="jumpCat('measuring')">
-        <div class="cn-icon"><i class="fa fa-ruler-combined"></i></div><span>Measuring</span>
+        <div class="cn-icon"><i class="fa fa-ruler-combined"></i></div><span data-i18n="cat_measuring">Measuring</span>
       </div>
       <div class="cn-item" data-cat="safety" onclick="jumpCat('safety')">
-        <div class="cn-icon"><i class="fa fa-hard-hat"></i></div><span>Safety</span>
+        <div class="cn-icon"><i class="fa fa-hard-hat"></i></div><span data-i18n="pill_safety">Safety</span>
       </div>
       <div class="cn-item" data-cat="cutting" onclick="jumpCat('cutting')">
-        <div class="cn-icon"><i class="fa fa-cut"></i></div><span>Cutting</span>
+        <div class="cn-icon"><i class="fa fa-cut"></i></div><span data-i18n="pill_cutting">Cutting</span>
       </div>
       <div class="cn-item" data-cat="storage" onclick="jumpCat('storage')">
-        <div class="cn-icon"><i class="fa fa-toolbox"></i></div><span>Storage</span>
+        <div class="cn-icon"><i class="fa fa-toolbox"></i></div><span data-i18n="pill_storage">Storage</span>
       </div>
     </div>
   </nav>
@@ -94,49 +96,49 @@
   <section id="categories">
     <div class="container">
       <div class="section-header">
-        <span class="section-tag">Browse by Type</span>
-        <h2>Shop by <span class="orange">Category</span></h2>
+        <span class="section-tag" data-i18n="cat_tag">Browse by Type</span>
+        <h2 data-i18n-html="cat_h2">Shop by <span class="orange">Category</span></h2>
       </div>
       <div class="categories-grid">
         <div class="cat-card" onclick="filterProducts('power-tools')" style="background-image:url('product-images/1.jpg')">
           <div class="cat-icon"><i class="fa fa-bolt"></i></div>
-          <h3>Power Tools</h3>
-          <p>Drills, Grinders, Saws, Sanders</p>
+          <h3 data-i18n="cat_power">Power Tools</h3>
+          <p data-i18n="cat_power_sub">Drills, Grinders, Saws, Sanders</p>
         </div>
         <div class="cat-card" onclick="filterProducts('hand-tools')" style="background-image:url('product-images/11.jpg')">
           <div class="cat-icon"><i class="fa fa-hammer"></i></div>
-          <h3>Hand Tools</h3>
-          <p>Hammers, Spanners, Pliers, Chisels</p>
+          <h3 data-i18n="cat_hand">Hand Tools</h3>
+          <p data-i18n="cat_hand_sub">Hammers, Spanners, Pliers, Chisels</p>
         </div>
         <div class="cat-card" onclick="filterProducts('fasteners')" style="background-image:url('product-images/12.jpg')">
           <div class="cat-icon"><i class="fa fa-screwdriver"></i></div>
-          <h3>Fasteners</h3>
-          <p>Nails, Screws, Bolts, Anchors</p>
+          <h3 data-i18n="cat_fasteners">Fasteners</h3>
+          <p data-i18n="cat_fasteners_sub">Nails, Screws, Bolts, Anchors</p>
         </div>
         <div class="cat-card" onclick="filterProducts('measuring')" style="background-image:url('product-images/35.jpg')">
           <div class="cat-icon"><i class="fa fa-ruler-combined"></i></div>
-          <h3>Measuring</h3>
-          <p>Tape Measures, Levels, Laser</p>
+          <h3 data-i18n="cat_measuring">Measuring</h3>
+          <p data-i18n="cat_measuring_sub">Tape Measures, Levels, Laser</p>
         </div>
         <div class="cat-card" onclick="filterProducts('safety')" style="background-image:url('product-images/40.jpg')">
           <div class="cat-icon"><i class="fa fa-hard-hat"></i></div>
-          <h3>Safety Gear</h3>
-          <p>Gloves, Goggles, Hard Hats, Vests</p>
+          <h3 data-i18n="cat_safety">Safety Gear</h3>
+          <p data-i18n="cat_safety_sub">Gloves, Goggles, Hard Hats, Vests</p>
         </div>
         <div class="cat-card" onclick="filterProducts('cutting')" style="background-image:url('product-images/43.jpg')">
           <div class="cat-icon"><i class="fa fa-cut"></i></div>
-          <h3>Cutting Tools</h3>
-          <p>Hand Saws, Hacksaws, Utility Knives</p>
+          <h3 data-i18n="cat_cutting">Cutting Tools</h3>
+          <p data-i18n="cat_cutting_sub">Hand Saws, Hacksaws, Utility Knives</p>
         </div>
         <div class="cat-card" onclick="filterProducts('storage')" style="background-image:url('product-images/50.jpg')">
           <div class="cat-icon"><i class="fa fa-toolbox"></i></div>
-          <h3>Storage</h3>
-          <p>Tool Bags, Tool Boxes, Extension Cords</p>
+          <h3 data-i18n="cat_storage">Storage</h3>
+          <p data-i18n="cat_storage_sub">Tool Bags, Tool Boxes, Extension Cords</p>
         </div>
         <div class="cat-card" onclick="filterProducts('all')" style="background-image:url('product-images/29.jpg')">
           <div class="cat-icon"><i class="fa fa-th-large"></i></div>
-          <h3>All Products</h3>
-          <p>Browse our full catalog</p>
+          <h3 data-i18n="cat_all">All Products</h3>
+          <p data-i18n="cat_all_sub">Browse our full catalog</p>
         </div>
       </div>
     </div>
@@ -145,29 +147,29 @@
   <section id="products">
     <div class="container">
       <div class="section-header">
-        <span class="section-tag">Full Catalog</span>
-        <h2>Our <span class="orange">Products</span></h2>
+        <span class="section-tag" data-i18n="prod_tag">Full Catalog</span>
+        <h2 data-i18n-html="prod_h2">Our <span class="orange">Products</span></h2>
       </div>
       <div class="products-controls">
         <div class="search-wrap">
           <i class="fa fa-search"></i>
-          <input type="text" id="searchInput" placeholder="Search tools, nails, screws..." />
+          <input type="text" id="searchInput" placeholder="Search tools, nails, screws..." data-i18n-placeholder="prod_search" />
         </div>
         <div class="filter-pills">
-          <button class="pill active" data-filter="all">All</button>
-          <button class="pill" data-filter="power-tools">Power Tools</button>
-          <button class="pill" data-filter="hand-tools">Hand Tools</button>
-          <button class="pill" data-filter="fasteners">Fasteners</button>
-          <button class="pill" data-filter="measuring">Measuring</button>
-          <button class="pill" data-filter="safety">Safety</button>
-          <button class="pill" data-filter="cutting">Cutting</button>
-          <button class="pill" data-filter="storage">Storage</button>
+          <button class="pill active" data-filter="all" data-i18n="pill_all">All</button>
+          <button class="pill" data-filter="power-tools" data-i18n="cat_power">Power Tools</button>
+          <button class="pill" data-filter="hand-tools" data-i18n="cat_hand">Hand Tools</button>
+          <button class="pill" data-filter="fasteners" data-i18n="cat_fasteners">Fasteners</button>
+          <button class="pill" data-filter="measuring" data-i18n="cat_measuring">Measuring</button>
+          <button class="pill" data-filter="safety" data-i18n="pill_safety">Safety</button>
+          <button class="pill" data-filter="cutting" data-i18n="pill_cutting">Cutting</button>
+          <button class="pill" data-filter="storage" data-i18n="pill_storage">Storage</button>
         </div>
       </div>
       <div class="products-grid" id="productsGrid"></div>
       <div class="products-empty" id="productsEmpty" style="display:none">
         <i class="fa fa-box-open"></i>
-        <p>No products found. Try a different search.</p>
+        <p data-i18n="no_results">No products found. Try a different search.</p>
       </div>
     </div>
   </section>
@@ -175,16 +177,16 @@
   <div class="modal-overlay" id="cartModal">
     <div class="modal">
       <div class="modal-header">
-        <h3><i class="fa fa-shopping-cart"></i> Your Cart</h3>
+        <h3><i class="fa fa-shopping-cart"></i> <span data-i18n="cart_title">Your Cart</span></h3>
         <button id="closeCart"><i class="fa fa-times"></i></button>
       </div>
       <div class="modal-body" id="cartItems">
-        <p class="empty-cart">Your cart is empty.</p>
+        <p class="empty-cart" data-i18n="cart_empty">Your cart is empty.</p>
       </div>
       <div class="modal-footer">
-        <div class="cart-total">Total: <strong id="cartTotal">0.000 KWD</strong></div>
+        <div class="cart-total"><span data-i18n="cart_total_label">Total:</span> <strong id="cartTotal">0.000 KWD</strong></div>
         <button class="btn btn-primary" id="checkoutBtn" style="width:100%;justify-content:center;margin-top:0">
-          <i class="fab fa-whatsapp"></i> Request Quote on WhatsApp
+          <i class="fab fa-whatsapp"></i> <span data-i18n="cart_wa">Request Quote on WhatsApp</span>
         </button>
       </div>
     </div>
@@ -194,23 +196,23 @@
     <div class="container features-grid">
       <div class="feature-card">
         <i class="fa fa-shipping-fast"></i>
-        <h3>Fast Delivery</h3>
-        <p>Same-day delivery in Kuwait City. GCC shipping in 3-5 business days.</p>
+        <h3 data-i18n="feat_delivery_h">Fast Delivery</h3>
+        <p data-i18n="feat_delivery_p">Same-day delivery in Kuwait City. GCC shipping in 3-5 business days.</p>
       </div>
       <div class="feature-card">
         <i class="fa fa-certificate"></i>
-        <h3>100% Genuine</h3>
-        <p>All products are sourced directly from authorised distributors and manufacturers.</p>
+        <h3 data-i18n="feat_genuine_h">100% Genuine</h3>
+        <p data-i18n="feat_genuine_p">All products are sourced directly from authorised distributors and manufacturers.</p>
       </div>
       <div class="feature-card">
         <i class="fa fa-headset"></i>
-        <h3>Expert Advice</h3>
-        <p>Our hardware experts help you choose the right tool for every job.</p>
+        <h3 data-i18n="feat_advice_h">Expert Advice</h3>
+        <p data-i18n="feat_advice_p">Our hardware experts help you choose the right tool for every job.</p>
       </div>
       <div class="feature-card">
         <i class="fa fa-tags"></i>
-        <h3>Trade Pricing</h3>
-        <p>Bulk and trade discounts available for contractors and businesses.</p>
+        <h3 data-i18n="feat_pricing_h">Trade Pricing</h3>
+        <p data-i18n="feat_pricing_p">Bulk and trade discounts available for contractors and businesses.</p>
       </div>
     </div>
   </section>
@@ -218,25 +220,25 @@
   <section id="contact">
     <div class="container contact-grid">
       <div class="contact-info">
-        <span class="section-tag">Get In Touch</span>
-        <h2>We're Here to <span class="orange">Help</span></h2>
-        <p>Need a specific tool? Looking for a bulk quote? Our team is ready to assist you in Arabic and English.</p>
+        <span class="section-tag" data-i18n="contact_tag">Get In Touch</span>
+        <h2 data-i18n-html="contact_h2">We're Here to <span class="orange">Help</span></h2>
+        <p data-i18n="contact_p">Need a specific tool? Looking for a bulk quote? Our team is ready to assist you in Arabic and English.</p>
         <div class="contact-items">
           <div class="contact-item">
             <i class="fa fa-map-marker-alt"></i>
-            <div><strong>Location</strong><span>Kuwait City, Kuwait</span></div>
+            <div><strong data-i18n="contact_loc_label">Location</strong><span data-i18n="contact_loc">Kuwait City, Kuwait</span></div>
           </div>
           <div class="contact-item">
             <i class="fa fa-envelope"></i>
-            <div><strong>Email</strong><span>info@dhowtech.kw</span></div>
+            <div><strong data-i18n="contact_email_label">Email</strong><span>info@dhowtech.kw</span></div>
           </div>
           <div class="contact-item">
             <i class="fa fa-phone"></i>
-            <div><strong>Phone / WhatsApp</strong><span>+965 9765 6372</span></div>
+            <div><strong data-i18n="contact_phone_label">Phone / WhatsApp</strong><span>+965 9765 6372</span></div>
           </div>
           <div class="contact-item">
             <i class="fa fa-clock"></i>
-            <div><strong>Working Hours</strong><span>Sat-Thu: 7 AM - 8 PM</span></div>
+            <div><strong data-i18n="contact_hours_label">Working Hours</strong><span data-i18n="contact_hours">Sat-Thu: 7 AM - 8 PM</span></div>
           </div>
         </div>
         <div class="social-links">
@@ -249,35 +251,35 @@
       <form class="contact-form" id="contactForm">
         <div class="form-row">
           <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" placeholder="Ahmed Al-Mutairi" required />
+            <label data-i18n="form_name">Full Name</label>
+            <input type="text" data-i18n-placeholder="form_name_ph" placeholder="Ahmed Al-Mutairi" required />
           </div>
           <div class="form-group">
-            <label>Phone / WhatsApp</label>
+            <label data-i18n="form_phone">Phone / WhatsApp</label>
             <input type="tel" placeholder="+965 XXXX XXXX" />
           </div>
         </div>
         <div class="form-group">
-          <label>Email</label>
+          <label data-i18n="form_email">Email</label>
           <input type="email" placeholder="ahmed@example.com" required />
         </div>
         <div class="form-group">
-          <label>What do you need?</label>
+          <label data-i18n="form_need">What do you need?</label>
           <select>
-            <option>General Enquiry</option>
-            <option>Bulk / Trade Order</option>
-            <option>Product Availability</option>
-            <option>Technical Advice</option>
-            <option>Delivery Information</option>
-            <option>Other</option>
+            <option data-i18n="form_opt1">General Enquiry</option>
+            <option data-i18n="form_opt2">Bulk / Trade Order</option>
+            <option data-i18n="form_opt3">Product Availability</option>
+            <option data-i18n="form_opt4">Technical Advice</option>
+            <option data-i18n="form_opt5">Delivery Information</option>
+            <option data-i18n="form_opt6">Other</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Message</label>
-          <textarea rows="4" placeholder="Tell us what tools or materials you need..."></textarea>
+          <label data-i18n="form_msg">Message</label>
+          <textarea rows="4" data-i18n-placeholder="form_msg_ph" placeholder="Tell us what tools or materials you need..."></textarea>
         </div>
-        <button type="submit" class="btn btn-primary full-width">Send Message <i class="fa fa-paper-plane"></i></button>
-        <div class="form-success" id="formSuccess">Message sent! We will get back to you shortly.</div>
+        <button type="submit" class="btn btn-primary full-width"><span data-i18n="form_send">Send Message</span> <i class="fa fa-paper-plane"></i></button>
+        <div class="form-success" id="formSuccess" data-i18n="form_success">Message sent! We will get back to you shortly.</div>
       </form>
     </div>
   </section>
@@ -288,21 +290,21 @@
         <div class="about-img-card">
           <img src="loooooooo.png" alt="DhowTech" onerror="this.style.display='none'" />
         </div>
-        <div class="about-badge"><i class="fa fa-hammer"></i> EST. 2024 - KUWAIT</div>
+        <div class="about-badge"><i class="fa fa-hammer"></i> <span data-i18n="about_badge">EST. 2024 - KUWAIT</span></div>
       </div>
       <div class="about-text">
-        <span class="section-tag">Who We Are</span>
-        <h2>Your Trusted <span class="orange">Hardware</span> Partner</h2>
-        <p>DhowTech is Kuwait's go-to destination for professional-grade tools and hardware. Whether you are a tradesperson, contractor, or weekend DIY enthusiast — we have everything you need to get the job done right.</p>
-        <p>We stock only genuine, quality-tested products from trusted brands, with competitive prices and expert advice available in Arabic and English.</p>
+        <span class="section-tag" data-i18n="about_tag">Who We Are</span>
+        <h2 data-i18n-html="about_h2">Your Trusted <span class="orange">Hardware</span> Partner</h2>
+        <p data-i18n="about_p1">DhowTech is Kuwait's go-to destination for professional-grade tools and hardware. Whether you are a tradesperson, contractor, or weekend DIY enthusiast — we have everything you need to get the job done right.</p>
+        <p data-i18n="about_p2">We stock only genuine, quality-tested products from trusted brands, with competitive prices and expert advice available in Arabic and English.</p>
         <ul class="about-features">
-          <li><i class="fa fa-check-circle"></i> 100% genuine, quality-tested products</li>
-          <li><i class="fa fa-check-circle"></i> Expert advice in Arabic and English</li>
-          <li><i class="fa fa-check-circle"></i> Same-day delivery within Kuwait City</li>
-          <li><i class="fa fa-check-circle"></i> Bulk pricing for contractors and businesses</li>
-          <li><i class="fa fa-check-circle"></i> Easy returns and after-sales support</li>
+          <li><i class="fa fa-check-circle"></i> <span data-i18n="about_f1">100% genuine, quality-tested products</span></li>
+          <li><i class="fa fa-check-circle"></i> <span data-i18n="about_f2">Expert advice in Arabic and English</span></li>
+          <li><i class="fa fa-check-circle"></i> <span data-i18n="about_f3">Same-day delivery within Kuwait City</span></li>
+          <li><i class="fa fa-check-circle"></i> <span data-i18n="about_f4">Bulk pricing for contractors and businesses</span></li>
+          <li><i class="fa fa-check-circle"></i> <span data-i18n="about_f5">Easy returns and after-sales support</span></li>
         </ul>
-        <a href="#contact" class="btn btn-primary"><i class="fa fa-phone"></i> Contact Us</a>
+        <a href="#contact" class="btn btn-primary"><i class="fa fa-phone"></i> <span data-i18n="about_cta">Contact Us</span></a>
       </div>
     </div>
   </section>
@@ -311,7 +313,7 @@
     <div class="container footer-grid">
       <div class="footer-brand">
         <img src="loooooooo.png" alt="DhowTech" class="footer-logo" onerror="this.style.display='none'" />
-        <p>Kuwait's trusted supplier of quality hardware, power tools and construction materials since 2024.</p>
+        <p data-i18n="footer_desc">Kuwait's trusted supplier of quality hardware, power tools and construction materials since 2024.</p>
         <div class="social-links">
           <a href="#"><i class="fab fa-instagram"></i></a>
           <a href="#"><i class="fab fa-whatsapp"></i></a>
@@ -319,53 +321,53 @@
         </div>
       </div>
       <div class="footer-links">
-        <h4>Navigation</h4>
-        <a href="#hero">Home</a>
-        <a href="#about">About Us</a>
-        <a href="#products">Products</a>
-        <a href="#contact">Contact</a>
+        <h4 data-i18n="footer_nav">Navigation</h4>
+        <a href="#hero" data-i18n="nav_home">Home</a>
+        <a href="#about" data-i18n="nav_about">About Us</a>
+        <a href="#products" data-i18n="nav_products">Products</a>
+        <a href="#contact" data-i18n="nav_contact">Contact</a>
       </div>
       <div class="footer-links">
-        <h4>Categories</h4>
-        <a href="#categories">Power Tools</a>
-        <a href="#categories">Hand Tools</a>
-        <a href="#categories">Fasteners</a>
-        <a href="#categories">Safety Gear</a>
-        <a href="#categories">Measuring</a>
-        <a href="#categories">Cutting Tools</a>
+        <h4 data-i18n="footer_cats">Categories</h4>
+        <a href="#categories" data-i18n="cat_power">Power Tools</a>
+        <a href="#categories" data-i18n="cat_hand">Hand Tools</a>
+        <a href="#categories" data-i18n="cat_fasteners">Fasteners</a>
+        <a href="#categories" data-i18n="cat_safety">Safety Gear</a>
+        <a href="#categories" data-i18n="cat_measuring">Measuring</a>
+        <a href="#categories" data-i18n="cat_cutting">Cutting Tools</a>
       </div>
       <div class="footer-links">
-        <h4>Support</h4>
-        <a href="#contact">Trade Accounts</a>
-        <a href="#contact">Bulk Orders</a>
-        <a href="#contact">Delivery Info</a>
-        <a href="#contact">Returns Policy</a>
-        <a href="#contact">Technical Help</a>
+        <h4 data-i18n="footer_support">Support</h4>
+        <a href="#contact" data-i18n="footer_trade">Trade Accounts</a>
+        <a href="#contact" data-i18n="footer_bulk">Bulk Orders</a>
+        <a href="#contact" data-i18n="footer_delivery_info">Delivery Info</a>
+        <a href="#contact" data-i18n="footer_returns">Returns Policy</a>
+        <a href="#contact" data-i18n="footer_tech">Technical Help</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>2024 DhowTech Hardware and Innovation. All rights reserved. Kuwait.</span>
+      <span data-i18n="footer_copy">2024 DhowTech Hardware and Innovation. All rights reserved. Kuwait.</span>
     </div>
   </footer>
 
   <!-- INTRODUCTION -->
   <section id="intro">
     <div class="container intro-inner">
-      <span class="section-tag intro-tag">Welcome to DhowTech</span>
-      <h2 class="intro-heading">
+      <span class="section-tag intro-tag" data-i18n="intro_tag">Welcome to DhowTech</span>
+      <h2 class="intro-heading" data-i18n-html="intro_h2">
         Kuwait's Go-To <span class="orange">Hardware</span> Store — Open 7 Days
       </h2>
-      <p class="intro-body">
+      <p class="intro-body" data-i18n="intro_p">
         DhowTech supplies professional-grade power tools, hand tools, fasteners, safety gear and construction materials to contractors, businesses and individuals across Kuwait. Whether you need one item or a full site order — we have it in stock and ready to go.
       </p>
       <div class="intro-checks">
-        <span class="intro-check"><i class="fa fa-check-circle"></i> 60+ Products In Stock</span>
-        <span class="intro-check"><i class="fa fa-check-circle"></i> Same-Day Kuwait Delivery</span>
-        <span class="intro-check"><i class="fa fa-check-circle"></i> Bulk &amp; Trade Pricing</span>
-        <span class="intro-check"><i class="fa fa-check-circle"></i> Arabic &amp; English Support</span>
+        <span class="intro-check"><i class="fa fa-check-circle"></i> <span data-i18n="intro_c1">60+ Products In Stock</span></span>
+        <span class="intro-check"><i class="fa fa-check-circle"></i> <span data-i18n="intro_c2">Same-Day Kuwait Delivery</span></span>
+        <span class="intro-check"><i class="fa fa-check-circle"></i> <span data-i18n="intro_c3">Bulk &amp; Trade Pricing</span></span>
+        <span class="intro-check"><i class="fa fa-check-circle"></i> <span data-i18n="intro_c4">Arabic &amp; English Support</span></span>
       </div>
       <a href="tel:97656372" class="intro-cta">
-        <i class="fa fa-phone"></i> Call Us: 9765 6372
+        <i class="fa fa-phone"></i> <span data-i18n="intro_cta_text">Call Us: 9765 6372</span>
       </a>
     </div>
   </section>
@@ -374,26 +376,26 @@
   <div class="checkout-overlay" id="checkoutOverlay">
     <div class="checkout-box">
       <div class="co-header">
-        <h3><i class="fab fa-whatsapp"></i> Complete Your Order</h3>
+        <h3><i class="fab fa-whatsapp"></i> <span data-i18n="co_title">Complete Your Order</span></h3>
         <button class="co-close" id="closeCheckout"><i class="fa fa-times"></i></button>
       </div>
       <div class="co-body" id="coBody">
         <div class="co-section">
-          <div class="co-section-title"><i class="fa fa-shopping-cart"></i> Order Summary</div>
+          <div class="co-section-title"><i class="fa fa-shopping-cart"></i> <span data-i18n="co_order_sum">Order Summary</span></div>
           <div class="co-order-items" id="coItems"></div>
-          <div class="co-total"><span>Total Amount</span><strong id="coTotal">0.000 KWD</strong></div>
+          <div class="co-total"><span data-i18n="co_total_label">Total Amount</span><strong id="coTotal">0.000 KWD</strong></div>
         </div>
         <div class="co-section">
-          <div class="co-section-title"><i class="fa fa-user"></i> Your Details</div>
+          <div class="co-section-title"><i class="fa fa-user"></i> <span data-i18n="co_your_details">Your Details</span></div>
           <div class="co-form-row">
-            <div class="co-field"><label>Full Name *</label><input type="text" id="coName" placeholder="Ahmed Al-Mutairi" /></div>
-            <div class="co-field"><label>WhatsApp Number *</label><input type="tel" id="coPhone" placeholder="+965 XXXX XXXX" /></div>
+            <div class="co-field"><label data-i18n="co_full_name">Full Name *</label><input type="text" id="coName" placeholder="Ahmed Al-Mutairi" /></div>
+            <div class="co-field"><label data-i18n="co_wa_num">WhatsApp Number *</label><input type="tel" id="coPhone" placeholder="+965 XXXX XXXX" /></div>
           </div>
         </div>
         <div class="co-section">
-          <div class="co-section-title"><i class="fa fa-map-marker-alt"></i> Delivery Address</div>
+          <div class="co-section-title"><i class="fa fa-map-marker-alt"></i> <span data-i18n="co_delivery_addr">Delivery Address</span></div>
           <div class="co-field">
-            <label>Area *</label>
+            <label data-i18n="co_area">Area *</label>
             <select id="coArea">
               <option value="">-- Select Area --</option>
               <option>Kuwait City</option><option>Salmiya</option><option>Hawalli</option>
@@ -406,25 +408,26 @@
             </select>
           </div>
           <div class="co-form-row">
-            <div class="co-field"><label>Block</label><input type="text" id="coBlock" placeholder="Block 5" /></div>
-            <div class="co-field"><label>Street</label><input type="text" id="coStreet" placeholder="Street 10" /></div>
+            <div class="co-field"><label data-i18n="co_block">Block</label><input type="text" id="coBlock" placeholder="Block 5" /></div>
+            <div class="co-field"><label data-i18n="co_street">Street</label><input type="text" id="coStreet" placeholder="Street 10" /></div>
           </div>
           <div class="co-form-row">
-            <div class="co-field"><label>House / Building</label><input type="text" id="coHouse" placeholder="House 3" /></div>
-            <div class="co-field"><label>Floor / Apt</label><input type="text" id="coFloor" placeholder="Floor 2, Apt 4" /></div>
+            <div class="co-field"><label data-i18n="co_house">House / Building</label><input type="text" id="coHouse" placeholder="House 3" /></div>
+            <div class="co-field"><label data-i18n="co_floor">Floor / Apt</label><input type="text" id="coFloor" placeholder="Floor 2, Apt 4" /></div>
           </div>
-          <div class="co-field"><label>Notes</label><input type="text" id="coNotes" placeholder="Leave at door, call on arrival..." /></div>
+          <div class="co-field"><label data-i18n="co_notes">Notes</label><input type="text" id="coNotes" placeholder="Leave at door, call on arrival..." /></div>
         </div>
-        <button class="co-wa-btn" id="coSubmitBtn"><i class="fab fa-whatsapp" style="font-size:20px"></i> Send Order on WhatsApp</button>
+        <button class="co-wa-btn" id="coSubmitBtn"><i class="fab fa-whatsapp" style="font-size:20px"></i> <span data-i18n="co_submit">Send Order on WhatsApp</span></button>
       </div>
     </div>
   </div>
+
   <!-- PRODUCT DETAIL POPUP -->
   <div class="prod-overlay" id="prodOverlay" onclick="if(event.target===this)closeProduct()">
     <div class="prod-modal">
       <div class="prod-modal-topbar">
         <button class="prod-back-btn" onclick="closeProduct()">
-          <i class="fa fa-arrow-left"></i> Back to Products
+          <i class="fa fa-arrow-left"></i> <span data-i18n="back_btn">Back to Products</span>
         </button>
         <span class="prod-modal-sku" id="prodModalSku"></span>
       </div>
@@ -437,5 +440,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
-
