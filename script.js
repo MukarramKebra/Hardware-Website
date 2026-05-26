@@ -161,6 +161,16 @@ const PRODUCTS = [
 let cart = [];
 let activeFilter = 'all';
 
+// ── MULTI-CATEGORY HELPER (storefront) ────────────────────────────────────
+// Returns array of extra category slugs assigned to a product via the admin
+// multi-category picker (stored in dhowtech_multi_cats in localStorage).
+function getMultiCats(id) {
+  try {
+    var map = JSON.parse(localStorage.getItem('dhowtech_multi_cats') || '{}');
+    return Array.isArray(map[String(id)]) ? map[String(id)] : [];
+  } catch(e) { return []; }
+}
+
 function imgError(el) {
   if (!el.dataset.retry) {
     el.dataset.retry = '1';
@@ -236,7 +246,7 @@ function renderProducts() {
   const grid  = document.getElementById('productsGrid');
   const empty = document.getElementById('productsEmpty');
   const filtered = getAllProducts().filter(p => {
-    const matchCat    = activeFilter === 'all' || p.category === activeFilter;
+    const matchCat    = activeFilter === 'all' || p.category === activeFilter || getMultiCats(p.id).includes(activeFilter);
     const matchSearch = !query || p.name.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query);
     return matchCat && matchSearch;
   });

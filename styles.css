@@ -213,6 +213,40 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 .form-success { display: none; text-align: center; padding: 11px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.25); border-radius: 7px; color: var(--green); font-weight: 700; font-size: 13px; margin-top: 10px; }
 .form-success.show { display: block; }
 
+/* ── INTRODUCTION ────────────────────────────────────────────────────────── */
+#intro { background: #fff; padding: 72px 0 64px; border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; }
+.intro-inner { max-width: 860px; text-align: center; }
+.intro-tag { display: inline-block; margin-bottom: 14px; }
+.intro-heading { font-size: clamp(22px,4vw,34px); font-weight: 900; color: #1a1a1a; line-height: 1.25; margin-bottom: 18px; }
+.intro-body { font-size: 15px; color: #555; line-height: 1.75; max-width: 680px; margin: 0 auto 28px; }
+.intro-checks { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 28px; margin-bottom: 32px; }
+.intro-check { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #333; }
+.intro-check .fa-check-circle { color: var(--orange); font-size: 15px; }
+.intro-cta { display: inline-flex; align-items: center; gap: 10px; background: var(--orange); color: #fff; font-size: 17px; font-weight: 900; padding: 14px 32px; border-radius: 10px; text-decoration: none; letter-spacing: 0.3px; }
+.intro-cta:hover { background: #e05600; }
+
+@media (max-width: 768px) {
+  #intro {
+    background: url('full phone.png') center center / cover no-repeat;
+    position: relative;
+    border: none;
+    padding: 80px 0 70px;
+  }
+  #intro::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.62);
+    z-index: 0;
+  }
+  #intro .intro-inner { position: relative; z-index: 1; }
+  #intro .intro-tag { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.35); }
+  #intro .intro-heading { color: #fff; }
+  #intro .intro-body { color: rgba(255,255,255,0.85); }
+  #intro .intro-check { color: #fff; }
+  #intro .intro-check .fa-check-circle { color: var(--orange); }
+}
+
 /* ── FOOTER ───────────────────────────────────────────────────────────── */
 footer { background: var(--dark); padding: 64px 0 0; border-top: 1px solid rgba(255,255,255,0.06); }
 .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 52px; }
