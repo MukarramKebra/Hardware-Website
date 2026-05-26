@@ -158,6 +158,77 @@ const PRODUCTS = [
   { id:60, name:'Wall Plugs 100pc Assorted',    category:'fasteners',   price:0.750,  img:UL(60), desc:'100-piece assorted nylon wall plugs 6mm, 8mm and 10mm. For brick and concrete.', badge:null, stock:'in-stock' }
 ];
 
+// ── ARABIC PRODUCT TRANSLATIONS ───────────────────────────────────────────
+var _AR_PRODUCTS = {
+  1:  { name:'مثقاب لاسلكي 18 فولت',           desc:'مثقاب ليثيوم أيون 18 فولت لاسلكي بصندوق تروس ذو سرعتين، كلاتش كيلس 13 ملم، ووظيفة الرجوع.' },
+  2:  { name:'طاحونة زاوية 115 ملم',             desc:'طاحونة زاوية 900 واط للقطع والطحن والتلميع. 11,000 دورة/دقيقة.' },
+  3:  { name:'منشار دائري 185 ملم',              desc:'منشار دائري 1200 واط مع دليل ليزر. يقطع الخشب حتى 65 ملم. ميل 0-45 درجة.' },
+  4:  { name:'منشار التقطيع 650 واط',             desc:'منشار تقطيع 650 واط بحركة بندولية وسرعة متغيرة. يقطع الخشب والمعدن والبلاستيك.' },
+  5:  { name:'ماكينة صنفرة مدارية',               desc:'ماكينة صنفرة 300 واط مع كيس غبار. قاعدة 125 ملم، 12,000 دورة/دقيقة.' },
+  6:  { name:'مفك صدم لاسلكي 18 فولت',           desc:'مفك صدم بدون فرش 18 فولت بعزم 180 نيوتن. 3 إعدادات سرعة، يشمل ضوء LED.' },
+  7:  { name:'مطرقة حفر SDS',                    desc:'مطرقة حفر SDS-plus 800 واط لحفر الخرسانة والطوب والحجر. مفتاح 3 وظائف.' },
+  8:  { name:'مسدس حرارة 2000 واط',              desc:'مسدس حرارة 2000 واط بدرجتي 300 و500 درجة. مثالي لتقشير الطلاء والتشكيل الحراري.' },
+  9:  { name:'منشار ترددي',                       desc:'منشار ترددي 900 واط بتغيير شفرة بدون أدوات. سرعة متغيرة للخشب والمعدن.' },
+  10: { name:'مفك لاسلكي 3.6 فولت',              desc:'مفك لاسلكي صغير 3.6 فولت مع 15 إعداد عزم وضوء LED.' },
+  11: { name:'مطرقة مخلب 16 أوقية',              desc:'مطرقة مخلب 16 أوقية من الفولاذ المطروح مع مقبض ألياف زجاجية. تقلل الاهتزاز.' },
+  12: { name:'طقم مفكات فيليبس 6 قطع',           desc:'6 مفكات فيليبس كروم فاناديوم PH0 إلى PH3. رؤوس مغناطيسية ومقابض مريحة.' },
+  13: { name:'طقم مفكات مسطحة 6 قطع',            desc:'6 مفكات مسطحة بشفرات فولاذ مقساة ومقابض مريحة.' },
+  14: { name:'مفتاح إنجليزي 12 بوصة',            desc:'مفتاح إنجليزي قابل للضبط 12 بوصة، فك حتى 34 ملم. بناء فولاذي مطلي بالكروم.' },
+  15: { name:'طقم مفاتيح مزدوجة 12 قطعة',        desc:'12 مفتاح مزدوج 8-19 ملم. كروم فاناديوم بتشطيب مرآة.' },
+  16: { name:'طقم كماشات 3 قطع',                 desc:'3 قطع: كماشة مزدوجة، كماشة أنف طويل وقاطع قطري. فولاذ كروم فاناديوم.' },
+  17: { name:'طقم مفاتيح آلن 9 قطع',             desc:'9 مفاتيح آلن متري 1.5-10 ملم. فولاذ CRV بذراع طويل للوصول الإضافي.' },
+  18: { name:'طقم سوكيت 40 قطعة 1/2"',           desc:'40 قطعة محرك 1/2" مع راشيت سريع الإطلاق. متري وإمبريالي.' },
+  19: { name:'مطرقة مطاط 32 أوقية',              desc:'مطرقة مطاط 32 أوقية مع مقبض خشبي. لتجميع الأثاث وتركيب البلاط.' },
+  20: { name:'طقم أزاميل 4 قطع',                 desc:'4 أزاميل خشب 6 و12 و19 و25 ملم. فولاذ عالي الكربون بحواف محسونة.' },
+  21: { name:'مسامير 50 ملم 1 كيلو',             desc:'علبة 1 كيلو مسامير 50×2.65 ملم. للنجارة العامة والتأطير.' },
+  22: { name:'مسامير 75 ملم 1 كيلو',             desc:'علبة 1 كيلو مسامير 75×3.35 ملم. مسامير بناء ثقيلة.' },
+  23: { name:'مسامير 100 ملم 1 كيلو',            desc:'علبة 1 كيلو مسامير 100×4 ملم. لتأطير الخشب الإنشائي.' },
+  24: { name:'براغي خشب 4×50 ملم 200 قطعة',     desc:'200 برغي خشب مغلفن 4×50 ملم. رأس غاطس، بوزيدرايف.' },
+  25: { name:'براغي جبسم 3.5×35 ملم',            desc:'200 برغي جبسم 3.5×35 ملم. رأس مخروطي، حلزون خشن، طرف حفر ذاتي.' },
+  26: { name:'براغي حفر ذاتي 200 قطعة',          desc:'200 برغي TEK حفر ذاتي للمعدن. 4.2×13 ملم.' },
+  27: { name:'صواميل سداسية M10×60 ملم 25 قطعة', desc:'25 صامولة سداسية M10×60 ملم مغلفنة مع صواميل وحلقات مطابقة.' },
+  28: { name:'مراسي خرسانة 8 ملم 50 قطعة',      desc:'50 مرساة نايلون للبناء 8 ملم مع براغي. للطوب والخرسانة والبلوك.' },
+  29: { name:'صواميل وبراغي وحلقات 500 قطعة',   desc:'500 قطعة متنوعة من الصواميل والبراغي والحلقات M4 إلى M8 في علبة منظمة.' },
+  30: { name:'ربطات كيبل 200 قطعة متنوعة',       desc:'200 ربطة كيبل بمقاسات 100 و200 و300 ملم. نايلون أسود مقاوم للأشعة.' },
+  31: { name:'شريط قياس 8 متر',                  desc:'شريط قياس فولاذي 8 أمتار بعلامات متري وإمبريالي. قفل تلقائي وقلادة حزام.' },
+  32: { name:'ميزان ماء 1200 ملم',               desc:'ميزان ماء ألومنيوم 1200 ملم مع 3 فقاعات. أفقي وعمودي و45 درجة.' },
+  33: { name:'ميزان ليزر متقاطع',                desc:'ميزان ليزر متقاطع ضبط ذاتي بخطوط أفقية وعمودية. مدى عمل 15 متر.' },
+  34: { name:'كاشف الحوامل الرقمي',              desc:'كاشف إلكتروني يكشف الخشب والمعدن خلف الجدران حتى عمق 38 ملم.' },
+  35: { name:'زاوية فولاذية 300 ملم',             desc:'زاوية فولاذية مقاومة للصدأ 300 ملم للتحديد والتحقق من الزوايا القائمة.' },
+  36: { name:'خيط طباشير 30 متر',                desc:'بكرة خيط طباشير 30 متر مع مسحوق أزرق. للتحديد على خطوط مستقيمة.' },
+  37: { name:'نظارات سلامة شفافة',               desc:'نظارات سلامة شفافة مضادة للخدش مع تهوية غير مباشرة. معتمدة EN166.' },
+  38: { name:'قفازات جلد للعمل',                 desc:'قفازات جلد مع ظهر سبانديكس قابل للتنفس. مقاومة للقطع والتآكل.' },
+  39: { name:'كمامات N95 10 قطع',                desc:'علبة 10 كمامات N95 مع صمام. تفلتر 95% من الجزيئات المحمولة جواً.' },
+  40: { name:'خوذة حماية صفراء',                 desc:'خوذة بناء صفراء مع ضبط راشيت قابل للتعديل. معتمدة EN397.' },
+  41: { name:'سترة سلامة عاكسة',                 desc:'سترة سلامة برتقالية عاكسة مع أشرطة عاكسة. EN471 فئة 2.' },
+  42: { name:'حذاء أمان بمقدمة فولاذية',         desc:'حذاء أمان بمقدمة فولاذية وحماية النعل ونعل مقاوم للانزلاق. مقاسات 40-46.' },
+  43: { name:'منشار يدوي 550 ملم',               desc:'منشار يدوي 550 ملم، 8 أسنان/بوصة للقطع السريع. مقبض مريح.' },
+  44: { name:'منشار حديد + 5 شفرات',             desc:'إطار منشار حديد ثقيل مع 5 شفرات ثنائية المعدن. يقطع المعدن والبلاستيك.' },
+  45: { name:'سكين فائدة + 10 شفرات',            desc:'سكين فائدة قابلة للسحب مع قبضة مطاطية و10 شفرات إضافية.' },
+  46: { name:'مقص تيفيشن 250 ملم',               desc:'مقص تيفيشن 250 ملم للقطع في الصفائح المعدنية حتى 1.2 ملم.' },
+  47: { name:'قاطع أنابيب PVC 42 ملم',           desc:'قاطع راشيت لأنابيب PVC وCPVC وPEX حتى قطر 42 ملم. قطع نظيف.' },
+  48: { name:'حقيبة أدوات 16 بوصة',              desc:'حقيبة أدوات قماش ثقيل 16 بوصة مع 20 جيب وقاعدة مقواة. حزام مبطن.' },
+  49: { name:'سلك تمديد 10 م 4 مخارج',           desc:'سلك تمديد 10 متر مع 4 مخارج وحماية ضد التدفق الزائد. 1.5 ملم، 13 أمبير.' },
+  50: { name:'صندوق أدوات معدني 16 بوصة',        desc:'صندوق أدوات معدني 16 بوصة مع صينية قابلة للإزالة ومشبك قفل قوي.' },
+  51: { name:'طقم رؤوس مثقاب HSS 20 قطعة',       desc:'20 رأس مثقاب HSS 1-10 ملم. للخشب والمعدن والبلاستيك. مطلي بالتيتانيوم.' },
+  52: { name:'طقم أوراق صنفرة 40 قطعة',          desc:'40 ورقة صنفرة متنوعة 60/80/120/240. للصنفرة المدارية واليدوية.' },
+  53: { name:'مفتاح أنابيب 14 بوصة',             desc:'مفتاح أنابيب ثقيل 14 بوصة مع جسم ألومنيوم وفك فولاذ مقسى. 0-50 ملم.' },
+  54: { name:'مسدس دباسة + 1000 دبوس',           desc:'مسدس دباسة ثقيل مع 1000 دبوس. للقماش والخشب والعزل.' },
+  55: { name:'شريط لاصق 50 ملم × 50 متر',        desc:'شريط لاصق فضي ثقيل 50 ملم × 50 متر. مقاوم للماء والأشعة فوق البنفسجية.' },
+  56: { name:'قياس ليزر رقمي 40 متر',            desc:'قياس مسافة ليزر حتى 40 متر. حسابات المساحة والحجم. شاشة LCD.' },
+  57: { name:'واقيات ركبة مهنية',                desc:'واقيات ركبة مهنية مع وسادة جل وإسفنج EVA. أشرطة قابلة للتعديل. EN14404.' },
+  58: { name:'أقراص قطع 115 ملم 10 قطع',         desc:'10 قرص قطع 115 ملم لطاحونة الزاوية للمعدن والإنوكس. سماكة 1 ملم.' },
+  59: { name:'حزام أدوات 5 جيوب',                desc:'حزام أدوات 5 جيوب ثقيل مع حامل مطرقة. خصر قابل للتعديل حتى 122 سم.' },
+  60: { name:'بلاستيك جدار متنوع 100 قطعة',      desc:'100 قطعة بلاستيك جدار نايلون متنوعة 6 و8 و10 ملم. للطوب والخرسانة.' }
+};
+
+// Arabic category display names
+var _AR_CATS = {
+  'power-tools':'أدوات كهربائية', 'hand-tools':'أدوات يدوية',
+  'fasteners':'مثبتات', 'measuring':'قياس',
+  'safety':'سلامة', 'cutting':'قطع', 'storage':'تخزين'
+};
+
 let cart = [];
 let activeFilter = 'all';
 
@@ -261,38 +332,45 @@ function renderProducts() {
   // custom photos set by admin (loaded from Supabase)
   const customPhotos = _sbPhotos;
 
+  const isAr = _lang === 'ar';
   grid.innerHTML = filtered.map(p => {
     const liveStatus = getLiveStock(p.id) || p.stock;
     const liveQty    = getLiveQty(p.id);
     const isOut      = liveStatus === 'out-of-stock';
     const isLow      = liveStatus === 'low-stock';
     const photo      = customPhotos[p.id] || p.img;
+    // Arabic product name/desc
+    const arP = isAr && _AR_PRODUCTS[p.id];
+    const pName = arP ? arP.name : p.name;
+    const pDesc = arP ? arP.desc : p.desc;
+    const pCat  = isAr ? (_AR_CATS[p.category] || p.category.replace('-',' ')) : p.category.replace('-',' ');
     let stockLabel, stockClass;
-    if (isOut)      { stockLabel = '&#10006; Out of Stock';  stockClass = 'out-of-stock'; }
-    else if (isLow) { stockLabel = '&#9888; Low Stock' + (liveQty !== null ? ' (' + liveQty + ' left)' : ''); stockClass = 'low-stock'; }
-    else            { stockLabel = '&#10003; In Stock'  + (liveQty !== null ? ' (' + liveQty + ')'      : ''); stockClass = 'in-stock'; }
+    if (isOut)      { stockLabel = isAr ? '&#10006; غير متوفر'  : '&#10006; Out of Stock';  stockClass = 'out-of-stock'; }
+    else if (isLow) { stockLabel = (isAr ? '&#9888; كمية محدودة' : '&#9888; Low Stock') + (liveQty !== null ? ' (' + liveQty + (isAr ? ' متبقي)' : ' left)') : ''); stockClass = 'low-stock'; }
+    else            { stockLabel = (isAr ? '&#10003; متوفر'      : '&#10003; In Stock')  + (liveQty !== null ? ' (' + liveQty + ')' : ''); stockClass = 'in-stock'; }
+    const addBtn   = isAr ? 'أضف' : 'Add';
+    const unavail  = isAr ? 'غير متاح' : 'Unavailable';
     return `
       <div class="product-card ${isOut ? 'card-out' : ''}" onclick="openProduct(${p.id})">
         <div class="product-img-wrap">
           ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
-          ${isOut ? '<span class="out-badge">OUT OF STOCK</span>' : ''}
-          <img src="${photo}" alt="${p.name}" loading="lazy"
-            onerror="imgError(this)" />
+          ${isOut ? `<span class="out-badge">${isAr ? 'نفد المخزون' : 'OUT OF STOCK'}</span>` : ''}
+          <img src="${photo}" alt="${pName}" loading="lazy" onerror="imgError(this)" />
           <div class="product-img-fallback" style="display:none"><i class="fa fa-tools"></i></div>
         </div>
         <div class="product-info">
-          <div class="product-cat">${p.category.replace('-',' ')}</div>
+          <div class="product-cat">${pCat}</div>
           <div style="font-size:10px;font-weight:700;color:#aaa;letter-spacing:0.5px;margin-bottom:3px">${getProductSku(p.id)}</div>
-          <h3>${p.name}</h3>
-          <p>${p.desc}</p>
+          <h3>${pName}</h3>
+          <p>${pDesc}</p>
           <div class="product-footer">
             <div>
               <div class="product-price">${p.price.toFixed(3)} <small>KWD</small></div>
               <div class="stock-badge ${stockClass}">${stockLabel}</div>
             </div>
             ${isOut
-              ? `<button class="btn-add btn-disabled" disabled onclick="event.stopPropagation()">Unavailable</button>`
-              : `<button class="btn-add" onclick="event.stopPropagation();addToCart(${p.id})"><i class="fa fa-plus"></i> Add</button>`}
+              ? `<button class="btn-add btn-disabled" disabled onclick="event.stopPropagation()">${unavail}</button>`
+              : `<button class="btn-add" onclick="event.stopPropagation();addToCart(${p.id})"><i class="fa fa-plus"></i> ${addBtn}</button>`}
           </div>
         </div>
       </div>`;
@@ -743,6 +821,9 @@ function setLang(lang) {
     var k = el.getAttribute('data-i18n-placeholder');
     if (t[k] !== undefined) el.placeholder = t[k];
   });
+
+  // Re-render product cards with translated names/descriptions
+  if (typeof renderProducts === 'function') renderProducts();
 
   // Rebuild marquee with translated items
   var track = document.querySelector('.marquee-track');
