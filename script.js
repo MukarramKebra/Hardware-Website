@@ -338,7 +338,9 @@ function renderProducts() {
     const liveQty    = getLiveQty(p.id);
     const isOut      = liveStatus === 'out-of-stock';
     const isLow      = liveStatus === 'low-stock';
-    const photo      = customPhotos[p.id] || p.img;
+    const photo      = customPhotos[p.id]
+                     || (p.img && !p.img.startsWith('product-images/') ? p.img : '')
+                     || `https://picsum.photos/seed/dhow${p.id}/400/320`;
     // Arabic product name/desc
     const arP = isAr && _AR_PRODUCTS[p.id];
     const pName = arP ? arP.name : p.name;
