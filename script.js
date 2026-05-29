@@ -323,6 +323,13 @@ function renderProducts() {
   });
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
+  // Best Sellers always first, then other badged items, then the rest
+  const badgeOrder = { 'Best Seller': 0, 'Popular': 1, 'Pro': 2, 'New': 3, 'Sale': 4 };
+  filtered.sort((a, b) => {
+    const aRank = a.badge !== null && a.badge !== undefined ? (badgeOrder[a.badge] !== undefined ? badgeOrder[a.badge] : 5) : 99;
+    const bRank = b.badge !== null && b.badge !== undefined ? (badgeOrder[b.badge] !== undefined ? badgeOrder[b.badge] : 5) : 99;
+    return aRank - bRank;
+  });
   // Track search appearances (debounced so only fires when user stops typing)
   if (query && filtered.length) {
     clearTimeout(window._searchTimer);
@@ -592,6 +599,9 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
   // Deduct stock
   deductStock(cart);
 
+  // Save order to Supabase
+  saveOrderToSupabase({ name, phone, address, notes, items: cart.map(c=>({name:c.name,sku:getProductSku(c.id),qty:c.qty,price:c.price})), total });
+
   // Open WhatsApp
   window.open('https://wa.me/96597656372?text=' + encodeURIComponent(msg), '_blank');
 
@@ -844,3 +854,31 @@ function toggleLang() {
   var saved = localStorage.getItem('dhowtech_lang');
   if (saved === 'ar') setLang('ar');
 })();
+
+// ── SAVE ORDER TO SUPABASE ────────────────────────────────────────────────────
+async function saveOrderToSupabase(order) {
+  const payload = [{
+    customer_name:  order.name,
+    customer_phone: order.phone,
+    address:        order.address,
+    notes:          order.notes || '',
+    items:          order.items,
+    total:          parseFloat(order.total.toFixed(3)),
+    status:         'pending'
+  }];
+  console.log('[DhowTech] Saving order:', payload);
+  const result = await sbFetch(SB_URL + '/rest/v1/dhowtech_orders', {
+    method: 'POST',
+    headers: Object.assign({}, SB_H, {
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    }),
+    body: JSON.stringify(payload)
+  });
+  if (result.error) {
+    console.error('[DhowTech] Order save FAILED:', result.error);
+    alert('⚠️ Order save failed: ' + result.error + '\n\nYour WhatsApp message was still sent.');
+  } else {
+    console.log('[DhowTech] Order saved OK:', result.data);
+  }
+}
