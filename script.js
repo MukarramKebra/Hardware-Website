@@ -3,18 +3,18 @@ const UL  = (id) => `product-images/${id}.jpg`;   // local images
 
 // ── SKU HELPER ────────────────────────────────────────────────────────────
 // SKU is a separate display label from the internal product ID.
-// Admin can set a custom SKU; it's stored in dhowtech_sku_map in localStorage.
+// Admin can set a custom SKU; it's stored in rawaj_sku_map in localStorage.
 function getProductSku(id) {
   try {
-    var map = JSON.parse(localStorage.getItem('dhowtech_sku_map') || '{}');
+    var map = JSON.parse(localStorage.getItem('rawaj_sku_map') || '{}');
     var val = map[String(id)];
     return 'SKU-' + String(val !== undefined ? val : id).padStart(4, '0');
   } catch(e) { return 'SKU-' + String(id).padStart(4, '0'); }
 }
 
 // ── SUPABASE CONFIG ───────────────────────────────────────────────────────
-const SB_URL = 'https://jjyhybulxixblpiixzkp.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqeWh5YnVseGl4YmxwaWl4emtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMjgxNTIsImV4cCI6MjA5NDYwNDE1Mn0.CdI1UcV4pIvdUU9xISJgbIqjfZunAgsiiIj0PntJm4I';
+const SB_URL = 'https://sinzmodmefkyjkzzitjy.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbnptb2RtZWZreWprenppdGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMjQ4MzYsImV4cCI6MjA5NTcwMDgzNn0.Ft88pQEKbSVP_yb7UTRVq2fLa_TScR97_jvJmgAMlSc';
 const SB_H   = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 
 // ── SUPABASE FETCH WRAPPER ────────────────────────────────────────────────
@@ -33,20 +33,20 @@ async function sbFetch(url, options) {
 // Live data loaded from Supabase (falls back to localStorage if offline)
 let _sbStock    = {};
 let _sbPhotos   = {};
-let _customProds = [];      // admin-added products from dhowtech_products table
+let _customProds = [];      // admin-added products from rawaj_products table
 let _hiddenIds   = new Set(); // base product IDs hidden by admin
 
 async function loadSBData() {
   const [s, p, c, h] = await Promise.all([
-    sbFetch(SB_URL + '/rest/v1/dhowtech_stock?select=*',                         { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/dhowtech_photos?select=*',                        { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/dhowtech_products?select=*',                        { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/dhowtech_hidden?select=product_id',               { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/rawaj_stock?select=*',                         { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/rawaj_photos?select=*',                        { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/rawaj_products?select=*',                        { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/rawaj_hidden?select=product_id',               { headers: SB_H })
   ]);
   if (s.error) {
     console.warn('Supabase offline — using localStorage fallback');
-    try { _sbStock  = JSON.parse(localStorage.getItem('dhowtech_stock')  || '{}'); } catch(_) {}
-    try { _sbPhotos = JSON.parse(localStorage.getItem('dhowtech_photos') || '{}'); } catch(_) {}
+    try { _sbStock  = JSON.parse(localStorage.getItem('rawaj_stock')  || '{}'); } catch(_) {}
+    try { _sbPhotos = JSON.parse(localStorage.getItem('rawaj_photos') || '{}'); } catch(_) {}
   } else {
     if (Array.isArray(s.data)) s.data.forEach(r => { _sbStock[r.product_id]  = r.qty; });
     if (Array.isArray(p.data)) p.data.forEach(r => { _sbPhotos[r.product_id] = r.url; });
@@ -234,10 +234,10 @@ let activeFilter = 'all';
 
 // ── MULTI-CATEGORY HELPER (storefront) ────────────────────────────────────
 // Returns array of extra category slugs assigned to a product via the admin
-// multi-category picker (stored in dhowtech_multi_cats in localStorage).
+// multi-category picker (stored in rawaj_multi_cats in localStorage).
 function getMultiCats(id) {
   try {
-    var map = JSON.parse(localStorage.getItem('dhowtech_multi_cats') || '{}');
+    var map = JSON.parse(localStorage.getItem('rawaj_multi_cats') || '{}');
     return Array.isArray(map[String(id)]) ? map[String(id)] : [];
   } catch(e) { return []; }
 }
@@ -255,15 +255,15 @@ function imgError(el) {
 
 // ── ANALYTICS TRACKING ────────────────────────────────────────────────────
 function trackView(id) {
-  const v = JSON.parse(localStorage.getItem('dhowtech_views') || '{}');
+  const v = JSON.parse(localStorage.getItem('rawaj_views') || '{}');
   v[id] = (v[id] || 0) + 1;
-  localStorage.setItem('dhowtech_views', JSON.stringify(v));
+  localStorage.setItem('rawaj_views', JSON.stringify(v));
 }
 function trackSearch(ids) {
   if (!ids || !ids.length) return;
-  const s = JSON.parse(localStorage.getItem('dhowtech_searches') || '{}');
+  const s = JSON.parse(localStorage.getItem('rawaj_searches') || '{}');
   ids.forEach(function(id) { s[id] = (s[id] || 0) + 1; });
-  localStorage.setItem('dhowtech_searches', JSON.stringify(s));
+  localStorage.setItem('rawaj_searches', JSON.stringify(s));
 }
 
 // ── CATEGORY NAV STRIP ────────────────────────────────────────────────────
@@ -303,12 +303,12 @@ async function deductStock(cartItems) {
   });
   // Push to Supabase so admin sees real numbers
   const rows = cartItems.map(item => ({ product_id: item.id, qty: _sbStock[item.id] }));
-  const { error } = await sbFetch(SB_URL + '/rest/v1/dhowtech_stock', {
+  const { error } = await sbFetch(SB_URL + '/rest/v1/rawaj_stock', {
     method: 'POST',
     headers: { ...SB_H, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
     body: JSON.stringify(rows)
   });
-  if (error) localStorage.setItem('dhowtech_stock', JSON.stringify(_sbStock));
+  if (error) localStorage.setItem('rawaj_stock', JSON.stringify(_sbStock));
 }
 
 // ── RENDER PRODUCTS ───────────────────────────────────────────────────────
@@ -581,7 +581,7 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
   const address = [area, block&&'Block '+block, street&&'Street '+street, house, floor].filter(Boolean).join(', ');
 
   const msg = [
-    '🔨 *DhowTech Order* 🔨',
+    '🔨 *Rawaj Order* 🔨',
     '',
     '👤 *Name:* ' + name,
     '📞 *WhatsApp:* ' + phone,
@@ -804,7 +804,7 @@ var _T = {
 
 function setLang(lang) {
   _lang = lang;
-  localStorage.setItem('dhowtech_lang', lang);
+  localStorage.setItem('rawaj_lang', lang);
   var html = document.documentElement;
   html.lang = lang;
   html.dir  = lang === 'ar' ? 'rtl' : 'ltr';
@@ -851,7 +851,7 @@ function toggleLang() {
 
 // Apply saved language on load
 (function() {
-  var saved = localStorage.getItem('dhowtech_lang');
+  var saved = localStorage.getItem('rawaj_lang');
   if (saved === 'ar') setLang('ar');
 })();
 
@@ -866,8 +866,8 @@ async function saveOrderToSupabase(order) {
     total:          parseFloat(order.total.toFixed(3)),
     status:         'pending'
   }];
-  console.log('[DhowTech] Saving order:', payload);
-  const result = await sbFetch(SB_URL + '/rest/v1/dhowtech_orders', {
+  console.log('[Rawaj] Saving order:', payload);
+  const result = await sbFetch(SB_URL + '/rest/v1/rawaj_orders', {
     method: 'POST',
     headers: Object.assign({}, SB_H, {
       'Content-Type': 'application/json',
@@ -876,9 +876,9 @@ async function saveOrderToSupabase(order) {
     body: JSON.stringify(payload)
   });
   if (result.error) {
-    console.error('[DhowTech] Order save FAILED:', result.error);
+    console.error('[Rawaj] Order save FAILED:', result.error);
     alert('⚠️ Order save failed: ' + result.error + '\n\nYour WhatsApp message was still sent.');
   } else {
-    console.log('[DhowTech] Order saved OK:', result.data);
+    console.log('[Rawaj] Order saved OK:', result.data);
   }
 }
