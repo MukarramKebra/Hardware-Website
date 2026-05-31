@@ -523,6 +523,9 @@
     <button class="tab-btn" id="tabCategories" onclick="switchTab('categories')">
       <i class="fa fa-th-large"></i> Categories
     </button>
+    <button class="tab-btn" id="tabOwner" onclick="switchTab('owner')" style="display:none;margin-left:auto;background:rgba(124,58,237,.12);color:#c4b5fd;border-bottom-color:transparent;">
+      <i class="fa fa-crown"></i> Owner Controls
+    </button>
   </div>
 
   <!-- INVENTORY SECTION -->
@@ -986,8 +989,40 @@
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px" id="catEditGrid"></div>
 </div>
 
-<!-- SUPER ADMIN PANEL -->
-<div id="superAdminPanel">
+  <!-- OWNER CONTROLS SECTION (inside adminPanel, shown only for ultimate15) -->
+  <div id="ownerSection" class="main" style="display:none">
+    <div style="max-width:900px;margin:0 auto;">
+      <div class="table-top" style="margin-bottom:24px">
+        <h2><i class="fa fa-crown" style="color:#7c3aed;margin-right:8px"></i>Owner Control Panel</h2>
+        <span style="font-size:12px;color:var(--gray)">Exclusive controls for <strong style="color:#7c3aed">ultimate15</strong></span>
+      </div>
+      <div class="su-card">
+        <div class="su-card-h"><i class="fa fa-users"></i> Admin Account Control</div>
+        <div class="su-user-row">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:40px;height:40px;background:rgba(8,145,178,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
+            <div>
+              <div style="font-weight:800;font-size:14px;color:var(--dark)">bahar</div>
+              <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Admin Account</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span id="suUserStatus2" style="font-size:12px;font-weight:700"></span>
+            <button id="suToggleBtn2" class="su-toggle-btn" onclick="toggleBaharAccount()"></button>
+          </div>
+        </div>
+      </div>
+      <div class="su-card">
+        <div class="su-card-h"><i class="fa fa-history"></i> Bahar's Actions — Past 7 Days</div>
+        <button class="su-undo-btn" id="suUndoBtn2" onclick="undoAllThisWeek()"><i class="fa fa-undo-alt"></i> Undo All This Week's Actions</button>
+        <div id="suAuditLog2"></div>
+      </div>
+    </div>
+  </div>
+</div><!-- end adminPanel -->
+
+<!-- SUPER ADMIN PANEL (legacy standalone — kept for fallback) -->
+<div id="superAdminPanel" style="display:none!important">
   <div class="su-bar">
     <div style="font-size:18px;font-weight:900;color:#fff;display:flex;align-items:center;gap:10px">
       <span style="font-size:20px">👑</span>
@@ -1408,17 +1443,34 @@ function logout() {
 
 // ── SUPER ADMIN ──────────────────────────────────────────────────────────────
 function showSuperAdmin() {
+  // Show the full admin panel + reveal the Owner Controls tab
   document.getElementById('loginScreen').style.display  = 'none';
-  document.getElementById('adminPanel').style.display   = 'none';
-  document.getElementById('superAdminPanel').style.display = 'block';
+  document.getElementById('adminPanel').style.display   = 'block';
+  document.getElementById('tabOwner').style.display     = 'flex';
+  // Mark the top bar as owner mode
+  var badge = document.querySelector('.admin-badge');
+  if (badge) { badge.innerHTML = '<i class="fa fa-crown"></i> Owner'; badge.style.background = '#7c3aed'; }
+  // Change logout button to call logoutSuper instead
+  var logoutBtn = document.querySelector('.top-right .logout-btn:last-child');
+  if (logoutBtn) { logoutBtn.setAttribute('onclick', 'logoutSuper()'); }
+  switchTab('owner');
+  loadFromSupabase();
+  _loadSavedHandles();
+  loadOrders(false);
   renderSuperAdmin();
 }
 function logoutSuper() {
   localStorage.removeItem('bahar_auth');
-  document.getElementById('superAdminPanel').style.display = 'none';
+  document.getElementById('adminPanel').style.display  = 'none';
+  document.getElementById('tabOwner').style.display    = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
+  // Restore badge & logout button for next login
+  var badge = document.querySelector('.admin-badge');
+  if (badge) { badge.innerHTML = '<i class="fa fa-shield-alt"></i> Admin'; badge.style.background = ''; }
+  var logoutBtn = document.querySelector('.top-right .logout-btn:last-child');
+  if (logoutBtn) { logoutBtn.setAttribute('onclick', 'logout()'); }
 }
 function toggleBaharAccount() {
   var isDisabled = localStorage.getItem('bahar_user_disabled') === '1';
@@ -1434,17 +1486,26 @@ function toggleBaharAccount() {
 }
 function renderSuperAdmin() {
   var isDisabled = localStorage.getItem('bahar_user_disabled') === '1';
-  var statusEl  = document.getElementById('suUserStatus');
-  var toggleBtn = document.getElementById('suToggleBtn');
-  if (statusEl)  { statusEl.textContent = isDisabled ? '🔴 Disabled' : '🟢 Active'; statusEl.style.color = isDisabled ? 'var(--red)' : 'var(--green)'; }
-  if (toggleBtn) { toggleBtn.textContent = isDisabled ? 'Enable' : 'Disable'; toggleBtn.className = 'su-toggle-btn ' + (isDisabled ? 'enable' : 'disable'); }
+  // Update both the legacy standalone panel and the new inline ownerSection
+  ['', '2'].forEach(function(sfx) {
+    var statusEl  = document.getElementById('suUserStatus'  + sfx);
+    var toggleBtn = document.getElementById('suToggleBtn'   + sfx);
+    var undoBtn2  = document.getElementById('suUndoBtn'     + sfx);
+    if (statusEl)  { statusEl.textContent = isDisabled ? '🔴 Disabled' : '🟢 Active'; statusEl.style.color = isDisabled ? 'var(--red)' : 'var(--green)'; }
+    if (toggleBtn) { toggleBtn.textContent = isDisabled ? 'Enable' : 'Disable'; toggleBtn.className = 'su-toggle-btn ' + (isDisabled ? 'enable' : 'disable'); }
+    if (undoBtn2)  undoBtn2.disabled = getWeekLog().length === 0;
+  });
   var log     = getWeekLog().slice().reverse();
   var logEl   = document.getElementById('suAuditLog');
+  var logEl2  = document.getElementById('suAuditLog2');
   var undoBtn = document.getElementById('suUndoBtn');
   if (undoBtn) undoBtn.disabled = log.length === 0;
-  if (!logEl) return;
+  if (!logEl && !logEl2) return;
+  var html;
   if (!log.length) {
-    logEl.innerHTML = '<div class="su-empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p style="font-size:14px;font-weight:700;color:var(--green)">No actions this week</p><small>bahar has not made any changes in the past 7 days.</small></div>';
+    html = '<div class="su-empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p style="font-size:14px;font-weight:700;color:var(--green)">No actions this week</p><small>bahar has not made any changes in the past 7 days.</small></div>';
+    if (logEl)  logEl.innerHTML  = html;
+    if (logEl2) logEl2.innerHTML = html;
     return;
   }
   var defs = {
@@ -1454,7 +1515,7 @@ function renderSuperAdmin() {
     'status_change': { icon:'fa-exchange-alt',  cls:'su-log-status', label:'Changed order status' },
     'add_product':   { icon:'fa-plus-circle',   cls:'su-log-add',    label:'Added product' }
   };
-  logEl.innerHTML = log.map(function(entry) {
+  html = log.map(function(entry) {
     var def  = defs[entry.action] || { icon:'fa-edit', cls:'su-log-stock', label:entry.action };
     var d    = entry.data || {};
     var detail = '';
@@ -1468,6 +1529,8 @@ function renderSuperAdmin() {
       '<div><div class="su-log-text">'+def.label+': '+encodeHtml(String(detail))+'</div>' +
       '<div class="su-log-time">'+timeStr+'</div></div></div>';
   }).join('');
+  if (logEl)  logEl.innerHTML  = html;
+  if (logEl2) logEl2.innerHTML = html;
 }
 
 // ── AUDIT LOG ────────────────────────────────────────────────────────────────
@@ -1567,17 +1630,20 @@ function switchTab(tab) {
   document.getElementById('ordersSection').style.display     = tab==='orders'     ? 'block' : 'none';
   document.getElementById('reportsSection').style.display    = tab==='reports'    ? 'block' : 'none';
   document.getElementById('categoriesSection').style.display = tab==='categories' ? 'block' : 'none';
+  document.getElementById('ownerSection').style.display      = tab==='owner'      ? 'block' : 'none';
   document.getElementById('tabInventory').classList.toggle('active',   tab==='inventory');
   document.getElementById('tabAnalytics').classList.toggle('active',   tab==='analytics');
   document.getElementById('tabDeleted').classList.toggle('active',     tab==='deleted');
   document.getElementById('tabOrders').classList.toggle('active',      tab==='orders');
   document.getElementById('tabReports').classList.toggle('active',     tab==='reports');
   document.getElementById('tabCategories').classList.toggle('active',  tab==='categories');
+  document.getElementById('tabOwner').classList.toggle('active',       tab==='owner');
   if (tab==='analytics')   renderAnalytics();
   if (tab==='deleted')   { renderDeletedTab(); if (_deletedSubTab==='orders') renderDeletedOrdersTab(); }
   if (tab==='orders')    { loadOrders(false); }
   if (tab==='reports')   { renderReports(); renderOrdersReport(); _autoWriteReports(); }
   if (tab==='categories')  renderCatEditor();
+  if (tab==='owner')       renderSuperAdmin();
 }
 
 // ── CATEGORY EDITOR ───────────────────────────────────────────────────────
