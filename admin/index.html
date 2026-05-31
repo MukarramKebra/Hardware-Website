@@ -1393,6 +1393,7 @@ function doLogin(e) {
 function showAdmin() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('adminPanel').style.display = 'block';
+  switchTab('inventory');
   loadFromSupabase();
   _loadSavedHandles();
   loadOrders(false);
@@ -1595,6 +1596,7 @@ function renderCatEditor() {
   var bgs = {};
   try { bgs = JSON.parse(localStorage.getItem('bahar_cat_bgs') || '{}'); } catch(e) {}
   var grid = document.getElementById('catEditGrid');
+  if (!grid) return;
   grid.innerHTML = CAT_DEFS.map(function(cat) {
     var img = bgs[cat.slug] || cat.default;
     return '<div style="background:#fff;border:1px solid #e2e4e8;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.07)">' +
@@ -1997,7 +1999,7 @@ function renderOrdersTab() {
 
   if (!list.length) {
     document.getElementById('ordTblBody').innerHTML =
-      '<tr><td colspan="7"><div class="ord-empty"><i class="fa fa-receipt"></i><p>No orders found</p><small>'+(total?'Try changing the filter':'No orders yet — they appear here once customers checkout')+'</small></div></td></tr>';
+      '<tr><td colspan="8"><div class="ord-empty"><i class="fa fa-receipt"></i><p>No orders found</p><small>'+(total?'Try changing the filter':'No orders yet — they appear here once customers checkout')+'</small></div></td></tr>';
     return;
   }
 
