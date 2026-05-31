@@ -1624,6 +1624,7 @@ setInterval(tick, 1000); tick();
 
 // â”€â”€ TABS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function switchTab(tab) {
+  window.scrollTo(0, 0);
   document.getElementById('inventorySection').style.display  = tab==='inventory'  ? 'block' : 'none';
   document.getElementById('analyticsSection').style.display  = tab==='analytics'  ? 'block' : 'none';
   document.getElementById('deletedSection').style.display    = tab==='deleted'    ? 'block' : 'none';
