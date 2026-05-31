@@ -269,12 +269,26 @@ function trackView(id) {
   const v = JSON.parse(localStorage.getItem('rawaj_views') || '{}');
   v[id] = (v[id] || 0) + 1;
   localStorage.setItem('rawaj_views', JSON.stringify(v));
+  // Sync to Supabase so admin analytics tab can see live data
+  sbFetch(SB_URL + '/rest/v1/rpc/increment_analytics', {
+    method: 'POST',
+    headers: { ...SB_H, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_id: id, p_views: 1, p_searches: 0 })
+  });
 }
 function trackSearch(ids) {
   if (!ids || !ids.length) return;
   const s = JSON.parse(localStorage.getItem('rawaj_searches') || '{}');
   ids.forEach(function(id) { s[id] = (s[id] || 0) + 1; });
   localStorage.setItem('rawaj_searches', JSON.stringify(s));
+  // Sync to Supabase so admin analytics tab can see live data
+  ids.forEach(function(id) {
+    sbFetch(SB_URL + '/rest/v1/rpc/increment_analytics', {
+      method: 'POST',
+      headers: { ...SB_H, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_id: id, p_views: 0, p_searches: 1 })
+    });
+  });
 }
 
 // ── CATEGORY NAV STRIP ────────────────────────────────────────────────────
