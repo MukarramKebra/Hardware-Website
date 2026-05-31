@@ -105,7 +105,7 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 .about-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 72px; align-items: center; }
 .about-img-wrap { position: relative; }
 .about-img-card { background: var(--light); border-radius: 12px; padding: 40px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border: 1px solid var(--border); overflow: hidden; }
-.about-img-card img { max-width: 80%; max-height: 80%; object-fit: contain; }
+.about-img-card img { max-width: 80%; max-height: 80%; object-fit: contain; border-radius: 50%; background: #fff; padding: 6px; box-shadow: 0 0 0 3px rgba(8,145,178,0.9), 0 0 22px 8px rgba(8,145,178,0.55), 0 0 50px 16px rgba(8,145,178,0.2); }
 .about-badge { position: absolute; bottom: -18px; right: -18px; background: var(--orange); color: #fff; font-size: 12px; font-weight: 800; letter-spacing: 0.5px; padding: 12px 18px; border-radius: 8px; box-shadow: 0 4px 16px rgba(8,145,178,0.35); display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
 .about-text h2 { font-size: clamp(22px, 3vw, 32px); font-weight: 800; color: var(--dark); margin-bottom: 16px; margin-top: 8px; line-height: 1.2; }
 .about-text p { color: var(--gray-600); line-height: 1.78; margin-bottom: 14px; font-size: 15px; }
