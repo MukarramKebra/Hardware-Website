@@ -42,6 +42,30 @@
 
     /* ADMIN LAYOUT */
     #adminPanel{display:none;min-height:100vh;}
+    /* SUPER ADMIN */
+    #superAdminPanel{display:none;min-height:100vh;background:#f0f4ff;}
+    .su-bar{background:linear-gradient(135deg,#0c1a2e 0%,#1a0a3d 100%);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #7c3aed;position:sticky;top:0;z-index:100;}
+    .su-body{max-width:900px;margin:0 auto;padding:32px 28px;}
+    .su-card{background:#fff;border-radius:14px;border:2px solid var(--border);padding:24px;margin-bottom:24px;}
+    .su-card-h{font-size:15px;font-weight:900;color:var(--dark);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+    .su-card-h i{color:#7c3aed;}
+    .su-user-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--light);border-radius:10px;border:1.5px solid var(--border);}
+    .su-toggle-btn{padding:8px 18px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;}
+    .su-toggle-btn.enable{background:rgba(34,197,94,.1);color:var(--green);border:1.5px solid var(--green);}
+    .su-toggle-btn.disable{background:rgba(239,68,68,.08);color:var(--red);border:1.5px solid var(--red);}
+    .su-undo-btn{width:100%;padding:14px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;}
+    .su-undo-btn:hover{opacity:.9;} .su-undo-btn:disabled{opacity:.35;cursor:not-allowed;}
+    .su-log-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+    .su-log-item:last-child{border-bottom:none;}
+    .su-log-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+    .su-log-del{background:rgba(239,68,68,.1);color:var(--red);}
+    .su-log-stock{background:rgba(59,130,246,.1);color:var(--blue);}
+    .su-log-status{background:rgba(245,158,11,.1);color:var(--yellow);}
+    .su-log-add{background:rgba(34,197,94,.1);color:var(--green);}
+    .su-log-text{font-size:13px;color:var(--dark);font-weight:600;}
+    .su-log-time{font-size:11px;color:var(--gray);margin-top:2px;}
+    .su-empty{text-align:center;padding:32px;color:var(--gray);}
+    .su-empty i{font-size:32px;color:#ddd;display:block;margin-bottom:10px;}
     .top-bar{background:var(--dark);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--orange);position:sticky;top:0;z-index:100;}
     .top-logo{font-size:18px;font-weight:900;color:#fff;display:flex;align-items:center;gap:12px;}
     .top-logo span{color:var(--orange);}
@@ -962,6 +986,41 @@
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px" id="catEditGrid"></div>
 </div>
 
+<!-- SUPER ADMIN PANEL -->
+<div id="superAdminPanel">
+  <div class="su-bar">
+    <div style="font-size:18px;font-weight:900;color:#fff;display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px">👑</span>
+      <span style="color:#c4b5fd">ultimate75</span>
+      <span style="color:rgba(255,255,255,.35);font-size:13px;font-weight:500">Owner Control Panel</span>
+    </div>
+    <button onclick="logoutSuper()" style="background:rgba(239,68,68,.15);color:var(--red);border:1.5px solid var(--red);padding:8px 16px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer"><i class="fa fa-sign-out-alt"></i> Logout</button>
+  </div>
+  <div class="su-body">
+    <div class="su-card">
+      <div class="su-card-h"><i class="fa fa-users"></i> Admin Account Control</div>
+      <div class="su-user-row">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;background:rgba(8,145,178,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
+          <div>
+            <div style="font-weight:800;font-size:14px;color:var(--dark)">bahar</div>
+            <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Admin Account</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span id="suUserStatus" style="font-size:12px;font-weight:700"></span>
+          <button id="suToggleBtn" class="su-toggle-btn" onclick="toggleBaharAccount()"></button>
+        </div>
+      </div>
+    </div>
+    <div class="su-card">
+      <div class="su-card-h"><i class="fa fa-history"></i> Bahar's Actions — Past 7 Days</div>
+      <button class="su-undo-btn" id="suUndoBtn" onclick="undoAllThisWeek()"><i class="fa fa-undo-alt"></i> Undo All This Week's Actions</button>
+      <div id="suAuditLog"></div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><i class="fa fa-check-circle"></i> <span id="toastMsg">Saved!</span></div>
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
@@ -969,6 +1028,8 @@
 <script>
 const ADMIN_USER = 'bahar';
 const ADMIN_PASS = 'admin1234';
+const SUPER_USER = 'ultimate75';
+const SUPER_PASS = 'Zahab2011';
 
 // â”€â”€ SUPABASE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const SB_URL  = 'https://sinzmodmefkyjkzzitjy.supabase.co';
@@ -1299,21 +1360,35 @@ var _fpp = document.getElementById('fpPass'); if (_fpp) _fpp.textContent = ADMIN
 
 function doLogin(e) {
   if (e) e.preventDefault();
-  const u = document.getElementById('loginUser').value.trim();
-  const p = document.getElementById('loginPass').value;
+  const u   = document.getElementById('loginUser').value.trim();
+  const p   = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+  err.style.display = 'none';
+  // Owner super-admin
+  if (u === SUPER_USER && p === SUPER_PASS) {
+    localStorage.setItem('bahar_auth', 'super');
+    showSuperAdmin();
+    return;
+  }
+  // Regular admin
   if (u === ADMIN_USER && p === ADMIN_PASS) {
+    if (localStorage.getItem('bahar_user_disabled') === '1') {
+      err.textContent = 'This account has been disabled by the owner.';
+      err.style.display = 'block';
+      return;
+    }
     localStorage.setItem('bahar_auth', '1');
-    // Tell the browser to offer saving these credentials
     if (window.PasswordCredential) {
-      const cred = new PasswordCredential({ id: u, password: p, name: 'Rawaj Admin' });
+      const cred = new PasswordCredential({ id: u, password: p, name: 'Bahar Admin' });
       navigator.credentials.store(cred);
     }
     showAdmin();
-  } else {
-    const err = document.getElementById('loginError');
-    err.style.display = 'block';
-    setTimeout(function() { err.style.display = 'none'; }, 3000);
+    return;
   }
+  // Wrong credentials
+  err.textContent = 'Wrong username or password.';
+  err.style.display = 'block';
+  setTimeout(function() { err.style.display = 'none'; }, 3000);
 }
 function showAdmin() {
   document.getElementById('loginScreen').style.display = 'none';
@@ -1329,8 +1404,150 @@ function logout() {
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
 }
+
+// ── SUPER ADMIN ──────────────────────────────────────────────────────────────
+function showSuperAdmin() {
+  document.getElementById('loginScreen').style.display  = 'none';
+  document.getElementById('adminPanel').style.display   = 'none';
+  document.getElementById('superAdminPanel').style.display = 'block';
+  renderSuperAdmin();
+}
+function logoutSuper() {
+  localStorage.removeItem('bahar_auth');
+  document.getElementById('superAdminPanel').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+function toggleBaharAccount() {
+  var isDisabled = localStorage.getItem('bahar_user_disabled') === '1';
+  if (isDisabled) {
+    localStorage.removeItem('bahar_user_disabled');
+    showToast('✅ bahar account enabled');
+  } else {
+    if (!confirm('Disable the bahar account? They will not be able to login until you re-enable it.')) return;
+    localStorage.setItem('bahar_user_disabled', '1');
+    showToast('🚫 bahar account disabled');
+  }
+  renderSuperAdmin();
+}
+function renderSuperAdmin() {
+  var isDisabled = localStorage.getItem('bahar_user_disabled') === '1';
+  var statusEl  = document.getElementById('suUserStatus');
+  var toggleBtn = document.getElementById('suToggleBtn');
+  if (statusEl)  { statusEl.textContent = isDisabled ? '🔴 Disabled' : '🟢 Active'; statusEl.style.color = isDisabled ? 'var(--red)' : 'var(--green)'; }
+  if (toggleBtn) { toggleBtn.textContent = isDisabled ? 'Enable' : 'Disable'; toggleBtn.className = 'su-toggle-btn ' + (isDisabled ? 'enable' : 'disable'); }
+  var log     = getWeekLog().slice().reverse();
+  var logEl   = document.getElementById('suAuditLog');
+  var undoBtn = document.getElementById('suUndoBtn');
+  if (undoBtn) undoBtn.disabled = log.length === 0;
+  if (!logEl) return;
+  if (!log.length) {
+    logEl.innerHTML = '<div class="su-empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p style="font-size:14px;font-weight:700;color:var(--green)">No actions this week</p><small>bahar has not made any changes in the past 7 days.</small></div>';
+    return;
+  }
+  var defs = {
+    'delete_product':{ icon:'fa-box',          cls:'su-log-del',    label:'Deleted product' },
+    'delete_order':  { icon:'fa-receipt',       cls:'su-log-del',    label:'Deleted order' },
+    'stock_change':  { icon:'fa-layer-group',   cls:'su-log-stock',  label:'Changed stock' },
+    'status_change': { icon:'fa-exchange-alt',  cls:'su-log-status', label:'Changed order status' },
+    'add_product':   { icon:'fa-plus-circle',   cls:'su-log-add',    label:'Added product' }
+  };
+  logEl.innerHTML = log.map(function(entry) {
+    var def  = defs[entry.action] || { icon:'fa-edit', cls:'su-log-stock', label:entry.action };
+    var d    = entry.data || {};
+    var detail = '';
+    if (entry.action==='delete_product') detail = d.name || 'Product #'+d.id;
+    else if (entry.action==='delete_order') detail = 'Order #'+d.id+' — '+(d.customer_name||'Customer');
+    else if (entry.action==='stock_change') detail = (d.name||'#'+d.id)+': '+d.oldQty+' → '+d.newQty;
+    else if (entry.action==='status_change') detail = 'Order #'+d.id+': '+d.oldStatus+' → '+d.newStatus;
+    else if (entry.action==='add_product') detail = d.name || 'New product';
+    var timeStr = new Date(entry.ts).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    return '<div class="su-log-item"><div class="su-log-icon '+def.cls+'"><i class="fa '+def.icon+'"></i></div>' +
+      '<div><div class="su-log-text">'+def.label+': '+encodeHtml(String(detail))+'</div>' +
+      '<div class="su-log-time">'+timeStr+'</div></div></div>';
+  }).join('');
+}
+
+// ── AUDIT LOG ────────────────────────────────────────────────────────────────
+function getAuditLog() { try { return JSON.parse(localStorage.getItem('bahar_audit_log')||'[]'); } catch(e) { return []; } }
+function saveAuditLog(log) { localStorage.setItem('bahar_audit_log', JSON.stringify(log)); }
+function logAction(action, data) {
+  var log = getAuditLog();
+  log.push({ ts: Date.now(), action: action, data: data });
+  var cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  saveAuditLog(log.filter(function(e) { return e.ts > cutoff; }));
+}
+function getWeekLog() {
+  var cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  return getAuditLog().filter(function(e) { return e.ts > cutoff; });
+}
+
+async function undoAllThisWeek() {
+  var log = getWeekLog().slice().reverse();
+  if (!log.length) { showToast('Nothing to undo'); return; }
+  if (!confirm('Undo all ' + log.length + ' action(s) by bahar from the past 7 days? This cannot be undone.')) return;
+  var done = 0, failed = 0;
+  for (var i = 0; i < log.length; i++) {
+    var ok = await undoSingleAction(log[i]);
+    if (ok) done++; else failed++;
+  }
+  var cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  saveAuditLog(getAuditLog().filter(function(e) { return e.ts <= cutoff; }));
+  showToast('↩️ Undone: ' + done + (failed ? ' | ' + failed + ' failed' : ''));
+  renderSuperAdmin();
+}
+
+async function undoSingleAction(entry) {
+  var d = entry.data || {};
+  try {
+    if (entry.action === 'delete_product') {
+      var list  = getDeletedProducts();
+      var item  = list.find(function(x) { return x.id === d.id; });
+      if (!item) return true;
+      if (item.isBase) {
+        var r = await sbFetch(SB_URL+'/rest/v1/bahar_hidden?product_id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
+        if (r.error) return false;
+        _hiddenBaseIds.delete(d.id);
+      } else {
+        var r = await sbFetch(SB_URL+'/rest/v1/bahar_products', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}), body:JSON.stringify([{name:item.name,category:item.cat,price:item.price,img_url:item.img||'',hidden:false}]) });
+        if (r.error) return false;
+      }
+      saveDeletedProducts(list.filter(function(x) { return x.id !== d.id; }));
+      return true;
+    }
+    if (entry.action === 'delete_order') {
+      var list  = getDeletedOrders();
+      var order = list.find(function(x) { return x.id === d.id; });
+      if (!order) return true;
+      var payload = { customer_name:order.customer_name, customer_phone:order.customer_phone, address:order.address, notes:order.notes||'', items:order.items, total:parseFloat(order.total||0), status:order.status||'pending' };
+      var r = await sbFetch(SB_URL+'/rest/v1/bahar_orders', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}), body:JSON.stringify([payload]) });
+      if (r.error) return false;
+      saveDeletedOrders(list.filter(function(x) { return x.id !== d.id; }));
+      return true;
+    }
+    if (entry.action === 'stock_change') {
+      stockData[d.id] = d.oldQty;
+      var r = await sbFetch(SB_URL+'/rest/v1/bahar_stock', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}), body:JSON.stringify([{product_id:d.id,qty:d.oldQty}]) });
+      return !r.error;
+    }
+    if (entry.action === 'status_change') {
+      var r = await sbFetch(SB_URL+'/rest/v1/bahar_orders?id=eq.'+d.id, { method:'PATCH', headers:Object.assign({},SB_HDRS,{'Prefer':'return=minimal'}), body:JSON.stringify({status:d.oldStatus}) });
+      if (!r.error && _allOrders) { var o = _allOrders.find(function(x){return x.id===d.id;}); if (o) o.status = d.oldStatus; }
+      return !r.error;
+    }
+    if (entry.action === 'add_product') {
+      var r = await sbFetch(SB_URL+'/rest/v1/bahar_products?id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
+      await sbFetch(SB_URL+'/rest/v1/bahar_stock?product_id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
+      return !r.error;
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
 // Auto-login if session is still active (survives page refresh)
 if (localStorage.getItem('bahar_auth') === '1') { showAdmin(); }
+if (localStorage.getItem('bahar_auth') === 'super') { showSuperAdmin(); }
 
 // â”€â”€ CLOCK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function tick() {
@@ -1810,6 +2027,9 @@ function renderOrdersTab() {
 
 async function updateOrderStatus(id, newStatus, selectEl) {
   selectEl.className = 'ord-status ' + newStatus;
+  var _ord = _allOrders ? _allOrders.find(function(o){return o.id===id;}) : null;
+  logAction('status_change', { id:id, oldStatus:_ord?_ord.status:'unknown', newStatus:newStatus });
+  if (_ord) _ord.status = newStatus;
   var res = await sbFetch(SB_URL + '/rest/v1/bahar_orders?id=eq.'+id, {
     method: 'PATCH',
     headers: Object.assign({}, SB_HDRS, {'Content-Type':'application/json','Prefer':'return=minimal'}),
@@ -2036,7 +2256,7 @@ function onPriceEdit(id) {
   renderStats();
 }
 function setStock(id, qty) { _pushUndo(); stockData[id]=qty; renderTable(); renderStats(); }
-function addStock(id) { _pushUndo(); const cur=stockData[id]||0; stockData[id]=Math.ceil((cur+1)/50)*50; renderTable(); renderStats(); }
+function addStock(id) { _pushUndo(); const cur=stockData[id]||0; const nq=Math.ceil((cur+1)/50)*50; logAction('stock_change',{id:id,name:(getAllAdminProducts().find(function(p){return p.id===id;})||{}).name||'#'+id,oldQty:cur,newQty:nq}); stockData[id]=nq; renderTable(); renderStats(); }
 async function saveAll() {
   _pushUndo();
   // collect name + price edits
@@ -2412,6 +2632,7 @@ async function deleteProduct(id, isBase) {
   const deleted = getDeletedProducts().filter(function(d){ return d.id!==id; });
   deleted.push({ id:prod.id, name:prod.name, cat:prod.cat, price:prod.price, img:prod.img, isBase:prod.isBase, deletedAt:Date.now() });
   saveDeletedProducts(deleted);
+  logAction('delete_product', { id:prod.id, name:prod.name, isBase:prod.isBase });
   if (isBase) {
     const { error } = await sbFetch(SB_URL + '/rest/v1/bahar_hidden', {
       method:'POST', headers: Object.assign({},SB_HDRS,{'Prefer':'resolution=ignore-duplicates'}),
@@ -2497,6 +2718,7 @@ async function deleteOrder(id) {
   var del = getDeletedOrders().filter(function(d){ return d.id !== id; });
   del.push(snap);
   saveDeletedOrders(del);
+  logAction('delete_order', { id:order.id, customer_name:order.customer_name });
   // Remove from Supabase
   var res = await sbFetch(SB_URL + '/rest/v1/bahar_orders?id=eq.' + id, { method: 'DELETE', headers: SB_HDRS });
   if (res.error) { showToast('Delete failed: ' + res.error); return; }
