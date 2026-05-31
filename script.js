@@ -664,6 +664,18 @@ document.getElementById('contactForm').addEventListener('submit', e => {
 // Load stock + photos from Supabase then render
 loadSBData();
 
+// ── CATEGORY BACKGROUNDS (admin-editable) ────────────────────────────────
+function applyCatBgs() {
+  try {
+    var bgs = JSON.parse(localStorage.getItem('rawaj_cat_bgs') || '{}');
+    document.querySelectorAll('.cat-card[data-cat]').forEach(function(card) {
+      var slug = card.dataset.cat;
+      if (bgs[slug]) card.style.backgroundImage = "url('" + bgs[slug] + "')";
+    });
+  } catch(e) {}
+}
+applyCatBgs();
+
 // ── MARQUEE AUTO-FILL ─────────────────────────────────────────────────────
 function fillMarquee() {
   var track = document.querySelector('.marquee-track');
