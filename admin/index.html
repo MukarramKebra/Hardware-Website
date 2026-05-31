@@ -555,14 +555,31 @@
   <!-- DELETED SECTION -->
   <div id="deletedSection" class="main" style="display:none">
     <div class="table-top" style="margin-bottom:16px">
-      <h2><i class="fa fa-trash" style="color:var(--red);margin-right:8px"></i>Deleted Products</h2>
-      <span style="font-size:12px;color:var(--gray)">Products are kept for 60 days. You can restore them any time.</span>
+      <h2><i class="fa fa-trash" style="color:var(--red);margin-right:8px"></i>Deleted Items</h2>
+      <span style="font-size:12px;color:var(--gray)">Items are kept for 60 days. You can restore them any time.</span>
     </div>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>#</th><th>Product</th><th>Category</th><th>Price KWD</th><th>Deleted On</th><th>Actions</th></tr></thead>
-        <tbody id="deletedBody"></tbody>
-      </table>
+    <!-- Sub-tabs -->
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px">
+      <button id="delTabProducts" onclick="switchDeletedSubTab('products')" style="padding:10px 22px;font-size:13px;font-weight:700;background:none;border:none;border-bottom:3px solid var(--orange);color:var(--orange);cursor:pointer;margin-bottom:-2px;display:flex;align-items:center;gap:7px"><i class="fa fa-boxes"></i> Deleted Products</button>
+      <button id="delTabOrders"   onclick="switchDeletedSubTab('orders')"   style="padding:10px 22px;font-size:13px;font-weight:700;background:none;border:none;border-bottom:3px solid transparent;color:var(--gray);cursor:pointer;margin-bottom:-2px;display:flex;align-items:center;gap:7px"><i class="fa fa-receipt"></i> Deleted Orders</button>
+    </div>
+    <!-- Products pane -->
+    <div id="delProductsPane">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Product</th><th>Category</th><th>Price KWD</th><th>Deleted On</th><th>Actions</th></tr></thead>
+          <tbody id="deletedBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Orders pane -->
+    <div id="delOrdersPane" style="display:none">
+      <div class="tbl-wrap">
+        <table class="ord-tbl">
+          <thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Address</th><th>Items</th><th>Total KWD</th><th>Deleted On</th><th>Actions</th></tr></thead>
+          <tbody id="deletedOrdersBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -634,6 +651,7 @@
               <th>Items Ordered</th>
               <th>Total KWD</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="ordTblBody"></tbody>
@@ -1338,7 +1356,7 @@ function switchTab(tab) {
   document.getElementById('tabReports').classList.toggle('active',     tab==='reports');
   document.getElementById('tabCategories').classList.toggle('active',  tab==='categories');
   if (tab==='analytics')   renderAnalytics();
-  if (tab==='deleted')     renderDeletedTab();
+  if (tab==='deleted')   { renderDeletedTab(); if (_deletedSubTab==='orders') renderDeletedOrdersTab(); }
   if (tab==='orders')    { loadOrders(false); }
   if (tab==='reports')   { renderReports(); renderOrdersReport(); _autoWriteReports(); }
   if (tab==='categories')  renderCatEditor();
@@ -1785,6 +1803,7 @@ function renderOrdersTab() {
       '<td><div class="ord-items">'+items+'</div></td>'+
       '<td><span class="ord-total">'+parseFloat(o.total||0).toFixed(3)+'</span></td>'+
       '<td>'+statusSel+'</td>'+
+      '<td><button class="del-btn" onclick="deleteOrder('+o.id+')" title="Delete order"><i class="fa fa-trash"></i></button></td>'+
     '</tr>';
   }).join('');
 }
@@ -2438,6 +2457,128 @@ function permanentDelete(id) {
   saveDeletedProducts(getDeletedProducts().filter(function(d){ return d.id!==id; }));
   renderDeletedTab();
   showToast('Permanently removed');
+}
+
+// ── DELETED SUB-TABS ─────────────────────────────────────────────────────────
+var _deletedSubTab = 'products';
+function switchDeletedSubTab(tab) {
+  _deletedSubTab = tab;
+  document.getElementById('delProductsPane').style.display = tab === 'products' ? 'block' : 'none';
+  document.getElementById('delOrdersPane').style.display   = tab === 'orders'   ? 'block' : 'none';
+  var pBtn = document.getElementById('delTabProducts');
+  var oBtn = document.getElementById('delTabOrders');
+  pBtn.style.borderBottomColor = tab === 'products' ? 'var(--orange)' : 'transparent';
+  pBtn.style.color             = tab === 'products' ? 'var(--orange)' : 'var(--gray)';
+  oBtn.style.borderBottomColor = tab === 'orders'   ? 'var(--orange)' : 'transparent';
+  oBtn.style.color             = tab === 'orders'   ? 'var(--orange)' : 'var(--gray)';
+  if (tab === 'products') renderDeletedTab();
+  if (tab === 'orders')   renderDeletedOrdersTab();
+}
+
+// ── DELETED ORDERS ────────────────────────────────────────────────────────────
+function getDeletedOrders() {
+  try {
+    var raw    = JSON.parse(localStorage.getItem('bahar_deleted_orders') || '[]');
+    var cutoff = Date.now() - _DELETED_TTL;
+    var valid  = raw.filter(function(d){ return d.deletedAt > cutoff; });
+    if (valid.length !== raw.length) localStorage.setItem('bahar_deleted_orders', JSON.stringify(valid));
+    return valid;
+  } catch(e) { return []; }
+}
+function saveDeletedOrders(list) { localStorage.setItem('bahar_deleted_orders', JSON.stringify(list)); }
+
+async function deleteOrder(id) {
+  if (!confirm('Delete this order? It moves to the Deleted tab for 60 days — you can restore it any time.')) return;
+  var order = _allOrders.find(function(o){ return o.id === id; });
+  if (!order) return;
+  // Save snapshot to local deleted list
+  var snap = JSON.parse(JSON.stringify(order));
+  snap.deletedAt = Date.now();
+  var del = getDeletedOrders().filter(function(d){ return d.id !== id; });
+  del.push(snap);
+  saveDeletedOrders(del);
+  // Remove from Supabase
+  var res = await sbFetch(SB_URL + '/rest/v1/bahar_orders?id=eq.' + id, { method: 'DELETE', headers: SB_HDRS });
+  if (res.error) { showToast('Delete failed: ' + res.error); return; }
+  // Remove from local list and re-render
+  _allOrders = _allOrders.filter(function(o){ return o.id !== id; });
+  renderOrdersTab();
+  var pending = _allOrders.filter(function(o){ return o.status === 'pending'; }).length;
+  var badge = document.getElementById('ordBadge');
+  if (badge) { badge.textContent = pending; badge.style.display = pending ? 'inline' : 'none'; }
+  showToast('Order moved to Deleted tab');
+}
+
+async function restoreOrder(id) {
+  if (!confirm('Restore this order back to Orders?')) return;
+  var deleted = getDeletedOrders();
+  var entry   = deleted.find(function(d){ return d.id === id; });
+  if (!entry) { showToast('Order not found in deleted list'); return; }
+  var payload = {
+    customer_name:  entry.customer_name,
+    customer_phone: entry.customer_phone,
+    address:        entry.address,
+    notes:          entry.notes || '',
+    items:          entry.items,
+    total:          parseFloat(entry.total || 0),
+    status:         entry.status || 'pending'
+  };
+  var res = await sbFetch(SB_URL + '/rest/v1/bahar_orders', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, {'Prefer':'return=representation'}),
+    body: JSON.stringify([payload])
+  });
+  if (res.error) { showToast('Restore failed: ' + res.error); return; }
+  saveDeletedOrders(deleted.filter(function(d){ return d.id !== id; }));
+  showToast('Order restored!');
+  await loadOrders(false);
+  renderDeletedOrdersTab();
+}
+
+function permanentDeleteOrder(id) {
+  if (!confirm('Permanently remove this order? This CANNOT be undone.')) return;
+  saveDeletedOrders(getDeletedOrders().filter(function(d){ return d.id !== id; }));
+  renderDeletedOrdersTab();
+  showToast('Order permanently removed');
+}
+
+function renderDeletedOrdersTab() {
+  var body = document.getElementById('deletedOrdersBody');
+  if (!body) return;
+  var deleted = getDeletedOrders().slice().sort(function(a,b){ return b.deletedAt - a.deletedAt; });
+  if (!deleted.length) {
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:48px;color:#aaa">' +
+      '<i class="fa fa-receipt" style="font-size:36px;display:block;margin-bottom:12px;color:#ddd"></i>' +
+      '<div style="font-size:14px;font-weight:700;margin-bottom:4px">No deleted orders</div>' +
+      '<div style="font-size:12px">Deleted orders appear here for 60 days and can be restored.</div></td></tr>';
+    return;
+  }
+  body.innerHTML = deleted.map(function(o) {
+    var dt = o.created_at ? new Date(o.created_at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    var delDateStr = new Date(o.deletedAt).toLocaleDateString('en-KW',{day:'numeric',month:'short',year:'numeric'});
+    var daysLeft   = 60 - Math.floor((Date.now() - o.deletedAt) / (24*60*60*1000));
+    var urgency    = daysLeft <= 7 ? 'var(--red)' : daysLeft <= 14 ? 'var(--yellow)' : 'var(--gray)';
+    var items = '';
+    try {
+      var arr = typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []);
+      items = arr.map(function(it){ return '<span style="display:block;opacity:0.65">• '+encodeHtml(it.name)+' ×'+it.qty+'</span>'; }).join('');
+    } catch(e) { items = encodeHtml(String(o.items || '')); }
+    return '<tr>' +
+      '<td style="color:#aaa;font-size:11px;font-weight:700">#'+o.id+'</td>' +
+      '<td class="ord-date" style="opacity:0.6;white-space:nowrap">'+dt+'</td>' +
+      '<td><div class="ord-name" style="color:#888">'+encodeHtml(o.customer_name||'—')+'</div>' +
+          '<div class="ord-phone" style="opacity:0.6"><i class="fab fa-whatsapp" style="color:var(--green)"></i> '+encodeHtml(o.customer_phone||'—')+'</div></td>' +
+      '<td><div class="ord-addr" style="opacity:0.6">'+encodeHtml(o.address||'—')+'</div></td>' +
+      '<td><div class="ord-items">'+items+'</div></td>' +
+      '<td style="font-weight:900;color:#aaa">'+parseFloat(o.total||0).toFixed(3)+'</td>' +
+      '<td><div style="font-size:12px;font-weight:700;color:#666">'+delDateStr+'</div>' +
+          '<div style="font-size:10px;font-weight:700;color:'+urgency+'">'+daysLeft+' day'+(daysLeft!==1?'s':'')+' left</div></td>' +
+      '<td style="white-space:nowrap">' +
+        '<button class="act-btn" style="color:var(--green);border-color:var(--green);margin-right:4px" onclick="restoreOrder('+o.id+')"><i class="fa fa-undo"></i> Restore</button>' +
+        '<button class="del-btn" onclick="permanentDeleteOrder('+o.id+')" title="Delete permanently"><i class="fa fa-times"></i></button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
 }
 
 function renderDeletedTab() {
