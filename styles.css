@@ -37,7 +37,7 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 #header.scrolled { box-shadow: 0 2px 16px rgba(0,0,0,0.10); }
 .header-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 24px; }
 .logo-wrap { display: flex; align-items: center; text-decoration: none; gap: 10px; }
-.logo-img { height: 44px; width: auto; object-fit: contain; }
+.logo-img { height: 44px; width: 44px; object-fit: contain; border-radius: 50%; background: #fff; padding: 3px; box-shadow: 0 0 0 2px rgba(8,145,178,0.9), 0 0 12px 4px rgba(8,145,178,0.5), 0 0 28px 8px rgba(8,145,178,0.2); }
 .logo-text-fallback { display: flex; align-items: center; font-size: 21px; font-weight: 900; letter-spacing: -0.5px; }
 .logo-dhow { color: var(--dark); }
 .logo-tech { color: var(--orange); }
@@ -54,7 +54,7 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 
 /* ── HERO LOGO ───────────────────────────────────────────────── */
 .hero-logo-wrap { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
-.hero-logo-img  { height: 72px; width: auto; object-fit: contain; border-radius: 10px; }
+.hero-logo-img  { height: 72px; width: 72px; object-fit: contain; border-radius: 50%; background: #fff; padding: 4px; box-shadow: 0 0 0 3px rgba(8,145,178,0.9), 0 0 18px 6px rgba(8,145,178,0.55), 0 0 40px 12px rgba(8,145,178,0.2); }
 .hero-brand-name { font-size: 38px; font-weight: 900; color: #fff; letter-spacing: 6px; text-transform: uppercase; line-height: 1; text-shadow: 0 2px 16px rgba(0,0,0,0.5); }
 
 /* ── HERO ────────────────────────────────────────────────────── */
@@ -221,12 +221,12 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 
 /* ── INTRO LOGO ──────────────────────────────────────────────────────────── */
 .intro-logo-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 18px; }
-.intro-logo-img { height: 64px; width: auto; object-fit: contain; }
+.intro-logo-img { height: 64px; width: 64px; object-fit: contain; border-radius: 50%; background: #fff; padding: 4px; box-shadow: 0 0 0 3px rgba(8,145,178,0.9), 0 0 16px 5px rgba(8,145,178,0.5), 0 0 36px 10px rgba(8,145,178,0.2); }
 .intro-brand-txt { font-size: 32px; font-weight: 900; color: var(--orange); letter-spacing: 5px; text-transform: uppercase; line-height: 1; }
 
 /* CONTACT LOGO */
 .contact-logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-.contact-logo-img { height: 52px; width: auto; object-fit: contain; }
+.contact-logo-img { height: 52px; width: 52px; object-fit: contain; border-radius: 50%; background: #fff; padding: 3px; box-shadow: 0 0 0 2px rgba(8,145,178,0.9), 0 0 14px 5px rgba(8,145,178,0.5), 0 0 30px 10px rgba(8,145,178,0.2); }
 .contact-brand-txt { font-size: 26px; font-weight: 900; color: var(--orange); letter-spacing: 4px; text-transform: uppercase; line-height: 1; }
 
 /* MODAL LOGO */
@@ -272,7 +272,7 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 footer { background: var(--dark); padding: 64px 0 0; border-top: 1px solid rgba(255,255,255,0.06); }
 .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 52px; }
 .footer-brand p { color: rgba(255,255,255,0.4); font-size: 13px; line-height: 1.75; margin: 14px 0 20px; max-width: 240px; }
-.footer-logo { height: 40px; width: auto; object-fit: contain; }
+.footer-logo { height: 64px; width: 64px; object-fit: contain; border-radius: 50%; background: #fff; padding: 4px; box-shadow: 0 0 0 3px rgba(8,145,178,0.9), 0 0 16px 6px rgba(8,145,178,0.55), 0 0 36px 12px rgba(8,145,178,0.2); }
 .footer-links h4 { color: rgba(255,255,255,0.6); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 16px; }
 .footer-links { display: flex; flex-direction: column; }
 .footer-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 13px; margin-bottom: 10px; transition: color 0.2s; }
@@ -345,7 +345,7 @@ footer { background: var(--dark); padding: 64px 0 0; border-top: 1px solid rgba(
 @media (max-width: 480px) {
   /* Header */
   .header-inner { height: 60px; }
-  .logo-img { height: 36px; }
+  .logo-img { height: 36px; width: 36px; }
   #nav { top: 60px; }
   #cat-nav { top: 60px; }
   .btn-cart { padding: 8px 12px; font-size: 12px; }
