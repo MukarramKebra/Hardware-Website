@@ -1061,16 +1061,63 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
-const ADMIN_USER = 'bahar';
-const ADMIN_PASS = 'admin1234';
-const SUPER_USER = 'ultimate15';
-const SUPER_PASS = 'Zahab2011';
+/*
+ * ============================================================
+ *   BAHAR AL HIND CO — ADMIN PANEL  (admin/index.html)
+ * ============================================================
+ *
+ *  HOW IT WORKS (plain English):
+ *  ─────────────────────────────
+ *  1. LOGIN SCREEN
+ *     • User types username + password.
+ *     • "bahar"     → regular admin  → sees all tabs (Inventory, Orders, etc.)
+ *     • "ultimate15" → owner/super   → same tabs + extra "Owner Controls" tab
+ *     • Session is saved in localStorage (bahar_auth) so refresh keeps you logged in.
+ *
+ *  2. DATA STORAGE
+ *     • Products, stock, orders, photos are stored in Supabase (online database).
+ *     • Some things (deleted items, settings) are stored in localStorage (browser).
+ *     • Every time admin opens, it loads fresh data from Supabase.
+ *
+ *  3. TABS
+ *     • Inventory   — View/edit all products, change stock, add/delete products
+ *     • Analytics   — See which products are viewed and searched most
+ *     • Deleted     — Recover deleted products or orders
+ *     • Orders      — See customer orders, change status (pending/confirmed/delivered)
+ *     • Reports     — Download Excel files of inventory, sales, and orders
+ *     • Categories  — Change the banner images for each product category
+ *     • Owner Controls (ultimate15 only) — disable/enable bahar account, undo bahar's actions
+ *
+ *  4. REPORTS / EXCEL
+ *     • "Connect File" — links to a file on your computer (picks save location, no download)
+ *     • "Download"     — writes the latest data into that Excel file
+ *     • Auto-write happens every time you open the Reports tab (if file is connected)
+ *
+ *  5. AUDIT LOG (Owner Controls)
+ *     • Every action bahar does (add/delete product, change stock, change order status)
+ *       is recorded with a timestamp in localStorage (bahar_audit_log).
+ *     • "Undo All This Week" reverses all of bahar's actions from the last 7 days.
+ *
+ * ============================================================
+ */
 
-// â”€â”€ SUPABASE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── LOGIN CREDENTIALS ──────────────────────────────────────────────────────────
+// Change these to update usernames/passwords
+const ADMIN_USER = 'bahar';       // Regular admin username
+const ADMIN_PASS = 'admin1234';   // Regular admin password
+const SUPER_USER = 'ultimate15';  // Owner (super-admin) username
+const SUPER_PASS = 'Zahab2011';   // Owner (super-admin) password
+
+// ── SUPABASE CONNECTION ────────────────────────────────────────────────────────
+// Supabase is the online database where all products, stock, orders, photos live.
+// SB_URL  = the database address
+// SB_KEY  = the access key (like a password to talk to the database — read-only for public)
+// SB_HDRS = the headers sent with every database request (authentication)
 const SB_URL  = 'https://sinzmodmefkyjkzzitjy.supabase.co';
 const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbnptb2RtZWZreWprenppdGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMjQ4MzYsImV4cCI6MjA5NTcwMDgzNn0.Ft88pQEKbSVP_yb7UTRVq2fLa_TScR97_jvJmgAMlSc';
 const SB_HDRS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
 
+// Default categories shown in the admin category filter dropdown
 const DEFAULT_CATS = [
   { slug:'shataffa',     label:'Shataffa' },
   { slug:'toilet-seats', label:'Toilet Seats' },
@@ -1081,10 +1128,14 @@ const DEFAULT_CATS = [
   { slug:'sanitaryware', label:'Sanitaryware' }
 ];
 
-// â”€â”€ SUPABASE FETCH WRAPPER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── SUPABASE FETCH WRAPPER ─────────────────────────────────────────────────────
+// encodeHtml — converts special characters so text is safe to show inside HTML
+//              e.g. prevents product names with < or > from breaking the page
 function encodeHtml(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return (s||'').replace(/&/g,'&amp;').replace(/”/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+// sbFetch — the main function used for ALL database calls (get, add, update, delete)
+//           Always returns { data, error } so we can check if it worked
 async function sbFetch(url, options) {
   try {
     const res  = await fetch(url, options);
@@ -1096,11 +1147,13 @@ async function sbFetch(url, options) {
   }
 }
 
+// U  = placeholder image URL (used when a product has no real photo uploaded yet)
+// UL = local product image path  (e.g. "product-images/1.jpg" stored in the repo)
 const U  = id => 'https://picsum.photos/seed/' + id + '/80/80';
 const UL = id => 'product-images/' + id + '.jpg';
 
-let _customProductRows = []; // populated from Supabase bahar_products table
-let _hiddenBaseIds     = new Set();
+let _customProductRows = []; // products added by admin (fetched from Supabase bahar_products table)
+let _hiddenBaseIds     = new Set(); // IDs of base products that have been hidden from the store
 
 // ── ID CONFLICT RESOLVER ─────────────────────────────────────────────────────
 // Supabase auto-increment starts at 1, which conflicts with base product IDs 1-60.
@@ -1341,7 +1394,9 @@ const PRODUCTS = [
   {id:60, name:'Concealed Cistern Frame',           cat:'sanitaryware', price:45.000, img:'Rawaj Products/SKU-0060.jpg'}
 ];
 
-// â”€â”€ STOCK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── STOCK ──────────────────────────────────────────────────────────────────────
+// Stock quantities are stored locally in the browser (localStorage key: bahar_stock)
+// AND synced to Supabase. getStock() loads them from localStorage on startup.
 function getStock() {
   const s = localStorage.getItem('bahar_stock');
   if (s) return JSON.parse(s);
@@ -1351,10 +1406,14 @@ function getStock() {
 }
 let stockData = getStock();
 
+// _prodOverrides — stores manual name/price edits made in the admin table
+//                  so they survive page refresh (localStorage key: bahar_overrides)
 let _prodOverrides = {};
 try { _prodOverrides = JSON.parse(localStorage.getItem('bahar_overrides') || '{}'); } catch(e) {}
 
-// â”€â”€ UNDO / REDO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── UNDO / REDO ────────────────────────────────────────────────────────────────
+// Tracks stock changes so you can undo/redo with Ctrl+Z / Ctrl+Y.
+// Each time stock changes, a snapshot is pushed onto _undoStack (max 50 levels).
 let _undoStack = [];
 let _redoStack = [];
 function _pushUndo() {
@@ -1388,7 +1447,10 @@ document.addEventListener('keydown', function(e) {
   if ((e.ctrlKey||e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) { e.preventDefault(); redo(); }
 });
 
-// â”€â”€ LOGIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── LOGIN ──────────────────────────────────────────────────────────────────────
+// doLogin()    — runs when the login form is submitted
+// showAdmin()  — hides login screen, shows the main admin panel
+// logout()     — clears the session and returns to login screen
 // Populate forgot-password overlay with current credentials
 var _fpu = document.getElementById('fpUser'); if (_fpu) _fpu.textContent = ADMIN_USER;
 var _fpp = document.getElementById('fpPass'); if (_fpp) _fpp.textContent = ADMIN_PASS;
@@ -1441,7 +1503,11 @@ function logout() {
   document.getElementById('loginPass').value = '';
 }
 
-// ── SUPER ADMIN ──────────────────────────────────────────────────────────────
+// ── SUPER ADMIN (ultimate15) ───────────────────────────────────────────────────
+// showSuperAdmin()     — opens the full admin panel + shows the Owner Controls tab
+// logoutSuper()        — logs out and resets the panel back to normal
+// toggleBaharAccount() — enables or disables the "bahar" login account
+// renderSuperAdmin()   — draws the audit log and status of bahar's account
 function showSuperAdmin() {
   // Show the full admin panel + reveal the Owner Controls tab
   document.getElementById('loginScreen').style.display  = 'none';
@@ -1533,7 +1599,12 @@ function renderSuperAdmin() {
   if (logEl2) logEl2.innerHTML = html;
 }
 
-// ── AUDIT LOG ────────────────────────────────────────────────────────────────
+// ── AUDIT LOG ─────────────────────────────────────────────────────────────────
+// Records every action bahar makes so ultimate15 can review and undo them.
+// logAction(action, data) — saves an entry with a timestamp
+// getWeekLog()            — returns only entries from the last 7 days
+// undoAllThisWeek()       — loops through the last 7 days and reverses each action
+// undoSingleAction(entry) — reverses one specific action (restore product/order, revert stock, etc.)
 function getAuditLog() { try { return JSON.parse(localStorage.getItem('bahar_audit_log')||'[]'); } catch(e) { return []; } }
 function saveAuditLog(log) { localStorage.setItem('bahar_audit_log', JSON.stringify(log)); }
 function logAction(action, data) {
@@ -1609,11 +1680,15 @@ async function undoSingleAction(entry) {
   } catch(e) { return false; }
 }
 
-// Auto-login if session is still active (survives page refresh)
+// ── AUTO-LOGIN ON PAGE LOAD ────────────────────────────────────────────────────
+// If the browser still has a saved session (from last time), skip the login screen.
+// bahar_auth = '1'     → regular admin session
+// bahar_auth = 'super' → owner session
 if (localStorage.getItem('bahar_auth') === '1') { showAdmin(); }
 if (localStorage.getItem('bahar_auth') === 'super') { showSuperAdmin(); }
 
-// â”€â”€ CLOCK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── CLOCK ──────────────────────────────────────────────────────────────────────
+// Updates the date/time shown in the top-right corner every second
 function tick() {
   const n = new Date();
   document.getElementById('clockEl').textContent =
@@ -1622,7 +1697,10 @@ function tick() {
 }
 setInterval(tick, 1000); tick();
 
-// â”€â”€ TABS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── TABS ───────────────────────────────────────────────────────────────────────
+// switchTab(tab) — shows the selected tab section, hides all others,
+//                  highlights the correct tab button, and loads that tab's data.
+//                  Also scrolls back to top so content is never below the fold.
 function switchTab(tab) {
   window.scrollTo(0, 0);
   document.getElementById('inventorySection').style.display  = tab==='inventory'  ? 'block' : 'none';
@@ -1647,7 +1725,11 @@ function switchTab(tab) {
   if (tab==='owner')       renderSuperAdmin();
 }
 
-// ── CATEGORY EDITOR ───────────────────────────────────────────────────────
+// ── CATEGORY EDITOR ────────────────────────────────────────────────────────────
+// CAT_DEFS = the list of categories with their name, icon, and default background image.
+// renderCatEditor() draws the grid of category cards in the Categories tab.
+// saveCatBg()  — saves a new background image when you click "Change Image"
+// resetCatBg() — puts the default image back
 var CAT_DEFS = [
   { slug:'shataffa',     label:'Shataffa',         icon:'fa-shower',    default:'Rawaj Products/SKU-0001.jpg' },
   { slug:'toilet-seats', label:'Toilet Seats',      icon:'fa-toilet',    default:'Rawaj Products/SKU-0011.jpg' },
@@ -1714,7 +1796,15 @@ function resetCatBg(slug) {
   renderCatEditor();
 }
 
-// ── REPORTS ───────────────────────────────────────────────────────────────────
+// ── REPORTS ────────────────────────────────────────────────────────────────────
+// Builds the read-only tables shown in the Reports tab (inventory snapshot, sales, orders).
+// renderReports()       — draws the Inventory Report and Sales Report tables
+// renderOrdersReport()  — draws the Customer Orders Report table
+// exportInventoryExcel() / exportSalesExcel() / exportOrdersExcel()
+//   → Download button: creates and downloads an Excel (.xlsx) file immediately
+// connectInventoryFile() / connectSalesFile() / connectOrdersFile()
+//   → Connect button: picks a save location on your computer (no download yet)
+// _autoWriteReports()   — when Reports tab is opened, auto-saves to connected files
 function renderReports() {
   const all     = getAllAdminProducts();
   const views   = JSON.parse(localStorage.getItem('bahar_views')   || '{}');
@@ -1842,7 +1932,14 @@ function exportSalesExcel() {
   showToast('Sales Excel downloaded ✅');
 }
 
-// ── FILE SYSTEM ACCESS API — AUTO-UPDATE EXCEL FILES ─────────────────────────
+// ── FILE SYSTEM ACCESS API — AUTO-UPDATE EXCEL FILES ──────────────────────────
+// Uses the browser's File System Access API (Chrome/Edge only) to write directly
+// to Excel files on your computer without a download dialog.
+// _invFileHandle / _salesFileHandle / _ordFileHandle  — saved references to connected files
+// _loadSavedHandles()  — restores file connections after page refresh
+// _saveFsHandle()      — saves a file handle to IndexedDB so it survives refresh
+// _writeToHandle()     — actually writes the Excel data into the connected file
+// _updateConnectUI()   — updates the "Connect File" button to show "Connected ✓"
 // Stores file handles in IndexedDB so they survive page reloads.
 // User clicks "Connect File" once → admin panel writes directly on every Reports open.
 
@@ -2013,7 +2110,14 @@ async function _loadSavedHandles() {
   } catch(e) { console.warn('Could not load saved file handles:', e); }
 }
 
-// ── ORDERS ────────────────────────────────────────────────────────────────────
+// ── ORDERS ─────────────────────────────────────────────────────────────────────
+// Handles the Orders tab — loads orders from Supabase, displays them, and lets
+// you change their status (pending → confirmed → delivered → cancelled).
+// loadOrders(forceRefresh)  — fetches orders from Supabase, shows badge count for new ones
+// renderOrdersTab()         — draws the orders table with filtering and search
+// updateOrderStatus(id, newStatus) — changes an order's status in Supabase
+// deleteOrder(id)           — moves an order to the Deleted Orders list
+// exportOrdersExcel()       — downloads all orders as an Excel file
 var _allOrders       = [];
 var _ordFileHandle   = null;
 
@@ -2521,7 +2625,10 @@ async function toggleVisibility(id, isBase) {
   renderTable();
 }
 
-// ── SKU HELPERS ─────────────────────────────────────────────────────────────
+// ── SKU HELPERS ────────────────────────────────────────────────────────────────
+// SKU = Stock Keeping Unit — a unique number for each product (e.g. SKU-0001)
+// nextSku()    — finds the next available SKU number when adding a new product
+// formatSku()  — formats a number as "SKU-0001" style string
 // SKU is a display label; product ID is always sequential (count-based).
 // If user sets a custom SKU different from the product ID, it's stored here.
 function getProductSku(id) {
@@ -2546,7 +2653,11 @@ function removeProductSku(id) {
   } catch(e) {}
 }
 
-// ── ADD PRODUCT ────────────────────────────────────────────────────────────
+// ── ADD PRODUCT ────────────────────────────────────────────────────────────────
+// openAddProduct() — opens the "Add New Product" modal popup
+// saveNewProduct() — validates the form and saves the new product to Supabase
+// apUrlPreview()   — shows a live preview of the image URL you typed
+// apFileChosen()   — handles when you upload an image from your computer (with crop support)
 // Returns the next sequential product number based on COUNT of existing custom products.
 // If you typed SKU 101 for product 62, the next auto-fill is still 63 — not 102.
 function getNextSkuNumber() {
@@ -2676,7 +2787,15 @@ async function saveNewProduct() {
   }
   btn.disabled = false; btn.innerHTML = '<i class="fa fa-plus"></i>&nbsp; Add Product';
 }
-// ── DELETE & TRASH SYSTEM ────────────────────────────────────────────────────
+// ── DELETE & TRASH SYSTEM ──────────────────────────────────────────────────────
+// Deleted products are NOT permanently removed — they're stored in localStorage
+// (bahar_deleted) for 60 days so you can restore them any time.
+// deleteProduct(id)       — moves a product to the deleted list, removes from Supabase
+// getDeletedProducts()    — reads the deleted list from localStorage
+// saveDeletedProducts()   — writes the deleted list back to localStorage
+// renderDeletedTab()      — draws the Deleted Products table
+// restoreProduct(id)      — puts a deleted product back (re-inserts to Supabase)
+// permanentDelete(id)     — removes a product completely with no recovery possible
 const _DELETED_TTL = 60 * 24 * 60 * 60 * 1000; // 60 days
 
 function getDeletedProducts() {
@@ -2746,7 +2865,9 @@ function permanentDelete(id) {
   showToast('Permanently removed');
 }
 
-// ── DELETED SUB-TABS ─────────────────────────────────────────────────────────
+// ── DELETED SUB-TABS ───────────────────────────────────────────────────────────
+// The Deleted tab has two sub-tabs: "Deleted Products" and "Deleted Orders"
+// switchDeletedSubTab(tab) — switches between the two panes
 var _deletedSubTab = 'products';
 function switchDeletedSubTab(tab) {
   _deletedSubTab = tab;
@@ -2762,7 +2883,14 @@ function switchDeletedSubTab(tab) {
   if (tab === 'orders')   renderDeletedOrdersTab();
 }
 
-// ── DELETED ORDERS ────────────────────────────────────────────────────────────
+// ── DELETED ORDERS ─────────────────────────────────────────────────────────────
+// Same concept as deleted products — deleted orders go to localStorage (bahar_deleted_orders).
+// deleteOrder(id)             — moves an order to deleted list, removes from Supabase
+// getDeletedOrders()          — reads deleted orders from localStorage
+// saveDeletedOrders()         — writes back to localStorage
+// renderDeletedOrdersTab()    — draws the Deleted Orders table
+// restoreOrder(id)            — puts a deleted order back into Supabase
+// permanentDeleteOrder(id)    — removes an order with no recovery
 function getDeletedOrders() {
   try {
     var raw    = JSON.parse(localStorage.getItem('bahar_deleted_orders') || '[]');
@@ -2938,7 +3066,13 @@ function handleCSVFile(e) {
   if (file) processCSVFile(file);
 }
 
-// ── CSV IMAGE UPLOAD ───────────────────────────────────────────────────────
+// ── CSV / EXCEL IMPORT ─────────────────────────────────────────────────────────
+// Lets you bulk-import products from a CSV or Excel file instead of adding one by one.
+// openCSV()          — opens the CSV import modal
+// handleCSVFile()    — reads the chosen file and previews the rows
+// handleCSVImages()  — lets you upload images for products in the CSV
+// importCSVProducts()— saves all the CSV rows as new products in Supabase
+// downloadTemplate() — downloads a sample CSV file so you know the correct format
 function handleCSVImages(e) {
   const files = Array.from(e.target.files);
   if (!files.length) return;
@@ -3472,7 +3606,15 @@ function resetCrop() {
   _drawCrop();
 }
 
-// ── MULTI-SELECT ──────────────────────────────────────────────────────────────
+// ── MULTI-SELECT ───────────────────────────────────────────────────────────────
+// Lets you tick multiple products in the inventory table and perform bulk actions.
+// toggleSelectAll()  — ticks/unticks every product checkbox at once
+// clearSelection()   — clears all ticked checkboxes
+// bulkShow()         — makes all selected products visible on the store
+// bulkHide()         — hides all selected products from the store
+// bulkDelete()       — deletes all selected products at once
+// bulkClearStock()   — sets stock to 0 for all selected products
+// bulkAddStock()     — adds 50 units to all selected products
 var _selectedIds = new Set();
 
 function toggleSelectAll(checked) {
@@ -3594,7 +3736,11 @@ async function bulkDelete() {
   clearSelection(); await loadFromSupabase();
 }
 
-// ── MULTI-CATEGORY ────────────────────────────────────────────────────────────
+// ── MULTI-CATEGORY ─────────────────────────────────────────────────────────────
+// Lets you assign a product to more than one category (e.g. both Taps and Bathroom).
+// openMC(id)   — opens the category picker popup for a product
+// saveMC()     — saves the selected categories to Supabase
+// closeMC()    — closes the popup without saving
 var _mcCurrentId = null;
 
 function getExtraCats(id) {
