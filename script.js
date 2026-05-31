@@ -592,7 +592,7 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
   const address = [area, block&&'Block '+block, street&&'Street '+street, house, floor].filter(Boolean).join(', ');
 
   const msg = [
-    '🔨 *Rawaj Order* 🔨',
+    '🌊 *Bahar Al Hind Co Order* 🌊',
     '',
     '👤 *Name:* ' + name,
     '📞 *WhatsApp:* ' + phone,
@@ -624,7 +624,7 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
     <div class="co-success">
       <i class="fab fa-whatsapp"></i>
       <h3>Order Sent!</h3>
-      <p>Your order has been sent to DhowTech on WhatsApp.<br/>We will confirm and arrange delivery shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
+      <p>Your order has been sent to Bahar Al Hind Co on WhatsApp.<br/>We will confirm and arrange delivery shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
       <br/>
       <button class="btn btn-primary" onclick="document.getElementById('checkoutOverlay').classList.remove('open');document.getElementById('coBody').innerHTML=origCoBody">Continue Shopping</button>
     </div>`;
@@ -698,7 +698,7 @@ var _T = {
   en: {
     nav_home:'Home', nav_about:'About', nav_products:'Products', nav_categories:'Categories', nav_contact:'Contact',
     cart_label:' Cart',
-    hero_tag:'<i class="fa fa-shower"></i> Kuwait\'s #1 Bathroom & Plumbing Store',
+    hero_tag:'<i class="fa fa-shower"></i> Kuwait\'s #1 Bathroom &amp; Plumbing Store',
     hero_h1:'Quality <span>Bathrooms.</span><br/>Built for <span>Kuwait.</span>',
     hero_p:'Shataffa, toilet seats, LED lighting, taps, mixers, plumbing and bathroom accessories. Everything you need for your home — delivered fast across Kuwait and the GCC.',
     hero_shop:'Shop Now', hero_quote:'Get a Quote',
@@ -734,19 +734,19 @@ var _T = {
     form_opt4:'Technical Advice', form_opt5:'Delivery Information', form_opt6:'Other',
     about_tag:'Who We Are', about_h2:'Your Trusted <span class="orange">Hardware</span> Partner',
     about_badge:'Kuwait',
-    about_p1:'Rawaj is Kuwait\'s trusted destination for bathroom and plumbing supplies. Shataffa, toilet seats, LED lighting, taps, mixers and bathroom accessories — all under one roof.',
+    about_p1:'Bahar Al Hind Co is Kuwait\'s trusted destination for bathroom and plumbing supplies. Shataffa, toilet seats, LED lighting, taps, mixers and bathroom accessories — all under one roof.',
     about_p2:'We stock only genuine, quality-tested products from trusted brands, with competitive prices and expert advice available in Arabic and English.',
     about_f1:'100% genuine, quality-tested products', about_f2:'Expert advice in Arabic and English',
     about_f3:'Same-day delivery within Kuwait City', about_f4:'Bulk pricing for contractors and businesses',
     about_f5:'Easy returns and after-sales support', about_cta:'Contact Us',
-    footer_desc:'Kuwait\'s trusted supplier of quality hardware, power tools and construction materials since 2024.',
+    footer_desc:'Kuwait\'s trusted supplier of bathroom, plumbing and sanitary supplies since 2024.',
     footer_nav:'Navigation', footer_cats:'Categories', footer_support:'Support',
     footer_trade:'Trade Accounts', footer_bulk:'Bulk Orders', footer_delivery_info:'Delivery Info',
     footer_returns:'Returns Policy', footer_tech:'Technical Help',
-    footer_copy:'2024 DhowTech Hardware and Innovation. All rights reserved. Kuwait.',
-    intro_tag:'Welcome to DhowTech',
-    intro_h2:'Kuwait\'s Go-To <span class="orange">Hardware</span> Store — Open 7 Days',
-    intro_p:'DhowTech supplies professional-grade power tools, hand tools, fasteners, safety gear and construction materials to contractors, businesses and individuals across Kuwait. Whether you need one item or a full site order — we have it in stock and ready to go.',
+    footer_copy:'2024 Bahar Al Hind Co. All rights reserved. Kuwait.',
+    intro_tag:'Welcome to Bahar Al Hind Co',
+    intro_h2:'Kuwait\'s Go-To <span class="orange">Bathroom & Plumbing</span> Store — Open 7 Days',
+    intro_p:'Bahar Al Hind Co supplies shataffa, toilet seats, LED lighting, taps, mixers, plumbing and bathroom accessories to contractors, businesses and individuals across Kuwait. Whether you need one item or a full site order — we have it in stock and ready to go.',
     intro_c1:'60+ Products In Stock', intro_c2:'Same-Day Kuwait Delivery',
     intro_c3:'Bulk & Trade Pricing', intro_c4:'Arabic & English Support',
     intro_cta_text:'Call Us: 9765 6372',
@@ -807,10 +807,10 @@ var _T = {
     footer_nav:'التنقل', footer_cats:'الفئات', footer_support:'الدعم',
     footer_trade:'الحسابات التجارية', footer_bulk:'الطلبات بالجملة', footer_delivery_info:'معلومات التوصيل',
     footer_returns:'سياسة الإرجاع', footer_tech:'المساعدة التقنية',
-    footer_copy:'2024 دهو تك للأدوات والابتكار. جميع الحقوق محفوظة. الكويت.',
-    intro_tag:'مرحباً بك في دهو تك',
-    intro_h2:'المتجر الأول للأدوات في الكويت — <span class="orange">مفتوح 7 أيام</span>',
-    intro_p:'دهو تك توفر أدوات كهربائية وأدوات يدوية ومثبتات ومعدات سلامة ومواد بناء للمقاولين والشركات والأفراد في جميع أنحاء الكويت. سواء احتجت قطعة واحدة أو طلباً كاملاً — لدينا المخزون وجاهز.',
+    footer_copy:'2024 بحر الهند. جميع الحقوق محفوظة. الكويت.',
+    intro_tag:'مرحباً بك في بحر الهند',
+    intro_h2:'المتجر الأول للحمامات والسباكة في الكويت — <span class="orange">مفتوح 7 أيام</span>',
+    intro_p:'بحر الهند توفر شتافة، أغطية مراحيض، إضاءة LED، صنابير وخلاطات ومستلزمات الحمام للمقاولين والشركات والأفراد في جميع أنحاء الكويت. سواء احتجت قطعة واحدة أو طلباً كاملاً — لدينا المخزون وجاهز.',
     intro_c1:'60+ منتج في المخزون', intro_c2:'توصيل في نفس اليوم بالكويت',
     intro_c3:'أسعار الجملة والتجارة', intro_c4:'دعم بالعربية والإنجليزية',
     intro_cta_text:'اتصل بنا: 9765 6372',
@@ -889,7 +889,7 @@ async function saveOrderToSupabase(order) {
     total:          parseFloat(order.total.toFixed(3)),
     status:         'pending'
   }];
-  console.log('[Rawaj] Saving order:', payload);
+  console.log('[BaharAlHind] Saving order:', payload);
   const result = await sbFetch(SB_URL + '/rest/v1/rawaj_orders', {
     method: 'POST',
     headers: Object.assign({}, SB_H, {
@@ -899,9 +899,9 @@ async function saveOrderToSupabase(order) {
     body: JSON.stringify(payload)
   });
   if (result.error) {
-    console.error('[Rawaj] Order save FAILED:', result.error);
+    console.error('[BaharAlHind] Order save FAILED:', result.error);
     alert('⚠️ Order save failed: ' + result.error + '\n\nYour WhatsApp message was still sent.');
   } else {
-    console.log('[Rawaj] Order saved OK:', result.data);
+    console.log('[BaharAlHind] Order saved OK:', result.data);
   }
 }
