@@ -1950,8 +1950,7 @@ async function connectInventoryFile() {
     _invFileHandle = handle;
     await _saveFsHandle('inv', handle);
     _updateConnectUI();
-    var ok = await _writeToHandle(_invFileHandle, _buildInventoryWorkbook);
-    showToast(ok ? '✅ Bahr_Inventory.xlsx saved & connected' : 'Connected but write failed');
+    showToast('✅ Inventory file connected — use Download to save data');
   } catch(e) { if (e.name !== 'AbortError') showToast('Could not connect file'); }
 }
 
@@ -1968,8 +1967,7 @@ async function connectSalesFile() {
     _salesFileHandle = handle;
     await _saveFsHandle('sales', handle);
     _updateConnectUI();
-    var ok = await _writeToHandle(_salesFileHandle, _buildSalesWorkbook);
-    showToast(ok ? '✅ Bahr_Sales.xlsx saved & connected' : 'Connected but write failed');
+    showToast('✅ Sales file connected — use Download to save data');
   } catch(e) { if (e.name !== 'AbortError') showToast('Could not connect file'); }
 }
 
@@ -2154,8 +2152,7 @@ async function connectOrdersFile() {
     _ordFileHandle = handle;
     await _saveFsHandle('ord', handle);
     _updateConnectUI();
-    var ok = await _writeToHandle(_ordFileHandle, _buildOrdersWorkbook);
-    showToast(ok ? '✅ Bahr_Orders.xlsx saved & connected' : 'Connected but write failed');
+    showToast('✅ Orders file connected — use Download to save data');
   } catch(e) { if (e.name !== 'AbortError') showToast('Could not connect file'); }
 }
 
