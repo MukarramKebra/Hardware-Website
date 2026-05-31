@@ -766,7 +766,47 @@
     </div>
 
   </div>
-</div>
+
+  <!-- CATEGORIES SECTION -->
+  <div id="categoriesSection" class="main" style="display:none">
+    <div class="table-top" style="margin-bottom:24px">
+      <h2><i class="fa fa-th-large" style="color:var(--orange);margin-right:8px"></i>Edit Category Images</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px" id="catEditGrid"></div>
+  </div>
+
+  <!-- OWNER CONTROLS SECTION -->
+  <div id="ownerSection" class="main" style="display:none">
+    <div style="max-width:900px;margin:0 auto;">
+      <div class="table-top" style="margin-bottom:24px">
+        <h2><i class="fa fa-crown" style="color:#7c3aed;margin-right:8px"></i>Owner Control Panel</h2>
+        <span style="font-size:12px;color:var(--gray)">Exclusive controls for <strong style="color:#7c3aed">ultimate15</strong></span>
+      </div>
+      <div class="su-card">
+        <div class="su-card-h"><i class="fa fa-users"></i> Admin Account Control</div>
+        <div class="su-user-row">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:40px;height:40px;background:rgba(8,145,178,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
+            <div>
+              <div style="font-weight:800;font-size:14px;color:var(--dark)">bahar</div>
+              <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Admin Account</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span id="suUserStatus2" style="font-size:12px;font-weight:700"></span>
+            <button id="suToggleBtn2" class="su-toggle-btn" onclick="toggleBaharAccount()"></button>
+          </div>
+        </div>
+      </div>
+      <div class="su-card">
+        <div class="su-card-h"><i class="fa fa-history"></i> Bahar's Actions — Past 7 Days</div>
+        <button class="su-undo-btn" id="suUndoBtn2" onclick="undoAllThisWeek()"><i class="fa fa-undo-alt"></i> Undo All This Week's Actions</button>
+        <div id="suAuditLog2"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end adminPanel -->
 
 <!-- ADD PRODUCT MODAL -->
 <div class="ap-overlay" id="apOverlay" onclick="if(event.target===this)closeAddProduct()">
@@ -980,46 +1020,6 @@
     </div>
   </div>
 </div>
-
-  <!-- CATEGORIES SECTION -->
-  <div id="categoriesSection" class="main" style="display:none">
-    <div class="table-top" style="margin-bottom:24px">
-      <h2><i class="fa fa-th-large" style="color:var(--orange);margin-right:8px"></i>Edit Category Images</h2>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px" id="catEditGrid"></div>
-  </div>
-
-  <!-- OWNER CONTROLS SECTION (inside adminPanel, shown only for ultimate15) -->
-  <div id="ownerSection" class="main" style="display:none">
-    <div style="max-width:900px;margin:0 auto;">
-      <div class="table-top" style="margin-bottom:24px">
-        <h2><i class="fa fa-crown" style="color:#7c3aed;margin-right:8px"></i>Owner Control Panel</h2>
-        <span style="font-size:12px;color:var(--gray)">Exclusive controls for <strong style="color:#7c3aed">ultimate15</strong></span>
-      </div>
-      <div class="su-card">
-        <div class="su-card-h"><i class="fa fa-users"></i> Admin Account Control</div>
-        <div class="su-user-row">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:40px;height:40px;background:rgba(8,145,178,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
-            <div>
-              <div style="font-weight:800;font-size:14px;color:var(--dark)">bahar</div>
-              <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Admin Account</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <span id="suUserStatus2" style="font-size:12px;font-weight:700"></span>
-            <button id="suToggleBtn2" class="su-toggle-btn" onclick="toggleBaharAccount()"></button>
-          </div>
-        </div>
-      </div>
-      <div class="su-card">
-        <div class="su-card-h"><i class="fa fa-history"></i> Bahar's Actions — Past 7 Days</div>
-        <button class="su-undo-btn" id="suUndoBtn2" onclick="undoAllThisWeek()"><i class="fa fa-undo-alt"></i> Undo All This Week's Actions</button>
-        <div id="suAuditLog2"></div>
-      </div>
-    </div>
-  </div>
-</div><!-- end adminPanel -->
 
 <!-- SUPER ADMIN PANEL (legacy standalone — kept for fallback) -->
 <div id="superAdminPanel" style="display:none!important">
