@@ -336,14 +336,75 @@ async function deductStock(cartItems) {
   if (error) localStorage.setItem('bahar_stock', JSON.stringify(_sbStock));
 }
 
+// ── SMART SEARCH ─────────────────────────────────────────────────────────────
+// Arabic names for all products so searching in Arabic works
+const ARABIC_NAMES = {
+  // Shataffa / شطافة
+  1:'شطافة ستانلس ستيل', 2:'طقم شطافة جداري', 3:'بيديه سبراي ثنائي',
+  4:'مقعد بيديه', 5:'خرطوم شطافة مضفر', 6:'زاوية مع قاطع تي',
+  7:'شطافة نيكل مصقول', 8:'حامل شطافة كروم', 9:'طقم خلاط بيديه',
+  10:'صمام عدم رجوع',
+  // Toilet Seats / مقعد المرحاض
+  11:'مقعد مرحاض أبيض', 12:'مقعد مرحاض ناعم', 13:'مقعد مرحاض رفيع',
+  14:'مقعد دي شيب ناعم', 15:'مقعد تدريب أطفال', 16:'مقعد سريع الفك',
+  17:'مقعد مرحاض ممتد', 18:'مقعد مضاد للبكتيريا',
+  // Lighting / إضاءة
+  19:'لمبة ليد دافئة', 20:'لمبة ليد نهارية', 21:'لمبة ليد صغيرة',
+  22:'سبوت ليد', 23:'داون لايت ليد', 24:'شريط ليد',
+  25:'لوح ليد', 26:'أنبوب ليد', 27:'لمبة ليد ذكية', 28:'لمبة خارجية',
+  // Taps / صنبور وخلاط
+  29:'خلاط حوض كروم', 30:'خلاط مطبخ', 31:'صنبور سحب',
+  32:'خلاط حمام وشاور', 33:'صنبور ساخن وبارد', 34:'خلاط حوض جداري',
+  35:'شاور ثيرموستاتي', 36:'فلتر صنبور', 37:'صمام إيقاف',
+  38:'خلاط أحادي طويل',
+  // Plumbing / سباكة
+  39:'أنبوب ضغط', 40:'أنبوب ماء ساخن', 41:'خرطوم مرن 40',
+  42:'خرطوم مرن 60', 43:'تفلون', 44:'كوع 90',
+  45:'صمام كروي نحاس', 46:'سيفون', 47:'سيليكون صحي', 48:'سلك تسليك',
+  // Bathroom / حمام
+  49:'حلقة مناشف', 50:'حامل ورق تواليت', 51:'بار مناشف مزدوج',
+  52:'موزع صابون جداري', 53:'مرآة حمام', 54:'ستارة حمام',
+  55:'رف زاوية شاور', 56:'خطاف معطف مزدوج',
+  // Sanitaryware / أدوات صحية
+  57:'حوض معلق', 58:'حوض بيدستال', 59:'طقم مرحاض', 60:'إطار سيسترن مخفي'
+};
+
+// normalizeQ — cleans up a search string so small differences don't block results:
+//   • lowercases everything
+//   • removes hyphens / punctuation (so "d-cup" = "d cup")
+//   • collapses repeated letters (so "shattaffa" = "shatafa")
+//   • collapses whitespace
+function normalizeQ(str) {
+  return (str || '')
+    .toLowerCase()
+    .replace(/[-_''".،,،؛;:!؟?/\\()\[\]]/g, ' ') // punctuation → space
+    .replace(/(.)\1+/gi, '$1')                    // "tt" → "t", "aa" → "a"
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// matchesSearch — returns true if a product matches the search query
+// Splits the query into words and checks that EVERY word appears somewhere
+// in the product name, description, category, or Arabic name.
+function matchesSearch(query, p) {
+  if (!query) return true;
+  const normQ    = normalizeQ(query);
+  const words    = normQ.split(' ').filter(w => w.length > 0);
+  const haystack = normalizeQ(p.name) + ' ' +
+                   normalizeQ(p.desc || '') + ' ' +
+                   normalizeQ(p.category || '') + ' ' +
+                   (ARABIC_NAMES[p.id] || '');
+  return words.every(w => haystack.includes(w));
+}
+
 // ── RENDER PRODUCTS ───────────────────────────────────────────────────────
 function renderProducts() {
-  const query = document.getElementById('searchInput').value.toLowerCase();
+  const query = document.getElementById('searchInput').value.trim();
   const grid  = document.getElementById('productsGrid');
   const empty = document.getElementById('productsEmpty');
   const filtered = getAllProducts().filter(p => {
     const matchCat    = activeFilter === 'all' || p.category === activeFilter || getMultiCats(p.id).includes(activeFilter);
-    const matchSearch = !query || p.name.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query);
+    const matchSearch = matchesSearch(query, p);
     return matchCat && matchSearch;
   });
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
