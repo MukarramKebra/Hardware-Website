@@ -3,10 +3,10 @@ const UL  = (id) => `product-images/${id}.jpg`;   // local images
 
 // ── SKU HELPER ────────────────────────────────────────────────────────────
 // SKU is a separate display label from the internal product ID.
-// Admin can set a custom SKU; it's stored in rawaj_sku_map in localStorage.
+// Admin can set a custom SKU; it's stored in bahar_sku_map in localStorage.
 function getProductSku(id) {
   try {
-    var map = JSON.parse(localStorage.getItem('rawaj_sku_map') || '{}');
+    var map = JSON.parse(localStorage.getItem('bahar_sku_map') || '{}');
     var val = map[String(id)];
     return 'SKU-' + String(val !== undefined ? val : id).padStart(4, '0');
   } catch(e) { return 'SKU-' + String(id).padStart(4, '0'); }
@@ -33,20 +33,20 @@ async function sbFetch(url, options) {
 // Live data loaded from Supabase (falls back to localStorage if offline)
 let _sbStock    = {};
 let _sbPhotos   = {};
-let _customProds = [];      // admin-added products from rawaj_products table
+let _customProds = [];      // admin-added products from bahar_products table
 let _hiddenIds   = new Set(); // base product IDs hidden by admin
 
 async function loadSBData() {
   const [s, p, c, h] = await Promise.all([
-    sbFetch(SB_URL + '/rest/v1/rawaj_stock?select=*',                         { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/rawaj_photos?select=*',                        { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/rawaj_products?select=*',                        { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/rawaj_hidden?select=product_id',               { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/bahar_stock?select=*',                         { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/bahar_photos?select=*',                        { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/bahar_products?select=*',                        { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/bahar_hidden?select=product_id',               { headers: SB_H })
   ]);
   if (s.error) {
     console.warn('Supabase offline — using localStorage fallback');
-    try { _sbStock  = JSON.parse(localStorage.getItem('rawaj_stock')  || '{}'); } catch(_) {}
-    try { _sbPhotos = JSON.parse(localStorage.getItem('rawaj_photos') || '{}'); } catch(_) {}
+    try { _sbStock  = JSON.parse(localStorage.getItem('bahar_stock')  || '{}'); } catch(_) {}
+    try { _sbPhotos = JSON.parse(localStorage.getItem('bahar_photos') || '{}'); } catch(_) {}
   } else {
     if (Array.isArray(s.data)) s.data.forEach(r => { _sbStock[r.product_id]  = r.qty; });
     if (Array.isArray(p.data)) p.data.forEach(r => { _sbPhotos[r.product_id] = r.url; });
@@ -245,10 +245,10 @@ let activeFilter = 'all';
 
 // ── MULTI-CATEGORY HELPER (storefront) ────────────────────────────────────
 // Returns array of extra category slugs assigned to a product via the admin
-// multi-category picker (stored in rawaj_multi_cats in localStorage).
+// multi-category picker (stored in bahar_multi_cats in localStorage).
 function getMultiCats(id) {
   try {
-    var map = JSON.parse(localStorage.getItem('rawaj_multi_cats') || '{}');
+    var map = JSON.parse(localStorage.getItem('bahar_multi_cats') || '{}');
     return Array.isArray(map[String(id)]) ? map[String(id)] : [];
   } catch(e) { return []; }
 }
@@ -266,9 +266,9 @@ function imgError(el) {
 
 // ── ANALYTICS TRACKING ────────────────────────────────────────────────────
 function trackView(id) {
-  const v = JSON.parse(localStorage.getItem('rawaj_views') || '{}');
+  const v = JSON.parse(localStorage.getItem('bahar_views') || '{}');
   v[id] = (v[id] || 0) + 1;
-  localStorage.setItem('rawaj_views', JSON.stringify(v));
+  localStorage.setItem('bahar_views', JSON.stringify(v));
   // Sync to Supabase so admin analytics tab can see live data
   sbFetch(SB_URL + '/rest/v1/rpc/increment_analytics', {
     method: 'POST',
@@ -278,9 +278,9 @@ function trackView(id) {
 }
 function trackSearch(ids) {
   if (!ids || !ids.length) return;
-  const s = JSON.parse(localStorage.getItem('rawaj_searches') || '{}');
+  const s = JSON.parse(localStorage.getItem('bahar_searches') || '{}');
   ids.forEach(function(id) { s[id] = (s[id] || 0) + 1; });
-  localStorage.setItem('rawaj_searches', JSON.stringify(s));
+  localStorage.setItem('bahar_searches', JSON.stringify(s));
   // Sync to Supabase so admin analytics tab can see live data
   ids.forEach(function(id) {
     sbFetch(SB_URL + '/rest/v1/rpc/increment_analytics', {
@@ -328,12 +328,12 @@ async function deductStock(cartItems) {
   });
   // Push to Supabase so admin sees real numbers
   const rows = cartItems.map(item => ({ product_id: item.id, qty: _sbStock[item.id] }));
-  const { error } = await sbFetch(SB_URL + '/rest/v1/rawaj_stock', {
+  const { error } = await sbFetch(SB_URL + '/rest/v1/bahar_stock', {
     method: 'POST',
     headers: { ...SB_H, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
     body: JSON.stringify(rows)
   });
-  if (error) localStorage.setItem('rawaj_stock', JSON.stringify(_sbStock));
+  if (error) localStorage.setItem('bahar_stock', JSON.stringify(_sbStock));
 }
 
 // ── RENDER PRODUCTS ───────────────────────────────────────────────────────
@@ -681,7 +681,7 @@ loadSBData();
 // ── CATEGORY BACKGROUNDS (admin-editable) ────────────────────────────────
 function applyCatBgs() {
   try {
-    var bgs = JSON.parse(localStorage.getItem('rawaj_cat_bgs') || '{}');
+    var bgs = JSON.parse(localStorage.getItem('bahar_cat_bgs') || '{}');
     document.querySelectorAll('.cat-card[data-cat]').forEach(function(card) {
       var slug = card.dataset.cat;
       if (bgs[slug]) card.style.backgroundImage = "url('" + bgs[slug] + "')";
@@ -841,7 +841,7 @@ var _T = {
 
 function setLang(lang) {
   _lang = lang;
-  localStorage.setItem('rawaj_lang', lang);
+  localStorage.setItem('bahar_lang', lang);
   var html = document.documentElement;
   html.lang = lang;
   html.dir  = lang === 'ar' ? 'rtl' : 'ltr';
@@ -888,7 +888,7 @@ function toggleLang() {
 
 // Apply saved language on load
 (function() {
-  var saved = localStorage.getItem('rawaj_lang');
+  var saved = localStorage.getItem('bahar_lang');
   if (saved === 'ar') setLang('ar');
 })();
 
@@ -904,7 +904,7 @@ async function saveOrderToSupabase(order) {
     status:         'pending'
   }];
   console.log('[BaharAlHind] Saving order:', payload);
-  const result = await sbFetch(SB_URL + '/rest/v1/rawaj_orders', {
+  const result = await sbFetch(SB_URL + '/rest/v1/bahar_orders', {
     method: 'POST',
     headers: Object.assign({}, SB_H, {
       'Content-Type': 'application/json',
