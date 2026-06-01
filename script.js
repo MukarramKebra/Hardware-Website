@@ -254,11 +254,20 @@ function getMultiCats(id) {
 }
 
 function imgError(el) {
+  // Step 1: try the local Bahar-Products fallback path if we haven't yet
+  const local = el.dataset.local;
+  if (!el.dataset.triedLocal && local && el.src !== local && !el.src.includes('Bahar-Products')) {
+    el.dataset.triedLocal = '1';
+    el.src = local;
+    return;
+  }
+  // Step 2: retry once after 4 seconds
   if (!el.dataset.retry) {
     el.dataset.retry = '1';
     const src = el.src;
     setTimeout(() => { el.src = ''; el.src = src; }, 4000);
   } else {
+    // Step 3: give up, show placeholder icon
     el.style.display = 'none';
     if (el.nextElementSibling) el.nextElementSibling.style.display = 'flex';
   }
@@ -431,7 +440,9 @@ function renderProducts() {
     const liveQty    = getLiveQty(p.id);
     const isOut      = liveStatus === 'out-of-stock';
     const isLow      = liveStatus === 'low-stock';
-    const photo      = customPhotos[p.id] || p.img;
+    // Use custom admin photo only if it's a valid http/https URL or data URL — not a broken local path
+    const rawCustom  = customPhotos[p.id];
+    const photo      = (rawCustom && (rawCustom.startsWith('http') || rawCustom.startsWith('data:'))) ? rawCustom : p.img;
     // Arabic product name/desc
     const arP = isAr && _AR_PRODUCTS[p.id];
     const pName = arP ? arP.name : p.name;
@@ -448,7 +459,7 @@ function renderProducts() {
         <div class="product-img-wrap">
           ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
           ${isOut ? `<span class="out-badge">${isAr ? 'نفد المخزون' : 'OUT OF STOCK'}</span>` : ''}
-          <img src="${photo}" alt="${pName}" loading="lazy" onerror="imgError(this)" />
+          <img src="${photo}" data-local="${p.img}" alt="${pName}" loading="lazy" onerror="imgError(this)" />
           <div class="product-img-fallback" style="display:none"><i class="fa fa-tools"></i></div>
         </div>
         <div class="product-info">
