@@ -1150,7 +1150,7 @@ async function sbFetch(url, options) {
 // U  = placeholder image URL (used when a product has no real photo uploaded yet)
 // UL = local product image path  (e.g. "product-images/1.jpg" stored in the repo)
 const U  = id => 'https://picsum.photos/seed/' + id + '/80/80';
-const UL = id => 'product-images/' + id + '.jpg';
+const UL = id => 'Bahar-Products/SKU-' + String(id).padStart(4, '0') + '.jpg';
 
 let _customProductRows = []; // products added by admin (fetched from Supabase bahar_products table)
 let _hiddenBaseIds     = new Set(); // IDs of base products that have been hidden from the store
