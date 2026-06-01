@@ -2347,7 +2347,8 @@ function renderTable() {
     const dotCls = qty===0?'dot-red':qty<=10?'dot-yellow':'dot-green';
     const status = qty===0?'Out of Stock':qty<=10?'Low Stock':'In Stock';
     const val    = (p.price*qty).toFixed(3);
-    const thumb  = photos[p.id] || p.img || ('https://picsum.photos/seed/dhow'+p.id+'/80/80');
+    const rawPh  = photos[p.id];
+    const thumb  = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : (p.img || ('https://picsum.photos/seed/dhow'+p.id+'/80/80'));
     const vCount = views[p.id]||0;
     const sCount = searches[p.id]||0;
     const visLbl = p.hidden ? '<i class="fa fa-eye-slash"></i> Show' : '<i class="fa fa-eye"></i> Hide';
@@ -2509,7 +2510,8 @@ function buildAnTable(list, counts, photos, maxCount, barCls, unit) {
   const rows = list.map(function(p, i) {
     const count = counts[p.id]||0;
     const pct = Math.round((count/maxCount)*100);
-    const thumb = photos[p.id] || p.img || ('https://picsum.photos/seed/dhow'+p.id+'/80/80');
+    const rawPh2 = photos[p.id];
+    const thumb = (rawPh2 && (rawPh2.startsWith('http') || rawPh2.startsWith('data:'))) ? rawPh2 : (p.img || ('https://picsum.photos/seed/dhow'+p.id+'/80/80'));
     return '<tr>' +
       '<td><div class="rank-badge '+rankCls(i)+'">'+(i+1)+'</div></td>' +
       '<td><div style="display:flex;align-items:center;gap:10px">' +
@@ -2570,7 +2572,8 @@ function openStats(id) {
   const sortedS = PRODUCTS.slice().sort(function(a,b){ return (searches[b.id]||0)-(searches[a.id]||0); });
   const vRank   = sortedV.findIndex(function(x){ return x.id===id; })+1;
   const sRank   = sortedS.findIndex(function(x){ return x.id===id; })+1;
-  const thumb   = photos[id] || p.img || ('https://picsum.photos/seed/dhow'+id+'/80/80');
+  const rawPhS  = photos[id];
+  const thumb   = (rawPhS && (rawPhS.startsWith('http') || rawPhS.startsWith('data:'))) ? rawPhS : (p.img || ('https://picsum.photos/seed/dhow'+id+'/80/80'));
 
   document.getElementById('smBody').innerHTML =
     '<div class="sm-prod-row">' +
@@ -3010,7 +3013,8 @@ function renderDeletedTab() {
     return;
   }
   body.innerHTML = deleted.map(function(d) {
-    const thumb    = photos[d.id] || d.img || ('https://picsum.photos/seed/dhow'+d.id+'/80/80');
+    const rawPhD   = photos[d.id];
+    const thumb    = (rawPhD && (rawPhD.startsWith('http') || rawPhD.startsWith('data:'))) ? rawPhD : (d.img || ('https://picsum.photos/seed/dhow'+d.id+'/80/80'));
     const daysAgo  = Math.floor((Date.now()-d.deletedAt)/(24*60*60*1000));
     const daysLeft = 60 - daysAgo;
     const dateStr  = new Date(d.deletedAt).toLocaleDateString('en-KW',{day:'numeric',month:'short',year:'numeric'});
@@ -3410,7 +3414,8 @@ function openPhoto(id) {
   const p = getAllAdminProducts().find(function(x){ return x.id===id; });
   if (!p) return;
   const photos = JSON.parse(localStorage.getItem('bahar_photos')||'{}');
-  const src = photos[id] || p.img || '';
+  const rawPhO = photos[id];
+  const src = (rawPhO && (rawPhO.startsWith('http') || rawPhO.startsWith('data:'))) ? rawPhO : (p.img || '');
   document.getElementById('phProdName').textContent = '#'+id+' â€” '+p.name;
   document.getElementById('phUrlInput').value = src.startsWith('data:') ? '' : src;
   document.getElementById('cropSection').classList.remove('show');
