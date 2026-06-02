@@ -638,9 +638,9 @@ footer { background: var(--dark); padding: 64px 0 0; border-top: 1px solid rgba(
 .cn-item.active span,.cn-item:hover span { color:var(--orange); }
 
 /* ── HEADER INSTAGRAM ICON ──────────────────────────────────────────────── */
-.header-insta { display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.18); color:rgba(255,255,255,0.75); font-size:16px; text-decoration:none; transition:all .2s; flex-shrink:0; }
+.header-insta { display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.18); color:#fff; font-size:16px; text-decoration:none; transition:all .2s; flex-shrink:0; }
 .header-insta:hover { background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); border-color:transparent; color:#fff; transform:scale(1.05); }
-@media(max-width:480px){ .header-insta { width:30px; height:30px; font-size:14px; } }
+@media(max-width:480px){ .header-insta { width:30px; height:30px; font-size:14px; border:none; background:none; color:#fff; } }
 
 /* ── ACCOUNT BUTTON (header) ────────────────────────────────────────────── */
 .btn-account { background:none; border:1.5px solid rgba(255,255,255,0.3); color:rgba(255,255,255,0.82); padding:7px 14px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all .2s; font-family:inherit; white-space:nowrap; }
@@ -741,3 +741,43 @@ footer { background: var(--dark); padding: 64px 0 0; border-top: 1px solid rgba(
 .order-nudge { background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:10px; padding:14px 16px; margin-top:16px; text-align:center; }
 .order-nudge p { font-size:13px; color:#0369a1; margin-bottom:10px; font-weight:600; line-height:1.5; }
 .order-nudge button { padding:8px 20px; background:var(--orange); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
+
+/* ── FLOATING CART FAB (mobile only, bottom-left) ───────────────────────── */
+.mob-cart-fab { display:none; }
+@media(max-width:768px){
+  .mob-cart-fab {
+    display:flex; align-items:center; gap:8px;
+    position:fixed; bottom:22px; left:16px; z-index:8500;
+    background:var(--orange); color:#fff; border:none;
+    border-radius:50px; padding:13px 20px;
+    font-size:15px; font-weight:900; font-family:inherit;
+    cursor:pointer; box-shadow:0 4px 18px rgba(8,145,178,.45);
+    transition:transform .15s, box-shadow .15s;
+  }
+  .mob-cart-fab:active { transform:scale(0.95); }
+  .mob-cart-fab span {
+    background:#fff; color:var(--orange);
+    border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:900; flex-shrink:0;
+  }
+  /* Hide the header cart button on mobile (FAB replaces it) */
+  .btn-cart { display:none; }
+}
+
+/* ── MOBILE NAV EXTRA LINKS (My Orders / Sign In) ───────────────────────── */
+#navMyOrders, #navSignIn { border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; margin-top:4px; }
+#navSignIn { color:var(--orange) !important; }
+#navMyOrders { color:rgba(255,255,255,0.85) !important; }
+
+/* ── SEARCH FORM WRAPPER ─────────────────────────────────────────────────── */
+form.search-wrap { border:none; outline:none; }
+
+/* ── CHECKOUT MOBILE EXTRA FIXES ─────────────────────────────────────────── */
+@media(max-width:520px){
+  .checkout-box { border-radius:16px 16px 0 0; }
+  .co-header h3 { font-size:14px; }
+  .co-section-title { font-size:12px; }
+  .co-item { flex-direction:column; gap:2px; }
+  .co-item-price { align-self:flex-end; }
+}

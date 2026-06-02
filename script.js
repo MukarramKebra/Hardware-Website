@@ -656,15 +656,23 @@ function addToCart(id) {
 }
 function removeFromCart(id) { cart = cart.filter(c => c.id !== id); updateCartUI(); }
 function updateCartUI() {
-  document.getElementById('cartCount').textContent = cart.reduce((s,c) => s+c.qty, 0);
+  const count = cart.reduce((s,c) => s+c.qty, 0);
+  document.getElementById('cartCount').textContent = count;
+  // Also update the mobile FAB badge
+  const fab = document.getElementById('mobCartCount');
+  if (fab) fab.textContent = count;
   const body  = document.getElementById('cartItems');
   const total = cart.reduce((s,c) => s+c.price*c.qty, 0);
   document.getElementById('cartTotal').textContent = total.toFixed(3) + ' KWD';
   const customPhotos = _sbPhotos;
   if (!cart.length) { body.innerHTML = '<p class="empty-cart">Your cart is empty.</p>'; return; }
-  body.innerHTML = cart.map(c => `
+  body.innerHTML = cart.map(c => {
+    // Only use stored photo if it's a real URL — otherwise fall back to local image
+    const rawPh = customPhotos[c.id];
+    const imgSrc = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : c.img;
+    return `
     <div class="cart-item">
-      <div class="cart-item-icon"><img src="${customPhotos[c.id]||c.img}" alt="${c.name}" onerror="imgError(this)" /></div>
+      <div class="cart-item-icon"><img src="${imgSrc}" alt="${c.name}" onerror="imgError(this)" /></div>
       <div class="cart-item-info">
         <strong>${c.name}</strong>
         <span>Qty: ${c.qty} &times; ${c.price.toFixed(3)} KWD</span>
@@ -673,7 +681,8 @@ function updateCartUI() {
         <span class="cart-item-price">${(c.price*c.qty).toFixed(3)} KWD</span>
         <button class="btn-remove" onclick="removeFromCart(${c.id})"><i class="fa fa-trash"></i></button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function openCart() { document.getElementById('cartModal').classList.add('open'); }
 
@@ -1254,19 +1263,25 @@ function saveGuestOrder(order) {
 function updateHeaderForAuth() {
   const btn   = document.getElementById('accountBtn');
   const label = document.getElementById('acctBtnLabel');
-  if (!btn || !label) return;
-  if (_authUser) {
-    const initial = (_userProfile && _userProfile.name)
-      ? _userProfile.name.charAt(0).toUpperCase()
-      : _authUser.email.charAt(0).toUpperCase();
-    btn.classList.add('signed-in');
-    label.innerHTML =
-      '<span style="background:#fff;color:#0891b2;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">' + initial + '</span>' +
-      '<span class="acct-txt">&nbsp;My Account</span>';
-  } else {
-    btn.classList.remove('signed-in');
-    label.innerHTML = '<span class="acct-txt">Sign In</span>';
+  if (btn && label) {
+    if (_authUser) {
+      const initial = (_userProfile && _userProfile.name)
+        ? _userProfile.name.charAt(0).toUpperCase()
+        : _authUser.email.charAt(0).toUpperCase();
+      btn.classList.add('signed-in');
+      label.innerHTML =
+        '<span style="background:#fff;color:#0891b2;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">' + initial + '</span>' +
+        '<span class="acct-txt">&nbsp;My Account</span>';
+    } else {
+      btn.classList.remove('signed-in');
+      label.innerHTML = '<span class="acct-txt">Sign In</span>';
+    }
   }
+  // Show/hide My Orders & Sign In links in mobile nav
+  var navOrders = document.getElementById('navMyOrders');
+  var navSignIn = document.getElementById('navSignIn');
+  if (navOrders) navOrders.style.display = _authUser ? '' : 'none';
+  if (navSignIn) navSignIn.style.display = _authUser ? 'none' : '';
 }
 
 // ── Header button click ────────────────────────────────────────────────────────

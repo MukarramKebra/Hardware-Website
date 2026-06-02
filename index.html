@@ -18,14 +18,16 @@
         <div class="logo-text-fallback" style="display:none"><span class="logo-dhow">Bahar</span><span class="logo-tech"> Al Hind</span></div>
       </a>
       <nav id="nav">
-        <a href="#hero" data-i18n="nav_home">Home</a>
-        <a href="#about" data-i18n="nav_about">About</a>
-        <a href="#products" data-i18n="nav_products">Products</a>
-        <a href="#categories" data-i18n="nav_categories">Categories</a>
-        <a href="#contact" data-i18n="nav_contact">Contact</a>
+        <a href="#hero" data-i18n="nav_home" onclick="document.getElementById('nav').classList.remove('open')">Home</a>
+        <a href="#about" data-i18n="nav_about" onclick="document.getElementById('nav').classList.remove('open')">About</a>
+        <a href="#products" data-i18n="nav_products" onclick="document.getElementById('nav').classList.remove('open')">Products</a>
+        <a href="#categories" data-i18n="nav_categories" onclick="document.getElementById('nav').classList.remove('open')">Categories</a>
+        <a href="#contact" data-i18n="nav_contact" onclick="document.getElementById('nav').classList.remove('open')">Contact</a>
+        <a href="#" id="navMyOrders" onclick="document.getElementById('nav').classList.remove('open');onAccountBtnClick();return false;" style="display:none"><i class="fa fa-receipt" style="margin-right:6px"></i>My Orders</a>
+        <a href="#" id="navSignIn" onclick="document.getElementById('nav').classList.remove('open');openAuthModal('login');return false;"><i class="fa fa-user" style="margin-right:6px"></i>Sign In</a>
       </nav>
       <div class="header-actions">
-        <a href="https://www.instagram.com/bahar_al_hind" target="_blank" class="header-insta" title="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.instagram.com/bahar_al_hind" target="_blank" class="header-insta" title="Follow us on Instagram"><i class="fab fa-instagram"></i></a>
         <button class="lang-btn" id="langBtn" onclick="toggleLang()">عربي</button>
         <button class="btn-account" id="accountBtn" onclick="onAccountBtnClick()">
           <i class="fa fa-user"></i>
@@ -160,10 +162,11 @@
         <h2 data-i18n-html="prod_h2">Our <span class="orange">Products</span></h2>
       </div>
       <div class="products-controls">
-        <div class="search-wrap">
+        <!-- autocomplete="off" on the form prevents browser from offering saved credentials -->
+        <form class="search-wrap" onsubmit="return false" autocomplete="off" role="search">
           <i class="fa fa-search"></i>
-          <input type="text" id="searchInput" placeholder="Search tools, nails, screws..." data-i18n-placeholder="prod_search" autocomplete="off" />
-        </div>
+          <input type="search" id="searchInput" placeholder="Search products..." data-i18n-placeholder="prod_search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+        </form>
         <div class="filter-pills">
           <button class="pill active" data-filter="all" data-i18n="pill_all">All</button>
           <button class="pill" data-filter="shataffa" data-i18n="cat_power">Shataffa</button>
@@ -595,6 +598,12 @@
       </div>
     </div>
   </div>
+
+  <!-- FLOATING CART BUTTON (mobile only, bottom-left) -->
+  <button class="mob-cart-fab" id="mobCartFab" onclick="openCart()">
+    <i class="fa fa-shopping-cart"></i>
+    <span id="mobCartCount">0</span>
+  </button>
 
   <script src="script.js"></script>
 </body>
