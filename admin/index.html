@@ -3105,7 +3105,12 @@ async function restoreProduct(id, isBase) {
 function permanentDelete(id) {
   if (!confirm('Permanently remove this product? This CANNOT be undone.')) return;
   saveDeletedProducts(getDeletedProducts().filter(function(d){ return d.id!==id; }));
+  // Also remove from audit log so it no longer appears in Owner Controls
+  saveAuditLog(getAuditLog().filter(function(e){
+    return !(e.data && e.data.id === id && (e.action === 'delete_product' || e.action === 'add_product'));
+  }));
   renderDeletedTab();
+  renderSuperAdmin();
   showToast('Permanently removed');
 }
 
@@ -3198,7 +3203,12 @@ async function restoreOrder(id) {
 function permanentDeleteOrder(id) {
   if (!confirm('Permanently remove this order? This CANNOT be undone.')) return;
   saveDeletedOrders(getDeletedOrders().filter(function(d){ return d.id !== id; }));
+  // Also remove from audit log so it no longer appears in Owner Controls
+  saveAuditLog(getAuditLog().filter(function(e){
+    return !(e.data && e.data.id === id && (e.action === 'delete_order' || e.action === 'status_change'));
+  }));
   renderDeletedOrdersTab();
+  renderSuperAdmin();
   showToast('Order permanently removed');
 }
 
