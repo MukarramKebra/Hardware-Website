@@ -529,8 +529,11 @@ function openProduct(id) {
   const isOut       = liveStatus === 'out-of-stock';
   const isLow       = liveStatus === 'low-stock';
   const customPhotos = _sbPhotos;
-  // Get bigger version of the image for the modal
-  const bigImg = customPhotos[id] || p.img.replace('width=400&height=400', 'width=900&height=900');
+  // Only use a stored photo if it's a real URL (http/data:) — otherwise use the local Bahar-Products image
+  const rawPhoto = customPhotos[id];
+  const bigImg = (rawPhoto && (rawPhoto.startsWith('http') || rawPhoto.startsWith('data:')))
+    ? rawPhoto
+    : p.img;
 
   let stockIcon, stockTxt, stockCls;
   if (isOut)      { stockIcon = 'fa-times-circle'; stockTxt = 'Out of Stock'; stockCls = 'out-of-stock'; }
