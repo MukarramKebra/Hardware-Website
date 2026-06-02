@@ -26,6 +26,10 @@
       </nav>
       <div class="header-actions">
         <button class="lang-btn" id="langBtn" onclick="toggleLang()">عربي</button>
+        <button class="btn-account" id="accountBtn" onclick="onAccountBtnClick()">
+          <i class="fa fa-user"></i>
+          <span class="acct-txt" id="acctBtnLabel">Sign In</span>
+        </button>
         <button class="btn-cart" id="cartBtn"><i class="fa fa-shopping-cart"></i><span class="cart-label" data-i18n="cart_label"> Cart</span> <span id="cartCount">0</span></button>
         <button class="hamburger" id="hamburger"><i class="fa fa-bars"></i></button>
       </div>
@@ -451,6 +455,144 @@
       </div>
       <div class="prod-modal-body" id="prodModalBody">
         <!-- filled by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LOGIN WELCOME PROMPT ──────────────────────────────────────────── -->
+  <div id="loginPrompt" class="login-prompt" style="display:none">
+    <button class="lp-close" onclick="dismissLoginPrompt()" title="Dismiss"><i class="fa fa-times"></i></button>
+    <div class="lp-inner">
+      <div class="lp-icon"><i class="fa fa-user-circle"></i></div>
+      <div class="lp-text">
+        <strong>Track Your Orders</strong>
+        <span>Sign in to view order status, save your address and manage your account.</span>
+        <button class="lp-btn" onclick="dismissLoginPrompt();openAuthModal('login')">Sign In / Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AUTH MODAL (Login / Sign Up / Forgot Password) ────────────────── -->
+  <div class="auth-overlay" id="authOverlay" onclick="if(event.target===this)closeAuthModal()">
+    <div class="auth-modal">
+      <div class="auth-head">
+        <button class="auth-close-x" onclick="closeAuthModal()"><i class="fa fa-times"></i></button>
+        <div class="auth-logo-row">
+          <img src="bahr-logo.png" alt="Bahar Al Hind" onerror="this.style.display='none'" />
+          <span>Bahar Al <em>Hind</em> Co</span>
+        </div>
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="authTabLogin"  onclick="switchAuthTab('login')">Sign In</button>
+          <button class="auth-tab"        id="authTabSignup" onclick="switchAuthTab('signup')">Create Account</button>
+        </div>
+      </div>
+      <div class="auth-body">
+        <!-- Error / success banners -->
+        <div class="auth-err" id="authErr"></div>
+        <div class="auth-ok"  id="authOk"></div>
+
+        <!-- LOGIN FORM -->
+        <div id="authLoginForm">
+          <div class="auth-field">
+            <label>Email Address</label>
+            <input type="email" id="authLoginEmail" placeholder="you@email.com" autocomplete="email" />
+          </div>
+          <div class="auth-field">
+            <label>Password</label>
+            <input type="password" id="authLoginPass" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuthLogin()" />
+          </div>
+          <button class="auth-forgot-link" onclick="switchAuthTab('forgot')">Forgot password?</button>
+          <button class="auth-submit" id="authLoginBtn" onclick="doAuthLogin()">
+            <i class="fa fa-sign-in-alt"></i> Sign In
+          </button>
+          <div class="auth-bottom-note">
+            Don't have an account? <button onclick="switchAuthTab('signup')">Create one — it's free</button>
+          </div>
+        </div>
+
+        <!-- SIGN UP FORM -->
+        <div id="authSignupForm" style="display:none">
+          <div class="auth-field">
+            <label>Full Name</label>
+            <input type="text" id="authSignupName" placeholder="Ahmed Al-Mutairi" autocomplete="name" />
+          </div>
+          <div class="auth-field">
+            <label>Email Address</label>
+            <input type="email" id="authSignupEmail" placeholder="you@email.com" autocomplete="email" />
+          </div>
+          <div class="auth-field">
+            <label>Password <small style="font-weight:400;text-transform:none;font-size:10px">(min 6 characters)</small></label>
+            <input type="password" id="authSignupPass" placeholder="Choose a password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doAuthSignup()" />
+          </div>
+          <button class="auth-submit" id="authSignupBtn" onclick="doAuthSignup()">
+            <i class="fa fa-user-plus"></i> Create Account
+          </button>
+          <div class="auth-bottom-note">
+            Already have an account? <button onclick="switchAuthTab('login')">Sign in</button>
+          </div>
+        </div>
+
+        <!-- FORGOT PASSWORD FORM -->
+        <div id="authForgotForm" style="display:none">
+          <p style="font-size:13px;color:#666;margin-bottom:16px;line-height:1.6">
+            Enter your email and we'll send you a link to reset your password.
+          </p>
+          <div class="auth-field">
+            <label>Email Address</label>
+            <input type="email" id="authForgotEmail" placeholder="you@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')doAuthForgot()" />
+          </div>
+          <button class="auth-submit" id="authForgotBtn" onclick="doAuthForgot()">
+            <i class="fa fa-envelope"></i> Send Reset Link
+          </button>
+          <div class="auth-bottom-note">
+            Remembered it? <button onclick="switchAuthTab('login')">Back to sign in</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ACCOUNT MODAL (Profile + My Orders) ───────────────────────────── -->
+  <div class="acct-overlay" id="acctOverlay" onclick="if(event.target===this)closeAcctModal()">
+    <div class="acct-modal">
+      <div class="acct-head">
+        <div class="acct-user-row">
+          <div class="acct-user-info">
+            <div class="acct-avatar" id="acctAvatar">?</div>
+            <div>
+              <div class="acct-uname" id="acctUname">My Account</div>
+              <div class="acct-uemail" id="acctUemail"></div>
+            </div>
+          </div>
+          <button class="acct-signout-btn" onclick="doSignOut()"><i class="fa fa-sign-out-alt"></i> Sign Out</button>
+        </div>
+        <div class="acct-tabs">
+          <button class="acct-tab active" id="acctTabProfile" onclick="switchAcctTab('profile')"><i class="fa fa-user"></i> Profile</button>
+          <button class="acct-tab"        id="acctTabOrders"  onclick="switchAcctTab('orders')"><i class="fa fa-receipt"></i> My Orders</button>
+        </div>
+      </div>
+
+      <!-- PROFILE PANE -->
+      <div class="acct-body" id="acctProfilePane">
+        <div class="acct-ok" id="acctOk"></div>
+        <div class="acct-field">
+          <label>Full Name</label>
+          <input type="text" id="profName" placeholder="Ahmed Al-Mutairi" />
+        </div>
+        <div class="acct-field">
+          <label>WhatsApp / Phone</label>
+          <input type="tel" id="profPhone" placeholder="+965 XXXX XXXX" />
+        </div>
+        <div class="acct-field">
+          <label>Default Delivery Address</label>
+          <textarea id="profAddress" rows="3" placeholder="Block 5, Street 10, House 3, Salmiya, Kuwait"></textarea>
+        </div>
+        <button class="acct-save-btn" onclick="doSaveProfile()"><i class="fa fa-save"></i> Save Profile</button>
+      </div>
+
+      <!-- MY ORDERS PANE -->
+      <div class="acct-body" id="acctOrdersPane" style="display:none">
+        <div id="myOrdersList"><div class="myo-loading"><i class="fa fa-spinner fa-spin"></i> Loading orders...</div></div>
       </div>
     </div>
   </div>
