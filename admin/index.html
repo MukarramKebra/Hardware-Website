@@ -312,6 +312,63 @@
     @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr);}.tbl-wrap{overflow-x:auto;}.an-2col{grid-template-columns:1fr;}.analytics-stats{grid-template-columns:repeat(2,1fr);}.rpt-grid{grid-template-columns:1fr;}}
     @media(max-width:600px){.main{padding:14px;}}
 
+    /* ── MOBILE FRIENDLY ──────────────────────────────────────────────────── */
+    @media(max-width:768px){
+      /* Top bar: compact on mobile */
+      .top-bar{padding:0 14px;height:56px;}
+      .top-logo{font-size:14px;gap:8px;}
+      .top-logo img{height:28px;width:28px;margin-right:6px!important;}
+      .admin-badge{font-size:9px;padding:2px 7px;}
+      .clock-txt{display:none;}
+      .logout-btn{padding:5px 10px;font-size:11px;}
+      /* Tab bar: scrollable on mobile */
+      .tab-bar{padding:0 8px;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;top:56px;}
+      .tab-bar::-webkit-scrollbar{display:none;}
+      .tab-btn{padding:12px 14px;font-size:11px;white-space:nowrap;flex-shrink:0;}
+      /* Stats grid: 2 columns on small tablet, 1 on phone */
+      .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+      .stat-card{padding:14px 16px;}
+      .stat-icon{width:40px;height:40px;font-size:16px;}
+      .stat-info strong{font-size:20px;}
+      /* Controls row: stack vertically */
+      .table-top{flex-direction:column;align-items:flex-start;gap:10px;}
+      .ctrl-right{flex-wrap:wrap;gap:8px;width:100%;}
+      .search-bar{width:100%;box-sizing:border-box;}
+      .search-bar input{width:100%;min-width:0;}
+      .filter-sel{flex:1;min-width:120px;}
+      .save-btn,.add-prod-btn{flex:1;}
+      /* Bulk bar */
+      .bulk-bar{flex-wrap:wrap;gap:8px;}
+      /* Analytics */
+      .analytics-stats{grid-template-columns:repeat(2,1fr);}
+      /* Orders */
+      .ord-stats{grid-template-columns:repeat(2,1fr);}
+      .ord-filter-row{flex-wrap:wrap;gap:8px;}
+      /* Reports */
+      .rpt-grid{grid-template-columns:1fr;}
+      .rpt-btn-group{flex-wrap:wrap;gap:6px;}
+      .rpt-header{flex-wrap:wrap;gap:8px;}
+      /* Modal */
+      .ap-row{grid-template-columns:1fr;}
+      .ap-modal,.csv-modal,.help-modal,.newcat-modal,.mc-modal{margin:10px;}
+      /* Login */
+      .login-box{padding:32px 22px;}
+      /* su cards */
+      .su-user-row{flex-wrap:wrap;gap:10px;}
+      .su-body{padding:20px 14px;}
+    }
+    @media(max-width:480px){
+      .stats-grid{grid-template-columns:1fr;}
+      .analytics-stats{grid-template-columns:1fr;}
+      .ord-stats{grid-template-columns:1fr;}
+      .an-2col{grid-template-columns:1fr;}
+      .top-right{gap:8px;}
+      /* Hide reload button on very small screens */
+      .top-right .logout-btn:first-of-type{display:none;}
+      .main{padding:10px;}
+      .tab-btn{padding:10px 12px;font-size:10px;}
+    }
+
     /* ADD / CSV BUTTONS */
     .add-prod-btn{background:var(--orange);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.5px;}
     .add-prod-btn:hover{background:#0e7490;}
@@ -779,12 +836,16 @@
   <div id="ownerSection" class="main" style="display:none">
     <div style="max-width:900px;margin:0 auto;">
       <div class="table-top" style="margin-bottom:24px">
-        <h2><i class="fa fa-crown" style="color:#7c3aed;margin-right:8px"></i>Owner Control Panel</h2>
-        <span style="font-size:12px;color:var(--gray)">Exclusive controls for <strong style="color:#7c3aed">ultimate15</strong></span>
+        <h2 id="ownerSectionTitle"><i class="fa fa-crown" style="color:#7c3aed;margin-right:8px"></i>Owner Control Panel</h2>
+        <span id="ownerSectionSub" style="font-size:12px;color:var(--gray)">Exclusive controls for <strong style="color:#7c3aed">ultimate15</strong></span>
       </div>
+
+      <!-- Admin accounts card -->
       <div class="su-card">
         <div class="su-card-h"><i class="fa fa-users"></i> Admin Account Control</div>
-        <div class="su-user-row">
+
+        <!-- bahar row -->
+        <div class="su-user-row" style="margin-bottom:10px">
           <div style="display:flex;align-items:center;gap:12px">
             <div style="width:40px;height:40px;background:rgba(8,145,178,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
             <div>
@@ -797,9 +858,48 @@
             <button id="suToggleBtn2" class="su-toggle-btn" onclick="toggleBaharAccount()"></button>
           </div>
         </div>
+
+        <!-- bahar15 row — only ultimate15 can disable bahar15 -->
+        <div class="su-user-row owner-only-row" id="bahar15ControlRow" style="margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:40px;height:40px;background:rgba(124,58,237,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">⚙️</div>
+            <div>
+              <div style="font-weight:800;font-size:14px;color:var(--dark)">bahar15</div>
+              <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Manager Account</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span id="suBahar15Status" style="font-size:12px;font-weight:700"></span>
+            <button id="suBahar15Btn" class="su-toggle-btn" onclick="toggleBahar15Account()"></button>
+          </div>
+        </div>
       </div>
+
+      <!-- Disable Website card — ultimate15 only -->
+      <div class="su-card owner-only-row" id="siteDisableCard">
+        <div class="su-card-h"><i class="fa fa-globe"></i> Website Control</div>
+        <div class="su-user-row">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:40px;height:40px;background:rgba(239,68,68,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🌐</div>
+            <div>
+              <div style="font-weight:800;font-size:14px;color:var(--dark)">Public Website</div>
+              <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Visible to all visitors</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span id="siteStatusLabel" style="font-size:12px;font-weight:700"></span>
+            <button id="siteToggleBtn" class="su-toggle-btn" onclick="toggleSiteDisabled()"></button>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--gray);padding:8px 12px;background:var(--light);border-radius:8px">
+          <i class="fa fa-info-circle" style="color:var(--orange)"></i>
+          When disabled, visitors see a "Site closed" page. You can still access the admin panel.
+        </div>
+      </div>
+
+      <!-- Audit log card -->
       <div class="su-card">
-        <div class="su-card-h"><i class="fa fa-history"></i> Bahar's Actions — Past 7 Days</div>
+        <div class="su-card-h"><i class="fa fa-history"></i> Admin Actions — Past 7 Days</div>
         <button class="su-undo-btn" id="suUndoBtn2" onclick="undoAllThisWeek()"><i class="fa fa-undo-alt"></i> Undo All This Week's Actions</button>
         <div id="suAuditLog2"></div>
       </div>
@@ -1103,10 +1203,12 @@
 
 // ── LOGIN CREDENTIALS ──────────────────────────────────────────────────────────
 // Change these to update usernames/passwords
-const ADMIN_USER = 'bahar';       // Regular admin username
-const ADMIN_PASS = 'admin1234';   // Regular admin password
-const SUPER_USER = 'ultimate15';  // Owner (super-admin) username
-const SUPER_PASS = 'Zahab2011';   // Owner (super-admin) password
+const ADMIN_USER    = 'bahar';       // Regular admin username
+const ADMIN_PASS    = 'Kuw963258';   // Regular admin password
+const SUPER_USER    = 'ultimate15';  // Owner (super-admin) username
+const SUPER_PASS    = 'Zahab2011';   // Owner (super-admin) password
+const MANAGER_USER  = 'bahar15';     // Manager account — same powers as owner except cannot disable ultimate15 or site
+const MANAGER_PASS  = 'Kuw963258';   // Manager password
 
 // ── SUPABASE CONNECTION ────────────────────────────────────────────────────────
 // Supabase is the online database where all products, stock, orders, photos live.
@@ -1454,6 +1556,8 @@ document.addEventListener('keydown', function(e) {
 // Populate forgot-password overlay with current credentials
 var _fpu = document.getElementById('fpUser'); if (_fpu) _fpu.textContent = ADMIN_USER;
 var _fpp = document.getElementById('fpPass'); if (_fpp) _fpp.textContent = ADMIN_PASS;
+// Also ensure owner-only rows are visible by default (will be hidden if bahar15 logs in)
+document.querySelectorAll('.owner-only-row').forEach(function(el){ el.style.display = ''; });
 
 function doLogin(e) {
   if (e) e.preventDefault();
@@ -1461,13 +1565,27 @@ function doLogin(e) {
   const p   = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
   err.style.display = 'none';
-  // Owner super-admin
+
+  // ── Owner (ultimate15) ────────────────────────────────────────────────────
   if (u === SUPER_USER && p === SUPER_PASS) {
     localStorage.setItem('bahar_auth', 'super');
     showSuperAdmin();
     return;
   }
-  // Regular admin
+
+  // ── Manager (bahar15) — all owner powers except disabling ultimate/site ──
+  if (u === MANAGER_USER && p === MANAGER_PASS) {
+    if (localStorage.getItem('bahar15_user_disabled') === '1') {
+      err.textContent = 'This account has been disabled by the owner.';
+      err.style.display = 'block';
+      return;
+    }
+    localStorage.setItem('bahar_auth', 'bahar15');
+    showManager();
+    return;
+  }
+
+  // ── Regular admin (bahar) ─────────────────────────────────────────────────
   if (u === ADMIN_USER && p === ADMIN_PASS) {
     if (localStorage.getItem('bahar_user_disabled') === '1') {
       err.textContent = 'This account has been disabled by the owner.';
@@ -1482,7 +1600,8 @@ function doLogin(e) {
     showAdmin();
     return;
   }
-  // Wrong credentials
+
+  // ── Wrong credentials ─────────────────────────────────────────────────────
   err.textContent = 'Wrong username or password.';
   err.style.display = 'block';
   setTimeout(function() { err.style.display = 'none'; }, 3000);
@@ -1513,6 +1632,13 @@ function showSuperAdmin() {
   document.getElementById('loginScreen').style.display  = 'none';
   document.getElementById('adminPanel').style.display   = 'block';
   document.getElementById('tabOwner').style.display     = 'flex';
+  // Ensure owner-only rows are visible (may have been hidden if bahar15 was logged in)
+  document.querySelectorAll('.owner-only-row').forEach(function(el){ el.style.display = ''; });
+  // Restore owner section heading
+  var title = document.getElementById('ownerSectionTitle');
+  if (title) title.innerHTML = '<i class="fa fa-crown" style="color:#7c3aed;margin-right:8px"></i>Owner Control Panel';
+  var sub = document.getElementById('ownerSectionSub');
+  if (sub) sub.innerHTML = 'Exclusive controls for <strong style="color:#7c3aed">ultimate15</strong>';
   // Mark the top bar as owner mode
   var badge = document.querySelector('.admin-badge');
   if (badge) { badge.innerHTML = '<i class="fa fa-crown"></i> Owner'; badge.style.background = '#7c3aed'; }
@@ -1538,6 +1664,52 @@ function logoutSuper() {
   var logoutBtn = document.querySelector('.top-right .logout-btn:last-child');
   if (logoutBtn) { logoutBtn.setAttribute('onclick', 'logout()'); }
 }
+
+// ── MANAGER (bahar15) ─────────────────────────────────────────────────────────
+// bahar15 has all owner powers except:
+//   • Cannot disable/enable ultimate15
+//   • Cannot disable/enable the public website
+//   • Cannot disable/enable themselves (bahar15 row hidden)
+// ultimate15 can disable bahar15 via the Owner Controls panel.
+function showManager() {
+  // Show full admin panel + reveal Owner Controls tab
+  document.getElementById('loginScreen').style.display  = 'none';
+  document.getElementById('adminPanel').style.display   = 'block';
+  document.getElementById('tabOwner').style.display     = 'flex';
+  // Style the badge as "Manager" in teal
+  var badge = document.querySelector('.admin-badge');
+  if (badge) { badge.innerHTML = '<i class="fa fa-user-shield"></i> Manager'; badge.style.background = '#0891b2'; }
+  // Change logout button
+  var logoutBtn = document.querySelector('.top-right .logout-btn:last-child');
+  if (logoutBtn) { logoutBtn.setAttribute('onclick', 'logoutManager()'); }
+  // Hide ultimate15-only rows in Owner Controls
+  document.querySelectorAll('.owner-only-row').forEach(function(el){ el.style.display='none'; });
+  // Update owner section heading
+  var title = document.getElementById('ownerSectionTitle');
+  if (title) title.innerHTML = '<i class="fa fa-user-shield" style="color:#0891b2;margin-right:8px"></i>Manager Control Panel';
+  var sub = document.getElementById('ownerSectionSub');
+  if (sub) sub.innerHTML = 'Manager controls for <strong style="color:#0891b2">bahar15</strong>';
+  switchTab('owner');
+  loadFromSupabase();
+  _loadSavedHandles();
+  loadOrders(false);
+  renderSuperAdmin();
+}
+function logoutManager() {
+  localStorage.removeItem('bahar_auth');
+  document.getElementById('adminPanel').style.display  = 'none';
+  document.getElementById('tabOwner').style.display    = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  // Restore badge & logout button
+  var badge = document.querySelector('.admin-badge');
+  if (badge) { badge.innerHTML = '<i class="fa fa-shield-alt"></i> Admin'; badge.style.background = ''; }
+  var logoutBtn = document.querySelector('.top-right .logout-btn:last-child');
+  if (logoutBtn) { logoutBtn.setAttribute('onclick', 'logout()'); }
+  // Re-show owner-only rows for next login
+  document.querySelectorAll('.owner-only-row').forEach(function(el){ el.style.display=''; });
+}
 function toggleBaharAccount() {
   var isDisabled = localStorage.getItem('bahar_user_disabled') === '1';
   if (isDisabled) {
@@ -1550,9 +1722,68 @@ function toggleBaharAccount() {
   }
   renderSuperAdmin();
 }
+
+// toggleBahar15Account() — only ultimate15 can call this (button hidden from bahar15)
+function toggleBahar15Account() {
+  var isDisabled = localStorage.getItem('bahar15_user_disabled') === '1';
+  if (isDisabled) {
+    localStorage.removeItem('bahar15_user_disabled');
+    showToast('✅ bahar15 account enabled');
+  } else {
+    if (!confirm('Disable the bahar15 manager account? They will not be able to login until you re-enable it.')) return;
+    localStorage.setItem('bahar15_user_disabled', '1');
+    showToast('🚫 bahar15 account disabled');
+  }
+  renderSuperAdmin();
+}
+
+// toggleSiteDisabled() — only ultimate15 can call this (button hidden from bahar15)
+// Stores the flag in Supabase (bahar_settings table) so it affects ALL visitors.
+// Table needed: bahar_settings (key text primary key, value text)
+async function toggleSiteDisabled() {
+  var btn = document.getElementById('siteToggleBtn');
+  var currentlyDisabled = btn && btn.dataset.disabled === '1';
+  var newVal = currentlyDisabled ? 'false' : 'true';
+  if (!currentlyDisabled) {
+    if (!confirm('Disable the public website? Visitors will see a "Site closed" page until you re-enable it.')) return;
+  }
+  // Save to Supabase bahar_settings table
+  var r = await sbFetch(SB_URL + '/rest/v1/bahar_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'site_disabled', value: newVal }])
+  });
+  if (r.error) {
+    showToast('⚠️ Could not save — check Supabase bahar_settings table');
+    return;
+  }
+  renderSiteStatus(newVal === 'true');
+  showToast(newVal === 'true' ? '🚫 Website disabled for visitors' : '✅ Website re-enabled for visitors');
+}
+
+function renderSiteStatus(isDisabled) {
+  var statusEl = document.getElementById('siteStatusLabel');
+  var btn      = document.getElementById('siteToggleBtn');
+  if (!statusEl || !btn) return;
+  statusEl.textContent  = isDisabled ? '🔴 Disabled' : '🟢 Live';
+  statusEl.style.color  = isDisabled ? 'var(--red)' : 'var(--green)';
+  btn.textContent       = isDisabled ? 'Enable' : 'Disable';
+  btn.className         = 'su-toggle-btn ' + (isDisabled ? 'enable' : 'disable');
+  btn.dataset.disabled  = isDisabled ? '1' : '0';
+}
+
+// Load site status from Supabase on panel open
+async function loadSiteStatus() {
+  var r = await sbFetch(SB_URL + '/rest/v1/bahar_settings?key=eq.site_disabled&select=value', { headers: SB_HDRS });
+  if (r.data && r.data.length) {
+    renderSiteStatus(r.data[0].value === 'true');
+  } else {
+    renderSiteStatus(false); // not set yet = enabled
+  }
+}
 function renderSuperAdmin() {
   var isDisabled = localStorage.getItem('bahar_user_disabled') === '1';
-  // Update both the legacy standalone panel and the new inline ownerSection
+  // Update both the legacy standalone panel and the new inline ownerSection (bahar row)
   ['', '2'].forEach(function(sfx) {
     var statusEl  = document.getElementById('suUserStatus'  + sfx);
     var toggleBtn = document.getElementById('suToggleBtn'   + sfx);
@@ -1561,6 +1792,14 @@ function renderSuperAdmin() {
     if (toggleBtn) { toggleBtn.textContent = isDisabled ? 'Enable' : 'Disable'; toggleBtn.className = 'su-toggle-btn ' + (isDisabled ? 'enable' : 'disable'); }
     if (undoBtn2)  undoBtn2.disabled = getWeekLog().length === 0;
   });
+  // Update bahar15 row status (shown to ultimate15 only)
+  var b15Disabled = localStorage.getItem('bahar15_user_disabled') === '1';
+  var b15StatusEl = document.getElementById('suBahar15Status');
+  var b15Btn      = document.getElementById('suBahar15Btn');
+  if (b15StatusEl) { b15StatusEl.textContent = b15Disabled ? '🔴 Disabled' : '🟢 Active'; b15StatusEl.style.color = b15Disabled ? 'var(--red)' : 'var(--green)'; }
+  if (b15Btn)      { b15Btn.textContent = b15Disabled ? 'Enable' : 'Disable'; b15Btn.className = 'su-toggle-btn ' + (b15Disabled ? 'enable' : 'disable'); }
+  // Load site status from Supabase (for ultimate15)
+  if (localStorage.getItem('bahar_auth') === 'super') { loadSiteStatus(); }
   var log     = getWeekLog().slice().reverse();
   var logEl   = document.getElementById('suAuditLog');
   var logEl2  = document.getElementById('suAuditLog2');
@@ -1682,10 +1921,12 @@ async function undoSingleAction(entry) {
 
 // ── AUTO-LOGIN ON PAGE LOAD ────────────────────────────────────────────────────
 // If the browser still has a saved session (from last time), skip the login screen.
-// bahar_auth = '1'     → regular admin session
-// bahar_auth = 'super' → owner session
-if (localStorage.getItem('bahar_auth') === '1') { showAdmin(); }
-if (localStorage.getItem('bahar_auth') === 'super') { showSuperAdmin(); }
+// bahar_auth = '1'       → regular admin session (bahar)
+// bahar_auth = 'super'   → owner session (ultimate15)
+// bahar_auth = 'bahar15' → manager session (bahar15)
+if (localStorage.getItem('bahar_auth') === '1')       { showAdmin(); }
+if (localStorage.getItem('bahar_auth') === 'super')   { showSuperAdmin(); }
+if (localStorage.getItem('bahar_auth') === 'bahar15') { showManager(); }
 
 // ── CLOCK ──────────────────────────────────────────────────────────────────────
 // Updates the date/time shown in the top-right corner every second

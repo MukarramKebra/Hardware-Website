@@ -1,6 +1,40 @@
 ﻿const U   = (id) => `https://images.unsplash.com/photo-${id}?w=420&h=320&fit=crop&auto=format&q=80`;
 const UL  = (id) => `Bahar-Products/SKU-${String(id).padStart(4,'0')}.jpg`;  // local product images
 
+// ── SITE DISABLE CHECK ───────────────────────────────────────────────────
+// Owner can close the site to visitors via the admin Owner Controls panel.
+// This runs on every page load and shows a "closed" overlay if the flag is set.
+(async function checkSiteStatus() {
+  try {
+    const SB_URL_CHK = 'https://sinzmodmefkyjkzzitjy.supabase.co';
+    const SB_KEY_CHK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbnptb2RtZWZreWprenppdGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMjQ4MzYsImV4cCI6MjA5NTcwMDgzNn0.Ft88pQEKbSVP_yb7UTRVq2fLa_TScR97_jvJmgAMlSc';
+    const res = await fetch(SB_URL_CHK + '/rest/v1/bahar_settings?key=eq.site_disabled&select=value', {
+      headers: { 'apikey': SB_KEY_CHK, 'Authorization': 'Bearer ' + SB_KEY_CHK }
+    });
+    if (!res.ok) return; // if table doesn't exist yet, skip quietly
+    const data = await res.json();
+    if (data && data.length && data[0].value === 'true') {
+      // Site is disabled — inject and show a full-screen maintenance overlay
+      const overlay = document.createElement('div');
+      overlay.id = 'siteClosedOverlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:#0c2340;z-index:999999;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:Inter,sans-serif;';
+      overlay.innerHTML = `
+        <div style="text-align:center;padding:40px 24px;max-width:460px">
+          <div style="font-size:64px;margin-bottom:20px">🚧</div>
+          <div style="font-size:26px;font-weight:900;color:#fff;margin-bottom:10px">Site Temporarily Closed</div>
+          <div style="font-size:15px;color:rgba(255,255,255,0.55);margin-bottom:28px;line-height:1.7">
+            We are currently performing maintenance.<br>We'll be back shortly. Thank you for your patience.
+          </div>
+          <div style="font-size:18px;font-weight:800;color:#0891b2;">Bahar Al Hind Co</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.3);margin-top:6px;">Kuwait — Bathroom &amp; Plumbing Supplies</div>
+        </div>`;
+      document.body.appendChild(overlay);
+      // Prevent scrolling while closed
+      document.body.style.overflow = 'hidden';
+    }
+  } catch(e) { /* Network error — site remains visible */ }
+})();
+
 // ── SKU HELPER ────────────────────────────────────────────────────────────
 // SKU is a separate display label from the internal product ID.
 // Admin can set a custom SKU; it's stored in bahar_sku_map in localStorage.
