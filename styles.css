@@ -428,6 +428,11 @@ footer { background: var(--dark); padding: 64px 0 0; border-top: 1px solid rgba(
 
   .checkout-overlay { padding: 0; align-items: flex-end; }
   .checkout-box { border-radius: 16px 16px 0 0; max-height: 95vh; max-width: 100%; }
+  .co-form-row { grid-template-columns: 1fr; }
+  .co-field input, .co-field select { padding: 13px 14px; font-size: 16px; } /* 16px prevents iOS zoom */
+  .co-section { padding: 14px 16px; }
+  .co-header { padding: 14px 16px; }
+  .co-wa-btn { padding: 16px; font-size: 15px; }
 }
 
 /* ── SMALL PHONES ── */
@@ -540,6 +545,7 @@ footer { background: var(--dark); padding: 64px 0 0; border-top: 1px solid rgba(
 .co-total span { color:rgba(255,255,255,0.6); font-size:13px; font-weight:600; }
 .co-total strong { color:#fff; font-size:20px; font-weight:900; }
 .co-form-row { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+@media(max-width:520px){ .co-form-row { grid-template-columns:1fr; } }
 .co-field { display:flex; flex-direction:column; gap:5px; margin-bottom:11px; }
 .co-field label { font-size:11px; font-weight:700; color:var(--dark); text-transform:uppercase; letter-spacing:0.7px; }
 .co-field input, .co-field select { padding:10px 13px; border:1px solid var(--border); border-radius:7px; font-size:14px; font-family:inherit; outline:none; transition:border-color 0.2s; }
@@ -621,6 +627,11 @@ footer { background: var(--dark); padding: 64px 0 0; border-top: 1px solid rgba(
 .cn-item.active .cn-icon i,.cn-item:hover .cn-icon i { color:#fff; }
 .cn-item span { font-size:9px; font-weight:700; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.5px; transition:color 0.18s; }
 .cn-item.active span,.cn-item:hover span { color:var(--orange); }
+
+/* ── HEADER INSTAGRAM ICON ──────────────────────────────────────────────── */
+.header-insta { display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.18); color:rgba(255,255,255,0.75); font-size:16px; text-decoration:none; transition:all .2s; flex-shrink:0; }
+.header-insta:hover { background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); border-color:transparent; color:#fff; transform:scale(1.05); }
+@media(max-width:480px){ .header-insta { width:30px; height:30px; font-size:14px; } }
 
 /* ── ACCOUNT BUTTON (header) ────────────────────────────────────────────── */
 .btn-account { background:none; border:1.5px solid rgba(255,255,255,0.3); color:rgba(255,255,255,0.82); padding:7px 14px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all .2s; font-family:inherit; white-space:nowrap; }
