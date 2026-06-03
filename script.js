@@ -1697,7 +1697,7 @@ async function loadReviews(id) {
   if (!list) return;
   list.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa"><i class="fa fa-spinner fa-spin"></i></div>';
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/jain_reviews?product_id=eq.'+id+'&order=created_at.desc', { headers: SB_HDRS });
+    var res = await sbFetch(SB_URL + '/rest/v1/jain_reviews?product_id=eq.'+id+'&order=created_at.desc', { headers: SB_H });
     if (res.error || !res.data || !res.data.length) {
       list.innerHTML = '<p style="text-align:center;color:#aaa;font-size:13px;padding:20px 0">No reviews yet. Be the first!</p>';
       return;
@@ -1726,7 +1726,7 @@ async function submitReview() {
   try {
     var res = await sbFetch(SB_URL + '/rest/v1/jain_reviews', {
       method: 'POST',
-      headers: Object.assign({}, SB_HDRS, { 'Prefer': 'return=minimal' }),
+      headers: Object.assign({}, SB_H, { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
       body: JSON.stringify({ product_id: _currentReviewProductId, rating: _selectedStars, reviewer_name: name, comment: comment })
     });
     if (res.error) throw new Error('Failed');
@@ -1743,7 +1743,7 @@ async function submitReview() {
 }
 async function getAvgRating(id) {
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/jain_reviews?product_id=eq.'+id+'&select=rating', { headers: SB_HDRS });
+    var res = await sbFetch(SB_URL + '/rest/v1/jain_reviews?product_id=eq.'+id+'&select=rating', { headers: SB_H });
     if (res.error || !res.data || !res.data.length) return null;
     var avg = res.data.reduce(function(s,r){ return s+r.rating; }, 0) / res.data.length;
     return { avg: avg, count: res.data.length };
@@ -1834,7 +1834,7 @@ async function trackOrder() {
   errEl.textContent = '';
   resultsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?customer_phone=eq.'+encodeURIComponent(phone)+'&order=created_at.desc', { headers: SB_HDRS });
+    var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?customer_phone=eq.'+encodeURIComponent(phone)+'&order=created_at.desc', { headers: SB_H });
     if (res.error || !res.data || !res.data.length) {
       resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No orders found for this number.<br><small>Make sure you enter the number used during checkout.</small></p></div>';
       return;
