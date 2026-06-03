@@ -25,10 +25,13 @@
         <a href="#contact" data-i18n="nav_contact" onclick="document.getElementById('nav').classList.remove('open')">Contact</a>
         <a href="#" id="navMyOrders" onclick="document.getElementById('nav').classList.remove('open');onAccountBtnClick();return false;" style="display:none"><i class="fa fa-receipt" style="margin-right:6px"></i>My Orders</a>
         <a href="#" id="navSignIn" onclick="document.getElementById('nav').classList.remove('open');openAuthModal('login');return false;"><i class="fa fa-user" style="margin-right:6px"></i>Sign In</a>
+        <a href="#" onclick="document.getElementById('nav').classList.remove('open');openWishlist();return false;"><i class="fa fa-heart" style="margin-right:6px"></i>Wishlist <span id="navWishlistBadge" style="display:none;background:var(--orange);color:#fff;border-radius:50%;padding:0 5px;font-size:10px;font-weight:900"></span></a>
+        <a href="#" onclick="document.getElementById('nav').classList.remove('open');openOrderTracker();return false;"><i class="fa fa-search" style="margin-right:6px"></i>Track Order</a>
       </nav>
       <div class="header-actions">
 
         <button class="lang-btn" id="langBtn" onclick="toggleLang()">عربي</button>
+        <button class="btn-wishlist" onclick="openWishlist()" title="Wishlist"><i class="fa fa-heart"></i><span id="wishlistBadge" class="wl-hdr-badge" style="display:none">0</span></button>
         <button class="btn-account" id="accountBtn" onclick="onAccountBtnClick()">
           <i class="fa fa-user"></i>
           <span class="acct-txt" id="acctBtnLabel">Sign In</span>
@@ -50,7 +53,8 @@
       <p data-i18n="hero_p">Power tools, hand tools, fasteners, safety gear and more — everything you need to build, fix and create. Delivered fast across Kuwait and the GCC.</p>
       <div class="hero-btns">
         <a href="#products" class="btn btn-primary"><i class="fa fa-th-large"></i> <span data-i18n="hero_shop">Shop Now</span></a>
-        <a href="#contact" class="btn btn-outline"><i class="fa fa-phone"></i> <span data-i18n="hero_quote">Get a Quote</span></a>
+        <a href="#" class="btn btn-outline" onclick="openBulkQuote();return false"><i class="fa fa-clipboard-list"></i> Bulk Quote</a>
+        <a href="#" class="btn btn-outline" onclick="openOrderTracker();return false"><i class="fa fa-search"></i> Track Order</a>
         <a href="https://maps.app.goo.gl/oFi3mJRToqGFSHNy5" target="_blank" class="btn btn-outline"><i class="fa fa-map-marker-alt"></i> Our Location</a>
       </div>
       <div class="hero-stats">
@@ -207,6 +211,16 @@
       </div>
     </div>
   </div>
+
+  <!-- RECENTLY VIEWED -->
+  <section id="recentlyViewedSection" style="display:none;background:#fff;padding:36px 0 20px">
+    <div class="container">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <h3 style="font-size:17px;font-weight:800;color:var(--dark)"><i class="fa fa-history" style="color:var(--orange);margin-right:8px"></i>Recently Viewed</h3>
+      </div>
+      <div class="rv-grid" id="recentlyViewedGrid"></div>
+    </div>
+  </section>
 
   <section id="features">
     <div class="container features-grid">
@@ -607,6 +621,86 @@
     <i class="fa fa-shopping-cart"></i>
     <span id="mobCartCount">0</span>
   </button>
+
+  <!-- WHATSAPP CHAT FAB (bottom-right) -->
+  <button class="wa-chat-fab" onclick="openWAChat()" title="Chat with us on WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+    <span class="wa-chat-label">Chat</span>
+  </button>
+
+  <!-- WISHLIST MODAL -->
+  <div class="wl-overlay" id="wishlistOverlay" onclick="if(event.target===this)closeWishlist()">
+    <div class="wl-modal">
+      <div class="wl-head">
+        <h3><i class="fa fa-heart" style="color:var(--orange)"></i> My Wishlist <span id="wishlistBadge" class="wl-count-badge" style="display:none">0</span></h3>
+        <button onclick="closeWishlist()"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="wl-body" id="wishlistBody"></div>
+    </div>
+  </div>
+
+  <!-- REVIEWS MODAL -->
+  <div class="review-overlay" id="reviewOverlay" onclick="if(event.target===this)closeReviews()">
+    <div class="review-modal">
+      <div class="review-head">
+        <h3><i class="fa fa-star" style="color:#f5c518"></i> Reviews — <span id="reviewProductName"></span></h3>
+        <button onclick="closeReviews()"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="review-body">
+        <div class="rev-write-section">
+          <h4>Leave a Review</h4>
+          <div id="reviewStarInput" style="margin-bottom:10px"></div>
+          <input type="text" id="reviewNameInput" placeholder="Your name (optional)" class="rev-input" />
+          <textarea id="reviewCommentInput" placeholder="Share your experience..." class="rev-textarea" rows="3"></textarea>
+          <div class="rev-err" id="reviewErr"></div>
+          <button class="rev-submit-btn" id="reviewSubmitBtn" onclick="submitReview()"><i class="fa fa-paper-plane"></i> Submit Review</button>
+        </div>
+        <div class="rev-list-section">
+          <h4>Customer Reviews</h4>
+          <div id="reviewList"><p style="color:#aaa;font-size:13px;text-align:center;padding:16px">Loading...</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BULK QUOTE MODAL -->
+  <div class="bulk-overlay" id="bulkOverlay" onclick="if(event.target===this)closeBulkQuote()">
+    <div class="bulk-modal">
+      <div class="bulk-head">
+        <h3><i class="fa fa-clipboard-list" style="color:var(--orange)"></i> Bulk / Trade Quote</h3>
+        <button onclick="closeBulkQuote()"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="bulk-body">
+        <p style="font-size:13px;color:#666;margin-bottom:16px">Select products and quantities — we'll send your quote request directly on WhatsApp.</p>
+        <div class="bulk-name-row">
+          <input type="text" id="bulkName" placeholder="Your Name (optional)" class="bulk-input" />
+          <input type="tel" id="bulkPhone" placeholder="Your Phone (optional)" class="bulk-input" />
+        </div>
+        <div id="bulkRows"></div>
+        <button class="bulk-add-row-btn" onclick="addBulkRow()"><i class="fa fa-plus"></i> Add Another Item</button>
+        <button class="bulk-send-btn" onclick="sendBulkQuote()"><i class="fab fa-whatsapp"></i> Send Quote on WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDER TRACKING MODAL -->
+  <div class="track-overlay" id="trackOverlay" onclick="if(event.target===this)closeOrderTracker()">
+    <div class="track-modal">
+      <div class="track-head">
+        <h3><i class="fa fa-search" style="color:var(--orange)"></i> Track Your Order</h3>
+        <button onclick="closeOrderTracker()"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="track-body">
+        <p style="font-size:13px;color:#666;margin-bottom:16px">Enter the WhatsApp number you used during checkout to find your orders.</p>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input type="tel" id="trackPhone" placeholder="+965 XXXX XXXX" class="track-input" onkeydown="if(event.key==='Enter')trackOrder()" />
+          <button class="track-btn" onclick="trackOrder()"><i class="fa fa-search"></i> Find</button>
+        </div>
+        <div class="track-err" id="trackErr"></div>
+        <div id="trackResults"></div>
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
