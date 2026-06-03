@@ -39,7 +39,7 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 .logo-wrap { display: flex; align-items: center; text-decoration: none; gap: 10px; }
 .logo-img { height: 44px; width: 44px; object-fit: contain; border-radius: 50%; background: #fff; padding: 3px; box-shadow: 0 0 0 2px rgba(200,21,27,0.9), 0 0 12px 4px rgba(200,21,27,0.5), 0 0 28px 8px rgba(200,21,27,0.2); }
 .logo-text-fallback { display: flex; align-items: center; font-size: 21px; font-weight: 900; letter-spacing: -0.5px; }
-.logo-dhow { color: var(--dark); }
+.logo-dhow { color: #fff; }
 .logo-tech { color: var(--orange); }
 
 #nav { display: flex; gap: 30px; }
