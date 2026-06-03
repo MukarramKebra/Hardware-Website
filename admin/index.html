@@ -1029,7 +1029,7 @@
       </table>
       <div class="fmt-cats">
         <strong>Valid category values:</strong>
-        shataffa &nbsp;·&nbsp; toilet-seats &nbsp;·&nbsp; lighting &nbsp;·&nbsp; taps &nbsp;·&nbsp; plumbing &nbsp;·&nbsp; bathroom &nbsp;·&nbsp; sanitaryware
+        power-tools &nbsp;·&nbsp; hand-tools &nbsp;·&nbsp; fasteners &nbsp;·&nbsp; measuring &nbsp;·&nbsp; safety &nbsp;·&nbsp; cutting &nbsp;·&nbsp; accessories
       </div>
       <button class="help-dl-btn" onclick="downloadTemplate()"><i class="fa fa-download"></i>&nbsp; Download Template File</button>
     </div>
@@ -1221,13 +1221,13 @@ const SB_HDRS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Conten
 
 // Default categories shown in the admin category filter dropdown
 const DEFAULT_CATS = [
-  { slug:'shataffa',     label:'Shataffa' },
-  { slug:'toilet-seats', label:'Toilet Seats' },
-  { slug:'lighting',     label:'Lighting' },
-  { slug:'taps',         label:'Taps & Mixers' },
-  { slug:'plumbing',     label:'Plumbing' },
-  { slug:'bathroom',     label:'Bathroom' },
-  { slug:'sanitaryware', label:'Sanitaryware' }
+  { slug:'power-tools',  label:'Power Tools' },
+  { slug:'hand-tools',   label:'Hand Tools' },
+  { slug:'fasteners',    label:'Fasteners' },
+  { slug:'measuring',    label:'Measuring' },
+  { slug:'safety',       label:'Safety' },
+  { slug:'cutting',      label:'Cutting Tools' },
+  { slug:'accessories',  label:'Accessories' }
 ];
 
 // ── SUPABASE FETCH WRAPPER ─────────────────────────────────────────────────────
@@ -1427,73 +1427,73 @@ function getAllAdminProducts() {
 }
 
 const PRODUCTS = [
-  // SHATAFFA
-  {id:1,  name:'Stainless Steel Shataffa Sprayer',   cat:'shataffa',     price:3.500,  img:UL(1)},
-  {id:2,  name:'Wall-Mount Shataffa Set',            cat:'shataffa',     price:5.200,  img:UL(2)},
-  {id:3,  name:'Dual-Mode Bidet Sprayer',            cat:'shataffa',     price:7.800,  img:UL(3)},
-  {id:4,  name:'Clip-On Bidet Toilet Attachment',   cat:'shataffa',     price:4.500,  img:UL(4)},
-  {id:5,  name:'Braided Shataffa Hose 1.2m',        cat:'shataffa',     price:1.200,  img:UL(5)},
-  {id:6,  name:'Angle Valve with T-Connector',      cat:'shataffa',     price:1.800,  img:UL(6)},
-  {id:7,  name:'Brushed Nickel Bidet Sprayer',      cat:'shataffa',     price:8.500,  img:UL(7)},
-  {id:8,  name:'Shataffa Holder Hook Chrome',       cat:'shataffa',     price:0.800,  img:UL(8)},
-  {id:9,  name:'Hot & Cold Bidet Mixer Set',        cat:'shataffa',     price:12.000, img:UL(9)},
-  {id:10, name:'Non-Return Check Valve 1/2"',       cat:'shataffa',     price:0.600,  img:UL(10)},
-  // TOILET SEATS
-  {id:11, name:'Standard White Toilet Seat',        cat:'toilet-seats', price:4.500,  img:UL(11)},
-  {id:12, name:'Soft-Close Toilet Seat',            cat:'toilet-seats', price:9.800,  img:UL(12)},
-  {id:13, name:'Slim Soft-Close Toilet Seat',       cat:'toilet-seats', price:11.500, img:UL(13)},
-  {id:14, name:'D-Shape Soft-Close Seat',           cat:'toilet-seats', price:10.200, img:UL(14)},
-  {id:15, name:'Kids Toilet Training Seat',         cat:'toilet-seats', price:3.200,  img:UL(15)},
-  {id:16, name:'Quick-Release Toilet Seat',         cat:'toilet-seats', price:8.500,  img:UL(16)},
-  {id:17, name:'Elongated Toilet Seat White',       cat:'toilet-seats', price:6.800,  img:UL(17)},
-  {id:18, name:'Antibacterial Soft-Close Seat',     cat:'toilet-seats', price:14.500, img:UL(18)},
-  // LIGHTING
-  {id:19, name:'LED Bulb E27 9W Warm White',        cat:'lighting',     price:0.600,  img:UL(19)},
-  {id:20, name:'LED Bulb E27 12W Daylight',         cat:'lighting',     price:0.750,  img:UL(20)},
-  {id:21, name:'LED Bulb E14 6W Warm White',        cat:'lighting',     price:0.550,  img:UL(21)},
-  {id:22, name:'LED Spotlight GU10 7W',             cat:'lighting',     price:0.900,  img:UL(22)},
-  {id:23, name:'LED Recessed Downlight 12W',        cat:'lighting',     price:2.500,  img:UL(23)},
-  {id:24, name:'LED Strip Light 5m 12V',            cat:'lighting',     price:3.800,  img:UL(24)},
-  {id:25, name:'LED Panel Light 18W 30x30cm',       cat:'lighting',     price:4.500,  img:UL(25)},
-  {id:26, name:'LED Tube Light 18W 120cm',          cat:'lighting',     price:2.200,  img:UL(26)},
-  {id:27, name:'Smart RGB LED Bulb E27 10W',        cat:'lighting',     price:3.200,  img:UL(27)},
-  {id:28, name:'LED Outdoor Bulb IP65 12W',         cat:'lighting',     price:1.500,  img:UL(28)},
-  // TAPS & MIXERS
-  {id:29, name:'Basin Mixer Tap Chrome',            cat:'taps',         price:9.800,  img:UL(29)},
-  {id:30, name:'Kitchen Sink Mixer Tap',            cat:'taps',         price:11.500, img:UL(30)},
-  {id:31, name:'Pull-Out Kitchen Spray Tap',        cat:'taps',         price:18.500, img:UL(31)},
-  {id:32, name:'Bath & Shower Mixer Valve',         cat:'taps',         price:16.000, img:UL(32)},
-  {id:33, name:'Pillar Tap Pair Hot & Cold',        cat:'taps',         price:5.500,  img:UL(33)},
-  {id:34, name:'Wall-Mount Basin Mixer Tap',        cat:'taps',         price:14.000, img:UL(34)},
-  {id:35, name:'Thermostatic Shower Bar Set',       cat:'taps',         price:28.000, img:UL(35)},
-  {id:36, name:'Tap Aerator M22 Flow Saver',        cat:'taps',         price:0.400,  img:UL(36)},
-  {id:37, name:'Quarter-Turn Stop Cock 1/2"',       cat:'taps',         price:1.200,  img:UL(37)},
-  {id:38, name:'Tall Single Lever Basin Mixer',     cat:'taps',         price:13.500, img:UL(38)},
-  // PLUMBING
-  {id:39, name:'PVC Pressure Pipe 1/2" x 3m',      cat:'plumbing',     price:1.200,  img:UL(39)},
-  {id:40, name:'CPVC Hot Water Pipe 3/4" x 3m',    cat:'plumbing',     price:2.200,  img:UL(40)},
-  {id:41, name:'Braided Flexible Hose 40cm',        cat:'plumbing',     price:0.800,  img:UL(41)},
-  {id:42, name:'Braided Flexible Hose 60cm',        cat:'plumbing',     price:1.000,  img:UL(42)},
-  {id:43, name:'PTFE Teflon Tape 12m',              cat:'plumbing',     price:0.200,  img:UL(43)},
-  {id:44, name:'PVC Elbow 90° 1/2" — 10 Pack',     cat:'plumbing',     price:0.500,  img:UL(44)},
-  {id:45, name:'Brass Ball Valve 1/2"',             cat:'plumbing',     price:1.500,  img:UL(45)},
-  {id:46, name:'P-Trap Waste Bend 32mm',            cat:'plumbing',     price:1.200,  img:UL(46)},
-  {id:47, name:'Sanitary Silicone Sealant 280ml',   cat:'plumbing',     price:1.200,  img:UL(47)},
-  {id:48, name:'Drain Auger Cleaning Snake 5m',     cat:'plumbing',     price:3.500,  img:UL(48)},
-  // BATHROOM ACCESSORIES
-  {id:49, name:'Round Towel Ring Chrome',           cat:'bathroom',     price:3.200,  img:'Bahar-Products/SKU-0049.jpg'},
-  {id:50, name:'Toilet Roll Holder Chrome',         cat:'bathroom',     price:2.800,  img:'Bahar-Products/SKU-0050.jpg'},
-  {id:51, name:'Double Towel Bar 60cm Chrome',      cat:'bathroom',     price:5.500,  img:'Bahar-Products/SKU-0051.jpg'},
-  {id:52, name:'Wall-Mount Soap Dispenser',         cat:'bathroom',     price:4.200,  img:'Bahar-Products/SKU-0052.jpg'},
-  {id:53, name:'Frameless Bathroom Mirror 60x80',   cat:'bathroom',     price:12.000, img:'Bahar-Products/SKU-0053.jpg'},
-  {id:54, name:'Shower Curtain + 12 Rings 180x200', cat:'bathroom',     price:4.500,  img:'Bahar-Products/SKU-0054.jpg'},
-  {id:55, name:'Chrome Corner Shower Shelf',        cat:'bathroom',     price:6.800,  img:'Bahar-Products/SKU-0055.jpg'},
-  {id:56, name:'Double Robe Hook Chrome',           cat:'bathroom',     price:2.200,  img:'Bahar-Products/SKU-0056.jpg'},
-  // SANITARYWARE
-  {id:57, name:'Wall-Hung Basin 50cm White',        cat:'sanitaryware', price:35.000, img:'Bahar-Products/SKU-0057.jpg'},
-  {id:58, name:'Pedestal Basin 55cm White',         cat:'sanitaryware', price:28.000, img:'Bahar-Products/SKU-0058.jpg'},
-  {id:59, name:'Close-Coupled Toilet Suite',        cat:'sanitaryware', price:65.000, img:'Bahar-Products/SKU-0059.jpg'},
-  {id:60, name:'Concealed Cistern Frame',           cat:'sanitaryware', price:45.000, img:'Bahar-Products/SKU-0060.jpg'}
+  // POWER TOOLS
+  {id:1,  name:'Cordless Drill Driver 18V',          cat:'power-tools', price:18.500, img:UL(1)},
+  {id:2,  name:'Angle Grinder 115mm 900W',           cat:'power-tools', price:12.000, img:UL(2)},
+  {id:3,  name:'Circular Saw 1200W 185mm',           cat:'power-tools', price:22.000, img:UL(3)},
+  {id:4,  name:'Jigsaw 650W Variable Speed',         cat:'power-tools', price:16.000, img:UL(4)},
+  {id:5,  name:'Random Orbital Sander 125mm 280W',   cat:'power-tools', price:11.000, img:UL(5)},
+  {id:6,  name:'Cordless Combi Drill 20V',           cat:'power-tools', price:21.000, img:UL(6)},
+  {id:7,  name:'SDS-Plus Rotary Hammer 800W',        cat:'power-tools', price:28.000, img:UL(7)},
+  {id:8,  name:'Heat Gun 2000W Variable',            cat:'power-tools', price:8.500,  img:UL(8)},
+  {id:9,  name:'Reciprocating Saw 900W',             cat:'power-tools', price:19.000, img:UL(9)},
+  {id:10, name:'Electric Screwdriver 3.6V',          cat:'power-tools', price:6.500,  img:UL(10)},
+  // HAND TOOLS
+  {id:11, name:'Claw Hammer 16oz Fibreglass',        cat:'hand-tools',  price:3.500,  img:UL(11)},
+  {id:12, name:'Screwdriver Set 6-Piece',            cat:'hand-tools',  price:2.800,  img:UL(12)},
+  {id:13, name:'Screwdriver Set 12-Piece',           cat:'hand-tools',  price:4.500,  img:UL(13)},
+  {id:14, name:'Adjustable Wrench 250mm',            cat:'hand-tools',  price:2.200,  img:UL(14)},
+  {id:15, name:'Socket Ratchet Set 40-Piece',        cat:'hand-tools',  price:9.800,  img:UL(15)},
+  {id:16, name:'Combination Pliers Set 3-Piece',     cat:'hand-tools',  price:4.200,  img:UL(16)},
+  {id:17, name:'Hex Allen Key Set 9-Piece',          cat:'hand-tools',  price:1.500,  img:UL(17)},
+  {id:18, name:'Mixed Hand Tool Kit 85-Piece',       cat:'hand-tools',  price:15.000, img:UL(18)},
+  {id:19, name:'Rubber Mallet 16oz',                 cat:'hand-tools',  price:2.000,  img:UL(19)},
+  {id:20, name:'Screwdriver Bit Set 32-Piece',       cat:'hand-tools',  price:2.500,  img:UL(20)},
+  // FASTENERS
+  {id:21, name:'Common Wire Nails 2.5" — 1kg',      cat:'fasteners',   price:0.600,  img:UL(21)},
+  {id:22, name:'Common Wire Nails 3" — 1kg',        cat:'fasteners',   price:0.700,  img:UL(22)},
+  {id:23, name:'Panel Pins 30mm — 200g',            cat:'fasteners',   price:0.400,  img:UL(23)},
+  {id:24, name:'Wood Screws 4×40mm — 100 Pack',     cat:'fasteners',   price:0.500,  img:UL(24)},
+  {id:25, name:'Drywall Screws 3.5×35mm — 100 Pack',cat:'fasteners',   price:0.450,  img:UL(25)},
+  {id:26, name:'Hex Bolts & Nuts M8 — 20 Pack',    cat:'fasteners',   price:1.200,  img:UL(26)},
+  {id:27, name:'Assorted Screw Pack — 500 Piece',   cat:'fasteners',   price:1.800,  img:UL(27)},
+  {id:28, name:'HSS Drill Bit Set 19-Piece',        cat:'fasteners',   price:2.800,  img:UL(28)},
+  {id:29, name:'Wall Plug & Screw Assortment',      cat:'fasteners',   price:1.500,  img:UL(29)},
+  {id:30, name:'Cable Ties Assorted Pack 200pc',    cat:'fasteners',   price:0.600,  img:UL(30)},
+  // MEASURING
+  {id:31, name:'Tape Measure 5m Auto-Lock',         cat:'measuring',   price:1.800,  img:UL(31)},
+  {id:32, name:'Spirit Level 60cm Aluminium',       cat:'measuring',   price:3.200,  img:UL(32)},
+  {id:33, name:'Laser Cross-Line Level + Tripod',   cat:'measuring',   price:12.000, img:UL(33)},
+  {id:34, name:'Digital Vernier Caliper 150mm',     cat:'measuring',   price:3.500,  img:UL(34)},
+  {id:35, name:'Steel Try Square 300mm',            cat:'measuring',   price:2.200,  img:UL(35)},
+  {id:36, name:'Laser Distance Meter 40m',          cat:'measuring',   price:8.500,  img:UL(36)},
+  // SAFETY
+  {id:37, name:'Cut-Resistant Gloves Level 5',      cat:'safety',      price:1.800,  img:UL(37)},
+  {id:38, name:'Heavy Duty Leather Work Gloves',    cat:'safety',      price:1.200,  img:UL(38)},
+  {id:39, name:'Safety Glasses & Goggles Pack',     cat:'safety',      price:2.500,  img:UL(39)},
+  {id:40, name:'Hard Hat Yellow ABS',               cat:'safety',      price:2.800,  img:UL(40)},
+  {id:41, name:'Hi-Vis Safety Vest Yellow',         cat:'safety',      price:1.500,  img:UL(41)},
+  {id:42, name:'Safety Work Boots S1P',             cat:'safety',      price:8.500,  img:UL(42)},
+  // CUTTING TOOLS
+  {id:43, name:'Hand Panel Saw 22" 8TPI',           cat:'cutting',     price:3.500,  img:UL(43)},
+  {id:44, name:'Hacksaw Frame Adjustable 300mm',    cat:'cutting',     price:2.200,  img:UL(44)},
+  {id:45, name:'Heavy Duty Utility Knife',          cat:'cutting',     price:1.200,  img:UL(45)},
+  {id:46, name:'Wire Cutters & Long Nose Pliers',   cat:'cutting',     price:3.800,  img:UL(46)},
+  {id:47, name:'Plastic Pipe Cutter 3-35mm',        cat:'cutting',     price:2.500,  img:UL(47)},
+  // ACCESSORIES
+  {id:48, name:'Heavy Duty Tool Bag 18"',           cat:'accessories', price:6.500,  img:UL(48)},
+  {id:49, name:'Extension Lead 10m 4-Socket',       cat:'accessories', price:4.500,  img:UL(49)},
+  {id:50, name:'Hard Carry Toolbox 18"',            cat:'accessories', price:5.800,  img:UL(50)},
+  {id:51, name:'Cobalt Drill Bit Set 19-Piece',     cat:'fasteners',   price:4.500,  img:UL(51)},
+  {id:52, name:'Sandpaper Assorted Pack 40-Piece',  cat:'accessories', price:1.200,  img:UL(52)},
+  {id:53, name:'Heavy Duty Pipe Wrench 350mm',      cat:'hand-tools',  price:4.800,  img:UL(53)},
+  {id:54, name:'Electric Staple Gun 20-Gauge',      cat:'accessories', price:7.500,  img:UL(54)},
+  {id:55, name:'Duct Tape Silver 48mm × 25m',       cat:'accessories', price:1.200,  img:UL(55)},
+  {id:56, name:'Laser Distance Meter 60m',          cat:'measuring',   price:14.500, img:UL(56)},
+  {id:57, name:'Knee Protection Pads',              cat:'safety',      price:3.200,  img:UL(57)},
+  {id:58, name:'Circular Saw Blade Set 4-Piece',    cat:'cutting',     price:5.500,  img:UL(58)},
+  {id:59, name:'Insulated Wire Connectors 100pc',   cat:'accessories', price:1.800,  img:UL(59)},
+  {id:60, name:'Electrical Connector Assortment',   cat:'accessories', price:2.200,  img:UL(60)}
 ];
 
 // ── STOCK ──────────────────────────────────────────────────────────────────────
@@ -1972,14 +1972,14 @@ function switchTab(tab) {
 // saveCatBg()  — saves a new background image when you click "Change Image"
 // resetCatBg() — puts the default image back
 var CAT_DEFS = [
-  { slug:'shataffa',     label:'Shataffa',         icon:'fa-shower',    default:'Bahar-Products/SKU-0001.jpg' },
-  { slug:'toilet-seats', label:'Toilet Seats',      icon:'fa-toilet',    default:'Bahar-Products/SKU-0011.jpg' },
-  { slug:'lighting',     label:'Lighting',          icon:'fa-lightbulb', default:'Bahar-Products/SKU-0019.jpg' },
-  { slug:'taps',         label:'Taps & Mixers',     icon:'fa-faucet',    default:'Bahar-Products/SKU-0029.jpg' },
-  { slug:'plumbing',     label:'Plumbing',          icon:'fa-wrench',    default:'Bahar-Products/SKU-0045.jpg' },
-  { slug:'bathroom',     label:'Bathroom',          icon:'fa-bath',      default:'Bahar-Products/SKU-0051.jpg' },
-  { slug:'sanitaryware', label:'Sanitaryware',      icon:'fa-sink',      default:'Bahar-Products/SKU-0059.jpg' },
-  { slug:'all',          label:'All Products',      icon:'fa-th-large',  default:'Bahar-Products/SKU-0057.jpg' }
+  { slug:'power-tools',  label:'Power Tools',       icon:'fa-bolt',      default:'Bahar-Products/SKU-0001.jpg' },
+  { slug:'hand-tools',   label:'Hand Tools',        icon:'fa-hammer',    default:'Bahar-Products/SKU-0011.jpg' },
+  { slug:'fasteners',    label:'Fasteners',         icon:'fa-cog',       default:'Bahar-Products/SKU-0024.jpg' },
+  { slug:'measuring',    label:'Measuring',         icon:'fa-ruler',     default:'Bahar-Products/SKU-0031.jpg' },
+  { slug:'safety',       label:'Safety',            icon:'fa-hard-hat',  default:'Bahar-Products/SKU-0040.jpg' },
+  { slug:'cutting',      label:'Cutting Tools',     icon:'fa-cut',       default:'Bahar-Products/SKU-0043.jpg' },
+  { slug:'accessories',  label:'Accessories',       icon:'fa-toolbox',   default:'Bahar-Products/SKU-0048.jpg' },
+  { slug:'all',          label:'All Products',      icon:'fa-th-large',  default:'Bahar-Products/SKU-0015.jpg' }
 ];
 
 function renderCatEditor() {

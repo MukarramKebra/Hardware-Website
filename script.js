@@ -761,7 +761,7 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
   saveOrderToSupabase({ name, phone, address, notes, items: cart.map(c=>({name:c.name,sku:getProductSku(c.id),qty:c.qty,price:c.price})), total });
 
   // Open WhatsApp
-  window.open('https://wa.me/96599261620?text=' + encodeURIComponent(msg), '_blank');
+  window.open('https://wa.me/96597656372?text=' + encodeURIComponent(msg), '_blank');
 
   // Show success, clear cart
   cart = [];

@@ -287,6 +287,9 @@ footer { background: var(--dark); padding: 64px 0 0; border-top: 1px solid rgba(
 .footer-links { display: flex; flex-direction: column; }
 .footer-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 13px; margin-bottom: 10px; transition: color 0.2s; }
 .footer-links a:hover { color: var(--orange); }
+.footer-location { border-top: 1px solid rgba(255,255,255,0.1); padding: 18px 0; text-align: center; }
+.footer-map-btn { display: inline-flex; align-items: center; gap: 9px; background: var(--orange); color: #fff; padding: 11px 28px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 700; letter-spacing: 0.3px; transition: background 0.2s; }
+.footer-map-btn:hover { background: var(--orange-dark); }
 .footer-bottom { border-top: 1px solid rgba(255,255,255,0.07); padding: 20px 0; text-align: center; }
 .footer-bottom span { color: rgba(255,255,255,0.3); font-size: 12px; }
 
