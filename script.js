@@ -566,7 +566,7 @@ function openProduct(id) {
           '<span class="pm-qty-lbl">Quantity</span>' +
           '<div class="pm-qty-ctrl">' +
             '<button onclick="pmChangeQty(-1)"><i class="fa fa-minus"></i></button>' +
-            '<input type="number" id="pmQtyDisplay" value="1" min="1" oninput="pmQtyInput(this)" onblur="pmQtyBlur(this)" />' +
+            '<input type="number" id="pmQtyDisplay" value="1" min="1" autocomplete="off" oninput="pmQtyInput(this)" onblur="pmQtyBlur(this)" />' +
             '<button onclick="pmChangeQty(1)"><i class="fa fa-plus"></i></button>' +
           '</div>' +
         '</div>'
@@ -674,8 +674,9 @@ function addToCart(id) {
 function removeFromCart(id) { cart = cart.filter(c => c.id !== id); updateCartUI(); }
 function updateCartUI() {
   const count = cart.reduce((s,c) => s+c.qty, 0);
-  document.getElementById('cartCount').textContent = count;
-  // Also update the mobile FAB badge
+  // Update any cart count badges safely (header count may not exist)
+  const cc = document.getElementById('cartCount');
+  if (cc) cc.textContent = count;
   const fab = document.getElementById('mobCartCount');
   if (fab) fab.textContent = count;
   const body  = document.getElementById('cartItems');
@@ -1754,7 +1755,7 @@ function renderBulkRows() {
   document.getElementById('bulkRows').innerHTML = _bulkRows.map(function(r, i) {
     return '<div class="bulk-row">'+
       '<select class="bulk-sel" onchange="_bulkRows['+i+'].product=parseInt(this.value)||this.value">'+opts+'</select>'+
-      '<input type="number" class="bulk-qty" value="'+r.qty+'" min="1" placeholder="Qty" onchange="_bulkRows['+i+'].qty=parseInt(this.value)||1" />'+
+      '<input type="number" class="bulk-qty" value="'+r.qty+'" min="1" placeholder="Qty" autocomplete="off" onchange="_bulkRows['+i+'].qty=parseInt(this.value)||1" />'+
       '<button class="bulk-del-btn" onclick="removeBulkRow('+i+')" '+(i===0&&_bulkRows.length===1?'disabled':'')+'>'+
         '<i class="fa fa-trash"></i>'+
       '</button>'+
