@@ -1172,7 +1172,7 @@
  *     • User types username + password.
  *     • "bahar"     → regular admin  → sees all tabs (Inventory, Orders, etc.)
  *     • "ultimate15" → owner/super   → same tabs + extra "Owner Controls" tab
- *     • Session is saved in localStorage (bahar_auth) so refresh keeps you logged in.
+ *     • Session is saved in localStorage (jain_auth) so refresh keeps you logged in.
  *
  *  2. DATA STORAGE
  *     • Products, stock, orders, photos are stored in Supabase (online database).
@@ -1195,7 +1195,7 @@
  *
  *  5. AUDIT LOG (Owner Controls)
  *     • Every action bahar does (add/delete product, change stock, change order status)
- *       is recorded with a timestamp in localStorage (bahar_audit_log).
+ *       is recorded with a timestamp in localStorage (jain_audit_log).
  *     • "Undo All This Week" reverses all of bahar's actions from the last 7 days.
  *
  * ============================================================
@@ -1254,7 +1254,7 @@ async function sbFetch(url, options) {
 const U  = id => 'https://picsum.photos/seed/' + id + '/80/80';
 const UL = id => 'Bahar-Products/SKU-' + String(id).padStart(4, '0') + '.jpg';
 
-let _customProductRows = []; // products added by admin (fetched from Supabase bahar_products table)
+let _customProductRows = []; // products added by admin (fetched from Supabase jain_products table)
 let _hiddenBaseIds     = new Set(); // IDs of base products that have been hidden from the store
 
 // ── ID CONFLICT RESOLVER ─────────────────────────────────────────────────────
@@ -1282,9 +1282,9 @@ async function _fixCustomProductIds() {
     var isTrueDupe = baseIds.has(p.id) && baseNames.has((p.name||'').toLowerCase().trim());
 
     // 1. Delete old entry from Supabase
-    await sbFetch(SB_URL + '/rest/v1/bahar_products?id=eq.' + p.id, { method:'DELETE', headers:SB_HDRS });
+    await sbFetch(SB_URL + '/rest/v1/jain_products?id=eq.' + p.id, { method:'DELETE', headers:SB_HDRS });
     // Also clean up orphaned stock/photos for old ID
-    await sbFetch(SB_URL + '/rest/v1/bahar_stock?product_id=eq.' + p.id, { method:'DELETE', headers:SB_HDRS });
+    await sbFetch(SB_URL + '/rest/v1/jain_stock?product_id=eq.' + p.id, { method:'DELETE', headers:SB_HDRS });
 
     // Remove from local array
     var idx = _customProductRows.findIndex(function(r){ return r.id === p.id; });
@@ -1307,7 +1307,7 @@ async function _fixCustomProductIds() {
       img_url: p.img_url || '',
       hidden: p.hidden || false
     };
-    var result = await sbFetch(SB_URL + '/rest/v1/bahar_products', {
+    var result = await sbFetch(SB_URL + '/rest/v1/jain_products', {
       method: 'POST',
       headers: Object.assign({}, SB_HDRS, {'Prefer':'return=representation'}),
       body: JSON.stringify([payload])
@@ -1317,25 +1317,25 @@ async function _fixCustomProductIds() {
       // Migrate stock to new ID
       var oldQty = stockData[p.id] || 50;
       stockData[result.data[0].id] = oldQty;
-      await sbFetch(SB_URL + '/rest/v1/bahar_stock', {
+      await sbFetch(SB_URL + '/rest/v1/jain_stock', {
         method: 'POST',
         headers: Object.assign({}, SB_HDRS, {'Prefer':'resolution=merge-duplicates'}),
         body: JSON.stringify([{ product_id: result.data[0].id, qty: oldQty }])
       });
       // Migrate photo to new ID
       var oldPhoto = null;
-      try { var ph = JSON.parse(localStorage.getItem('bahar_photos')||'{}'); oldPhoto = ph[String(p.id)]||null; } catch(_){}
+      try { var ph = JSON.parse(localStorage.getItem('jain_photos')||'{}'); oldPhoto = ph[String(p.id)]||null; } catch(_){}
       if (oldPhoto) {
-        sbFetch(SB_URL + '/rest/v1/bahar_photos', {
+        sbFetch(SB_URL + '/rest/v1/jain_photos', {
           method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
           body:JSON.stringify([{product_id:result.data[0].id, url:oldPhoto}])
         });
         // Update localStorage photo key
         try {
-          var ph2 = JSON.parse(localStorage.getItem('bahar_photos')||'{}');
+          var ph2 = JSON.parse(localStorage.getItem('jain_photos')||'{}');
           ph2[String(result.data[0].id)] = oldPhoto;
           delete ph2[String(p.id)];
-          localStorage.setItem('bahar_photos', JSON.stringify(ph2));
+          localStorage.setItem('jain_photos', JSON.stringify(ph2));
         } catch(_){}
       }
       console.log('[ID Fix] Moved', p.name, 'from ID', p.id, '→', result.data[0].id);
@@ -1350,18 +1350,18 @@ async function _fixCustomProductIds() {
 async function loadFromSupabase() {
   showToast('Loading from cloud…');
   const [s, p, c, h, cb] = await Promise.all([
-    sbFetch(SB_URL + '/rest/v1/bahar_stock?select=*',          { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/bahar_photos?select=*',         { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/bahar_products?select=*',       { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/bahar_hidden?select=product_id',{ headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/bahar_cat_bgs?select=*',        { headers: SB_HDRS })
+    sbFetch(SB_URL + '/rest/v1/jain_stock?select=*',          { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/jain_photos?select=*',         { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/jain_products?select=*',       { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/jain_hidden?select=product_id',{ headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/jain_cat_bgs?select=*',        { headers: SB_HDRS })
   ]);
   // Category backgrounds
   if (!cb.error && Array.isArray(cb.data)) {
     var catBgs = {};
-    try { catBgs = JSON.parse(localStorage.getItem('bahar_cat_bgs') || '{}'); } catch(e) {}
+    try { catBgs = JSON.parse(localStorage.getItem('jain_cat_bgs') || '{}'); } catch(e) {}
     cb.data.forEach(function(r) { if (r.slug && r.img_url) catBgs[r.slug] = r.img_url; });
-    localStorage.setItem('bahar_cat_bgs', JSON.stringify(catBgs));
+    localStorage.setItem('jain_cat_bgs', JSON.stringify(catBgs));
   }
 
   // Stock
@@ -1370,16 +1370,16 @@ async function loadFromSupabase() {
     showToast('Offline — using local data');
   } else if (Array.isArray(s.data)) {
     s.data.forEach(function(r) { stockData[r.product_id] = r.qty; });
-    localStorage.setItem('bahar_stock', JSON.stringify(stockData));
+    localStorage.setItem('jain_stock', JSON.stringify(stockData));
   }
 
   // Photos
   if (p.error) {
     console.warn('Photos load failed:', p.error);
   } else if (Array.isArray(p.data)) {
-    const ph = JSON.parse(localStorage.getItem('bahar_photos') || '{}');
+    const ph = JSON.parse(localStorage.getItem('jain_photos') || '{}');
     p.data.forEach(function(r) { ph[r.product_id] = r.url; });
-    localStorage.setItem('bahar_photos', JSON.stringify(ph));
+    localStorage.setItem('jain_photos', JSON.stringify(ph));
   }
 
   // Custom products
@@ -1497,10 +1497,10 @@ const PRODUCTS = [
 ];
 
 // ── STOCK ──────────────────────────────────────────────────────────────────────
-// Stock quantities are stored locally in the browser (localStorage key: bahar_stock)
+// Stock quantities are stored locally in the browser (localStorage key: jain_stock)
 // AND synced to Supabase. getStock() loads them from localStorage on startup.
 function getStock() {
-  const s = localStorage.getItem('bahar_stock');
+  const s = localStorage.getItem('jain_stock');
   if (s) return JSON.parse(s);
   const d = {};
   PRODUCTS.forEach(p => { d[p.id] = p.price > 10 ? 15 : p.price > 5 ? 30 : 50; });
@@ -1532,7 +1532,7 @@ function undo() {
   if (!_undoStack.length) return;
   _redoStack.push(JSON.stringify(stockData));
   stockData = JSON.parse(_undoStack.pop());
-  localStorage.setItem('bahar_stock', JSON.stringify(stockData));
+  localStorage.setItem('jain_stock', JSON.stringify(stockData));
   renderTable(); renderStats(); _syncUrBtns();
   showToast('Undone â†©');
 }
@@ -1540,7 +1540,7 @@ function redo() {
   if (!_redoStack.length) return;
   _undoStack.push(JSON.stringify(stockData));
   stockData = JSON.parse(_redoStack.pop());
-  localStorage.setItem('bahar_stock', JSON.stringify(stockData));
+  localStorage.setItem('jain_stock', JSON.stringify(stockData));
   renderTable(); renderStats(); _syncUrBtns();
   showToast('Redone â†ª');
 }
@@ -1568,31 +1568,31 @@ function doLogin(e) {
 
   // ── Owner (ultimate15) ────────────────────────────────────────────────────
   if (u === SUPER_USER && p === SUPER_PASS) {
-    localStorage.setItem('bahar_auth', 'super');
+    localStorage.setItem('jain_auth', 'super');
     showSuperAdmin();
     return;
   }
 
   // ── Manager (bahar15) — all owner powers except disabling ultimate/site ──
   if (u === MANAGER_USER && p === MANAGER_PASS) {
-    if (localStorage.getItem('bahar15_user_disabled') === '1') {
+    if (localStorage.getItem('jain15_user_disabled') === '1') {
       err.textContent = 'This account has been disabled by the owner.';
       err.style.display = 'block';
       return;
     }
-    localStorage.setItem('bahar_auth', 'bahar15');
+    localStorage.setItem('jain_auth', 'bahar15');
     showManager();
     return;
   }
 
   // ── Regular admin (bahar) ─────────────────────────────────────────────────
   if (u === ADMIN_USER && p === ADMIN_PASS) {
-    if (localStorage.getItem('bahar_user_disabled') === '1') {
+    if (localStorage.getItem('jain_user_disabled') === '1') {
       err.textContent = 'This account has been disabled by the owner.';
       err.style.display = 'block';
       return;
     }
-    localStorage.setItem('bahar_auth', '1');
+    localStorage.setItem('jain_auth', '1');
     if (window.PasswordCredential) {
       const cred = new PasswordCredential({ id: u, password: p, name: 'Bahar Admin' });
       navigator.credentials.store(cred);
@@ -1615,7 +1615,7 @@ function showAdmin() {
   loadOrders(false);
 }
 function logout() {
-  localStorage.removeItem('bahar_auth');
+  localStorage.removeItem('jain_auth');
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('adminPanel').style.display = 'none';
   document.getElementById('loginUser').value = '';
@@ -1652,7 +1652,7 @@ function showSuperAdmin() {
   renderSuperAdmin();
 }
 function logoutSuper() {
-  localStorage.removeItem('bahar_auth');
+  localStorage.removeItem('jain_auth');
   document.getElementById('adminPanel').style.display  = 'none';
   document.getElementById('tabOwner').style.display    = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
@@ -1696,7 +1696,7 @@ function showManager() {
   renderSuperAdmin();
 }
 function logoutManager() {
-  localStorage.removeItem('bahar_auth');
+  localStorage.removeItem('jain_auth');
   document.getElementById('adminPanel').style.display  = 'none';
   document.getElementById('tabOwner').style.display    = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
@@ -1711,13 +1711,13 @@ function logoutManager() {
   document.querySelectorAll('.owner-only-row').forEach(function(el){ el.style.display=''; });
 }
 function toggleBaharAccount() {
-  var isDisabled = localStorage.getItem('bahar_user_disabled') === '1';
+  var isDisabled = localStorage.getItem('jain_user_disabled') === '1';
   if (isDisabled) {
-    localStorage.removeItem('bahar_user_disabled');
+    localStorage.removeItem('jain_user_disabled');
     showToast('✅ bahar account enabled');
   } else {
     if (!confirm('Disable the jain account? They will not be able to login until you re-enable it.')) return;
-    localStorage.setItem('bahar_user_disabled', '1');
+    localStorage.setItem('jain_user_disabled', '1');
     showToast('🚫 bahar account disabled');
   }
   renderSuperAdmin();
@@ -1725,21 +1725,21 @@ function toggleBaharAccount() {
 
 // toggleBahar15Account() — only ultimate15 can call this (button hidden from bahar15)
 function toggleBahar15Account() {
-  var isDisabled = localStorage.getItem('bahar15_user_disabled') === '1';
+  var isDisabled = localStorage.getItem('jain15_user_disabled') === '1';
   if (isDisabled) {
-    localStorage.removeItem('bahar15_user_disabled');
+    localStorage.removeItem('jain15_user_disabled');
     showToast('✅ bahar15 account enabled');
   } else {
     if (!confirm('Disable the jain15 manager account? They will not be able to login until you re-enable it.')) return;
-    localStorage.setItem('bahar15_user_disabled', '1');
+    localStorage.setItem('jain15_user_disabled', '1');
     showToast('🚫 bahar15 account disabled');
   }
   renderSuperAdmin();
 }
 
 // toggleSiteDisabled() — only ultimate15 can call this (button hidden from bahar15)
-// Stores the flag in Supabase (bahar_settings table) so it affects ALL visitors.
-// Table needed: bahar_settings (key text primary key, value text)
+// Stores the flag in Supabase (jain_settings table) so it affects ALL visitors.
+// Table needed: jain_settings (key text primary key, value text)
 async function toggleSiteDisabled() {
   var btn = document.getElementById('siteToggleBtn');
   var currentlyDisabled = btn && btn.dataset.disabled === '1';
@@ -1747,14 +1747,14 @@ async function toggleSiteDisabled() {
   if (!currentlyDisabled) {
     if (!confirm('Disable the public website? Visitors will see a "Site closed" page until you re-enable it.')) return;
   }
-  // Save to Supabase bahar_settings table
-  var r = await sbFetch(SB_URL + '/rest/v1/bahar_settings', {
+  // Save to Supabase jain_settings table
+  var r = await sbFetch(SB_URL + '/rest/v1/jain_settings', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
     body: JSON.stringify([{ key: 'site_disabled', value: newVal }])
   });
   if (r.error) {
-    showToast('⚠️ Could not save — check Supabase bahar_settings table');
+    showToast('⚠️ Could not save — check Supabase jain_settings table');
     return;
   }
   renderSiteStatus(newVal === 'true');
@@ -1774,7 +1774,7 @@ function renderSiteStatus(isDisabled) {
 
 // Load site status from Supabase on panel open
 async function loadSiteStatus() {
-  var r = await sbFetch(SB_URL + '/rest/v1/bahar_settings?key=eq.site_disabled&select=value', { headers: SB_HDRS });
+  var r = await sbFetch(SB_URL + '/rest/v1/jain_settings?key=eq.site_disabled&select=value', { headers: SB_HDRS });
   if (r.data && r.data.length) {
     renderSiteStatus(r.data[0].value === 'true');
   } else {
@@ -1782,7 +1782,7 @@ async function loadSiteStatus() {
   }
 }
 function renderSuperAdmin() {
-  var isDisabled = localStorage.getItem('bahar_user_disabled') === '1';
+  var isDisabled = localStorage.getItem('jain_user_disabled') === '1';
   // Update both the legacy standalone panel and the new inline ownerSection (bahar row)
   ['', '2'].forEach(function(sfx) {
     var statusEl  = document.getElementById('suUserStatus'  + sfx);
@@ -1793,13 +1793,13 @@ function renderSuperAdmin() {
     if (undoBtn2)  undoBtn2.disabled = getWeekLog().length === 0;
   });
   // Update bahar15 row status (shown to ultimate15 only)
-  var b15Disabled = localStorage.getItem('bahar15_user_disabled') === '1';
+  var b15Disabled = localStorage.getItem('jain15_user_disabled') === '1';
   var b15StatusEl = document.getElementById('suBahar15Status');
   var b15Btn      = document.getElementById('suBahar15Btn');
   if (b15StatusEl) { b15StatusEl.textContent = b15Disabled ? '🔴 Disabled' : '🟢 Active'; b15StatusEl.style.color = b15Disabled ? 'var(--red)' : 'var(--green)'; }
   if (b15Btn)      { b15Btn.textContent = b15Disabled ? 'Enable' : 'Disable'; b15Btn.className = 'su-toggle-btn ' + (b15Disabled ? 'enable' : 'disable'); }
   // Load site status from Supabase (for ultimate15)
-  if (localStorage.getItem('bahar_auth') === 'super') { loadSiteStatus(); }
+  if (localStorage.getItem('jain_auth') === 'super') { loadSiteStatus(); }
   var log     = getWeekLog().slice().reverse();
   var logEl   = document.getElementById('suAuditLog');
   var logEl2  = document.getElementById('suAuditLog2');
@@ -1844,8 +1844,8 @@ function renderSuperAdmin() {
 // getWeekLog()            — returns only entries from the last 7 days
 // undoAllThisWeek()       — loops through the last 7 days and reverses each action
 // undoSingleAction(entry) — reverses one specific action (restore product/order, revert stock, etc.)
-function getAuditLog() { try { return JSON.parse(localStorage.getItem('bahar_audit_log')||'[]'); } catch(e) { return []; } }
-function saveAuditLog(log) { localStorage.setItem('bahar_audit_log', JSON.stringify(log)); }
+function getAuditLog() { try { return JSON.parse(localStorage.getItem('jain_audit_log')||'[]'); } catch(e) { return []; } }
+function saveAuditLog(log) { localStorage.setItem('jain_audit_log', JSON.stringify(log)); }
 function logAction(action, data) {
   var log = getAuditLog();
   log.push({ ts: Date.now(), action: action, data: data });
@@ -1880,11 +1880,11 @@ async function undoSingleAction(entry) {
       var item  = list.find(function(x) { return x.id === d.id; });
       if (!item) return true;
       if (item.isBase) {
-        var r = await sbFetch(SB_URL+'/rest/v1/bahar_hidden?product_id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
+        var r = await sbFetch(SB_URL+'/rest/v1/jain_hidden?product_id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
         if (r.error) return false;
         _hiddenBaseIds.delete(d.id);
       } else {
-        var r = await sbFetch(SB_URL+'/rest/v1/bahar_products', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}), body:JSON.stringify([{name:item.name,category:item.cat,price:item.price,img_url:item.img||'',hidden:false}]) });
+        var r = await sbFetch(SB_URL+'/rest/v1/jain_products', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}), body:JSON.stringify([{name:item.name,category:item.cat,price:item.price,img_url:item.img||'',hidden:false}]) });
         if (r.error) return false;
       }
       saveDeletedProducts(list.filter(function(x) { return x.id !== d.id; }));
@@ -1895,24 +1895,24 @@ async function undoSingleAction(entry) {
       var order = list.find(function(x) { return x.id === d.id; });
       if (!order) return true;
       var payload = { customer_name:order.customer_name, customer_phone:order.customer_phone, address:order.address, notes:order.notes||'', items:order.items, total:parseFloat(order.total||0), status:order.status||'pending' };
-      var r = await sbFetch(SB_URL+'/rest/v1/bahar_orders', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}), body:JSON.stringify([payload]) });
+      var r = await sbFetch(SB_URL+'/rest/v1/jain_orders', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}), body:JSON.stringify([payload]) });
       if (r.error) return false;
       saveDeletedOrders(list.filter(function(x) { return x.id !== d.id; }));
       return true;
     }
     if (entry.action === 'stock_change') {
       stockData[d.id] = d.oldQty;
-      var r = await sbFetch(SB_URL+'/rest/v1/bahar_stock', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}), body:JSON.stringify([{product_id:d.id,qty:d.oldQty}]) });
+      var r = await sbFetch(SB_URL+'/rest/v1/jain_stock', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}), body:JSON.stringify([{product_id:d.id,qty:d.oldQty}]) });
       return !r.error;
     }
     if (entry.action === 'status_change') {
-      var r = await sbFetch(SB_URL+'/rest/v1/bahar_orders?id=eq.'+d.id, { method:'PATCH', headers:Object.assign({},SB_HDRS,{'Prefer':'return=minimal'}), body:JSON.stringify({status:d.oldStatus}) });
+      var r = await sbFetch(SB_URL+'/rest/v1/jain_orders?id=eq.'+d.id, { method:'PATCH', headers:Object.assign({},SB_HDRS,{'Prefer':'return=minimal'}), body:JSON.stringify({status:d.oldStatus}) });
       if (!r.error && _allOrders) { var o = _allOrders.find(function(x){return x.id===d.id;}); if (o) o.status = d.oldStatus; }
       return !r.error;
     }
     if (entry.action === 'add_product') {
-      var r = await sbFetch(SB_URL+'/rest/v1/bahar_products?id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
-      await sbFetch(SB_URL+'/rest/v1/bahar_stock?product_id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
+      var r = await sbFetch(SB_URL+'/rest/v1/jain_products?id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
+      await sbFetch(SB_URL+'/rest/v1/jain_stock?product_id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
       return !r.error;
     }
     return true;
@@ -1921,12 +1921,12 @@ async function undoSingleAction(entry) {
 
 // ── AUTO-LOGIN ON PAGE LOAD ────────────────────────────────────────────────────
 // If the browser still has a saved session (from last time), skip the login screen.
-// bahar_auth = '1'       → regular admin session (bahar)
-// bahar_auth = 'super'   → owner session (ultimate15)
-// bahar_auth = 'bahar15' → manager session (bahar15)
-if (localStorage.getItem('bahar_auth') === '1')       { showAdmin(); }
-if (localStorage.getItem('bahar_auth') === 'super')   { showSuperAdmin(); }
-if (localStorage.getItem('bahar_auth') === 'bahar15') { showManager(); }
+// jain_auth = '1'       → regular admin session (bahar)
+// jain_auth = 'super'   → owner session (ultimate15)
+// jain_auth = 'bahar15' → manager session (bahar15)
+if (localStorage.getItem('jain_auth') === '1')       { showAdmin(); }
+if (localStorage.getItem('jain_auth') === 'super')   { showSuperAdmin(); }
+if (localStorage.getItem('jain_auth') === 'bahar15') { showManager(); }
 
 // ── CLOCK ──────────────────────────────────────────────────────────────────────
 // Updates the date/time shown in the top-right corner every second
@@ -1984,7 +1984,7 @@ var CAT_DEFS = [
 
 function renderCatEditor() {
   var bgs = {};
-  try { bgs = JSON.parse(localStorage.getItem('bahar_cat_bgs') || '{}'); } catch(e) {}
+  try { bgs = JSON.parse(localStorage.getItem('jain_cat_bgs') || '{}'); } catch(e) {}
   var grid = document.getElementById('catEditGrid');
   if (!grid) return;
   grid.innerHTML = CAT_DEFS.map(function(cat) {
@@ -2012,11 +2012,11 @@ function saveCatBg(slug, input) {
   var reader = new FileReader();
   reader.onload = function(e) {
     var bgs = {};
-    try { bgs = JSON.parse(localStorage.getItem('bahar_cat_bgs') || '{}'); } catch(er) {}
+    try { bgs = JSON.parse(localStorage.getItem('jain_cat_bgs') || '{}'); } catch(er) {}
     bgs[slug] = e.target.result;
-    localStorage.setItem('bahar_cat_bgs', JSON.stringify(bgs));
+    localStorage.setItem('jain_cat_bgs', JSON.stringify(bgs));
     // Save to Supabase
-    sbFetch(SB_URL + '/rest/v1/bahar_cat_bgs', {
+    sbFetch(SB_URL + '/rest/v1/jain_cat_bgs', {
       method: 'POST',
       headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
       body: JSON.stringify([{ slug: slug, img_url: e.target.result }])
@@ -2029,10 +2029,10 @@ function saveCatBg(slug, input) {
 
 function resetCatBg(slug) {
   var bgs = {};
-  try { bgs = JSON.parse(localStorage.getItem('bahar_cat_bgs') || '{}'); } catch(e) {}
+  try { bgs = JSON.parse(localStorage.getItem('jain_cat_bgs') || '{}'); } catch(e) {}
   delete bgs[slug];
-  localStorage.setItem('bahar_cat_bgs', JSON.stringify(bgs));
-  sbFetch(SB_URL + '/rest/v1/bahar_cat_bgs?slug=eq.' + slug, { method: 'DELETE', headers: SB_HDRS });
+  localStorage.setItem('jain_cat_bgs', JSON.stringify(bgs));
+  sbFetch(SB_URL + '/rest/v1/jain_cat_bgs?slug=eq.' + slug, { method: 'DELETE', headers: SB_HDRS });
   showToast('Reset to default');
   renderCatEditor();
 }
@@ -2364,7 +2364,7 @@ var _ordFileHandle   = null;
 
 async function loadOrders(showToastMsg) {
   if (showToastMsg) showToast('Loading orders…');
-  var res = await sbFetch(SB_URL + '/rest/v1/bahar_orders?select=*&order=created_at.desc', { headers: SB_HDRS });
+  var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?select=*&order=created_at.desc', { headers: SB_HDRS });
   console.log('[Admin] loadOrders result:', res);
   if (res.error) {
     console.error('[Admin] Orders load FAILED:', res.error);
@@ -2442,7 +2442,7 @@ async function updateOrderStatus(id, newStatus, selectEl) {
   var _ord = _allOrders ? _allOrders.find(function(o){return o.id===id;}) : null;
   logAction('status_change', { id:id, oldStatus:_ord?_ord.status:'unknown', newStatus:newStatus });
   if (_ord) _ord.status = newStatus;
-  var res = await sbFetch(SB_URL + '/rest/v1/bahar_orders?id=eq.'+id, {
+  var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?id=eq.'+id, {
     method: 'PATCH',
     headers: Object.assign({}, SB_HDRS, {'Content-Type':'application/json','Prefer':'return=minimal'}),
     body: JSON.stringify({ status: newStatus })
@@ -2574,7 +2574,7 @@ function card(icon, cls, label, val, sub) {
 
 // â”€â”€ TABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderTable() {
-  const photos   = JSON.parse(localStorage.getItem('bahar_photos')||'{}');
+  const photos   = JSON.parse(localStorage.getItem('jain_photos')||'{}');
   const views    = JSON.parse(localStorage.getItem('bahar_views')||'{}');
   const searches = JSON.parse(localStorage.getItem('bahar_searches')||'{}');
   const q   = document.getElementById('adminSearch').value.toLowerCase();
@@ -2681,9 +2681,9 @@ async function saveAll() {
   localStorage.setItem('bahar_overrides', JSON.stringify(_prodOverrides));
 
   PRODUCTS.forEach(function(p) { const el=document.getElementById('si'+p.id); if(el) stockData[p.id]=Math.max(0,parseInt(el.value)||0); });
-  localStorage.setItem('bahar_stock', JSON.stringify(stockData));
+  localStorage.setItem('jain_stock', JSON.stringify(stockData));
   const rows = PRODUCTS.map(function(p) { return { product_id: p.id, qty: stockData[p.id]||0 }; });
-  const { error } = await sbFetch(SB_URL + '/rest/v1/bahar_stock', {
+  const { error } = await sbFetch(SB_URL + '/rest/v1/jain_stock', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
     body: JSON.stringify(rows)
@@ -2700,7 +2700,7 @@ async function renderAnalytics() {
   document.getElementById('searchesTable').innerHTML = '';
 
   // Read from Supabase (works regardless of which origin admin is opened from)
-  const result = await sbFetch(SB_URL + '/rest/v1/bahar_analytics?select=*', { headers: SB_HDRS });
+  const result = await sbFetch(SB_URL + '/rest/v1/jain_analytics?select=*', { headers: SB_HDRS });
 
   var views = {}, searches = {};
   if (!result.error && Array.isArray(result.data) && result.data.length > 0) {
@@ -2714,7 +2714,7 @@ async function renderAnalytics() {
     try { searches = JSON.parse(localStorage.getItem('bahar_searches') || '{}'); } catch(e) {}
   }
 
-  const photos = JSON.parse(localStorage.getItem('bahar_photos') || '{}');
+  const photos = JSON.parse(localStorage.getItem('jain_photos') || '{}');
   const totalViews    = Object.values(views).reduce(function(a,b){return a+b;}, 0);
   const totalSearches = Object.values(searches).reduce(function(a,b){return a+b;}, 0);
 
@@ -2773,10 +2773,10 @@ async function resetViews() {
   if (!confirm('Reset all view data?')) return;
   localStorage.removeItem('bahar_views');
   // Zero out views in Supabase
-  await sbFetch(SB_URL + '/rest/v1/bahar_analytics?select=product_id', { headers: SB_HDRS })
+  await sbFetch(SB_URL + '/rest/v1/jain_analytics?select=product_id', { headers: SB_HDRS })
     .then(function(r) {
       if (!r.error && Array.isArray(r.data)) {
-        return sbFetch(SB_URL + '/rest/v1/bahar_analytics?product_id=gte.0', {
+        return sbFetch(SB_URL + '/rest/v1/jain_analytics?product_id=gte.0', {
           method: 'PATCH',
           headers: Object.assign({}, SB_HDRS, { 'Prefer': 'return=minimal' }),
           body: JSON.stringify({ views: 0 })
@@ -2790,7 +2790,7 @@ async function resetSearches() {
   if (!confirm('Reset all search data?')) return;
   localStorage.removeItem('bahar_searches');
   // Zero out searches in Supabase
-  await sbFetch(SB_URL + '/rest/v1/bahar_analytics?product_id=gte.0', {
+  await sbFetch(SB_URL + '/rest/v1/jain_analytics?product_id=gte.0', {
     method: 'PATCH',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'return=minimal' }),
     body: JSON.stringify({ searches: 0 })
@@ -2804,7 +2804,7 @@ function openStats(id) {
   const p = PRODUCTS.find(function(x) { return x.id===id; });
   const views   = JSON.parse(localStorage.getItem('bahar_views')||'{}');
   const searches= JSON.parse(localStorage.getItem('bahar_searches')||'{}');
-  const photos  = JSON.parse(localStorage.getItem('bahar_photos')||'{}');
+  const photos  = JSON.parse(localStorage.getItem('jain_photos')||'{}');
   const vCount  = views[id]||0;
   const sCount  = searches[id]||0;
 
@@ -2845,10 +2845,10 @@ async function toggleVisibility(id, isBase) {
   let err = null;
   if (isBase) {
     if (_hiddenBaseIds.has(id)) {
-      ({ error: err } = await sbFetch(SB_URL + '/rest/v1/bahar_hidden?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS }));
+      ({ error: err } = await sbFetch(SB_URL + '/rest/v1/jain_hidden?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS }));
       if (!err) _hiddenBaseIds.delete(id);
     } else {
-      ({ error: err } = await sbFetch(SB_URL + '/rest/v1/bahar_hidden', {
+      ({ error: err } = await sbFetch(SB_URL + '/rest/v1/jain_hidden', {
         method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
         body:JSON.stringify([{product_id:id, hidden:true}])
       }));
@@ -2858,7 +2858,7 @@ async function toggleVisibility(id, isBase) {
     const row = _customProductRows.find(function(p){ return p.id===id; });
     if (!row) return;
     const newHidden = !row.hidden;
-    ({ error: err } = await sbFetch(SB_URL + '/rest/v1/bahar_products?id=eq.' + id, {
+    ({ error: err } = await sbFetch(SB_URL + '/rest/v1/jain_products?id=eq.' + id, {
       method:'PATCH', headers:SB_HDRS, body:JSON.stringify({hidden:newHidden})
     }));
     if (!err) row.hidden = newHidden;
@@ -2877,23 +2877,23 @@ async function toggleVisibility(id, isBase) {
 // If user sets a custom SKU different from the product ID, it's stored here.
 function getProductSku(id) {
   try {
-    var map = JSON.parse(localStorage.getItem('bahar_sku_map') || '{}');
+    var map = JSON.parse(localStorage.getItem('jain_sku_map') || '{}');
     var val = map[String(id)];
     return 'SKU-' + String(val !== undefined ? val : id).padStart(4, '0');
   } catch(e) { return 'SKU-' + String(id).padStart(4, '0'); }
 }
 function setProductSku(id, skuNum) {
   try {
-    var map = JSON.parse(localStorage.getItem('bahar_sku_map') || '{}');
+    var map = JSON.parse(localStorage.getItem('jain_sku_map') || '{}');
     map[String(id)] = skuNum;
-    localStorage.setItem('bahar_sku_map', JSON.stringify(map));
+    localStorage.setItem('jain_sku_map', JSON.stringify(map));
   } catch(e) {}
 }
 function removeProductSku(id) {
   try {
-    var map = JSON.parse(localStorage.getItem('bahar_sku_map') || '{}');
+    var map = JSON.parse(localStorage.getItem('jain_sku_map') || '{}');
     delete map[String(id)];
-    localStorage.setItem('bahar_sku_map', JSON.stringify(map));
+    localStorage.setItem('jain_sku_map', JSON.stringify(map));
   } catch(e) {}
 }
 
@@ -2989,7 +2989,7 @@ async function saveNewProduct() {
     setProductSku(safeId, skuTyped);
   }
 
-  var { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/bahar_products', {
+  var { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/jain_products', {
     method:'POST',
     headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}),
     body:JSON.stringify([{
@@ -3006,7 +3006,7 @@ async function saveNewProduct() {
     var newId = rows[0].id;
     var qty   = parseInt(document.getElementById('apStock').value) || 50;
     stockData[newId] = qty;
-    await sbFetch(SB_URL + '/rest/v1/bahar_stock', {
+    await sbFetch(SB_URL + '/rest/v1/jain_stock', {
       method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
       body:JSON.stringify([{product_id:newId, qty}])
     });
@@ -3016,10 +3016,10 @@ async function saveNewProduct() {
         var ext2 = (_apPendingFile.name.split('.').pop()||'jpg').toLowerCase();
         var blob = await fetch(imgUrl).then(r=>r.blob());
         var finalUrl = await uploadToStorage(blob, newId, ext2);
-        var photos = JSON.parse(localStorage.getItem('bahar_photos')||'{}');
+        var photos = JSON.parse(localStorage.getItem('jain_photos')||'{}');
         photos[newId] = finalUrl;
-        localStorage.setItem('bahar_photos', JSON.stringify(photos));
-        await sbFetch(SB_URL + '/rest/v1/bahar_photos', {
+        localStorage.setItem('jain_photos', JSON.stringify(photos));
+        await sbFetch(SB_URL + '/rest/v1/jain_photos', {
           method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
           body:JSON.stringify([{product_id:newId, url:finalUrl}])
         });
@@ -3033,7 +3033,7 @@ async function saveNewProduct() {
 }
 // ── DELETE & TRASH SYSTEM ──────────────────────────────────────────────────────
 // Deleted products are NOT permanently removed — they're stored in localStorage
-// (bahar_deleted) for 60 days so you can restore them any time.
+// (jain_deleted) for 60 days so you can restore them any time.
 // deleteProduct(id)       — moves a product to the deleted list, removes from Supabase
 // getDeletedProducts()    — reads the deleted list from localStorage
 // saveDeletedProducts()   — writes the deleted list back to localStorage
@@ -3044,14 +3044,14 @@ const _DELETED_TTL = 60 * 24 * 60 * 60 * 1000; // 60 days
 
 function getDeletedProducts() {
   try {
-    const raw = JSON.parse(localStorage.getItem('bahar_deleted') || '[]');
+    const raw = JSON.parse(localStorage.getItem('jain_deleted') || '[]');
     const cutoff = Date.now() - _DELETED_TTL;
     const valid = raw.filter(function(d){ return d.deletedAt > cutoff; });
-    if (valid.length !== raw.length) localStorage.setItem('bahar_deleted', JSON.stringify(valid));
+    if (valid.length !== raw.length) localStorage.setItem('jain_deleted', JSON.stringify(valid));
     return valid;
   } catch(e) { return []; }
 }
-function saveDeletedProducts(list) { localStorage.setItem('bahar_deleted', JSON.stringify(list)); }
+function saveDeletedProducts(list) { localStorage.setItem('jain_deleted', JSON.stringify(list)); }
 
 async function deleteProduct(id, isBase) {
   if (!confirm('Delete this product? It moves to the Deleted tab for 60 days — you can restore it any time.')) return;
@@ -3063,7 +3063,7 @@ async function deleteProduct(id, isBase) {
   saveDeletedProducts(deleted);
   logAction('delete_product', { id:prod.id, name:prod.name, isBase:prod.isBase });
   if (isBase) {
-    const { error } = await sbFetch(SB_URL + '/rest/v1/bahar_hidden', {
+    const { error } = await sbFetch(SB_URL + '/rest/v1/jain_hidden', {
       method:'POST', headers: Object.assign({},SB_HDRS,{'Prefer':'resolution=ignore-duplicates'}),
       body:JSON.stringify({ product_id: id })
     });
@@ -3071,9 +3071,9 @@ async function deleteProduct(id, isBase) {
     _hiddenBaseIds.add(id);
   } else {
     await Promise.all([
-      sbFetch(SB_URL + '/rest/v1/bahar_products?id=eq.' + id,       { method:'DELETE', headers:SB_HDRS }),
-      sbFetch(SB_URL + '/rest/v1/bahar_stock?product_id=eq.' + id,  { method:'DELETE', headers:SB_HDRS }),
-      sbFetch(SB_URL + '/rest/v1/bahar_photos?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS })
+      sbFetch(SB_URL + '/rest/v1/jain_products?id=eq.' + id,       { method:'DELETE', headers:SB_HDRS }),
+      sbFetch(SB_URL + '/rest/v1/jain_stock?product_id=eq.' + id,  { method:'DELETE', headers:SB_HDRS }),
+      sbFetch(SB_URL + '/rest/v1/jain_photos?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS })
     ]);
   }
   showToast('Deleted — restore from Deleted tab within 60 days');
@@ -3086,11 +3086,11 @@ async function restoreProduct(id, isBase) {
   const entry = deleted.find(function(d){ return d.id===id; });
   if (!entry) { showToast('Product not found'); return; }
   if (isBase) {
-    const { error } = await sbFetch(SB_URL + '/rest/v1/bahar_hidden?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS });
+    const { error } = await sbFetch(SB_URL + '/rest/v1/jain_hidden?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS });
     if (error) { showToast('Restore failed: ' + error); return; }
     _hiddenBaseIds.delete(id);
   } else {
-    const { error } = await sbFetch(SB_URL + '/rest/v1/bahar_products', {
+    const { error } = await sbFetch(SB_URL + '/rest/v1/jain_products', {
       method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}),
       body:JSON.stringify([{ name:entry.name, category:entry.cat, price:entry.price, img_url:entry.img||'', hidden:false }])
     });
@@ -3133,7 +3133,7 @@ function switchDeletedSubTab(tab) {
 }
 
 // ── DELETED ORDERS ─────────────────────────────────────────────────────────────
-// Same concept as deleted products — deleted orders go to localStorage (bahar_deleted_orders).
+// Same concept as deleted products — deleted orders go to localStorage (jain_deleted_orders).
 // deleteOrder(id)             — moves an order to deleted list, removes from Supabase
 // getDeletedOrders()          — reads deleted orders from localStorage
 // saveDeletedOrders()         — writes back to localStorage
@@ -3142,14 +3142,14 @@ function switchDeletedSubTab(tab) {
 // permanentDeleteOrder(id)    — removes an order with no recovery
 function getDeletedOrders() {
   try {
-    var raw    = JSON.parse(localStorage.getItem('bahar_deleted_orders') || '[]');
+    var raw    = JSON.parse(localStorage.getItem('jain_deleted_orders') || '[]');
     var cutoff = Date.now() - _DELETED_TTL;
     var valid  = raw.filter(function(d){ return d.deletedAt > cutoff; });
-    if (valid.length !== raw.length) localStorage.setItem('bahar_deleted_orders', JSON.stringify(valid));
+    if (valid.length !== raw.length) localStorage.setItem('jain_deleted_orders', JSON.stringify(valid));
     return valid;
   } catch(e) { return []; }
 }
-function saveDeletedOrders(list) { localStorage.setItem('bahar_deleted_orders', JSON.stringify(list)); }
+function saveDeletedOrders(list) { localStorage.setItem('jain_deleted_orders', JSON.stringify(list)); }
 
 async function deleteOrder(id) {
   if (!confirm('Delete this order? It moves to the Deleted tab for 60 days — you can restore it any time.')) return;
@@ -3163,7 +3163,7 @@ async function deleteOrder(id) {
   saveDeletedOrders(del);
   logAction('delete_order', { id:order.id, customer_name:order.customer_name });
   // Remove from Supabase
-  var res = await sbFetch(SB_URL + '/rest/v1/bahar_orders?id=eq.' + id, { method: 'DELETE', headers: SB_HDRS });
+  var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?id=eq.' + id, { method: 'DELETE', headers: SB_HDRS });
   if (res.error) { showToast('Delete failed: ' + res.error); return; }
   // Remove from local list and re-render
   _allOrders = _allOrders.filter(function(o){ return o.id !== id; });
@@ -3188,7 +3188,7 @@ async function restoreOrder(id) {
     total:          parseFloat(entry.total || 0),
     status:         entry.status || 'pending'
   };
-  var res = await sbFetch(SB_URL + '/rest/v1/bahar_orders', {
+  var res = await sbFetch(SB_URL + '/rest/v1/jain_orders', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, {'Prefer':'return=representation'}),
     body: JSON.stringify([payload])
@@ -3255,7 +3255,7 @@ function renderDeletedTab() {
   const body = document.getElementById('deletedBody');
   if (!body) return;
   const deleted = getDeletedProducts().slice().sort(function(a,b){ return b.deletedAt-a.deletedAt; });
-  const photos  = JSON.parse(localStorage.getItem('bahar_photos')||'{}');
+  const photos  = JSON.parse(localStorage.getItem('jain_photos')||'{}');
   if (!deleted.length) {
     body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:48px;color:#aaa">' +
       '<i class="fa fa-trash" style="font-size:36px;display:block;margin-bottom:12px;color:#ddd"></i>' +
@@ -3508,7 +3508,7 @@ async function importCSVProducts() {
   let count = 0;
   // Load existing localStorage photos map
   let localPhotos = {};
-  try { localPhotos = JSON.parse(localStorage.getItem('bahar_photos') || '{}'); } catch(_) {}
+  try { localPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
 
   for (let i = 0; i < _csvParsedRows.length; i++) {
     const r = _csvParsedRows[i];
@@ -3519,7 +3519,7 @@ async function importCSVProducts() {
     const imgDataUrl  = embeddedImg || namedImg;
     const imgUrl      = imgDataUrl || r.image_url || r.img_url || '';
 
-    const { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/bahar_products', {
+    const { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/jain_products', {
       method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}),
       body:JSON.stringify([{
         name: r.name, category: r.category,
@@ -3535,7 +3535,7 @@ async function importCSVProducts() {
       const newId = rows[0].id;
       const qty   = parseInt(r.stock)||50;
       stockData[newId] = qty;
-      await sbFetch(SB_URL + '/rest/v1/bahar_stock', {
+      await sbFetch(SB_URL + '/rest/v1/jain_stock', {
         method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
         body:JSON.stringify([{product_id:newId, qty}])
       });
@@ -3543,7 +3543,7 @@ async function importCSVProducts() {
       if (imgDataUrl) {
         localPhotos[String(newId)] = imgDataUrl;
         // Also save to Supabase photos table
-        sbFetch(SB_URL + '/rest/v1/bahar_photos', {
+        sbFetch(SB_URL + '/rest/v1/jain_photos', {
           method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
           body:JSON.stringify([{product_id:newId, url:imgDataUrl}])
         });
@@ -3552,7 +3552,7 @@ async function importCSVProducts() {
     }
   }
   // Persist photos to localStorage
-  localStorage.setItem('bahar_photos', JSON.stringify(localPhotos));
+  localStorage.setItem('jain_photos', JSON.stringify(localPhotos));
   const imgCount = Object.keys(_rowImageMap).length || Object.keys(_csvImageMap).length;
   showToast(count + ' product'+(count!==1?'s':'')+' imported' + (imgCount ? ' with '+imgCount+' image'+(imgCount!==1?'s':'') : '') + '! ✅');
   closeCSV();
@@ -3664,7 +3664,7 @@ function openPhoto(id) {
   _croppedDataUrl = null;
   const p = getAllAdminProducts().find(function(x){ return x.id===id; });
   if (!p) return;
-  const photos = JSON.parse(localStorage.getItem('bahar_photos')||'{}');
+  const photos = JSON.parse(localStorage.getItem('jain_photos')||'{}');
   const rawPhO = photos[id];
   const src = (rawPhO && (rawPhO.startsWith('http') || rawPhO.startsWith('data:'))) ? rawPhO : (p.img || '');
   document.getElementById('phProdName').textContent = '#'+id+' â€” '+p.name;
@@ -3922,10 +3922,10 @@ async function bulkHide() {
     var p = getAllAdminProducts().find(function(x){return x.id===id;});
     if (!p || p.hidden) continue;
     if (p.isBase) {
-      await sbFetch(SB_URL+'/rest/v1/bahar_hidden',{method:'POST',headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify([{product_id:id,hidden:true}])});
+      await sbFetch(SB_URL+'/rest/v1/jain_hidden',{method:'POST',headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify([{product_id:id,hidden:true}])});
       _hiddenBaseIds.add(id);
     } else {
-      await sbFetch(SB_URL+'/rest/v1/bahar_products?id=eq.'+id,{method:'PATCH',headers:SB_HDRS,body:JSON.stringify({hidden:true})});
+      await sbFetch(SB_URL+'/rest/v1/jain_products?id=eq.'+id,{method:'PATCH',headers:SB_HDRS,body:JSON.stringify({hidden:true})});
       var row=_customProductRows.find(function(r){return r.id===id;}); if(row) row.hidden=true;
     }
   }
@@ -3940,10 +3940,10 @@ async function bulkShow() {
     var p = getAllAdminProducts().find(function(x){return x.id===id;});
     if (!p || !p.hidden) continue;
     if (p.isBase) {
-      await sbFetch(SB_URL+'/rest/v1/bahar_hidden?product_id=eq.'+id,{method:'DELETE',headers:SB_HDRS});
+      await sbFetch(SB_URL+'/rest/v1/jain_hidden?product_id=eq.'+id,{method:'DELETE',headers:SB_HDRS});
       _hiddenBaseIds.delete(id);
     } else {
-      await sbFetch(SB_URL+'/rest/v1/bahar_products?id=eq.'+id,{method:'PATCH',headers:SB_HDRS,body:JSON.stringify({hidden:false})});
+      await sbFetch(SB_URL+'/rest/v1/jain_products?id=eq.'+id,{method:'PATCH',headers:SB_HDRS,body:JSON.stringify({hidden:false})});
       var row=_customProductRows.find(function(r){return r.id===id;}); if(row) row.hidden=false;
     }
   }
@@ -3979,12 +3979,12 @@ async function bulkDelete() {
     deleted.push({id:p.id,name:p.name,cat:p.cat,price:p.price,img:p.img,isBase:p.isBase,deletedAt:Date.now()});
     saveDeletedProducts(deleted);
     if (p.isBase) {
-      await sbFetch(SB_URL+'/rest/v1/bahar_hidden',{method:'POST',headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=ignore-duplicates'}),body:JSON.stringify({product_id:id})});
+      await sbFetch(SB_URL+'/rest/v1/jain_hidden',{method:'POST',headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=ignore-duplicates'}),body:JSON.stringify({product_id:id})});
       _hiddenBaseIds.add(id);
     } else {
       await Promise.all([
-        sbFetch(SB_URL+'/rest/v1/bahar_products?id=eq.'+id,{method:'DELETE',headers:SB_HDRS}),
-        sbFetch(SB_URL+'/rest/v1/bahar_stock?product_id=eq.'+id,{method:'DELETE',headers:SB_HDRS})
+        sbFetch(SB_URL+'/rest/v1/jain_products?id=eq.'+id,{method:'DELETE',headers:SB_HDRS}),
+        sbFetch(SB_URL+'/rest/v1/jain_stock?product_id=eq.'+id,{method:'DELETE',headers:SB_HDRS})
       ]);
     }
   }
@@ -4110,14 +4110,14 @@ async function savePhoto() {
   if (!finalUrl) return;
 
   // Save URL to localStorage + thumbnail
-  const photos = JSON.parse(localStorage.getItem('bahar_photos')||'{}');
+  const photos = JSON.parse(localStorage.getItem('jain_photos')||'{}');
   photos[currentPhotoId] = finalUrl;
-  localStorage.setItem('bahar_photos', JSON.stringify(photos));
+  localStorage.setItem('jain_photos', JSON.stringify(photos));
   const th = document.getElementById('thumb'+currentPhotoId);
   if (th) th.src = finalUrl;
 
-  // Save URL to Supabase bahar_photos table
-  const { error: dbErr } = await sbFetch(SB_URL + '/rest/v1/bahar_photos', {
+  // Save URL to Supabase jain_photos table
+  const { error: dbErr } = await sbFetch(SB_URL + '/rest/v1/jain_photos', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
     body: JSON.stringify([{ product_id: currentPhotoId, url: finalUrl }])

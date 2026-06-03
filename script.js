@@ -8,7 +8,7 @@ const UL  = (id) => `Bahar-Products/SKU-${String(id).padStart(4,'0')}.jpg`;  // 
   try {
     const SB_URL_CHK = 'https://sinzmodmefkyjkzzitjy.supabase.co';
     const SB_KEY_CHK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbnptb2RtZWZreWprenppdGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMjQ4MzYsImV4cCI6MjA5NTcwMDgzNn0.Ft88pQEKbSVP_yb7UTRVq2fLa_TScR97_jvJmgAMlSc';
-    const res = await fetch(SB_URL_CHK + '/rest/v1/bahar_settings?key=eq.site_disabled&select=value', {
+    const res = await fetch(SB_URL_CHK + '/rest/v1/jain_settings?key=eq.site_disabled&select=value', {
       headers: { 'apikey': SB_KEY_CHK, 'Authorization': 'Bearer ' + SB_KEY_CHK }
     });
     if (!res.ok) return; // if table doesn't exist yet, skip quietly
@@ -37,10 +37,10 @@ const UL  = (id) => `Bahar-Products/SKU-${String(id).padStart(4,'0')}.jpg`;  // 
 
 // ── SKU HELPER ────────────────────────────────────────────────────────────
 // SKU is a separate display label from the internal product ID.
-// Admin can set a custom SKU; it's stored in bahar_sku_map in localStorage.
+// Admin can set a custom SKU; it's stored in jain_sku_map in localStorage.
 function getProductSku(id) {
   try {
-    var map = JSON.parse(localStorage.getItem('bahar_sku_map') || '{}');
+    var map = JSON.parse(localStorage.getItem('jain_sku_map') || '{}');
     var val = map[String(id)];
     return 'SKU-' + String(val !== undefined ? val : id).padStart(4, '0');
   } catch(e) { return 'SKU-' + String(id).padStart(4, '0'); }
@@ -67,20 +67,20 @@ async function sbFetch(url, options) {
 // Live data loaded from Supabase (falls back to localStorage if offline)
 let _sbStock    = {};
 let _sbPhotos   = {};
-let _customProds = [];      // admin-added products from bahar_products table
+let _customProds = [];      // admin-added products from jain_products table
 let _hiddenIds   = new Set(); // base product IDs hidden by admin
 
 async function loadSBData() {
   const [s, p, c, h] = await Promise.all([
-    sbFetch(SB_URL + '/rest/v1/bahar_stock?select=*',                         { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/bahar_photos?select=*',                        { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/bahar_products?select=*',                        { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/bahar_hidden?select=product_id',               { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/jain_stock?select=*',                         { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/jain_photos?select=*',                        { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/jain_products?select=*',                        { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/jain_hidden?select=product_id',               { headers: SB_H })
   ]);
   if (s.error) {
     console.warn('Supabase offline — using localStorage fallback');
-    try { _sbStock  = JSON.parse(localStorage.getItem('bahar_stock')  || '{}'); } catch(_) {}
-    try { _sbPhotos = JSON.parse(localStorage.getItem('bahar_photos') || '{}'); } catch(_) {}
+    try { _sbStock  = JSON.parse(localStorage.getItem('jain_stock')  || '{}'); } catch(_) {}
+    try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
   } else {
     if (Array.isArray(s.data)) s.data.forEach(r => { _sbStock[r.product_id]  = r.qty; });
     if (Array.isArray(p.data)) p.data.forEach(r => { _sbPhotos[r.product_id] = r.url; });
@@ -371,12 +371,12 @@ async function deductStock(cartItems) {
   });
   // Push to Supabase so admin sees real numbers
   const rows = cartItems.map(item => ({ product_id: item.id, qty: _sbStock[item.id] }));
-  const { error } = await sbFetch(SB_URL + '/rest/v1/bahar_stock', {
+  const { error } = await sbFetch(SB_URL + '/rest/v1/jain_stock', {
     method: 'POST',
     headers: { ...SB_H, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
     body: JSON.stringify(rows)
   });
-  if (error) localStorage.setItem('bahar_stock', JSON.stringify(_sbStock));
+  if (error) localStorage.setItem('jain_stock', JSON.stringify(_sbStock));
 }
 
 // ── SMART SEARCH ─────────────────────────────────────────────────────────────
@@ -820,7 +820,7 @@ loadSBData();
 // ── CATEGORY BACKGROUNDS (admin-editable) ────────────────────────────────
 function applyCatBgs() {
   try {
-    var bgs = JSON.parse(localStorage.getItem('bahar_cat_bgs') || '{}');
+    var bgs = JSON.parse(localStorage.getItem('jain_cat_bgs') || '{}');
     document.querySelectorAll('.cat-card[data-cat]').forEach(function(card) {
       var slug = card.dataset.cat;
       if (bgs[slug]) card.style.backgroundImage = "url('" + bgs[slug] + "')";
@@ -1046,7 +1046,7 @@ async function saveOrderToSupabase(order) {
     user_id:        (_authUser ? _authUser.id : null)   // link to account if logged in
   }];
   console.log('[JainHardware] Saving order:', payload);
-  const result = await sbFetch(SB_URL + '/rest/v1/bahar_orders', {
+  const result = await sbFetch(SB_URL + '/rest/v1/jain_orders', {
     method: 'POST',
     headers: Object.assign({}, SB_H, {
       'Content-Type': 'application/json',
@@ -1083,7 +1083,7 @@ async function saveOrderToSupabase(order) {
 // Current logged-in user state
 let _authUser    = null;   // { id, email } or null
 let _authToken   = null;   // JWT access token string
-let _userProfile = null;   // { id, name, phone, address } from bahar_customers
+let _userProfile = null;   // { id, name, phone, address } from jain_customers
 
 // ── Session helpers ────────────────────────────────────────────────────────────
 function getAuthHeaders() {
@@ -1096,28 +1096,28 @@ function getAuthHeaders() {
 function saveAuthSession(data) {
   _authToken = data.access_token;
   _authUser  = { id: data.user.id, email: data.user.email };
-  localStorage.setItem('bahar_access_token',  data.access_token);
-  localStorage.setItem('bahar_refresh_token', data.refresh_token);
-  localStorage.setItem('bahar_user_id',       data.user.id);
-  localStorage.setItem('bahar_user_email',    data.user.email);
+  localStorage.setItem('jain_access_token',  data.access_token);
+  localStorage.setItem('jain_refresh_token', data.refresh_token);
+  localStorage.setItem('jain_user_id',       data.user.id);
+  localStorage.setItem('jain_user_email',    data.user.email);
 }
 function clearAuthSession() {
   _authUser  = null;
   _authToken = null;
   _userProfile = null;
-  localStorage.removeItem('bahar_access_token');
-  localStorage.removeItem('bahar_refresh_token');
-  localStorage.removeItem('bahar_user_id');
-  localStorage.removeItem('bahar_user_email');
+  localStorage.removeItem('jain_access_token');
+  localStorage.removeItem('jain_refresh_token');
+  localStorage.removeItem('jain_user_id');
+  localStorage.removeItem('jain_user_email');
 }
 
 // ── Init auth on page load ─────────────────────────────────────────────────────
 // Tries to restore session from localStorage, refreshes the token silently.
 async function initAuth() {
-  const token  = localStorage.getItem('bahar_access_token');
-  const refresh = localStorage.getItem('bahar_refresh_token');
-  const uid    = localStorage.getItem('bahar_user_id');
-  const email  = localStorage.getItem('bahar_user_email');
+  const token  = localStorage.getItem('jain_access_token');
+  const refresh = localStorage.getItem('jain_refresh_token');
+  const uid    = localStorage.getItem('jain_user_id');
+  const email  = localStorage.getItem('jain_user_email');
   if (token && uid && email) {
     _authToken = token;
     _authUser  = { id: uid, email: email };
@@ -1127,7 +1127,7 @@ async function initAuth() {
     updateHeaderForAuth();
   } else {
     // Show login prompt after 2.5 s, but only if never dismissed
-    if (!localStorage.getItem('bahar_lp_dismissed')) {
+    if (!localStorage.getItem('jain_lp_dismissed')) {
       setTimeout(showLoginPrompt, 2500);
     }
     updateHeaderForAuth();
@@ -1145,8 +1145,8 @@ async function _refreshSession(refreshToken) {
     if (!res.ok) { clearAuthSession(); updateHeaderForAuth(); return; }
     const data = await res.json();
     _authToken = data.access_token;
-    localStorage.setItem('bahar_access_token',  data.access_token);
-    localStorage.setItem('bahar_refresh_token', data.refresh_token);
+    localStorage.setItem('jain_access_token',  data.access_token);
+    localStorage.setItem('jain_refresh_token', data.refresh_token);
   } catch(e) {}
 }
 
@@ -1209,7 +1209,7 @@ async function authForgotPassword(email) {
 async function loadUserProfile() {
   if (!_authUser) return;
   try {
-    const res  = await fetch(SB_URL + '/rest/v1/bahar_customers?id=eq.' + _authUser.id + '&select=*', {
+    const res  = await fetch(SB_URL + '/rest/v1/jain_customers?id=eq.' + _authUser.id + '&select=*', {
       headers: getAuthHeaders()
     });
     if (!res.ok) return;
@@ -1222,7 +1222,7 @@ async function saveUserProfile(name, phone, address) {
   if (!_authUser) return false;
   const payload = [{ id: _authUser.id, name: name || '', phone: phone || '', address: address || '' }];
   try {
-    const res = await fetch(SB_URL + '/rest/v1/bahar_customers', {
+    const res = await fetch(SB_URL + '/rest/v1/jain_customers', {
       method:  'POST',
       headers: Object.assign({}, getAuthHeaders(), { 'Prefer': 'resolution=merge-duplicates' }),
       body:    JSON.stringify(payload)
@@ -1240,22 +1240,22 @@ async function loadMyOrders() {
   if (_authUser) {
     // Logged in: fetch from Supabase
     try {
-      const res  = await fetch(SB_URL + '/rest/v1/bahar_orders?user_id=eq.' + _authUser.id + '&order=created_at.desc&select=*', {
+      const res  = await fetch(SB_URL + '/rest/v1/jain_orders?user_id=eq.' + _authUser.id + '&order=created_at.desc&select=*', {
         headers: getAuthHeaders()
       });
       if (res.ok) return await res.json();
     } catch(e) {}
   }
   // Guest: return localStorage orders
-  try { return JSON.parse(localStorage.getItem('bahar_guest_orders') || '[]'); } catch(e) { return []; }
+  try { return JSON.parse(localStorage.getItem('jain_guest_orders') || '[]'); } catch(e) { return []; }
 }
 
 // ── Guest order store ──────────────────────────────────────────────────────────
 function saveGuestOrder(order) {
   try {
-    const orders = JSON.parse(localStorage.getItem('bahar_guest_orders') || '[]');
+    const orders = JSON.parse(localStorage.getItem('jain_guest_orders') || '[]');
     orders.unshift(order);
-    localStorage.setItem('bahar_guest_orders', JSON.stringify(orders.slice(0, 30)));
+    localStorage.setItem('jain_guest_orders', JSON.stringify(orders.slice(0, 30)));
   } catch(e) {}
 }
 
@@ -1299,7 +1299,7 @@ function showLoginPrompt() {
 function dismissLoginPrompt() {
   const el = document.getElementById('loginPrompt');
   if (el) el.style.display = 'none';
-  localStorage.setItem('bahar_lp_dismissed', '1');
+  localStorage.setItem('jain_lp_dismissed', '1');
 }
 
 // ── Auth Modal ─────────────────────────────────────────────────────────────────
