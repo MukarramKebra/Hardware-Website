@@ -25,7 +25,7 @@ const UL  = (id) => `Bahar-Products/SKU-${String(id).padStart(4,'0')}.jpg`;  // 
           <div style="font-size:15px;color:rgba(255,255,255,0.55);margin-bottom:28px;line-height:1.7">
             We are currently performing maintenance.<br>We'll be back shortly. Thank you for your patience.
           </div>
-          <div style="font-size:18px;font-weight:800;color:#0891b2;">Bahar Al Hind Co</div>
+          <div style="font-size:18px;font-weight:800;color:#c8151b;">Jain Hardware</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.3);margin-top:6px;">Kuwait — Bathroom &amp; Plumbing Supplies</div>
         </div>`;
       document.body.appendChild(overlay);
@@ -739,7 +739,7 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
   const address = [area, block&&'Block '+block, street&&'Street '+street, house, floor].filter(Boolean).join(', ');
 
   const msg = [
-    '🌊 *Bahar Al Hind Co Order* 🌊',
+    '🌊 *Jain Hardware Order* 🌊',
     '',
     '👤 *Name:* ' + name,
     '📞 *WhatsApp:* ' + phone,
@@ -776,7 +776,7 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
     <div class="co-success">
       <i class="fab fa-whatsapp"></i>
       <h3>Order Sent!</h3>
-      <p>Your order has been sent to Bahar Al Hind Co on WhatsApp.<br/>We will confirm and arrange delivery shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
+      <p>Your order has been sent to Jain Hardware on WhatsApp.<br/>We will confirm and arrange delivery shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
       ${nudgeHtml}
       <br/>
       <button class="btn btn-primary" onclick="document.getElementById('checkoutOverlay').classList.remove('open');document.getElementById('coBody').innerHTML=origCoBody">Continue Shopping</button>
@@ -887,7 +887,7 @@ var _T = {
     form_opt4:'Technical Advice', form_opt5:'Delivery Information', form_opt6:'Other',
     about_tag:'Who We Are', about_h2:'Your Trusted <span class="orange">Hardware</span> Partner',
     about_badge:'Kuwait',
-    about_p1:'Bahar Al Hind Co is Kuwait\'s trusted destination for bathroom and plumbing supplies. Shataffa, toilet seats, LED lighting, taps, mixers and bathroom accessories — all under one roof.',
+    about_p1:'Jain Hardware is Kuwait\'s trusted destination for bathroom and plumbing supplies. Shataffa, toilet seats, LED lighting, taps, mixers and bathroom accessories — all under one roof.',
     about_p2:'We stock only genuine, quality-tested products from trusted brands, with competitive prices and expert advice available in Arabic and English.',
     about_f1:'100% genuine, quality-tested products', about_f2:'Expert advice in Arabic and English',
     about_f3:'Same-day delivery within Kuwait City', about_f4:'Bulk pricing for contractors and businesses',
@@ -896,10 +896,10 @@ var _T = {
     footer_nav:'Navigation', footer_cats:'Categories', footer_support:'Support',
     footer_trade:'Trade Accounts', footer_bulk:'Bulk Orders', footer_delivery_info:'Delivery Info',
     footer_returns:'Returns Policy', footer_tech:'Technical Help',
-    footer_copy:'2024 Bahar Al Hind Co. All rights reserved. Kuwait.',
-    intro_tag:'Welcome to Bahar Al Hind Co',
+    footer_copy:'2024 Jain Hardware. All rights reserved. Kuwait.',
+    intro_tag:'Welcome to Jain Hardware',
     intro_h2:'Kuwait\'s Go-To <span class="orange">Bathroom & Plumbing</span> Store — Open 7 Days',
-    intro_p:'Bahar Al Hind Co supplies shataffa, toilet seats, LED lighting, taps, mixers, plumbing and bathroom accessories to contractors, businesses and individuals across Kuwait. Whether you need one item or a full site order — we have it in stock and ready to go.',
+    intro_p:'Jain Hardware supplies shataffa, toilet seats, LED lighting, taps, mixers, plumbing and bathroom accessories to contractors, businesses and individuals across Kuwait. Whether you need one item or a full site order — we have it in stock and ready to go.',
     intro_c1:'60+ Products In Stock', intro_c2:'Same-Day Kuwait Delivery',
     intro_c3:'Bulk & Trade Pricing', intro_c4:'Arabic & English Support',
     intro_cta_text:'Call Us: 6660 9391',
@@ -1045,7 +1045,7 @@ async function saveOrderToSupabase(order) {
     status:         'pending',
     user_id:        (_authUser ? _authUser.id : null)   // link to account if logged in
   }];
-  console.log('[BaharAlHind] Saving order:', payload);
+  console.log('[JainHardware] Saving order:', payload);
   const result = await sbFetch(SB_URL + '/rest/v1/bahar_orders', {
     method: 'POST',
     headers: Object.assign({}, SB_H, {
@@ -1055,10 +1055,10 @@ async function saveOrderToSupabase(order) {
     body: JSON.stringify(payload)
   });
   if (result.error) {
-    console.error('[BaharAlHind] Order save FAILED:', result.error);
+    console.error('[JainHardware] Order save FAILED:', result.error);
     // Still save to localStorage as a fallback
   } else {
-    console.log('[BaharAlHind] Order saved OK:', result.data);
+    console.log('[JainHardware] Order saved OK:', result.data);
   }
   // If guest → also store in localStorage so they can see it in My Orders
   if (!_authUser) {
@@ -1270,7 +1270,7 @@ function updateHeaderForAuth() {
         : _authUser.email.charAt(0).toUpperCase();
       btn.classList.add('signed-in');
       label.innerHTML =
-        '<span style="background:#fff;color:#0891b2;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">' + initial + '</span>' +
+        '<span style="background:#fff;color:#c8151b;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">' + initial + '</span>' +
         '<span class="acct-txt">&nbsp;My Account</span>';
     } else {
       btn.classList.remove('signed-in');

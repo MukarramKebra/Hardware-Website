@@ -3,28 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bahar Al Hind Co Admin</title>
+  <title>Jain Hardware Admin</title>
   <base href="../">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--orange:#0891b2;--dark:#0c2340;--charcoal:#0f2d50;--steel:#1a4068;
+    :root{--orange:#c8151b;--dark:#4a0000;--charcoal:#2d0000;--steel:#5c0a0a;
           --green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--blue:#0ea5e9;--purple:#8b5cf6;
-          --light:#f0f8ff;--white:#fff;--gray:#4a7a94;--border:#b8dded;}
+          --light:#fef9eb;--white:#fff;--gray:#92400e;--border:#fde68a;}
     body{font-family:'Inter',sans-serif;background:var(--light);color:var(--dark);}
 
     /* LOGIN */
     #loginScreen{position:fixed;inset:0;background:var(--dark);display:flex;align-items:center;justify-content:center;z-index:9999;}
-    .login-box{background:#0f2040;border-radius:16px;padding:48px 40px;width:100%;max-width:380px;border-top:4px solid var(--orange);text-align:center;}
+    .login-box{background:#2d0000;border-radius:16px;padding:48px 40px;width:100%;max-width:380px;border-top:4px solid var(--orange);text-align:center;}
     .login-box img{height:60px;margin-bottom:16px;}
     .login-logo{font-size:26px;font-weight:900;color:#fff;margin-bottom:4px;}
     .login-logo span{color:var(--orange);}
     .login-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:28px;text-transform:uppercase;letter-spacing:1px;}
-    .login-box input{width:100%;padding:13px 16px;border:2px solid #1a3060;border-radius:8px;background:#0c2340;color:#fff;font-size:15px;font-family:inherit;outline:none;margin-bottom:12px;transition:border-color .2s;}
+    .login-box input{width:100%;padding:13px 16px;border:2px solid #4a0a0a;border-radius:8px;background:#4a0000;color:#fff;font-size:15px;font-family:inherit;outline:none;margin-bottom:12px;transition:border-color .2s;}
     .login-box input:focus{border-color:var(--orange);}
     .login-btn{width:100%;padding:13px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:1px;}
-    .login-btn:hover{background:#0e7490;}
+    .login-btn:hover{background:#991b1b;}
     .login-error{color:var(--red);font-size:13px;margin-top:10px;display:none;}
     .forgot-link{color:rgba(255,255,255,0.35);font-size:12px;margin-top:14px;display:block;text-align:center;cursor:pointer;transition:color .2s;}
     .forgot-link:hover{color:var(--orange);}
@@ -38,13 +38,13 @@
     .fp-cred span{font-size:16px;font-weight:800;color:var(--orange);letter-spacing:1px;}
     .fp-note{font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:18px;}
     .fp-close{width:100%;padding:11px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;}
-    .fp-close:hover{background:#0e7490;}
+    .fp-close:hover{background:#991b1b;}
 
     /* ADMIN LAYOUT */
     #adminPanel{display:none;min-height:100vh;}
     /* SUPER ADMIN */
     #superAdminPanel{display:none;min-height:100vh;background:#f0f4ff;}
-    .su-bar{background:linear-gradient(135deg,#0c1a2e 0%,#1a0a3d 100%);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #7c3aed;position:sticky;top:0;z-index:100;}
+    .su-bar{background:linear-gradient(135deg,#1a0000 0%,#2d0000 100%);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #7c3aed;position:sticky;top:0;z-index:100;}
     .su-body{max-width:900px;margin:0 auto;padding:32px 28px;}
     .su-card{background:#fff;border-radius:14px;border:2px solid var(--border);padding:24px;margin-bottom:24px;}
     .su-card-h{font-size:15px;font-weight:900;color:var(--dark);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
@@ -213,7 +213,7 @@
     .ph-upload-lbl:hover{border-color:var(--orange);color:var(--orange);}
     .ph-upload-input{display:none;}
     .ph-save-btn{width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;text-transform:uppercase;}
-    .ph-save-btn:hover{background:#0e7490;}
+    .ph-save-btn:hover{background:#991b1b;}
 
     /* STATS MODAL */
     .stats-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px;}
@@ -371,7 +371,7 @@
 
     /* ADD / CSV BUTTONS */
     .add-prod-btn{background:var(--orange);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.5px;}
-    .add-prod-btn:hover{background:#0e7490;}
+    .add-prod-btn:hover{background:#991b1b;}
     .csv-btn{background:none;border:1.5px solid var(--blue);color:var(--blue);padding:7px 13px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;}
     .csv-btn:hover{background:rgba(59,130,246,.08);}
 
@@ -399,7 +399,7 @@
     .ap-field input,.ap-field select,.ap-field textarea{padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:var(--dark);transition:border-color .2s;resize:vertical;}
     .ap-field input:focus,.ap-field select:focus,.ap-field textarea:focus{border-color:var(--orange);}
     .ap-save-btn{width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
-    .ap-save-btn:hover{background:#0e7490;}
+    .ap-save-btn:hover{background:#991b1b;}
 
     /* CSV MODAL */
     .csv-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
@@ -467,7 +467,7 @@
     .newcat-slug{font-size:11px;color:var(--gray);margin-bottom:14px;}
     .newcat-slug span{font-weight:700;color:var(--orange);}
     .newcat-save{width:100%;padding:11px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;}
-    .newcat-save:hover{background:#0e7490;}
+    .newcat-save:hover{background:#991b1b;}
     .cat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
     .cat-chip{display:flex;align-items:center;gap:5px;background:rgba(255,98,0,.08);border:1px solid rgba(255,98,0,.2);color:var(--orange);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
     .cat-chip .del-cat{background:none;border:none;color:var(--orange);cursor:pointer;font-size:12px;padding:0;line-height:1;}
@@ -490,7 +490,7 @@
     .crop-hint{font-size:11px;color:var(--gray);text-align:center;margin-top:6px;}
     .crop-actions{display:flex;gap:8px;margin-top:10px;}
     .crop-apply-btn{flex:1;padding:9px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;}
-    .crop-apply-btn:hover{background:#0e7490;}
+    .crop-apply-btn:hover{background:#991b1b;}
     .crop-reset-btn{padding:9px 14px;background:none;border:1.5px solid var(--border);color:var(--gray);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
     .crop-reset-btn:hover{border-color:var(--dark);color:var(--dark);}
     .crop-locked-badge{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;display:none;align-items:center;gap:5px;}
@@ -528,7 +528,7 @@
     .mc-cat-row .mc-lbl{font-size:13px;font-weight:700;color:var(--dark);flex:1;}
     .mc-cat-row .mc-primary-tag{font-size:9px;font-weight:800;color:var(--orange);background:rgba(255,98,0,.1);border:1px solid rgba(255,98,0,.25);padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;}
     .mc-save-btn{width:100%;padding:11px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;}
-    .mc-save-btn:hover{background:#0e7490;}
+    .mc-save-btn:hover{background:#991b1b;}
     .cat-pills-wrap{display:flex;flex-wrap:wrap;gap:3px;}
   </style>
 </head>
@@ -537,8 +537,8 @@
 <!-- LOGIN SCREEN -->
 <div id="loginScreen">
   <div class="login-box">
-    <img src="bahr-logo.png" alt="Bahar Al Hind Co" onerror="this.style.display='none'" style="height:96px;width:96px;object-fit:contain;margin-bottom:18px;border-radius:50%;background:#fff;padding:5px;box-shadow:0 0 0 3px rgba(8,145,178,0.9), 0 0 18px 6px rgba(8,145,178,0.55), 0 0 40px 12px rgba(8,145,178,0.2);" />
-    <div class="login-logo">Bahar Al <span>Hind Co</span></div>
+    <img src="jain-logo.png" alt="Jain Hardware" onerror="this.style.display='none'" style="height:96px;width:96px;object-fit:contain;margin-bottom:18px;border-radius:50%;background:#fff;padding:5px;box-shadow:0 0 0 3px rgba(200,21,27,0.9), 0 0 18px 6px rgba(200,21,27,0.55), 0 0 40px 12px rgba(200,21,27,0.2);" />
+    <div class="login-logo">Jain <span>Hardware</span></div>
     <div class="login-sub">Owner Admin Panel</div>
     <form id="loginForm" onsubmit="doLogin(event)" autocomplete="on">
       <input type="text"     id="loginUser" name="username" placeholder="Username" autocomplete="username" />
@@ -552,7 +552,7 @@
 <!-- ADMIN PANEL -->
 <div id="adminPanel">
   <div class="top-bar">
-    <div class="top-logo"><img src="bahr-logo.png" style="height:36px;width:36px;object-fit:contain;border-radius:50%;background:#fff;padding:2px;margin-right:10px;box-shadow:0 0 0 2px rgba(8,145,178,0.9), 0 0 10px 3px rgba(8,145,178,0.5), 0 0 22px 7px rgba(8,145,178,0.2);">Bahar Al <span>Hind Co</span><div class="admin-badge"><i class="fa fa-shield-alt"></i> Admin</div></div>
+    <div class="top-logo"><img src="jain-logo.png" style="height:36px;width:36px;object-fit:contain;border-radius:50%;background:#fff;padding:2px;margin-right:10px;box-shadow:0 0 0 2px rgba(200,21,27,0.9), 0 0 10px 3px rgba(200,21,27,0.5), 0 0 22px 7px rgba(200,21,27,0.2);">Jain <span>Hardware</span><div class="admin-badge"><i class="fa fa-shield-alt"></i> Admin</div></div>
     <div class="top-right">
       <div class="clock-txt" id="clockEl"></div>
       <button class="logout-btn" onclick="loadFromSupabase()" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)" title="Reload products from cloud"><i class="fa fa-sync-alt"></i> Reload</button>
@@ -847,9 +847,9 @@
         <!-- bahar row -->
         <div class="su-user-row" style="margin-bottom:10px">
           <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:40px;height:40px;background:rgba(8,145,178,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
+            <div style="width:40px;height:40px;background:rgba(200,21,27,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
             <div>
-              <div style="font-weight:800;font-size:14px;color:var(--dark)">bahar</div>
+              <div style="font-weight:800;font-size:14px;color:var(--dark)">jain</div>
               <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Admin Account</div>
             </div>
           </div>
@@ -864,7 +864,7 @@
           <div style="display:flex;align-items:center;gap:12px">
             <div style="width:40px;height:40px;background:rgba(124,58,237,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">⚙️</div>
             <div>
-              <div style="font-weight:800;font-size:14px;color:var(--dark)">bahar15</div>
+              <div style="font-weight:800;font-size:14px;color:var(--dark)">jain15</div>
               <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Manager Account</div>
             </div>
           </div>
@@ -1136,9 +1136,9 @@
       <div class="su-card-h"><i class="fa fa-users"></i> Admin Account Control</div>
       <div class="su-user-row">
         <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:40px;height:40px;background:rgba(8,145,178,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
+          <div style="width:40px;height:40px;background:rgba(200,21,27,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
           <div>
-            <div style="font-weight:800;font-size:14px;color:var(--dark)">bahar</div>
+            <div style="font-weight:800;font-size:14px;color:var(--dark)">jain</div>
             <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Admin Account</div>
           </div>
         </div>
@@ -1163,7 +1163,7 @@
 <script>
 /*
  * ============================================================
- *   BAHAR AL HIND CO — ADMIN PANEL  (admin/index.html)
+ *   Jain Hardware — ADMIN PANEL  (admin/index.html)
  * ============================================================
  *
  *  HOW IT WORKS (plain English):
@@ -1203,11 +1203,11 @@
 
 // ── LOGIN CREDENTIALS ──────────────────────────────────────────────────────────
 // Change these to update usernames/passwords
-const ADMIN_USER    = 'bahar';       // Regular admin username
+const ADMIN_USER    = 'jain';       // Regular admin username
 const ADMIN_PASS    = 'Kuw963258';   // Regular admin password
 const SUPER_USER    = 'ultimate15';  // Owner (super-admin) username
 const SUPER_PASS    = 'Zahab2011';   // Owner (super-admin) password
-const MANAGER_USER  = 'bahar15';     // Manager account — same powers as owner except cannot disable ultimate15 or site
+const MANAGER_USER  = 'jain15';     // Manager account — same powers as owner except cannot disable ultimate15 or site
 const MANAGER_PASS  = 'Kuw963258';   // Manager password
 
 // ── SUPABASE CONNECTION ────────────────────────────────────────────────────────
@@ -1678,7 +1678,7 @@ function showManager() {
   document.getElementById('tabOwner').style.display     = 'flex';
   // Style the badge as "Manager" in teal
   var badge = document.querySelector('.admin-badge');
-  if (badge) { badge.innerHTML = '<i class="fa fa-user-shield"></i> Manager'; badge.style.background = '#0891b2'; }
+  if (badge) { badge.innerHTML = '<i class="fa fa-user-shield"></i> Manager'; badge.style.background = '#c8151b'; }
   // Change logout button
   var logoutBtn = document.querySelector('.top-right .logout-btn:last-child');
   if (logoutBtn) { logoutBtn.setAttribute('onclick', 'logoutManager()'); }
@@ -1686,9 +1686,9 @@ function showManager() {
   document.querySelectorAll('.owner-only-row').forEach(function(el){ el.style.display='none'; });
   // Update owner section heading
   var title = document.getElementById('ownerSectionTitle');
-  if (title) title.innerHTML = '<i class="fa fa-user-shield" style="color:#0891b2;margin-right:8px"></i>Manager Control Panel';
+  if (title) title.innerHTML = '<i class="fa fa-user-shield" style="color:#c8151b;margin-right:8px"></i>Manager Control Panel';
   var sub = document.getElementById('ownerSectionSub');
-  if (sub) sub.innerHTML = 'Manager controls for <strong style="color:#0891b2">bahar15</strong>';
+  if (sub) sub.innerHTML = 'Manager controls for <strong style="color:#c8151b">jain15</strong>';
   switchTab('owner');
   loadFromSupabase();
   _loadSavedHandles();
@@ -1716,7 +1716,7 @@ function toggleBaharAccount() {
     localStorage.removeItem('bahar_user_disabled');
     showToast('✅ bahar account enabled');
   } else {
-    if (!confirm('Disable the bahar account? They will not be able to login until you re-enable it.')) return;
+    if (!confirm('Disable the jain account? They will not be able to login until you re-enable it.')) return;
     localStorage.setItem('bahar_user_disabled', '1');
     showToast('🚫 bahar account disabled');
   }
@@ -1730,7 +1730,7 @@ function toggleBahar15Account() {
     localStorage.removeItem('bahar15_user_disabled');
     showToast('✅ bahar15 account enabled');
   } else {
-    if (!confirm('Disable the bahar15 manager account? They will not be able to login until you re-enable it.')) return;
+    if (!confirm('Disable the jain15 manager account? They will not be able to login until you re-enable it.')) return;
     localStorage.setItem('bahar15_user_disabled', '1');
     showToast('🚫 bahar15 account disabled');
   }
@@ -1808,7 +1808,7 @@ function renderSuperAdmin() {
   if (!logEl && !logEl2) return;
   var html;
   if (!log.length) {
-    html = '<div class="su-empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p style="font-size:14px;font-weight:700;color:var(--green)">No actions this week</p><small>bahar has not made any changes in the past 7 days.</small></div>';
+    html = '<div class="su-empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p style="font-size:14px;font-weight:700;color:var(--green)">No actions this week</p><small>jain has not made any changes in the past 7 days.</small></div>';
     if (logEl)  logEl.innerHTML  = html;
     if (logEl2) logEl2.innerHTML = html;
     return;
@@ -1839,7 +1839,7 @@ function renderSuperAdmin() {
 }
 
 // ── AUDIT LOG ─────────────────────────────────────────────────────────────────
-// Records every action bahar makes so ultimate15 can review and undo them.
+// Records every action jain makes so ultimate15 can review and undo them.
 // logAction(action, data) — saves an entry with a timestamp
 // getWeekLog()            — returns only entries from the last 7 days
 // undoAllThisWeek()       — loops through the last 7 days and reverses each action
