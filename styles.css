@@ -646,10 +646,11 @@ footer { background: var(--dark); padding: 64px 0 0; border-top: 1px solid rgba(
 @media(max-width:480px){ .header-insta { width:30px; height:30px; font-size:14px; border:none; background:none; color:#fff; } }
 
 /* ── ACCOUNT BUTTON (header) ────────────────────────────────────────────── */
-.btn-account { background:none; border:1.5px solid rgba(255,255,255,0.3); color:rgba(255,255,255,0.82); padding:7px 14px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all .2s; font-family:inherit; white-space:nowrap; }
-.btn-account:hover { border-color:var(--orange); color:var(--orange); }
-.btn-account.signed-in { border-color:#22c55e; color:#22c55e; background:rgba(34,197,94,.08); }
-@media(max-width:600px){ .btn-account .acct-txt { display:none; } .btn-account { padding:7px 10px; } }
+.btn-account { background:var(--orange); border:2px solid var(--orange); color:#fff; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:7px; transition:all .2s; font-family:inherit; white-space:nowrap; }
+.btn-account:hover { background:var(--orange-dark); border-color:var(--orange-dark); }
+.btn-account.signed-in { background:transparent; border-color:#22c55e; color:#22c55e; }
+.btn-account.signed-in:hover { background:rgba(34,197,94,.1); }
+@media(max-width:600px){ .btn-account .acct-txt { display:none; } .btn-account { padding:8px 11px; } }
 
 /* ── LOGIN WELCOME PROMPT (bottom-right slide-in) ───────────────────────── */
 .login-prompt { position:fixed; bottom:24px; right:24px; background:#fff; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,.18); padding:18px 18px 18px 16px; width:300px; z-index:8000; border-left:4px solid var(--orange); animation:slideUpPrompt .4s ease; }
@@ -745,28 +746,25 @@ footer { background: var(--dark); padding: 64px 0 0; border-top: 1px solid rgba(
 .order-nudge p { font-size:13px; color:#0369a1; margin-bottom:10px; font-weight:600; line-height:1.5; }
 .order-nudge button { padding:8px 20px; background:var(--orange); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
 
-/* ── FLOATING CART FAB (mobile only, bottom-left) ───────────────────────── */
-.mob-cart-fab { display:none; }
-@media(max-width:768px){
-  .mob-cart-fab {
-    display:flex; align-items:center; gap:8px;
-    position:fixed; bottom:22px; left:16px; z-index:8500;
+/* ── FLOATING CART FAB (all screens, bottom-left) ───────────────────────── */
+.mob-cart-fab {
+  display:flex; align-items:center; gap:8px;
+  position:fixed; bottom:22px; left:16px; z-index:8500;
     background:var(--orange); color:#fff; border:none;
     border-radius:50px; padding:13px 20px;
     font-size:15px; font-weight:900; font-family:inherit;
     cursor:pointer; box-shadow:0 4px 18px rgba(200,21,27,.45);
     transition:transform .15s, box-shadow .15s;
   }
-  .mob-cart-fab:active { transform:scale(0.95); }
-  .mob-cart-fab span {
+.mob-cart-fab:active { transform:scale(0.95); }
+.mob-cart-fab span {
     background:#fff; color:var(--orange);
     border-radius:50%; width:22px; height:22px;
     display:flex; align-items:center; justify-content:center;
     font-size:11px; font-weight:900; flex-shrink:0;
-  }
-  /* Hide the header cart button on mobile (FAB replaces it) */
-  .btn-cart { display:none; }
 }
+/* Always hide the header cart button — FAB is used on all screens */
+.btn-cart { display:none !important; }
 
 /* ── MOBILE NAV EXTRA LINKS (My Orders / Sign In) ───────────────────────── */
 #navMyOrders, #navSignIn { border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; margin-top:4px; }
