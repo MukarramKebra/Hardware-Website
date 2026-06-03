@@ -805,18 +805,16 @@ let origCoBody = '';
 window.addEventListener('load', () => { origCoBody = document.getElementById('coBody').innerHTML; });
 
 // ── EVENTS ────────────────────────────────────────────────────────────────
+function $on(id, evt, fn) { var el = document.getElementById(id); if (el) el.addEventListener(evt, fn); }
 window.addEventListener('scroll', () => document.getElementById('header').classList.toggle('scrolled', window.scrollY > 40));
-document.getElementById('hamburger').addEventListener('click', () => document.getElementById('nav').classList.toggle('open'));
-document.getElementById('cartBtn').addEventListener('click', openCart);
-document.getElementById('closeCart').addEventListener('click', () => document.getElementById('cartModal').classList.remove('open'));
-document.getElementById('cartModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('cartModal')) document.getElementById('cartModal').classList.remove('open');
-});
-document.getElementById('checkoutBtn').addEventListener('click', openCheckout);
-document.getElementById('closeCheckout').addEventListener('click', () => document.getElementById('checkoutOverlay').classList.remove('open'));
-document.getElementById('checkoutOverlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('checkoutOverlay')) document.getElementById('checkoutOverlay').classList.remove('open');
-});
+$on('hamburger',       'click', () => document.getElementById('nav').classList.toggle('open'));
+$on('cartBtn',         'click', openCart);
+$on('mobCartFab',      'click', openCart);
+$on('closeCart',       'click', () => document.getElementById('cartModal').classList.remove('open'));
+$on('cartModal',       'click', e => { if (e.target === document.getElementById('cartModal')) document.getElementById('cartModal').classList.remove('open'); });
+$on('checkoutBtn',     'click', openCheckout);
+$on('closeCheckout',   'click', () => document.getElementById('checkoutOverlay').classList.remove('open'));
+$on('checkoutOverlay', 'click', e => { if (e.target === document.getElementById('checkoutOverlay')) document.getElementById('checkoutOverlay').classList.remove('open'); });
 document.querySelectorAll('.pill').forEach(pill => {
   pill.addEventListener('click', () => {
     activeFilter = pill.dataset.filter;
