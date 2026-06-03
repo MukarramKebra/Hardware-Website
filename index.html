@@ -518,23 +518,23 @@
         <div class="auth-ok"  id="authOk"></div>
 
         <!-- LOGIN FORM -->
-        <div id="authLoginForm">
+        <form id="authLoginForm" onsubmit="doAuthLogin();return false;" autocomplete="on">
           <div class="auth-field">
             <label>Email Address</label>
-            <input type="email" id="authLoginEmail" placeholder="you@email.com" autocomplete="email" />
+            <input type="email" id="authLoginEmail" name="email" placeholder="you@email.com" autocomplete="email" />
           </div>
           <div class="auth-field">
             <label>Password</label>
-            <input type="password" id="authLoginPass" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuthLogin()" />
+            <input type="password" id="authLoginPass" name="password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuthLogin()" />
           </div>
           <button class="auth-forgot-link" onclick="switchAuthTab('forgot')">Forgot password?</button>
           <button class="auth-submit" id="authLoginBtn" onclick="doAuthLogin()">
             <i class="fa fa-sign-in-alt"></i> Sign In
           </button>
           <div class="auth-bottom-note">
-            Don't have an account? <button onclick="switchAuthTab('signup')">Create one — it's free</button>
+            Don't have an account? <button type="button" onclick="switchAuthTab('signup')">Create one — it's free</button>
           </div>
-        </div>
+        </form>
 
         <!-- SIGN UP FORM -->
         <div id="authSignupForm" style="display:none">
