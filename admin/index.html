@@ -2144,7 +2144,7 @@ function exportInventoryExcel() {
   var wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
   var date = new Date().toISOString().slice(0,10);
-  XLSX.writeFile(wb, 'Bahr_Inventory_'+date+'.xlsx');
+  XLSX.writeFile(wb, 'Jain_Inventory_'+date+'.xlsx');
   showToast('Inventory Excel downloaded ✅');
 }
 
@@ -2169,7 +2169,7 @@ function exportSalesExcel() {
   var wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Sales');
   var date = new Date().toISOString().slice(0,10);
-  XLSX.writeFile(wb, 'Bahr_Sales_'+date+'.xlsx');
+  XLSX.writeFile(wb, 'Jain_Sales_'+date+'.xlsx');
   showToast('Sales Excel downloaded ✅');
 }
 
@@ -2281,7 +2281,7 @@ async function connectInventoryFile() {
   }
   try {
     var handle = await window.showSaveFilePicker({
-      suggestedName: 'Bahr_Inventory.xlsx',
+      suggestedName: 'Jain_Inventory.xlsx',
       startIn: 'documents',
       types: [{ description: 'Excel File', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }]
     });
@@ -2298,7 +2298,7 @@ async function connectSalesFile() {
   }
   try {
     var handle = await window.showSaveFilePicker({
-      suggestedName: 'Bahr_Sales.xlsx',
+      suggestedName: 'Jain_Sales.xlsx',
       startIn: 'documents',
       types: [{ description: 'Excel File', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }]
     });
@@ -2482,7 +2482,7 @@ function exportOrdersExcel() {
   if (!_allOrders.length) { showToast('No orders to export yet'); return; }
   var wb   = _buildOrdersWorkbook();
   var date = new Date().toISOString().slice(0,10);
-  XLSX.writeFile(wb, 'Bahr_Orders_'+date+'.xlsx');
+  XLSX.writeFile(wb, 'Jain_Orders_'+date+'.xlsx');
   showToast('Orders Excel downloaded ✅');
 }
 
@@ -2490,7 +2490,7 @@ async function connectOrdersFile() {
   if (!window.showSaveFilePicker) { showToast('Use Chrome or Edge for auto-connect'); return; }
   try {
     var handle = await window.showSaveFilePicker({
-      suggestedName: 'Bahr_Orders.xlsx',
+      suggestedName: 'Jain_Orders.xlsx',
       startIn: 'documents',
       types: [{ description: 'Excel File', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }]
     });
