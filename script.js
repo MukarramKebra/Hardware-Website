@@ -1571,6 +1571,15 @@ function getWishlist() {
   try { return JSON.parse(localStorage.getItem('jain_wishlist') || '[]'); } catch(e) { return []; }
 }
 function isWishlisted(id) { return getWishlist().includes(id); }
+function showToast(msg, duration) {
+  var el = document.getElementById('toastMsg');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.classList.remove('show'); }, duration || 2500);
+}
+
 function toggleWishlist(id, event) {
   if (event) event.stopPropagation();
   var list = getWishlist();

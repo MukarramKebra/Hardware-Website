@@ -546,7 +546,7 @@
           </div>
           <div class="auth-field">
             <label>Password</label>
-            <input type="password" id="authLoginPass" name="customer-password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuthLogin()" />
+            <input type="password" id="authLoginPass" name="customer-password" placeholder="Your password" autocomplete="off" onkeydown="if(event.key==='Enter')doAuthLogin()" />
           </div>
           <button class="auth-forgot-link" onclick="switchAuthTab('forgot')">Forgot password?</button>
           <button class="auth-submit" id="authLoginBtn" onclick="doAuthLogin()">
@@ -649,6 +649,9 @@
     <i class="fa fa-shopping-cart"></i>
     <span id="mobCartCount">0</span>
   </button>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastMsg" class="toast-msg"></div>
 
   <!-- WHATSAPP CHAT FAB (bottom-right) -->
   <button class="wa-chat-fab" onclick="openWAChat()" title="Chat with us on WhatsApp">
