@@ -519,13 +519,16 @@
 
         <!-- LOGIN FORM -->
         <form id="authLoginForm" onsubmit="doAuthLogin();return false;" autocomplete="on">
+          <!-- hidden decoy fields so Chrome doesn't suggest admin credentials here -->
+          <input type="text"     style="display:none" name="decoy-user" autocomplete="username" tabindex="-1" aria-hidden="true" />
+          <input type="password" style="display:none" name="decoy-pass" autocomplete="current-password" tabindex="-1" aria-hidden="true" />
           <div class="auth-field">
             <label>Email Address</label>
-            <input type="email" id="authLoginEmail" name="email" placeholder="you@email.com" autocomplete="email" />
+            <input type="email" id="authLoginEmail" name="customer-email" placeholder="you@email.com" autocomplete="email" />
           </div>
           <div class="auth-field">
             <label>Password</label>
-            <input type="password" id="authLoginPass" name="password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuthLogin()" />
+            <input type="password" id="authLoginPass" name="customer-password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuthLogin()" />
           </div>
           <button class="auth-forgot-link" onclick="switchAuthTab('forgot')">Forgot password?</button>
           <button class="auth-submit" id="authLoginBtn" onclick="doAuthLogin()">
