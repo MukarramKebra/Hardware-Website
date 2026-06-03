@@ -440,7 +440,25 @@
             <div class="co-field"><label data-i18n="co_wa_num">WhatsApp Number *</label><input type="tel" id="coPhone" placeholder="+965 XXXX XXXX" /></div>
           </div>
         </div>
+        <!-- FULFILMENT TOGGLE -->
         <div class="co-section">
+          <div class="co-section-title"><i class="fa fa-truck"></i> Fulfilment Method</div>
+          <div class="co-fulfilment-toggle">
+            <button class="co-ft-btn active" id="ftDelivery" onclick="setFulfilment('delivery')">
+              <i class="fa fa-shipping-fast"></i> Delivery
+            </button>
+            <button class="co-ft-btn" id="ftPickup" onclick="setFulfilment('pickup')">
+              <i class="fa fa-store"></i> Pick Up
+            </button>
+          </div>
+          <div id="coPickupInfo" style="display:none" class="co-pickup-info">
+            <i class="fa fa-map-marker-alt"></i>
+            <span>Pick up from our store — <strong>Jain Hardware, Kuwait</strong><br/>
+            We'll confirm the ready time on WhatsApp.</span>
+          </div>
+        </div>
+
+        <div class="co-section" id="coDeliverySection">
           <div class="co-section-title"><i class="fa fa-map-marker-alt"></i> <span data-i18n="co_delivery_addr">Delivery Address</span></div>
           <div class="co-field">
             <label data-i18n="co_area">Area *</label>

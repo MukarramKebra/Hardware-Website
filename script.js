@@ -734,34 +734,55 @@ function openCheckout() {
   }
 }
 
+// ── FULFILMENT TOGGLE ─────────────────────────────────────────────────────
+let _fulfilment = 'delivery'; // 'delivery' | 'pickup'
+function setFulfilment(mode) {
+  _fulfilment = mode;
+  document.getElementById('ftDelivery').classList.toggle('active', mode === 'delivery');
+  document.getElementById('ftPickup').classList.toggle('active', mode === 'pickup');
+  document.getElementById('coDeliverySection').style.display = mode === 'delivery' ? '' : 'none';
+  document.getElementById('coPickupInfo').style.display = mode === 'pickup' ? '' : 'none';
+}
+
 document.getElementById('coSubmitBtn').addEventListener('click', () => {
   const name  = document.getElementById('coName').value.trim();
   const phone = document.getElementById('coPhone').value.trim();
-  const area  = document.getElementById('coArea').value;
+  const isPickup = _fulfilment === 'pickup';
+
+  // Validate required fields
   let valid = true;
-  ['coName','coPhone','coArea'].forEach(id => {
+  ['coName','coPhone'].forEach(id => {
     const el = document.getElementById(id);
     if (!el.value.trim()) { el.classList.add('err'); valid = false; }
     else el.classList.remove('err');
   });
-  if (!valid) { alert('Please fill in your name, WhatsApp number and area.'); return; }
+  if (!isPickup) {
+    const areaEl = document.getElementById('coArea');
+    if (!areaEl.value) { areaEl.classList.add('err'); valid = false; }
+    else areaEl.classList.remove('err');
+  }
+  if (!valid) { alert('Please fill in your name and WhatsApp number' + (isPickup ? '.' : ', and select your area.')); return; }
 
-  const block  = document.getElementById('coBlock').value.trim();
-  const street = document.getElementById('coStreet').value.trim();
-  const house  = document.getElementById('coHouse').value.trim();
-  const floor  = document.getElementById('coFloor').value.trim();
   const notes  = document.getElementById('coNotes').value.trim();
   const total  = cart.reduce((s,c) => s+c.price*c.qty, 0);
-
   const orderLines = cart.map(c => `  • ${c.name} x${c.qty} — ${(c.price*c.qty).toFixed(3)} KWD`).join('\n');
-  const address = [area, block&&'Block '+block, street&&'Street '+street, house, floor].filter(Boolean).join(', ');
+
+  let address = '';
+  if (!isPickup) {
+    const area   = document.getElementById('coArea').value;
+    const block  = document.getElementById('coBlock').value.trim();
+    const street = document.getElementById('coStreet').value.trim();
+    const house  = document.getElementById('coHouse').value.trim();
+    const floor  = document.getElementById('coFloor').value.trim();
+    address = [area, block&&'Block '+block, street&&'Street '+street, house, floor].filter(Boolean).join(', ');
+  }
 
   const msg = [
     '🌊 *Jain Hardware Order* 🌊',
     '',
     '👤 *Name:* ' + name,
     '📞 *WhatsApp:* ' + phone,
-    '📍 *Address:* ' + address,
+    isPickup ? '🏪 *Fulfilment:* Store Pick Up' : '📍 *Delivery Address:* ' + address,
     notes ? '📝 *Notes:* ' + notes : '',
     '',
     '🛒 *Order:*',
@@ -776,7 +797,7 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
   deductStock(cart);
 
   // Save order to Supabase
-  saveOrderToSupabase({ name, phone, address, notes, items: cart.map(c=>({name:c.name,sku:getProductSku(c.id),qty:c.qty,price:c.price})), total });
+  saveOrderToSupabase({ name, phone, address: isPickup ? 'PICK UP' : address, notes, items: cart.map(c=>({name:c.name,sku:getProductSku(c.id),qty:c.qty,price:c.price})), total });
 
   // Open WhatsApp
   window.open('https://wa.me/96597656372?text=' + encodeURIComponent(msg), '_blank');
