@@ -85,7 +85,11 @@ async function loadSBData() {
     if (Array.isArray(s.data)) s.data.forEach(r => { _sbStock[r.product_id]  = r.qty; });
     if (Array.isArray(p.data)) p.data.forEach(r => { _sbPhotos[r.product_id] = r.url; });
     if (Array.isArray(c.data) && c.data.length > 0) _customProds = c.data.filter(r => !r.hidden);
-    if (Array.isArray(h.data)) _hiddenIds   = new Set(h.data.map(r => r.product_id));
+    if (Array.isArray(h.data)) {
+      var hidSet = new Set(h.data.map(r => r.product_id));
+      // Safety: if more than 55 of the 60 base products are "hidden", ignore — likely stale data
+      if (hidSet.size < 55) _hiddenIds = hidSet;
+    }
   }
   renderProducts();
 }
@@ -827,7 +831,10 @@ document.getElementById('contactForm').addEventListener('submit', e => {
   e.target.reset();
   setTimeout(() => document.getElementById('formSuccess').classList.remove('show'), 4000);
 });
-// Load stock + photos from Supabase then render
+// Render products immediately from hardcoded array (instant display)
+// Supabase will update stock/photos/hidden status once it responds
+renderProducts();
+// Then load live data from Supabase and re-render
 loadSBData();
 
 // ── CATEGORY BACKGROUNDS (admin-editable) ────────────────────────────────
