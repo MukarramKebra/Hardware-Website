@@ -2748,9 +2748,9 @@ async function saveAll() {
   });
   localStorage.setItem('bahar_overrides', JSON.stringify(_prodOverrides));
 
-  PRODUCTS.forEach(function(p) { const el=document.getElementById('si'+p.id); if(el) stockData[p.id]=Math.max(0,parseInt(el.value)||0); });
+  getAllAdminProducts().forEach(function(p) { const el=document.getElementById('si'+p.id); if(el) stockData[p.id]=Math.max(0,parseInt(el.value)||0); });
   localStorage.setItem('jain_stock', JSON.stringify(stockData));
-  const rows = PRODUCTS.map(function(p) { return { product_id: p.id, qty: stockData[p.id]||0 }; });
+  const rows = getAllAdminProducts().map(function(p) { return { product_id: p.id, qty: stockData[p.id]||0 }; });
   const { error } = await sbFetch(SB_URL + '/rest/v1/jain_stock', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
