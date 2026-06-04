@@ -25,7 +25,7 @@ const UL  = (id) => `Bahar-Products/SKU-${String(id).padStart(4,'0')}.jpg`;  // 
           <div style="font-size:15px;color:rgba(255,255,255,0.55);margin-bottom:28px;line-height:1.7">
             We are currently performing maintenance.<br>We'll be back shortly. Thank you for your patience.
           </div>
-          <div style="font-size:18px;font-weight:800;color:#c8151b;">Jain Hardware</div>
+          <div style="font-size:15px;font-weight:800;color:#c8151b;line-height:1.3">TAJ MAHAL JAIN<br>BUILDING MATERIALS CO.</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.3);margin-top:6px;">Kuwait — Bathroom &amp; Plumbing Supplies</div>
         </div>`;
       document.body.appendChild(overlay);
@@ -798,7 +798,7 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
   }
 
   const msg = [
-    '🌊 *Jain Hardware Order* 🌊',
+    '🌊 *Taj Mahal Jain Building Materials Co. Order* 🌊',
     '',
     '👤 *Name:* ' + name,
     '📞 *WhatsApp:* ' + phone,
@@ -835,7 +835,7 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
     <div class="co-success">
       <i class="fab fa-whatsapp"></i>
       <h3>Order Sent!</h3>
-      <p>Your order has been sent to Jain Hardware on WhatsApp.<br/>We will confirm and arrange delivery shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
+      <p>Your order has been sent to Taj Mahal Jain Building Materials Co. on WhatsApp.<br/>We will confirm and arrange delivery shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
       ${nudgeHtml}
       <br/>
       <button class="btn btn-primary" onclick="document.getElementById('checkoutOverlay').classList.remove('open');document.getElementById('coBody').innerHTML=origCoBody">Continue Shopping</button>
@@ -947,7 +947,7 @@ var _T = {
     form_opt4:'Technical Advice', form_opt5:'Delivery Information', form_opt6:'Other',
     about_tag:'Who We Are', about_h2:'Your Trusted <span class="orange">Hardware</span> Partner',
     about_badge:'Kuwait',
-    about_p1:'Jain Hardware is Kuwait\'s trusted destination for bathroom and plumbing supplies. Shataffa, toilet seats, LED lighting, taps, mixers and bathroom accessories — all under one roof.',
+    about_p1:'Taj Mahal Jain Building Materials Co. is Kuwait\'s trusted destination for hardware tools and building materials. Power tools, hand tools, fasteners, safety gear, measuring tools and accessories — all under one roof.',
     about_p2:'We stock only genuine, quality-tested products from trusted brands, with competitive prices and expert advice available in Arabic and English.',
     about_f1:'100% genuine, quality-tested products', about_f2:'Expert advice in Arabic and English',
     about_f3:'Same-day delivery within Kuwait City', about_f4:'Bulk pricing for contractors and businesses',
@@ -956,10 +956,10 @@ var _T = {
     footer_nav:'Navigation', footer_cats:'Categories', footer_support:'Support',
     footer_trade:'Trade Accounts', footer_bulk:'Bulk Orders', footer_delivery_info:'Delivery Info',
     footer_returns:'Returns Policy', footer_tech:'Technical Help',
-    footer_copy:'2024 Jain Hardware. All rights reserved. Kuwait.',
-    intro_tag:'Welcome to Jain Hardware',
+    footer_copy:'2024 Taj Mahal Jain Building Materials Co. All rights reserved. Kuwait.',
+    intro_tag:'Welcome to Taj Mahal Jain Building Materials Co.',
     intro_h2:'Kuwait\'s Go-To <span class="orange">Bathroom & Plumbing</span> Store — Open 7 Days',
-    intro_p:'Jain Hardware supplies shataffa, toilet seats, LED lighting, taps, mixers, plumbing and bathroom accessories to contractors, businesses and individuals across Kuwait. Whether you need one item or a full site order — we have it in stock and ready to go.',
+    intro_p:'Taj Mahal Jain Building Materials Co. supplies power tools, hand tools, fasteners, safety gear, measuring tools and accessories to contractors and businesses across Kuwait. Whether you need one item or a full site order — we have it in stock and ready to go.',
     intro_c1:'60+ Products In Stock', intro_c2:'Same-Day Kuwait Delivery',
     intro_c3:'Bulk & Trade Pricing', intro_c4:'Arabic & English Support',
     intro_cta_text:'Call Us: 6660 9391',
@@ -1665,7 +1665,7 @@ function shareProduct(id) {
   var p = getAllProducts().find(function(x){ return x.id === id; });
   if (!p) return;
   var url = 'https://mukarramkebra.github.io/Hardware-Website/';
-  var msg = '🔧 *' + p.name + '*\n💰 ' + p.price.toFixed(3) + ' KWD\n\nCheck it out at Jain Hardware, Kuwait:\n' + url;
+  var msg = '🔧 *' + p.name + '*\n💰 ' + p.price.toFixed(3) + ' KWD\n\nCheck it out at Taj Mahal Jain Building Materials Co., Kuwait:\n' + url;
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
@@ -1824,7 +1824,7 @@ function sendBulkQuote() {
   var msg = '📋 *Bulk / Trade Quote Request*\n';
   if (name) msg += '👤 Name: ' + name + '\n';
   if (phone) msg += '📞 Phone: ' + phone + '\n';
-  msg += '\n*Items Requested:*\n' + lines.join('\n') + '\n\n_From Jain Hardware Website_';
+  msg += '\n*Items Requested:*\n' + lines.join('\n') + '\n\n_From Taj Mahal Jain Building Materials Co. Website_';
   window.open('https://wa.me/96597656372?text=' + encodeURIComponent(msg), '_blank');
   closeBulkQuote();
 }
@@ -1962,7 +1962,7 @@ async function trackOrder() {
 // FEATURE: WHATSAPP CHAT FAB
 // ══════════════════════════════════════════════════════════════════════════════
 function openWAChat() {
-  window.open('https://wa.me/96597656372?text=' + encodeURIComponent('Hi! I\'d like to ask about your products at Jain Hardware 🔧'), '_blank');
+  window.open('https://wa.me/96597656372?text=' + encodeURIComponent('Hi! I\'d like to ask about your products at Taj Mahal Jain Building Materials Co. 🔧'), '_blank');
 }
 
 // Call on page load to restore recently viewed and wishlist state
