@@ -2589,17 +2589,18 @@ function renderOrdersReport() {
 
 // â”€â”€ STATS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderStats() {
-  const total  = PRODUCTS.length;
-  const units  = PRODUCTS.reduce(function(s,p) { return s+(stockData[p.id]||0); }, 0);
-  const value  = PRODUCTS.reduce(function(s,p) { return s+p.price*(stockData[p.id]||0); }, 0);
-  const low    = PRODUCTS.filter(function(p) { return (stockData[p.id]||0) > 0 && (stockData[p.id]||0) <= 10; }).length;
-  const out    = PRODUCTS.filter(function(p) { return (stockData[p.id]||0) === 0; }).length;
+  const allProds = getAllAdminProducts();
+  const total  = allProds.length;
+  const units  = allProds.reduce(function(s,p) { return s+(stockData[p.id]||0); }, 0);
+  const value  = allProds.reduce(function(s,p) { return s+p.price*(stockData[p.id]||0); }, 0);
+  const low    = allProds.filter(function(p) { return (stockData[p.id]||0) > 0 && (stockData[p.id]||0) <= 10; }).length;
+  const out    = allProds.filter(function(p) { return (stockData[p.id]||0) === 0; }).length;
   document.getElementById('statsGrid').innerHTML =
-    card('fa-boxes','ic-orange','Total Products', total, getAllAdminProducts().length + ' active products') +
+    card('fa-boxes','ic-orange','Total Products', total, total + ' active products') +
     card('fa-layer-group','ic-blue','Total Units', units.toLocaleString(), 'In stock') +
     card('fa-coins','ic-green','Inventory Value', value.toFixed(2)+' KWD', 'Total stock value') +
     card('fa-exclamation-triangle','ic-red','Alerts', low+out, low+' low &nbsp;|&nbsp; '+out+' out');
-  const lowList = PRODUCTS.filter(function(p) { return (stockData[p.id]||0) <= 10; });
+  const lowList = allProds.filter(function(p) { return (stockData[p.id]||0) <= 10; });
   const box = document.getElementById('alertsBox');
   if (lowList.length) {
     box.classList.add('show');
@@ -4332,7 +4333,7 @@ function printInvoice(orderId) {
 // ── LOW STOCK ALERT ───────────────────────────────────────────────────────────
 function checkLowStock() {
   var stock = getStock();
-  var allP  = getAllProducts();
+  var allP  = getAllAdminProducts();
   var low   = allP.filter(function(p) {
     var status = getLiveStock ? getLiveStock(p.id) : (stock[p.id] && stock[p.id].status);
     var qty    = stock[p.id] ? (stock[p.id].qty !== undefined ? stock[p.id].qty : null) : null;
