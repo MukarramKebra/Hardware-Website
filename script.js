@@ -616,21 +616,15 @@ function openProduct(id) {
     '</div>';
 
   document.getElementById('prodOverlay').classList.add('open');
-  var cartFab = document.getElementById('mobCartFab');
-  var waFab   = document.querySelector('.wa-chat-fab');
-  if (cartFab) cartFab.style.display = 'none';
-  if (waFab)   waFab.style.display   = 'none';
+  document.body.classList.add('product-open');
   document.body.style.overflow = 'hidden';
 }
 
 function closeProduct() {
   document.getElementById('prodOverlay').classList.remove('open');
   document.body.style.overflow = '';
+  document.body.classList.remove('product-open');
   _pmId = null; _pmQty = 1;
-  var cartFab = document.getElementById('mobCartFab');
-  var waFab   = document.querySelector('.wa-chat-fab');
-  if (cartFab) cartFab.style.display = '';
-  if (waFab)   waFab.style.display   = '';
 }
 
 function pmChangeQty(delta) {
