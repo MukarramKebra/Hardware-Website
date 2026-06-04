@@ -27,6 +27,7 @@
         <a href="#" id="navSignIn" onclick="document.getElementById('nav').classList.remove('open');openAuthModal('login');return false;"><i class="fa fa-user" style="margin-right:6px"></i>Sign In</a>
         <a href="#" onclick="document.getElementById('nav').classList.remove('open');openWishlist();return false;"><i class="fa fa-heart" style="margin-right:6px"></i>Wishlist <span id="navWishlistBadge" style="display:none;background:var(--orange);color:#fff;border-radius:50%;padding:0 5px;font-size:10px;font-weight:900"></span></a>
         <a href="#" onclick="document.getElementById('nav').classList.remove('open');openOrderTracker();return false;"><i class="fa fa-search" style="margin-right:6px"></i>Track Order</a>
+        <a href="#" onclick="document.getElementById('nav').classList.remove('open');openOrderTracker();switchOrderTab('cancel');return false;"><i class="fa fa-times-circle" style="margin-right:6px"></i>Cancel Order</a>
       </nav>
       <div class="header-actions">
         <button class="lang-btn" id="langBtn" onclick="toggleLang()">عربي</button>
@@ -718,17 +719,37 @@
   <div class="track-overlay" id="trackOverlay" onclick="if(event.target===this)closeOrderTracker()">
     <div class="track-modal">
       <div class="track-head">
-        <h3><i class="fa fa-search" style="color:var(--orange)"></i> Track Your Order</h3>
+        <h3><i class="fa fa-box"></i> My Orders</h3>
         <button onclick="closeOrderTracker()"><i class="fa fa-times"></i></button>
       </div>
-      <div class="track-body">
+      <!-- TABS -->
+      <div class="track-tabs">
+        <button class="track-tab active" id="tabTrack" onclick="switchOrderTab('track')"><i class="fa fa-search"></i> Track Order</button>
+        <button class="track-tab" id="tabCancel" onclick="switchOrderTab('cancel')"><i class="fa fa-times-circle"></i> Cancel Order</button>
+      </div>
+      <!-- TRACK PANEL -->
+      <div class="track-body" id="panelTrack">
         <p style="font-size:13px;color:#666;margin-bottom:16px">Enter the WhatsApp number you used during checkout to find your orders.</p>
         <div style="display:flex;gap:8px;margin-bottom:8px">
-          <input type="tel" id="trackPhone" placeholder="+965 XXXX XXXX" class="track-input" onkeydown="if(event.key==='Enter')trackOrder()" />
+          <input type="tel" id="trackPhone" placeholder="+965 XXXX XXXX" class="track-input" autocomplete="off" onkeydown="if(event.key==='Enter')trackOrder()" />
           <button class="track-btn" onclick="trackOrder()"><i class="fa fa-search"></i> Find</button>
         </div>
         <div class="track-err" id="trackErr"></div>
         <div id="trackResults"></div>
+      </div>
+      <!-- CANCEL PANEL -->
+      <div class="track-body" id="panelCancel" style="display:none">
+        <div class="cancel-info-box">
+          <i class="fa fa-clock"></i>
+          <span>You can only cancel orders placed <strong>within the last hour</strong>. After that, please contact us on WhatsApp.</span>
+        </div>
+        <p style="font-size:13px;color:#666;margin-bottom:16px;margin-top:12px">Enter the WhatsApp number you used at checkout.</p>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input type="tel" id="cancelPhone" placeholder="+965 XXXX XXXX" class="track-input" autocomplete="off" onkeydown="if(event.key==='Enter')findCancelOrders()" />
+          <button class="track-btn" onclick="findCancelOrders()"><i class="fa fa-search"></i> Find</button>
+        </div>
+        <div class="track-err" id="cancelErr"></div>
+        <div id="cancelResults"></div>
       </div>
     </div>
   </div>

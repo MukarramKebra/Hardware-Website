@@ -1818,6 +1818,7 @@ function openOrderTracker() {
   document.getElementById('trackPhone').value = '';
   document.getElementById('trackResults').innerHTML = '';
   document.getElementById('trackErr').textContent = '';
+  switchOrderTab('track');
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1825,6 +1826,76 @@ function closeOrderTracker() {
   var overlay = document.getElementById('trackOverlay');
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
+}
+function switchOrderTab(tab) {
+  document.getElementById('panelTrack').style.display  = tab === 'track'  ? '' : 'none';
+  document.getElementById('panelCancel').style.display = tab === 'cancel' ? '' : 'none';
+  document.getElementById('tabTrack').classList.toggle('active',  tab === 'track');
+  document.getElementById('tabCancel').classList.toggle('active', tab === 'cancel');
+}
+async function findCancelOrders() {
+  var phone = (document.getElementById('cancelPhone').value || '').trim().replace(/\s+/g,'');
+  var errEl = document.getElementById('cancelErr');
+  var resultsEl = document.getElementById('cancelResults');
+  if (!phone) { errEl.textContent = 'Please enter your WhatsApp number.'; return; }
+  errEl.textContent = '';
+  resultsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
+  try {
+    var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?customer_phone=eq.'+encodeURIComponent(phone)+'&order=created_at.desc', { headers: SB_H });
+    if (res.error || !res.data || !res.data.length) {
+      resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No orders found for this number.</p></div>';
+      return;
+    }
+    var now = Date.now();
+    var html = res.data.map(function(o) {
+      var created = new Date(o.created_at).getTime();
+      var ageMs = now - created;
+      var canCancel = ageMs < 3600000 && o.status !== 'cancelled' && o.status !== 'delivered';
+      var minsAgo = Math.floor(ageMs / 60000);
+      var dt = new Date(o.created_at).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      var items = '';
+      try { var arr = typeof o.items==='string' ? JSON.parse(o.items) : (o.items||[]); items = arr.map(function(it){ return it.name+' ×'+it.qty; }).join(', '); } catch(e){}
+      var statusColor = {pending:'#f59e0b',confirmed:'#3b82f6',delivered:'#16a34a',cancelled:'#dc2626'}[o.status]||'#aaa';
+      var st = o.status||'pending';
+      return '<div class="track-order-card">'+
+        '<div class="track-status-row">'+
+          '<div><div class="track-status-label" style="color:'+statusColor+'">'+st.charAt(0).toUpperCase()+st.slice(1)+'</div>'+
+          '<div class="track-date">'+dt+' &nbsp;·&nbsp; '+minsAgo+' min ago</div></div>'+
+          '<div class="track-total">'+parseFloat(o.total||0).toFixed(3)+' KWD</div>'+
+        '</div>'+
+        '<div class="track-items">'+items+'</div>'+
+        (canCancel
+          ? '<button class="cancel-order-btn" onclick="cancelOrder(\''+o.id+'\',this)"><i class="fa fa-times-circle"></i> Cancel This Order</button>'
+          : (o.status==='cancelled'
+            ? '<div class="cancel-status-msg cancelled">Order already cancelled</div>'
+            : ageMs >= 3600000
+            ? '<div class="cancel-status-msg expired"><i class="fa fa-lock"></i> Cannot cancel — over 1 hour old</div>'
+            : '<div class="cancel-status-msg delivered">Order '+st+' — cannot cancel</div>')
+        )+
+      '</div>';
+    }).join('');
+    resultsEl.innerHTML = '<p style="font-size:12px;color:#888;margin-bottom:12px">Found '+res.data.length+' order(s)</p>' + html;
+  } catch(e) {
+    resultsEl.innerHTML = '<p style="color:#dc2626;text-align:center">Could not load orders. Try again.</p>';
+  }
+}
+async function cancelOrder(orderId, btn) {
+  if (!confirm('Are you sure you want to cancel this order?')) return;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Cancelling...';
+  var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?id=eq.'+orderId, {
+    method: 'PATCH',
+    headers: Object.assign({}, SB_H, { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
+    body: JSON.stringify({ status: 'cancelled' })
+  });
+  if (res.error) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa fa-times-circle"></i> Cancel This Order';
+    showToast('Could not cancel. Please try again.');
+  } else {
+    btn.closest('.track-order-card').querySelector('.cancel-order-btn').outerHTML = '<div class="cancel-status-msg cancelled"><i class="fa fa-check-circle"></i> Order cancelled successfully</div>';
+    showToast('✅ Order cancelled.');
+  }
 }
 async function trackOrder() {
   var phone = (document.getElementById('trackPhone').value || '').trim().replace(/\s+/g,'');
