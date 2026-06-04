@@ -979,7 +979,6 @@
       </div>
     </div>
     <div class="csv-body">
-      <div class="csv-section-label"><i class="fa fa-file-csv" style="color:var(--blue)"></i> Step 1 — Choose your CSV / Excel file</div>
       <label class="csv-drop" id="csvDrop" for="csvFile" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleCSVDrop(event)">
         <i class="fa fa-cloud-upload-alt"></i>
         <span>Click to choose file or drag &amp; drop here</span>
@@ -988,11 +987,9 @@
       <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" onchange="handleCSVFile(event)" style="display:none" />
 
       <hr class="csv-divider" />
-      <div class="csv-section-label"><i class="fa fa-images" style="color:#9333ea"></i> Step 2 — Upload product images (optional)</div>
       <label class="csv-img-zone" for="csvImages">
         <i class="fa fa-image"></i>
-        <span>Click to select image files</span>
-        <small>Name each image to match the "image" column in your CSV (e.g. drill.jpg)</small>
+        <span>Upload product images (optional)</span>
       </label>
       <input type="file" id="csvImages" accept="image/*" multiple onchange="handleCSVImages(event)" style="display:none" />
       <div class="csv-img-thumbs" id="csvImgThumbs"></div>
