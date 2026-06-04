@@ -972,7 +972,7 @@
 <div class="csv-overlay" id="csvOverlay" onclick="if(event.target===this)closeCSV()">
   <div class="csv-modal">
     <div class="csv-header">
-      <h3><i class="fa fa-file-csv"></i> Import Products â€” CSV / Excel</h3>
+      <h3><i class="fa fa-file-csv"></i> Import Products &mdash; CSV / Excel</h3>
       <div style="display:flex;align-items:center;gap:8px">
         <button class="help-btn" onclick="showFormatHelp()"><i class="fa fa-question-circle"></i> Format Help</button>
         <button onclick="closeCSV()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#aaa"><i class="fa fa-times"></i></button>
@@ -2822,7 +2822,7 @@ function openStats(id) {
   document.getElementById('smBody').innerHTML =
     '<div class="sm-prod-row">' +
       '<img src="'+thumb+'" onerror="this.style.opacity=0.2" />' +
-      '<div class="sm-prod-info"><strong>'+p.name+'</strong><span>#'+id+' &nbsp;â€¢&nbsp; '+((p.cat||'').replace('-',' '))+'</span></div>' +
+      '<div class="sm-prod-info"><strong>'+p.name+'</strong><span>#'+id+' &nbsp;•&nbsp; '+((p.cat||'').replace('-',' '))+'</span></div>' +
     '</div>' +
     '<div class="sm-metrics">' +
       '<div class="sm-metric"><i class="fa fa-eye" style="color:var(--orange)"></i>' +
