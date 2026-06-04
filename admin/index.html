@@ -574,6 +574,9 @@
     <button class="tab-btn" id="tabOrders" onclick="switchTab('orders')">
       <i class="fa fa-receipt"></i> Orders <span id="ordBadge" style="background:var(--orange);color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:20px;margin-left:2px;display:none"></span>
     </button>
+    <button class="tab-btn" id="tabSales" onclick="switchTab('sales')">
+      <i class="fa fa-chart-line"></i> Sales
+    </button>
     <button class="tab-btn" id="tabReports" onclick="switchTab('reports')">
       <i class="fa fa-file-excel"></i> Reports
     </button>
@@ -698,6 +701,42 @@
         <div id="searchesTable"></div>
       </div>
 
+    </div>
+
+    <!-- SEARCH TERMS -->
+    <div class="an-section" style="margin-top:24px">
+      <div class="an-header">
+        <h3><i class="fa fa-keyboard"></i> What Customers Actually Typed</h3>
+        <button class="reset-btn" onclick="resetSearchTerms()"><i class="fa fa-trash"></i> Clear</button>
+      </div>
+      <div id="searchTermsBox" style="padding:14px 0"></div>
+    </div>
+
+  </div>
+
+  <!-- SALES SECTION -->
+  <div id="salesSection" class="main" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <h2><i class="fa fa-chart-line" style="color:var(--orange);margin-right:8px"></i>Sales Performance</h2>
+      <div style="display:flex;gap:10px;align-items:center">
+        <select id="salesPeriodFilter" onchange="renderSalesTab()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:700">
+          <option value="week">Past 7 Days</option>
+          <option value="month">Past 30 Days</option>
+          <option value="all">All Time</option>
+        </select>
+        <button class="reset-btn" onclick="renderSalesTab()" style="background:var(--orange);color:#fff;border-color:var(--orange)"><i class="fa fa-sync"></i> Refresh</button>
+      </div>
+    </div>
+    <div class="analytics-stats" id="salesStats"></div>
+    <div class="an-2col" style="margin-top:20px">
+      <div class="an-section">
+        <div class="an-header"><h3><i class="fa fa-trophy"></i> Best Selling Products</h3></div>
+        <div id="salesTopProducts"></div>
+      </div>
+      <div class="an-section">
+        <div class="an-header"><h3><i class="fa fa-receipt"></i> Recent Orders Summary</h3></div>
+        <div id="salesRecentOrders"></div>
+      </div>
     </div>
   </div>
 
@@ -1945,6 +1984,7 @@ function switchTab(tab) {
   document.getElementById('deletedSection').style.display    = tab==='deleted'    ? 'block' : 'none';
   document.getElementById('ordersSection').style.display     = tab==='orders'     ? 'block' : 'none';
   document.getElementById('reportsSection').style.display    = tab==='reports'    ? 'block' : 'none';
+  document.getElementById('salesSection').style.display      = tab==='sales'      ? 'block' : 'none';
   document.getElementById('categoriesSection').style.display = tab==='categories' ? 'block' : 'none';
   document.getElementById('ownerSection').style.display      = tab==='owner'      ? 'block' : 'none';
   document.getElementById('tabInventory').classList.toggle('active',   tab==='inventory');
@@ -1952,12 +1992,14 @@ function switchTab(tab) {
   document.getElementById('tabDeleted').classList.toggle('active',     tab==='deleted');
   document.getElementById('tabOrders').classList.toggle('active',      tab==='orders');
   document.getElementById('tabReports').classList.toggle('active',     tab==='reports');
+  document.getElementById('tabSales').classList.toggle('active',       tab==='sales');
   document.getElementById('tabCategories').classList.toggle('active',  tab==='categories');
   document.getElementById('tabOwner').classList.toggle('active',       tab==='owner');
   if (tab==='analytics')   renderAnalytics();
   if (tab==='deleted')   { renderDeletedTab(); if (_deletedSubTab==='orders') renderDeletedOrdersTab(); }
   if (tab==='orders')    { loadOrders(false); }
   if (tab==='reports')   { renderReports(); renderOrdersReport(); _autoWriteReports(); }
+  if (tab==='sales')       renderSalesTab();
   if (tab==='categories')  renderCatEditor();
   if (tab==='owner')       renderSuperAdmin();
 }
@@ -2736,7 +2778,110 @@ async function renderAnalytics() {
   const sortedSearches = PRODUCTS.slice().sort(function(a,b){ return (searches[b.id]||0)-(searches[a.id]||0); }).slice(0,10);
   const maxS = searches[sortedSearches[0] && sortedSearches[0].id] || 1;
   document.getElementById('searchesTable').innerHTML = buildAnTable(sortedSearches, searches, photos, maxS, 'bar-purple', 'searches');
+  renderSearchTerms();
 }
+// ── SEARCH TERMS (what customers actually typed) ─────────────────────────
+function renderSearchTerms() {
+  var box = document.getElementById('searchTermsBox');
+  if (!box) return;
+  var terms = {};
+  try { terms = JSON.parse(localStorage.getItem('jain_search_terms') || '{}'); } catch(e){}
+  var sorted = Object.entries(terms).sort(function(a,b){return b[1]-a[1];});
+  if (!sorted.length) {
+    box.innerHTML = '<p style="color:#aaa;font-size:13px;padding:8px 0">No search data yet — data is collected as customers search on the site.</p>';
+    return;
+  }
+  var max = sorted[0][1] || 1;
+  box.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">' +
+    sorted.slice(0,30).map(function(e){
+      var size = Math.max(11, Math.min(22, 11 + Math.round(e[1]/max * 11)));
+      return '<span style="background:rgba(200,21,27,0.1);color:var(--orange);padding:5px 12px;border-radius:20px;font-size:'+size+'px;font-weight:700;cursor:default" title="'+e[1]+' searches">'+encodeHtml(e[0])+'<small style="font-size:9px;margin-left:5px;opacity:0.7">×'+e[1]+'</small></span>';
+    }).join('') + '</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #f0f0f0"><th style="text-align:left;padding:6px 8px">Search Query</th><th style="padding:6px 8px;text-align:right">Times</th></tr></thead><tbody>' +
+    sorted.slice(0,20).map(function(e,i){
+      return '<tr style="border-bottom:1px solid #f9f9f9"><td style="padding:6px 8px"><span style="color:#aaa;margin-right:8px;font-size:10px">#'+(i+1)+'</span>'+encodeHtml(e[0])+'</td><td style="text-align:right;padding:6px 8px;font-weight:700;color:var(--orange)">'+e[1]+'</td></tr>';
+    }).join('') + '</tbody></table>';
+}
+function resetSearchTerms() {
+  if (!confirm('Clear all search term data?')) return;
+  localStorage.removeItem('jain_search_terms');
+  renderSearchTerms();
+}
+
+// ── SALES TAB ──────────────────────────────────────────────────────────────
+async function renderSalesTab() {
+  var period = (document.getElementById('salesPeriodFilter') || {}).value || 'week';
+  document.getElementById('salesStats').innerHTML = '<div style="color:#aaa;font-size:13px;padding:16px">Loading sales data...</div>';
+  document.getElementById('salesTopProducts').innerHTML = '';
+  document.getElementById('salesRecentOrders').innerHTML = '';
+
+  var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?select=*&order=created_at.desc', { headers: SB_HDRS });
+  if (res.error || !Array.isArray(res.data)) {
+    document.getElementById('salesStats').innerHTML = '<p style="color:#dc2626;padding:16px">Could not load orders.</p>';
+    return;
+  }
+
+  var now = Date.now();
+  var cutoff = period === 'week' ? now - 7*864e5 : period === 'month' ? now - 30*864e5 : 0;
+  var orders = res.data.filter(function(o){
+    return o.status !== 'cancelled' && (!cutoff || new Date(o.created_at||0).getTime() > cutoff);
+  });
+
+  // Aggregate by product
+  var prodSales = {}; // name → {qty, revenue}
+  var totalRevenue = 0, totalOrders = orders.length;
+  orders.forEach(function(o) {
+    totalRevenue += parseFloat(o.total||0);
+    var items = [];
+    try { items = typeof o.items==='string' ? JSON.parse(o.items) : (o.items||[]); } catch(e){}
+    items.forEach(function(it){
+      var k = it.name || 'Unknown';
+      if (!prodSales[k]) prodSales[k] = {qty:0, revenue:0};
+      prodSales[k].qty += parseInt(it.qty||1);
+      prodSales[k].revenue += parseFloat(it.price||0) * parseInt(it.qty||1);
+    });
+  });
+
+  var periodLabel = period==='week' ? 'Past 7 Days' : period==='month' ? 'Past 30 Days' : 'All Time';
+  document.getElementById('salesStats').innerHTML =
+    aCard('fa-shopping-bag','ic-orange','Orders ('+periodLabel+')', totalOrders, 'Completed orders') +
+    aCard('fa-coins','ic-orange','Revenue', totalRevenue.toFixed(3)+' KWD', 'Total from orders') +
+    aCard('fa-box','ic-purple','Products Sold', Object.values(prodSales).reduce(function(s,v){return s+v.qty;},0)+' units', 'Across all orders') +
+    aCard('fa-trophy','ic-purple','Top Product', Object.keys(prodSales).length ? Object.entries(prodSales).sort(function(a,b){return b[1].qty-a[1].qty;})[0][0].split(' ').slice(0,3).join(' ')+'…' : '—', 'Most units sold');
+
+  // Top products table
+  var sorted = Object.entries(prodSales).sort(function(a,b){return b[1].qty-a[1].qty;}).slice(0,15);
+  if (!sorted.length) {
+    document.getElementById('salesTopProducts').innerHTML = '<p style="color:#aaa;font-size:13px;padding:12px">No sales data for this period.</p>';
+  } else {
+    var maxQ = sorted[0][1].qty || 1;
+    document.getElementById('salesTopProducts').innerHTML =
+      '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #f0f0f0"><th style="text-align:left;padding:7px 8px">#</th><th style="text-align:left;padding:7px 8px">Product</th><th style="text-align:right;padding:7px 8px">Units</th><th style="text-align:right;padding:7px 8px">Revenue</th></tr></thead><tbody>' +
+      sorted.map(function(e,i){
+        var pct = Math.round(e[1].qty/maxQ*100);
+        return '<tr style="border-bottom:1px solid #f9f9f9"><td style="padding:7px 8px;color:#aaa;font-size:10px;font-weight:700">'+(i+1)+'</td>'+
+          '<td style="padding:7px 8px"><div style="font-weight:700;margin-bottom:3px">'+encodeHtml(e[0])+'</div>'+
+          '<div style="height:4px;background:#f0f0f0;border-radius:2px"><div style="height:4px;background:var(--orange);border-radius:2px;width:'+pct+'%"></div></div></td>'+
+          '<td style="text-align:right;padding:7px 8px;font-weight:800;color:var(--orange)">'+e[1].qty+'</td>'+
+          '<td style="text-align:right;padding:7px 8px;color:#555">'+e[1].revenue.toFixed(3)+'</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  // Recent orders summary
+  var recent = orders.slice(0,10);
+  document.getElementById('salesRecentOrders').innerHTML = recent.length ?
+    '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #f0f0f0"><th style="text-align:left;padding:7px 8px">Customer</th><th style="text-align:right;padding:7px 8px">Total</th><th style="text-align:right;padding:7px 8px">Status</th></tr></thead><tbody>' +
+    recent.map(function(o){
+      var sc = {pending:'#f59e0b',confirmed:'#3b82f6',delivered:'#16a34a',cancelled:'#dc2626'};
+      var st = o.status||'pending';
+      return '<tr style="border-bottom:1px solid #f9f9f9">'+
+        '<td style="padding:7px 8px"><div style="font-weight:700">'+encodeHtml(o.customer_name||o.name||'—')+'</div><div style="font-size:10px;color:#aaa">'+encodeHtml(o.customer_phone||'')+'</div></td>'+
+        '<td style="text-align:right;padding:7px 8px;font-weight:700">'+parseFloat(o.total||0).toFixed(3)+' KWD</td>'+
+        '<td style="text-align:right;padding:7px 8px;font-weight:700;color:'+(sc[st]||'#aaa')+'">'+st+'</td></tr>';
+    }).join('') + '</tbody></table>' :
+    '<p style="color:#aaa;font-size:13px;padding:12px">No orders in this period.</p>';
+}
+
 function aCard(icon, cls, label, val, sub) {
   return '<div class="stat-card"><div class="stat-icon '+cls+'"><i class="fa '+icon+'"></i></div>' +
     '<div class="stat-info"><label>'+label+'</label><strong>'+val+'</strong><small>'+sub+'</small></div></div>';

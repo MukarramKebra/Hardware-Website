@@ -323,6 +323,13 @@ function trackView(id) {
     body: JSON.stringify({ p_id: id, p_views: 1, p_searches: 0 })
   });
 }
+function trackSearchText(query) {
+  if (!query || query.length < 2) return;
+  var terms = JSON.parse(localStorage.getItem('jain_search_terms') || '{}');
+  var key = query.toLowerCase().trim();
+  terms[key] = (terms[key] || 0) + 1;
+  localStorage.setItem('jain_search_terms', JSON.stringify(terms));
+}
 function trackSearch(ids) {
   if (!ids || !ids.length) return;
   const s = JSON.parse(localStorage.getItem('bahar_searches') || '{}');
@@ -466,7 +473,10 @@ function renderProducts() {
   // Track search appearances (debounced so only fires when user stops typing)
   if (query && filtered.length) {
     clearTimeout(window._searchTimer);
-    window._searchTimer = setTimeout(function() { trackSearch(filtered.map(function(p) { return p.id; })); }, 700);
+    window._searchTimer = setTimeout(function() {
+      trackSearch(filtered.map(function(p) { return p.id; }));
+      trackSearchText(query);
+    }, 700);
   }
 
   // custom photos set by admin (loaded from Supabase)
