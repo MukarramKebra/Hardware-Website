@@ -102,7 +102,11 @@
     .alerts-box.show{display:block;}
     .alerts-title{font-size:12px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
     .alert-items{display:flex;flex-wrap:wrap;gap:8px;}
-    .alert-chip{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--red);padding:4px 11px;border-radius:6px;font-size:12px;font-weight:600;}
+    .alert-chip{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--red);padding:4px 11px;border-radius:6px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:8px;}
+    .alert-goto-btn{background:var(--red);color:#fff;border:none;border-radius:5px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background .15s;}
+    .alert-goto-btn:hover{background:#b91c1c;}
+    @keyframes rowFlash{0%,100%{background:transparent}50%{background:rgba(239,68,68,.15)}}
+    .row-flash{animation:rowFlash 0.5s ease 3;}
 
     /* CONTROLS */
     .table-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px;}
@@ -2605,10 +2609,31 @@ function renderStats() {
   if (lowList.length) {
     box.classList.add('show');
     document.getElementById('alertItems').innerHTML = lowList.map(function(p) {
-      return '<div class="alert-chip"><i class="fa fa-warning"></i> '+p.name+' &mdash; '+(stockData[p.id]||0)+' left</div>';
+      return '<div class="alert-chip"><i class="fa fa-warning"></i> '+p.name+' &mdash; '+(stockData[p.id]||0)+' left'+
+        '<button class="alert-goto-btn" onclick="jumpToProduct('+p.id+')" title="Go to product"><i class="fa fa-arrow-right"></i> Add Stock</button>'+
+      '</div>';
     }).join('');
   } else { box.classList.remove('show'); }
 }
+function jumpToProduct(id) {
+  // Make sure inventory tab is active and filter shows this product
+  switchTab('inventory');
+  var cf = document.getElementById('catFilter');
+  if (cf) cf.value = 'all';
+  document.getElementById('adminSearch').value = '';
+  renderTable();
+  // Scroll to the product row and flash it
+  setTimeout(function() {
+    var row = document.getElementById('si' + id);
+    if (row) {
+      row.closest('tr').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.closest('tr').classList.add('row-flash');
+      setTimeout(function() { row.closest('tr').classList.remove('row-flash'); }, 2000);
+      row.focus();
+    }
+  }, 150);
+}
+
 function card(icon, cls, label, val, sub) {
   return '<div class="stat-card"><div class="stat-icon '+cls+'"><i class="fa '+icon+'"></i></div>' +
     '<div class="stat-info"><label>'+label+'</label><strong>'+val+'</strong><small>'+sub+'</small></div></div>';
