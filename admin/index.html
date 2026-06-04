@@ -1415,7 +1415,7 @@ function getAllAdminProducts() {
       return { id:p.id, name:p.name, cat:p.cat, price:p.price, img:p.img, isBase:true, hidden:_hiddenBaseIds.has(p.id) };
     });
   const custom = _customProductRows
-    .filter(function(p){ return !deletedIds.has(p.id) && !baseIds.has(p.id); }) // skip Supabase dupes of base IDs
+    .filter(function(p){ return !deletedIds.has(p.id); }) // show all custom products (_fixCustomProductIds already removed true dupes)
     .map(function(p) {
       return { id:p.id, name:p.name, cat:p.category, price:parseFloat(p.price), img:p.img_url||'', isBase:false, hidden:p.hidden||false };
     });
@@ -2588,7 +2588,14 @@ function renderTable() {
     const status = qty===0?'Out of Stock':qty<=10?'Low Stock':'In Stock';
     const val    = (p.price*qty).toFixed(3);
     const rawPh  = photos[p.id];
-    const thumb  = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : (p.img || ('https://picsum.photos/seed/dhow'+p.id+'/80/80'));
+    // Resolve relative image paths — admin lives in /admin/ so needs to go up one level
+    function resolveImg(img) {
+      if (!img) return '';
+      if (img.startsWith('http') || img.startsWith('data:') || img.startsWith('/')) return img;
+      // Relative path like "product-images/61.png" or "Bahar-Products/SKU-0001.jpg"
+      return '../' + img;
+    }
+    const thumb  = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : (resolveImg(p.img) || ('https://picsum.photos/seed/dhow'+p.id+'/80/80'));
     const vCount = views[p.id]||0;
     const sCount = searches[p.id]||0;
     const visLbl = p.hidden ? '<i class="fa fa-eye-slash"></i> Show' : '<i class="fa fa-eye"></i> Hide';
@@ -3556,6 +3563,7 @@ async function importCSVProducts() {
   showToast(count + ' product'+(count!==1?'s':'')+' imported' + (imgCount ? ' with '+imgCount+' image'+(imgCount!==1?'s':'') : '') + '! ✅');
   closeCSV();
   await loadFromSupabase();
+  renderTable(); // force re-render after Supabase data refreshed
   btn.disabled = false; btn.innerHTML = '<i class="fa fa-download"></i> Import All Products';
 }
 function downloadTemplate() {
