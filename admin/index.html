@@ -2579,7 +2579,8 @@ function renderTable() {
   const q   = document.getElementById('adminSearch').value.toLowerCase();
   const cat = document.getElementById('catFilter').value;
   const list = getAllAdminProducts().filter(function(p) {
-    return (cat==='all'||p.cat===cat) && (!q||p.name.toLowerCase().includes(q));
+    var catOk = cat==='all' || (cat==='__custom__' ? !p.isBase : p.cat===cat);
+    return catOk && (!q||p.name.toLowerCase().includes(q));
   });
   const rows = list.map(function(p) {
     const qty    = stockData[p.id]||0;
@@ -3556,7 +3557,10 @@ async function importCSVProducts() {
   showToast(count + ' product'+(count!==1?'s':'')+' imported' + (imgCount ? ' with '+imgCount+' image'+(imgCount!==1?'s':'') : '') + '! ✅');
   closeCSV();
   await loadFromSupabase();
-  renderTable(); // force re-render after Supabase data refreshed
+  // Switch filter to show only imported/custom products so user can see them immediately
+  var cf = document.getElementById('catFilter');
+  if (cf) { cf.value = '__custom__'; }
+  renderTable();
   btn.disabled = false; btn.innerHTML = '<i class="fa fa-download"></i> Import All Products';
 }
 function downloadTemplate() {
@@ -3595,6 +3599,7 @@ function slugify(str) {
 function refreshCategorySelects() {
   const cats = getAllCats();
   const filterOpts = '<option value="all">All Categories</option>' +
+    '<option value="__custom__">⭐ Imported / Custom</option>' +
     cats.map(c => '<option value="'+c.slug+'">'+c.label+'</option>').join('');
   document.getElementById('catFilter').innerHTML = filterOpts;
 
