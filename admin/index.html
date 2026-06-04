@@ -2588,14 +2588,7 @@ function renderTable() {
     const status = qty===0?'Out of Stock':qty<=10?'Low Stock':'In Stock';
     const val    = (p.price*qty).toFixed(3);
     const rawPh  = photos[p.id];
-    // Resolve relative image paths — admin lives in /admin/ so needs to go up one level
-    function resolveImg(img) {
-      if (!img) return '';
-      if (img.startsWith('http') || img.startsWith('data:') || img.startsWith('/')) return img;
-      // Relative path like "product-images/61.png" or "Bahar-Products/SKU-0001.jpg"
-      return '../' + img;
-    }
-    const thumb  = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : (resolveImg(p.img) || ('https://picsum.photos/seed/dhow'+p.id+'/80/80'));
+    const thumb  = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : (p.img || ('https://picsum.photos/seed/dhow'+p.id+'/80/80'));
     const vCount = views[p.id]||0;
     const sCount = searches[p.id]||0;
     const visLbl = p.hidden ? '<i class="fa fa-eye-slash"></i> Show' : '<i class="fa fa-eye"></i> Hide';
