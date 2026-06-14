@@ -6,9 +6,9 @@ const UL  = (id) => `Bahar-Products/SKU-${String(id).padStart(4,'0')}.jpg`;  // 
 // This runs on every page load and shows a "closed" overlay if the flag is set.
 (async function checkSiteStatus() {
   try {
-    const SB_URL_CHK = 'https://sinzmodmefkyjkzzitjy.supabase.co';
-    const SB_KEY_CHK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbnptb2RtZWZreWprenppdGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMjQ4MzYsImV4cCI6MjA5NTcwMDgzNn0.Ft88pQEKbSVP_yb7UTRVq2fLa_TScR97_jvJmgAMlSc';
-    const res = await fetch(SB_URL_CHK + '/rest/v1/jain_settings?key=eq.site_disabled&select=value', {
+    const SB_URL_CHK = 'https://wjamqqwfpwqsafwcwajq.supabase.co';
+    const SB_KEY_CHK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqYW1xcXdmcHdxc2Fmd2N3YWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NjIzMDEsImV4cCI6MjA5NjIzODMwMX0.OvuBO-kbWKA3Wnamla2n7PxSqebZQc6b_y6IuKMStpI';
+    const res = await fetch(SB_URL_CHK + '/rest/v1/expert_settings?key=eq.site_disabled&select=value', {
       headers: { 'apikey': SB_KEY_CHK, 'Authorization': 'Bearer ' + SB_KEY_CHK }
     });
     if (!res.ok) return; // if table doesn't exist yet, skip quietly
@@ -25,8 +25,8 @@ const UL  = (id) => `Bahar-Products/SKU-${String(id).padStart(4,'0')}.jpg`;  // 
           <div style="font-size:15px;color:rgba(255,255,255,0.55);margin-bottom:28px;line-height:1.7">
             We are currently performing maintenance.<br>We'll be back shortly. Thank you for your patience.
           </div>
-          <div style="font-size:15px;font-weight:800;color:#c8151b;line-height:1.3">TAJ MAHAL JAIN<br>BUILDING MATERIALS CO.</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.3);margin-top:6px;">Kuwait — Bathroom &amp; Plumbing Supplies</div>
+          <div style="font-size:15px;font-weight:800;color:#c8151b;line-height:1.3">EXPERT HARDWARE</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.3);margin-top:6px;">Kuwait — For Wholesale &amp; Retail Trade</div>
         </div>`;
       document.body.appendChild(overlay);
       // Prevent scrolling while closed
@@ -47,8 +47,8 @@ function getProductSku(id) {
 }
 
 // ── SUPABASE CONFIG ───────────────────────────────────────────────────────
-const SB_URL = 'https://sinzmodmefkyjkzzitjy.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbnptb2RtZWZreWprenppdGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMjQ4MzYsImV4cCI6MjA5NTcwMDgzNn0.Ft88pQEKbSVP_yb7UTRVq2fLa_TScR97_jvJmgAMlSc';
+const SB_URL = 'https://wjamqqwfpwqsafwcwajq.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqYW1xcXdmcHdxc2Fmd2N3YWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NjIzMDEsImV4cCI6MjA5NjIzODMwMX0.OvuBO-kbWKA3Wnamla2n7PxSqebZQc6b_y6IuKMStpI';
 const SB_H   = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 
 // ── SUPABASE FETCH WRAPPER ────────────────────────────────────────────────
@@ -72,10 +72,10 @@ let _hiddenIds   = new Set(); // base product IDs hidden by admin
 
 async function loadSBData() {
   const [s, p, c, h] = await Promise.all([
-    sbFetch(SB_URL + '/rest/v1/jain_stock?select=*',                         { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/jain_photos?select=*',                        { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/jain_products?select=*',                        { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/jain_hidden?select=product_id',               { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',                         { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',                        { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/expert_products?select=*',                        { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H })
   ]);
   if (s.error) {
     console.warn('Supabase offline — using localStorage fallback');
@@ -327,7 +327,7 @@ function trackView(id) {
   v[id] = (v[id] || 0) + 1;
   localStorage.setItem('bahar_views', JSON.stringify(v));
   // Sync to Supabase so admin analytics tab can see live data
-  sbFetch(SB_URL + '/rest/v1/rpc/increment_analytics', {
+  sbFetch(SB_URL + '/rest/v1/rpc/increment_expert_analytics', {
     method: 'POST',
     headers: { ...SB_H, 'Content-Type': 'application/json' },
     body: JSON.stringify({ p_id: id, p_views: 1, p_searches: 0 })
@@ -347,7 +347,7 @@ function trackSearch(ids) {
   localStorage.setItem('bahar_searches', JSON.stringify(s));
   // Sync to Supabase so admin analytics tab can see live data
   ids.forEach(function(id) {
-    sbFetch(SB_URL + '/rest/v1/rpc/increment_analytics', {
+    sbFetch(SB_URL + '/rest/v1/rpc/increment_expert_analytics', {
       method: 'POST',
       headers: { ...SB_H, 'Content-Type': 'application/json' },
       body: JSON.stringify({ p_id: id, p_views: 0, p_searches: 1 })
@@ -392,7 +392,7 @@ async function deductStock(cartItems) {
   });
   // Push to Supabase so admin sees real numbers
   const rows = cartItems.map(item => ({ product_id: item.id, qty: _sbStock[item.id] }));
-  const { error } = await sbFetch(SB_URL + '/rest/v1/jain_stock', {
+  const { error } = await sbFetch(SB_URL + '/rest/v1/expert_stock', {
     method: 'POST',
     headers: { ...SB_H, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
     body: JSON.stringify(rows)
@@ -800,7 +800,7 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
   }
 
   const msg = [
-    '🌊 *Taj Mahal Jain Building Materials Co. Order* 🌊',
+    '🔧 *Expert Hardware Order* 🔧',
     '',
     '👤 *Name:* ' + name,
     '📞 *WhatsApp:* ' + phone,
@@ -837,7 +837,7 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
     <div class="co-success">
       <i class="fab fa-whatsapp"></i>
       <h3>Order Sent!</h3>
-      <p>Your order has been sent to Taj Mahal Jain Building Materials Co. on WhatsApp.<br/>We will confirm and arrange delivery shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
+      <p>Your order has been sent to Expert Hardware on WhatsApp.<br/>We will confirm and arrange delivery shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
       ${nudgeHtml}
       <br/>
       <button class="btn btn-primary" onclick="document.getElementById('checkoutOverlay').classList.remove('open');document.getElementById('coBody').innerHTML=origCoBody">Continue Shopping</button>
@@ -913,22 +913,22 @@ var _T = {
   en: {
     nav_home:'Home', nav_about:'About', nav_products:'Products', nav_categories:'Categories', nav_contact:'Contact',
     cart_label:' Cart',
-    hero_tag:'<i class="fa fa-shower"></i> Kuwait\'s #1 Bathroom &amp; Plumbing Store',
-    hero_h1:'Quality <span>Bathrooms.</span><br/>Built for <span>Kuwait.</span>',
-    hero_p:'Shataffa, toilet seats, LED lighting, taps, mixers, plumbing and bathroom accessories. Everything you need for your home — delivered fast across Kuwait and the GCC.',
+    hero_tag:'<i class="fa fa-tools"></i> Kuwait\'s #1 Hardware Store',
+    hero_h1:'Built <span>Tough.</span><br/>Built for <span>Kuwait.</span>',
+    hero_p:'Power tools, hand tools, fasteners, safety gear and more — everything you need to build, fix and create. Delivered fast across Kuwait and the GCC.',
     hero_shop:'Shop Now', hero_quote:'Get a Quote',
     stat_products:'Products', stat_genuine:'Genuine', stat_delivery:'Delivery',
     cat_tag:'Browse by Type',
     cat_h2:'Shop by <span class="orange">Category</span>',
-    cat_power:'Shataffa', cat_hand:'Toilet Seats', cat_fasteners:'Lighting',
-    cat_measuring:'Taps & Mixers', cat_safety:'Plumbing', cat_cutting:'Bathroom', cat_storage:'Sanitaryware', cat_all:'All Products',
-    cat_power_sub:'Bidet Sprayers, Hoses, Valves', cat_hand_sub:'Soft-Close, Standard, Slim',
-    cat_fasteners_sub:'LED Bulbs, Panels, Strips', cat_measuring_sub:'Basin, Kitchen, Shower Taps',
-    cat_safety_sub:'Pipes, Fittings, Sealants', cat_cutting_sub:'Towel Rails, Mirrors, Holders',
-    cat_storage_sub:'Basins, Toilets, Cisterns', cat_all_sub:'Browse our full catalog',
-    pill_all:'All', pill_safety:'Plumbing', pill_cutting:'Bathroom', pill_storage:'Sanitary',
+    cat_power:'Power Tools', cat_hand:'Hand Tools', cat_fasteners:'Fasteners',
+    cat_measuring:'Measuring', cat_safety:'Safety', cat_cutting:'Cutting Tools', cat_storage:'Accessories', cat_all:'All Products',
+    cat_power_sub:'Drills, Grinders, Saws & More', cat_hand_sub:'Hammers, Spanners, Pliers',
+    cat_fasteners_sub:'Nails, Screws, Bolts, Anchors', cat_measuring_sub:'Tape Measures, Levels, Lasers',
+    cat_safety_sub:'Gloves, Hard Hats, Hi-Vis, Boots', cat_cutting_sub:'Saws, Blades, Knives, Cutters',
+    cat_storage_sub:'Toolboxes, Bags, Tape, Connectors', cat_all_sub:'Browse our full catalog',
+    pill_all:'All', pill_safety:'Safety', pill_cutting:'Cutting', pill_storage:'Accessories',
     prod_tag:'Full Catalog', prod_h2:'Our <span class="orange">Products</span>',
-    prod_search:'Search shataffa, toilet seats, bulbs...',
+    prod_search:'Search power tools, hand tools, fasteners...',
     no_results:'No products found. Try a different search.',
     cart_title:'Your Cart', cart_empty:'Your cart is empty.',
     cart_total_label:'Total:', cart_wa:'Request Quote on WhatsApp',
@@ -949,19 +949,19 @@ var _T = {
     form_opt4:'Technical Advice', form_opt5:'Delivery Information', form_opt6:'Other',
     about_tag:'Who We Are', about_h2:'Your Trusted <span class="orange">Hardware</span> Partner',
     about_badge:'Kuwait',
-    about_p1:'Taj Mahal Jain Building Materials Co. is Kuwait\'s trusted destination for hardware tools and building materials. Power tools, hand tools, fasteners, safety gear, measuring tools and accessories — all under one roof.',
+    about_p1:'Expert Hardware is Kuwait\'s trusted destination for hardware tools and building materials. Power tools, hand tools, fasteners, safety gear, measuring tools and accessories — all under one roof.',
     about_p2:'We stock only genuine, quality-tested products from trusted brands, with competitive prices and expert advice available in Arabic and English.',
     about_f1:'100% genuine, quality-tested products', about_f2:'Expert advice in Arabic and English',
     about_f3:'Same-day delivery within Kuwait City', about_f4:'Bulk pricing for contractors and businesses',
     about_f5:'Easy returns and after-sales support', about_cta:'Contact Us',
-    footer_desc:'Kuwait\'s trusted supplier of bathroom, plumbing and sanitary supplies since 2024.',
+    footer_desc:'Kuwait\'s trusted supplier of quality hardware, power tools and construction materials since 2024.',
     footer_nav:'Navigation', footer_cats:'Categories', footer_support:'Support',
     footer_trade:'Trade Accounts', footer_bulk:'Bulk Orders', footer_delivery_info:'Delivery Info',
     footer_returns:'Returns Policy', footer_tech:'Technical Help',
-    footer_copy:'2024 Taj Mahal Jain Building Materials Co. All rights reserved. Kuwait.',
-    intro_tag:'Welcome to Taj Mahal Jain Building Materials Co.',
-    intro_h2:'Kuwait\'s Go-To <span class="orange">Bathroom & Plumbing</span> Store — Open 7 Days',
-    intro_p:'Taj Mahal Jain Building Materials Co. supplies power tools, hand tools, fasteners, safety gear, measuring tools and accessories to contractors and businesses across Kuwait. Whether you need one item or a full site order — we have it in stock and ready to go.',
+    footer_copy:'2024 Expert Hardware. All rights reserved. Kuwait.',
+    intro_tag:'Welcome to Expert Hardware',
+    intro_h2:'Kuwait\'s Go-To <span class="orange">Hardware</span> Store — Open 7 Days',
+    intro_p:'Expert Hardware supplies power tools, hand tools, fasteners, safety gear, measuring tools and accessories to contractors and businesses across Kuwait. Whether you need one item or a full site order — we have it in stock and ready to go.',
     intro_c1:'60+ Products In Stock', intro_c2:'Same-Day Kuwait Delivery',
     intro_c3:'Bulk & Trade Pricing', intro_c4:'Arabic & English Support',
     intro_cta_text:'Call Us: 6660 9391',
@@ -979,20 +979,20 @@ var _T = {
     cart_label:' سلة',
     hero_tag:'<i class="fa fa-tools"></i> محل الأدوات والمعدات الأول في الكويت',
     hero_h1:'ابنِ بقوة.<br/>صُنع لـ<span>الكويت.</span>',
-    hero_p:'شتافة، أغطية مراحيض، إضاءة LED، صنابير وخلاطات، سباكة وإكسسوارات الحمام. كل ما تحتاجه لمنزلك — توصيل سريع في جميع أنحاء الكويت ودول الخليج.',
+    hero_p:'أدوات كهربائية، أدوات يدوية، مثبتات، معدات سلامة وأكثر — كل ما تحتاجه للبناء والإصلاح والإنشاء. توصيل سريع في جميع أنحاء الكويت ودول الخليج.',
     hero_shop:'تسوق الآن', hero_quote:'احصل على عرض سعر',
     stat_products:'منتج', stat_genuine:'أصلي', stat_delivery:'توصيل خليجي',
     cat_tag:'تصفح حسب النوع',
     cat_h2:'تسوق حسب <span class="orange">الفئة</span>',
-    cat_power:'شتافة', cat_hand:'أغطية مراحيض', cat_fasteners:'إضاءة',
-    cat_measuring:'صنابير وخلاطات', cat_safety:'سباكة', cat_cutting:'إكسسوارات الحمام', cat_storage:'أدوات صحية', cat_all:'جميع المنتجات',
-    cat_power_sub:'رشاشات، خراطيم، صمامات', cat_hand_sub:'إغلاق بطيء، قياسي، سليم',
-    cat_fasteners_sub:'لمبات LED، ألواح، أشرطة', cat_measuring_sub:'صنابير حوض، مطبخ، دش',
-    cat_safety_sub:'مواسير، وصلات، مواد إحكام', cat_cutting_sub:'حوامل مناشف، مرايا، حاملات',
-    cat_storage_sub:'أحواض، مراحيض، خزانات', cat_all_sub:'تصفح كتالوجنا الكامل',
-    pill_all:'الكل', pill_safety:'سباكة', pill_cutting:'حمام', pill_storage:'صحي',
+    cat_power:'أدوات كهربائية', cat_hand:'أدوات يدوية', cat_fasteners:'مثبتات',
+    cat_measuring:'قياس', cat_safety:'سلامة', cat_cutting:'أدوات قطع', cat_storage:'إكسسوارات', cat_all:'جميع المنتجات',
+    cat_power_sub:'دريل، صاروخ، مناشير', cat_hand_sub:'مطارق، مفاتيح، كماشات',
+    cat_fasteners_sub:'مسامير، براغي، صواميل', cat_measuring_sub:'أمتار قياس، ميزان ماء، ليزر',
+    cat_safety_sub:'قفازات، خوذ، أحذية', cat_cutting_sub:'مناشير، شفرات، سكاكين',
+    cat_storage_sub:'صناديق عدة، حقائب، شريط', cat_all_sub:'تصفح كتالوجنا الكامل',
+    pill_all:'الكل', pill_safety:'سلامة', pill_cutting:'قطع', pill_storage:'إكسسوارات',
     prod_tag:'الكتالوج الكامل', prod_h2:'<span class="orange">منتجاتنا</span>',
-    prod_search:'ابحث عن شتافة، غطاء مرحاض، لمبة...',
+    prod_search:'ابحث عن أدوات كهربائية، أدوات يدوية، مثبتات...',
     no_results:'لا توجد منتجات. جرب بحثاً مختلفاً.',
     cart_title:'سلة التسوق', cart_empty:'سلة التسوق فارغة.',
     cart_total_label:'المجموع:', cart_wa:'طلب عرض سعر عبر واتساب',
@@ -1013,7 +1013,7 @@ var _T = {
     form_opt4:'نصيحة تقنية', form_opt5:'معلومات التوصيل', form_opt6:'أخرى',
     about_tag:'من نحن', about_h2:'شريكك الموثوق في <span class="orange">الأدوات</span>',
     about_badge:'الكويت',
-    about_p1:'رواج هي وجهتك الموثوقة في الكويت لمستلزمات الحمام والسباكة. شتافة، أغطية مراحيض، إضاءة LED، صنابير وخلاطات وإكسسوارات الحمام — كل شيء تحت سقف واحد.',
+    about_p1:'إكسبرت هاردوير هي وجهتك الموثوقة في الكويت للأدوات ومواد البناء. أدوات كهربائية، أدوات يدوية، مثبتات، معدات سلامة، أدوات قياس وإكسسوارات — كل شيء تحت سقف واحد.',
     about_p2:'نحن نخزن منتجات أصلية مختبرة جودتها من علامات تجارية موثوقة، بأسعار تنافسية ونصائح من خبراء باللغتين العربية والإنجليزية.',
     about_f1:'منتجات 100% أصلية ومختبرة الجودة', about_f2:'نصائح من خبراء بالعربية والإنجليزية',
     about_f3:'توصيل في نفس اليوم داخل مدينة الكويت', about_f4:'أسعار بالجملة للمقاولين والشركات',
@@ -1022,10 +1022,10 @@ var _T = {
     footer_nav:'التنقل', footer_cats:'الفئات', footer_support:'الدعم',
     footer_trade:'الحسابات التجارية', footer_bulk:'الطلبات بالجملة', footer_delivery_info:'معلومات التوصيل',
     footer_returns:'سياسة الإرجاع', footer_tech:'المساعدة التقنية',
-    footer_copy:'2024 بحر الهند. جميع الحقوق محفوظة. الكويت.',
-    intro_tag:'مرحباً بك في بحر الهند',
-    intro_h2:'المتجر الأول للحمامات والسباكة في الكويت — <span class="orange">مفتوح 7 أيام</span>',
-    intro_p:'بحر الهند توفر شتافة، أغطية مراحيض، إضاءة LED، صنابير وخلاطات ومستلزمات الحمام للمقاولين والشركات والأفراد في جميع أنحاء الكويت. سواء احتجت قطعة واحدة أو طلباً كاملاً — لدينا المخزون وجاهز.',
+    footer_copy:'2024 إكسبرت هاردوير. جميع الحقوق محفوظة. الكويت.',
+    intro_tag:'مرحباً بك في إكسبرت هاردوير',
+    intro_h2:'متجر الأدوات الأول في الكويت — <span class="orange">مفتوح 7 أيام</span>',
+    intro_p:'إكسبرت هاردوير توفر أدوات كهربائية، أدوات يدوية، مثبتات، معدات سلامة، أدوات قياس وإكسسوارات للمقاولين والشركات والأفراد في جميع أنحاء الكويت. سواء احتجت قطعة واحدة أو طلباً كاملاً — لدينا المخزون وجاهز.',
     intro_c1:'60+ منتج في المخزون', intro_c2:'توصيل في نفس اليوم بالكويت',
     intro_c3:'أسعار الجملة والتجارة', intro_c4:'دعم بالعربية والإنجليزية',
     intro_cta_text:'اتصل بنا: 6660 9391',
@@ -1108,7 +1108,7 @@ async function saveOrderToSupabase(order) {
     user_id:        (_authUser ? _authUser.id : null)   // link to account if logged in
   }];
   console.log('[JainHardware] Saving order:', payload);
-  const result = await sbFetch(SB_URL + '/rest/v1/jain_orders', {
+  const result = await sbFetch(SB_URL + '/rest/v1/expert_orders', {
     method: 'POST',
     headers: Object.assign({}, SB_H, {
       'Content-Type': 'application/json',
@@ -1271,7 +1271,7 @@ async function authForgotPassword(email) {
 async function loadUserProfile() {
   if (!_authUser) return;
   try {
-    const res  = await fetch(SB_URL + '/rest/v1/jain_customers?id=eq.' + _authUser.id + '&select=*', {
+    const res  = await fetch(SB_URL + '/rest/v1/expert_customers?id=eq.' + _authUser.id + '&select=*', {
       headers: getAuthHeaders()
     });
     if (!res.ok) return;
@@ -1284,7 +1284,7 @@ async function saveUserProfile(name, phone, address) {
   if (!_authUser) return false;
   const payload = [{ id: _authUser.id, name: name || '', phone: phone || '', address: address || '' }];
   try {
-    const res = await fetch(SB_URL + '/rest/v1/jain_customers', {
+    const res = await fetch(SB_URL + '/rest/v1/expert_customers', {
       method:  'POST',
       headers: Object.assign({}, getAuthHeaders(), { 'Prefer': 'resolution=merge-duplicates' }),
       body:    JSON.stringify(payload)
@@ -1302,7 +1302,7 @@ async function loadMyOrders() {
   if (_authUser) {
     // Logged in: fetch from Supabase
     try {
-      const res  = await fetch(SB_URL + '/rest/v1/jain_orders?user_id=eq.' + _authUser.id + '&order=created_at.desc&select=*', {
+      const res  = await fetch(SB_URL + '/rest/v1/expert_orders?user_id=eq.' + _authUser.id + '&order=created_at.desc&select=*', {
         headers: getAuthHeaders()
       });
       if (res.ok) return await res.json();
@@ -1667,7 +1667,7 @@ function shareProduct(id) {
   var p = getAllProducts().find(function(x){ return x.id === id; });
   if (!p) return;
   var url = 'https://mukarramkebra.github.io/Hardware-Website/';
-  var msg = '🔧 *' + p.name + '*\n💰 ' + p.price.toFixed(3) + ' KWD\n\nCheck it out at Taj Mahal Jain Building Materials Co., Kuwait:\n' + url;
+  var msg = '🔧 *' + p.name + '*\n💰 ' + p.price.toFixed(3) + ' KWD\n\nCheck it out at Expert Hardware, Kuwait:\n' + url;
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
@@ -1719,7 +1719,7 @@ async function loadReviews(id) {
   if (!list) return;
   list.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa"><i class="fa fa-spinner fa-spin"></i></div>';
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/jain_reviews?product_id=eq.'+id+'&order=created_at.desc', { headers: SB_H });
+    var res = await sbFetch(SB_URL + '/rest/v1/expert_reviews?product_id=eq.'+id+'&order=created_at.desc', { headers: SB_H });
     if (res.error || !res.data || !res.data.length) {
       list.innerHTML = '<p style="text-align:center;color:#aaa;font-size:13px;padding:20px 0">No reviews yet. Be the first!</p>';
       return;
@@ -1746,7 +1746,7 @@ async function submitReview() {
   var btn = document.getElementById('reviewSubmitBtn');
   btn.disabled = true; btn.textContent = 'Submitting...';
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/jain_reviews', {
+    var res = await sbFetch(SB_URL + '/rest/v1/expert_reviews', {
       method: 'POST',
       headers: Object.assign({}, SB_H, { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
       body: JSON.stringify({ product_id: _currentReviewProductId, rating: _selectedStars, reviewer_name: name, comment: comment })
@@ -1765,7 +1765,7 @@ async function submitReview() {
 }
 async function getAvgRating(id) {
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/jain_reviews?product_id=eq.'+id+'&select=rating', { headers: SB_H });
+    var res = await sbFetch(SB_URL + '/rest/v1/expert_reviews?product_id=eq.'+id+'&select=rating', { headers: SB_H });
     if (res.error || !res.data || !res.data.length) return null;
     var avg = res.data.reduce(function(s,r){ return s+r.rating; }, 0) / res.data.length;
     return { avg: avg, count: res.data.length };
@@ -1826,7 +1826,7 @@ function sendBulkQuote() {
   var msg = '📋 *Bulk / Trade Quote Request*\n';
   if (name) msg += '👤 Name: ' + name + '\n';
   if (phone) msg += '📞 Phone: ' + phone + '\n';
-  msg += '\n*Items Requested:*\n' + lines.join('\n') + '\n\n_From Taj Mahal Jain Building Materials Co. Website_';
+  msg += '\n*Items Requested:*\n' + lines.join('\n') + '\n\n_From Expert Hardware Website_';
   window.open('https://wa.me/96597656372?text=' + encodeURIComponent(msg), '_blank');
   closeBulkQuote();
 }
@@ -1863,7 +1863,7 @@ async function findCancelOrders() {
   errEl.textContent = '';
   resultsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?customer_phone=eq.'+encodeURIComponent(phone)+'&order=created_at.desc', { headers: SB_H });
+    var res = await sbFetch(SB_URL + '/rest/v1/expert_orders?customer_phone=eq.'+encodeURIComponent(phone)+'&order=created_at.desc', { headers: SB_H });
     if (res.error || !res.data || !res.data.length) {
       resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No orders found for this number.</p></div>';
       return;
@@ -1905,7 +1905,7 @@ async function cancelOrder(orderId, btn) {
   if (!confirm('Are you sure you want to cancel this order?')) return;
   btn.disabled = true;
   btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Cancelling...';
-  var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?id=eq.'+orderId, {
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_orders?id=eq.'+orderId, {
     method: 'PATCH',
     headers: Object.assign({}, SB_H, { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
     body: JSON.stringify({ status: 'cancelled' })
@@ -1927,7 +1927,7 @@ async function trackOrder() {
   errEl.textContent = '';
   resultsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?customer_phone=eq.'+encodeURIComponent(phone)+'&order=created_at.desc', { headers: SB_H });
+    var res = await sbFetch(SB_URL + '/rest/v1/expert_orders?customer_phone=eq.'+encodeURIComponent(phone)+'&order=created_at.desc', { headers: SB_H });
     if (res.error || !res.data || !res.data.length) {
       resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No orders found for this number.<br><small>Make sure you enter the number used during checkout.</small></p></div>';
       return;
@@ -1964,7 +1964,7 @@ async function trackOrder() {
 // FEATURE: WHATSAPP CHAT FAB
 // ══════════════════════════════════════════════════════════════════════════════
 function openWAChat() {
-  window.open('https://wa.me/96597656372?text=' + encodeURIComponent('Hi! I\'d like to ask about your products at Taj Mahal Jain Building Materials Co. 🔧'), '_blank');
+  window.open('https://wa.me/96597656372?text=' + encodeURIComponent('Hi! I\'d like to ask about your products at Expert Hardware 🔧'), '_blank');
 }
 
 // Call on page load to restore recently viewed and wishlist state
