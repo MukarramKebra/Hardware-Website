@@ -41,7 +41,6 @@
   <section id="hero">
     <div class="hero-content">
       <div class="hero-logo-wrap">
-        <img src="logo.png" alt="Expert Hardware" class="hero-logo-img" onerror="this.style.display='none'" />
         <span class="hero-brand-name">EXPERT HARDWARE<br><span style="font-size:0.4em;letter-spacing:3px;font-weight:700;opacity:0.9">FOR WHOLESALE &amp; RETAIL TRADE</span></span>
       </div>
       <span class="hero-tag" data-i18n-html="hero_tag"><i class="fa fa-tools"></i> Kuwait's #1 Hardware Store</span>
@@ -49,7 +48,6 @@
       <p data-i18n="hero_p">Power tools, hand tools, fasteners, safety gear and more — everything you need to build, fix and create. Delivered fast across Kuwait and the GCC.</p>
       <div class="hero-btns">
         <a href="#products" class="btn btn-primary"><i class="fa fa-th-large"></i> <span data-i18n="hero_shop">Shop Now</span></a>
-        <a href="#" class="btn btn-outline" onclick="openBulkQuote();return false"><i class="fa fa-clipboard-list"></i> Bulk Quote</a>
         <a href="#" class="btn btn-outline" onclick="openOrderTracker();return false"><i class="fa fa-search"></i> Track Order</a>
         <a href="https://www.google.com/maps/place/Expert+Hardware+for+Wholesale+and+Retail+Trade/@29.3280403,47.9474244,19.62z/data=!4m14!1m7!3m6!1s0x3fcf9bb99ad424f7:0xb7c693cfdc261779!2sExpert+Hardware+for+Wholesale+and+Retail+Trade!8m2!3d29.3279367!4d47.9470113!16s%2Fg%2F11wnnd432l!3m5!1s0x3fcf9bb99ad424f7:0xb7c693cfdc261779!8m2!3d29.3279367!4d47.9470113!16s%2Fg%2F11wnnd432l?entry=ttu&g_ep=EgoyMDI2MDYxMC4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="btn btn-outline"><i class="fa fa-map-marker-alt"></i> Our Location</a>
       </div>
@@ -429,11 +427,7 @@
         <button class="co-close" id="closeCheckout"><i class="fa fa-times"></i></button>
       </div>
       <div class="co-body" id="coBody">
-        <div class="co-section">
-          <div class="co-section-title"><i class="fa fa-shopping-cart"></i> <span data-i18n="co_order_sum">Order Summary</span></div>
-          <div class="co-order-items" id="coItems"></div>
-          <div class="co-total"><span data-i18n="co_total_label">Total Amount</span><strong id="coTotal">0.000 KWD</strong></div>
-        </div>
+        <div class="co-main">
         <div class="co-section">
           <div class="co-section-title"><i class="fa fa-user"></i> <span data-i18n="co_your_details">Your Details</span></div>
           <div class="co-form-row">
@@ -484,7 +478,15 @@
           </div>
           <div class="co-field"><label data-i18n="co_notes">Notes</label><input type="text" id="coNotes" placeholder="Leave at door, call on arrival..." /></div>
         </div>
-        <button class="co-wa-btn" id="coSubmitBtn"><i class="fab fa-whatsapp" style="font-size:20px"></i> <span data-i18n="co_submit">Send Order on WhatsApp</span></button>
+        </div>
+        <div class="co-aside">
+          <div class="co-section co-summary-card">
+            <div class="co-section-title"><i class="fa fa-shopping-cart"></i> <span data-i18n="co_order_sum">Order Summary</span></div>
+            <div class="co-order-items" id="coItems"></div>
+            <div class="co-total"><span data-i18n="co_total_label">Total Amount</span><strong id="coTotal">0.000 KWD</strong></div>
+            <button class="co-wa-btn" id="coSubmitBtn"><i class="fab fa-whatsapp" style="font-size:20px"></i> <span data-i18n="co_submit">Send Order on WhatsApp</span></button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
