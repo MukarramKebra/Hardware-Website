@@ -1038,6 +1038,7 @@
           <tr><td>stock</td><td>Optional</td><td>50</td></tr>
           <tr><td>description</td><td>Optional</td><td>20V drill with keyless chuck</td></tr>
           <tr><td>badge</td><td>Optional</td><td>Best Seller</td></tr>
+          <tr><td>brand</td><td>Optional</td><td>Bosch</td></tr>
           <tr><td>image</td><td>Optional</td><td>drill.jpg (filename of uploaded image)</td></tr>
         </tbody>
       </table>
@@ -3511,7 +3512,7 @@ function previewCSVRows(rows) {
     : '';
   preview.innerHTML = embeddedNote +
     '<div class="csv-count"><i class="fa fa-check-circle"></i> '+_csvParsedRows.length+' product'+(+_csvParsedRows.length!==1?'s':'')+' ready to import</div>' +
-    '<table class="csv-prev-tbl"><thead><tr>'+(showImgCol?'<th>Image</th>':'')+'<th>Name</th><th>Category</th><th>Price KWD</th><th>Stock</th></tr></thead><tbody>' +
+    '<table class="csv-prev-tbl"><thead><tr>'+(showImgCol?'<th>Image</th>':'')+'<th>Name</th><th>Category</th><th>Brand</th><th>Price KWD</th><th>Stock</th></tr></thead><tbody>' +
     show.map(function(r, i){
       var imgCell = '';
       if (showImgCol) {
@@ -3520,9 +3521,9 @@ function previewCSVRows(rows) {
           ? '<td><img src="'+src+'" style="width:36px;height:36px;border-radius:5px;object-fit:cover;border:1px solid #e9d5ff" /></td>'
           : '<td style="color:#ccc;font-size:11px">—</td>';
       }
-      return '<tr>'+imgCell+'<td>'+r.name+'</td><td>'+r.category+'</td><td>'+parseFloat(r.price).toFixed(3)+'</td><td>'+(r.stock||'50')+'</td></tr>';
+      return '<tr>'+imgCell+'<td>'+r.name+'</td><td>'+r.category+'</td><td>'+(r.brand||'—')+'</td><td>'+parseFloat(r.price).toFixed(3)+'</td><td>'+(r.stock||'50')+'</td></tr>';
     }).join('') +
-    (_csvParsedRows.length>5 ? '<tr><td colspan="'+(showImgCol?5:4)+'" style="text-align:center;color:#aaa;font-style:italic">… and '+(_csvParsedRows.length-5)+' more</td></tr>' : '') +
+    (_csvParsedRows.length>5 ? '<tr><td colspan="'+(showImgCol?6:5)+'" style="text-align:center;color:#aaa;font-style:italic">… and '+(_csvParsedRows.length-5)+' more</td></tr>' : '') +
     '</tbody></table>';
   document.getElementById('csvImportBtn').style.display = 'flex';
 }
@@ -3558,6 +3559,7 @@ async function importCSVProducts() {
     if (error) { console.warn('Row import failed:', r.name, error); continue; }
     if (rows && rows[0]) {
       const newId = rows[0].id;
+      if (r.brand && r.brand.trim()) { if (!_prodOverrides[newId]) _prodOverrides[newId] = {}; _prodOverrides[newId].brand = r.brand.trim(); }
       const qty   = parseInt(r.stock)||50;
       stockData[newId] = qty;
       await sbFetch(SB_URL + '/rest/v1/expert_stock', {
@@ -3578,6 +3580,8 @@ async function importCSVProducts() {
   }
   // Persist photos to localStorage
   localStorage.setItem('jain_photos', JSON.stringify(localPhotos));
+  // Persist imported brands (stored like inline brand edits)
+  localStorage.setItem('bahar_overrides', JSON.stringify(_prodOverrides));
   const imgCount = Object.keys(_rowImageMap).length || Object.keys(_csvImageMap).length;
   showToast(count + ' product'+(count!==1?'s':'')+' imported' + (imgCount ? ' with '+imgCount+' image'+(imgCount!==1?'s':'') : '') + '! ✅');
   closeCSV();
@@ -3586,14 +3590,14 @@ async function importCSVProducts() {
 }
 function downloadTemplate() {
   const csv = [
-    'name,category,price,stock,description,badge,image',
-    'Shataffa Sprayer Pro,shataffa,12.500,50,20V drill with keyless chuck and LED light,Best Seller,drill.jpg',
-    'Heavy Duty Hammer,hand-tools,3.200,100,16oz forged steel claw hammer,,hammer.jpg',
-    'Wood Screws 200pc,fasteners,1.500,200,Self-tapping wood screws assorted sizes,Popular,screws.jpg'
+    'name,category,price,stock,description,badge,brand,image',
+    'Cordless Drill 20V,power-tools,18.500,50,20V drill with keyless chuck and LED light,Best Seller,Bosch,drill.jpg',
+    'Heavy Duty Hammer,hand-tools,3.200,100,16oz forged steel claw hammer,,Stanley,hammer.jpg',
+    'Wood Screws 200pc,fasteners,1.500,200,Self-tapping wood screws assorted sizes,Popular,Dewalt,screws.jpg'
   ].join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'bahar_import_template.csv';
+  a.download = 'expert_import_template.csv';
   a.click();
 }
 
