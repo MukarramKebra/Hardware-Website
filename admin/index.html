@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jain Hardware Admin</title>
   <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expert Hardware Admin</title>
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
@@ -15,13 +16,13 @@
     body{font-family:'Inter',sans-serif;background:var(--light);color:var(--dark);}
 
     /* LOGIN */
-    #loginScreen{position:fixed;inset:0;background:var(--dark);display:flex;align-items:center;justify-content:center;z-index:9999;}
-    .login-box{background:#2d0000;border-radius:16px;padding:48px 40px;width:100%;max-width:380px;border-top:4px solid var(--orange);text-align:center;}
+    #loginScreen{position:fixed;inset:0;background:#d20d17;display:flex;align-items:center;justify-content:center;z-index:9999;}
+    .login-box{background:#a00a12;border-radius:16px;padding:48px 40px;width:100%;max-width:380px;border-top:4px solid var(--orange);text-align:center;}
     .login-box img{height:60px;margin-bottom:16px;}
     .login-logo{font-size:26px;font-weight:900;color:#fff;margin-bottom:4px;}
     .login-logo span{color:var(--orange);}
     .login-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:28px;text-transform:uppercase;letter-spacing:1px;}
-    .login-box input{width:100%;padding:13px 16px;border:2px solid #4a0a0a;border-radius:8px;background:#4a0000;color:#fff;font-size:15px;font-family:inherit;outline:none;margin-bottom:12px;transition:border-color .2s;}
+    .login-box input{width:100%;padding:13px 16px;border:2px solid #7a0a10;border-radius:8px;background:#7a0a10;color:#fff;font-size:15px;font-family:inherit;outline:none;margin-bottom:12px;transition:border-color .2s;}
     .login-box input:focus{border-color:var(--orange);}
     .login-btn{width:100%;padding:13px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:1px;}
     .login-btn:hover{background:#991b1b;}
@@ -44,7 +45,7 @@
     #adminPanel{display:none;min-height:100vh;}
     /* SUPER ADMIN */
     #superAdminPanel{display:none;min-height:100vh;background:#f0f4ff;}
-    .su-bar{background:linear-gradient(135deg,#1a0000 0%,#2d0000 100%);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #7c3aed;position:sticky;top:0;z-index:100;}
+    .su-bar{background:linear-gradient(135deg,#a00a12 0%,#d20d17 100%);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #7c3aed;position:sticky;top:0;z-index:100;}
     .su-body{max-width:900px;margin:0 auto;padding:32px 28px;}
     .su-card{background:#fff;border-radius:14px;border:2px solid var(--border);padding:24px;margin-bottom:24px;}
     .su-card-h{font-size:15px;font-weight:900;color:var(--dark);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
@@ -66,9 +67,9 @@
     .su-log-time{font-size:11px;color:var(--gray);margin-top:2px;}
     .su-empty{text-align:center;padding:32px;color:var(--gray);}
     .su-empty i{font-size:32px;color:#ddd;display:block;margin-bottom:10px;}
-    .top-bar{background:var(--dark);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--orange);position:sticky;top:0;z-index:100;}
+    .top-bar{background:#d20d17;padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,0,0,0.16);position:sticky;top:0;z-index:100;}
     .top-logo{font-size:18px;font-weight:900;color:#fff;display:flex;align-items:center;gap:12px;}
-    .top-logo span{color:var(--orange);}
+    .top-logo span{color:#fff;}
     .admin-badge{background:var(--orange);color:#fff;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;}
     .top-right{display:flex;align-items:center;gap:14px;}
     .clock-txt{color:rgba(255,255,255,0.45);font-size:12px;}
@@ -76,10 +77,10 @@
     .logout-btn:hover{border-color:var(--red);color:var(--red);}
 
     /* TAB BAR */
-    .tab-bar{background:var(--charcoal);padding:0 28px;display:flex;gap:0;border-bottom:1px solid var(--steel);position:sticky;top:64px;z-index:99;}
-    .tab-btn{padding:14px 22px;font-size:13px;font-weight:700;color:rgba(255,255,255,0.45);background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:0.5px;}
-    .tab-btn:hover{color:rgba(255,255,255,0.75);}
-    .tab-btn.active{color:var(--orange);border-bottom-color:var(--orange);}
+    .tab-bar{background:#d20d17;padding:0 28px;display:flex;gap:0;border-bottom:1px solid var(--steel);position:sticky;top:64px;z-index:99;}
+    .tab-btn{padding:14px 22px;font-size:13px;font-weight:700;color:#fff;background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:0.5px;}
+    .tab-btn:hover{color:#fff;}
+    .tab-btn.active{color:#fff;border-bottom-color:#fff;}
 
     .main{padding:28px;max-width:1400px;margin:0 auto;}
 
@@ -102,11 +103,7 @@
     .alerts-box.show{display:block;}
     .alerts-title{font-size:12px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
     .alert-items{display:flex;flex-wrap:wrap;gap:8px;}
-    .alert-chip{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--red);padding:4px 11px;border-radius:6px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:8px;}
-    .alert-goto-btn{background:var(--red);color:#fff;border:none;border-radius:5px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background .15s;}
-    .alert-goto-btn:hover{background:#b91c1c;}
-    @keyframes rowFlash{0%,100%{background:transparent}50%{background:rgba(239,68,68,.15)}}
-    .row-flash{animation:rowFlash 0.5s ease 3;}
+    .alert-chip{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--red);padding:4px 11px;border-radius:6px;font-size:12px;font-weight:600;}
 
     /* CONTROLS */
     .table-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px;}
@@ -121,7 +118,7 @@
     /* TABLE */
     .tbl-wrap{background:var(--white);border-radius:12px;border:2px solid var(--border);overflow:hidden;}
     table{width:100%;border-collapse:collapse;}
-    thead{background:var(--dark);}
+    thead{background:#d20d17;}
     thead th{padding:12px 14px;text-align:left;font-size:10px;font-weight:800;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:1px;}
     tbody tr{border-bottom:1px solid var(--border);}
     tbody tr:last-child{border-bottom:none;}
@@ -146,14 +143,27 @@
     .act-btn:hover{border-color:var(--orange);color:var(--orange);}
     .act-btn.blue:hover{border-color:var(--blue);color:var(--blue);}
     .act-btn.purple:hover{border-color:var(--purple);color:var(--purple);}
-    .tfoot-row{background:var(--dark) !important;}
+    .brand-cell{display:flex;align-items:center;gap:5px;}
+    .brand-input{width:88px;padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;color:var(--dark);outline:none;}
+    .brand-input:focus{border-color:var(--orange);}
+    .brand-menu-btn{background:none;border:1px solid var(--border);color:var(--gray);width:26px;height:26px;border-radius:6px;cursor:pointer;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;}
+    .brand-menu-btn:hover{border-color:var(--orange);color:var(--orange);}
+    .brand-menu{position:absolute;z-index:6000;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 34px rgba(0,0,0,0.20);padding:6px;min-width:200px;display:flex;flex-direction:column;gap:2px;}
+    .brand-menu .bm-head{font-size:11px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.4px;padding:6px 10px 8px;border-bottom:1px solid var(--border);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .brand-menu button{display:flex;align-items:center;gap:10px;background:none;border:none;text-align:left;padding:9px 11px;border-radius:7px;font-size:13px;font-weight:600;color:var(--dark);cursor:pointer;font-family:inherit;}
+    .brand-menu button:hover{background:var(--light);}
+    .brand-menu button i{width:16px;text-align:center;color:var(--gray);}
+    .brand-menu button.bm-del{color:var(--red);}
+    .brand-menu button.bm-del:hover{background:#fff0f0;}
+    .brand-menu button.bm-del i{color:var(--red);}
+    .tfoot-row{background:#d20d17 !important;}
     .tfoot-row td{color:#fff;font-weight:800;font-size:14px;padding:14px;}
 
     /* ANALYTICS SECTION */
     #analyticsSection{display:none;}
     .analytics-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
     .an-section{background:var(--white);border-radius:12px;border:2px solid var(--border);overflow:hidden;margin-bottom:24px;}
-    .an-header{background:var(--dark);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
+    .an-header{background:#d20d17;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
     .an-header h3{color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;gap:10px;}
     .an-header h3 i{color:var(--orange);}
     .an-sub{color:rgba(255,255,255,0.4);font-size:11px;}
@@ -197,19 +207,19 @@
     .photo-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px;}
     .photo-overlay.open{display:flex;}
     .photo-box{background:#fff;border-radius:14px;width:100%;max-width:450px;border-top:4px solid var(--orange);overflow:hidden;}
-    .ph-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--dark);}
+    .ph-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:#d20d17;}
     .ph-header h3{color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px;}
     .ph-header h3 i{color:var(--orange);}
     .ph-header button{background:none;border:none;color:#aaa;font-size:18px;cursor:pointer;}
     .ph-body{padding:22px;}
     .ph-prod-name{font-size:13px;font-weight:800;color:var(--dark);margin-bottom:14px;padding:8px 12px;background:var(--light);border-radius:7px;}
     .ph-preview{width:100%;height:180px;object-fit:cover;border-radius:9px;border:2px solid var(--border);display:block;margin-bottom:18px;}
-    .ph-fallback{width:100%;height:180px;background:var(--charcoal);border-radius:9px;display:none;align-items:center;justify-content:center;font-size:44px;color:var(--orange);margin-bottom:18px;}
+    .ph-fallback{width:100%;height:180px;background:#d20d17;border-radius:9px;display:none;align-items:center;justify-content:center;font-size:44px;color:#fff;margin-bottom:18px;}
     .ph-label{font-size:10px;font-weight:800;color:var(--dark);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;}
     .ph-url-row{display:flex;gap:8px;margin-bottom:14px;}
     .ph-url-input{flex:1;padding:10px 12px;border:2px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;outline:none;}
     .ph-url-input:focus{border-color:var(--orange);}
-    .ph-prev-btn{padding:10px 14px;background:var(--dark);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+    .ph-prev-btn{padding:10px 14px;background:#d20d17;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
     .ph-divider{text-align:center;color:#aaa;font-size:11px;font-weight:700;margin:14px 0;position:relative;}
     .ph-divider::before,.ph-divider::after{content:'';position:absolute;top:50%;width:43%;height:1px;background:var(--border);}
     .ph-divider::before{left:0;}.ph-divider::after{right:0;}
@@ -223,7 +233,7 @@
     .stats-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px;}
     .stats-overlay.open{display:flex;}
     .stats-box{background:#fff;border-radius:16px;width:100%;max-width:480px;border-top:4px solid var(--purple);overflow:hidden;}
-    .sm-header{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:var(--dark);}
+    .sm-header{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:#d20d17;}
     .sm-header h3{color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px;}
     .sm-header h3 i{color:var(--purple);}
     .sm-header button{background:none;border:none;color:#aaa;font-size:18px;cursor:pointer;}
@@ -242,13 +252,13 @@
     .sm-rank-chip.orange{background:rgba(255,98,0,.1);color:var(--orange);border:1px solid rgba(255,98,0,.2);}
     .sm-rank-chip.purple{background:rgba(139,92,246,.1);color:var(--purple);border:1px solid rgba(139,92,246,.2);}
     .sm-note{font-size:12px;color:var(--gray);text-align:center;padding:0 8px;}
-    .sm-close-btn{width:100%;padding:11px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:18px;text-transform:uppercase;}
+    .sm-close-btn{width:100%;padding:11px;background:#d20d17;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:18px;text-transform:uppercase;}
 
     /* REPORTS SECTION */
     #reportsSection{display:none;}
     .rpt-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;}
     .rpt-card{background:var(--white);border-radius:14px;border:2px solid var(--border);overflow:hidden;}
-    .rpt-header{background:var(--dark);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
+    .rpt-header{background:#d20d17;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
     .rpt-header h3{color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;gap:10px;}
     .rpt-header h3 i{color:var(--orange);}
     .rpt-export-btn{background:var(--green);color:#fff;border:none;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px;}
@@ -282,7 +292,7 @@
     #ordersSection{display:none;}
     .ord-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
     .ord-card{background:var(--white);border-radius:14px;border:2px solid var(--border);overflow:hidden;margin-bottom:24px;}
-    .ord-header{background:var(--dark);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
+    .ord-header{background:#d20d17;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
     .ord-header h3{color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;gap:10px;}
     .ord-header h3 i{color:var(--orange);}
     .ord-tbl-wrap{overflow-x:auto;}
@@ -415,7 +425,7 @@
     .csv-header button{background:none;border:none;font-size:18px;cursor:pointer;color:#aaa;}
     .csv-body{padding:22px;}
     .help-btn{background:none;border:1.5px solid var(--blue);color:var(--blue);padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;}
-    .csv-drop{display:block;border:none;border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;transition:background .2s;margin-bottom:14px;background:#f0f6ff;}
+    .csv-drop{border:none;border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;transition:background .2s;margin-bottom:14px;background:#f0f6ff;}
     .csv-drop:hover,.csv-drop.drag{background:#dbeafe;}
     .csv-drop i{font-size:32px;color:var(--blue);margin-bottom:8px;display:block;}
     .csv-drop span{font-size:14px;font-weight:700;color:var(--dark);display:block;}
@@ -453,7 +463,7 @@
     .fmt-table tr td:first-child{font-weight:700;font-family:monospace;color:var(--orange);}
     .fmt-cats{font-size:12px;color:var(--dark);background:var(--light);padding:10px 14px;border-radius:8px;margin-bottom:14px;line-height:1.7;}
     .fmt-cats strong{display:block;font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
-    .help-dl-btn{width:100%;padding:11px;background:var(--dark);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .help-dl-btn{width:100%;padding:11px;background:#d20d17;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
     .help-dl-btn:hover{background:#333;}
 
     /* NEW CATEGORY */
@@ -503,7 +513,7 @@
     /* ── MULTI-SELECT ──────────────────────────────────────────────────── */
     .chk-col{width:38px;text-align:center;}
     .row-chk{width:16px;height:16px;cursor:pointer;accent-color:var(--orange);}
-    .bulk-bar{display:none;align-items:center;gap:10px;background:var(--dark);color:#fff;padding:12px 18px;border-radius:10px;margin-bottom:14px;border-left:4px solid var(--orange);flex-wrap:wrap;}
+    .bulk-bar{display:none;align-items:center;gap:10px;background:#d20d17;color:#fff;padding:12px 18px;border-radius:10px;margin-bottom:14px;border-left:4px solid var(--orange);flex-wrap:wrap;}
     .bulk-bar.show{display:flex;}
     .bulk-sel-count{font-size:13px;font-weight:900;color:var(--orange);white-space:nowrap;min-width:90px;}
     .bulk-btn{background:none;border:1px solid rgba(255,255,255,0.22);color:rgba(255,255,255,0.85);padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap;}
@@ -541,8 +551,8 @@
 <!-- LOGIN SCREEN -->
 <div id="loginScreen">
   <div class="login-box">
-    <img src="jain-logo.png" alt="Jain Hardware" onerror="this.style.display='none'" style="height:96px;width:96px;object-fit:contain;margin-bottom:18px;border-radius:50%;background:#fff;padding:5px;box-shadow:0 0 0 3px rgba(200,21,27,0.9), 0 0 18px 6px rgba(200,21,27,0.55), 0 0 40px 12px rgba(200,21,27,0.2);" />
-    <div class="login-logo">Jain <span>Hardware</span></div>
+    <img src="logo.png" alt="Expert Hardware" onerror="this.style.display='none'" style="height:96px;width:96px;object-fit:contain;margin-bottom:18px;border-radius:50%;background:#fff;padding:5px;box-shadow:0 0 0 3px rgba(200,21,27,0.9), 0 0 18px 6px rgba(200,21,27,0.55), 0 0 40px 12px rgba(200,21,27,0.2);" />
+    <div class="login-logo">Expert <span>Hardware</span></div>
     <div class="login-sub">Owner Admin Panel</div>
     <form id="loginForm" onsubmit="doLogin(event)" autocomplete="on">
       <input type="text"     id="loginUser" name="username" placeholder="Username" autocomplete="username" />
@@ -556,7 +566,7 @@
 <!-- ADMIN PANEL -->
 <div id="adminPanel">
   <div class="top-bar">
-    <div class="top-logo"><img src="jain-logo.png" style="height:36px;width:36px;object-fit:contain;border-radius:50%;background:#fff;padding:2px;margin-right:10px;box-shadow:0 0 0 2px rgba(200,21,27,0.9), 0 0 10px 3px rgba(200,21,27,0.5), 0 0 22px 7px rgba(200,21,27,0.2);">Jain <span>Hardware</span><div class="admin-badge"><i class="fa fa-shield-alt"></i> Admin</div></div>
+    <div class="top-logo"><img src="logo.png" style="height:42px;width:auto;object-fit:contain;border-radius:0;background:transparent;padding:0;margin-right:10px;box-shadow:none;">Expert <span>Hardware</span><div class="admin-badge"><i class="fa fa-shield-alt"></i> Admin</div></div>
     <div class="top-right">
       <div class="clock-txt" id="clockEl"></div>
       <button class="logout-btn" onclick="loadFromSupabase()" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)" title="Reload products from cloud"><i class="fa fa-sync-alt"></i> Reload</button>
@@ -577,9 +587,6 @@
     </button>
     <button class="tab-btn" id="tabOrders" onclick="switchTab('orders')">
       <i class="fa fa-receipt"></i> Orders <span id="ordBadge" style="background:var(--orange);color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:20px;margin-left:2px;display:none"></span>
-    </button>
-    <button class="tab-btn" id="tabSales" onclick="switchTab('sales')">
-      <i class="fa fa-chart-line"></i> Sales
     </button>
     <button class="tab-btn" id="tabReports" onclick="switchTab('reports')">
       <i class="fa fa-file-excel"></i> Reports
@@ -633,7 +640,7 @@
         <thead>
           <tr>
             <th class="chk-col"><input type="checkbox" id="selectAll" title="Select all" onchange="toggleSelectAll(this.checked)" /></th>
-            <th>#</th><th>Product</th><th>Category</th><th>Price KWD</th>
+            <th>#</th><th>Product</th><th>Category</th><th>Brand</th><th>Price KWD</th>
             <th>Stock Qty</th><th>Status</th><th>Value KWD</th><th>Actions</th>
           </tr>
         </thead>
@@ -705,42 +712,6 @@
         <div id="searchesTable"></div>
       </div>
 
-    </div>
-
-    <!-- SEARCH TERMS -->
-    <div class="an-section" style="margin-top:24px">
-      <div class="an-header">
-        <h3><i class="fa fa-keyboard"></i> What Customers Actually Typed</h3>
-        <button class="reset-btn" onclick="resetSearchTerms()"><i class="fa fa-trash"></i> Clear</button>
-      </div>
-      <div id="searchTermsBox" style="padding:14px 0"></div>
-    </div>
-
-  </div>
-
-  <!-- SALES SECTION -->
-  <div id="salesSection" class="main" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
-      <h2><i class="fa fa-chart-line" style="color:var(--orange);margin-right:8px"></i>Sales Performance</h2>
-      <div style="display:flex;gap:10px;align-items:center">
-        <select id="salesPeriodFilter" onchange="renderSalesTab()" style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:700">
-          <option value="week">Past 7 Days</option>
-          <option value="month">Past 30 Days</option>
-          <option value="all">All Time</option>
-        </select>
-        <button class="reset-btn" onclick="renderSalesTab()" style="background:var(--orange);color:#fff;border-color:var(--orange)"><i class="fa fa-sync"></i> Refresh</button>
-      </div>
-    </div>
-    <div class="analytics-stats" id="salesStats"></div>
-    <div class="an-2col" style="margin-top:20px">
-      <div class="an-section">
-        <div class="an-header"><h3><i class="fa fa-trophy"></i> Best Selling Products</h3></div>
-        <div id="salesTopProducts"></div>
-      </div>
-      <div class="an-section">
-        <div class="an-header"><h3><i class="fa fa-receipt"></i> Recent Orders Summary</h3></div>
-        <div id="salesRecentOrders"></div>
-      </div>
     </div>
   </div>
 
@@ -892,7 +863,7 @@
           <div style="display:flex;align-items:center;gap:12px">
             <div style="width:40px;height:40px;background:rgba(200,21,27,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
             <div>
-              <div style="font-weight:800;font-size:14px;color:var(--dark)">jain</div>
+              <div style="font-weight:800;font-size:14px;color:var(--dark)">expert</div>
               <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Admin Account</div>
             </div>
           </div>
@@ -907,7 +878,7 @@
           <div style="display:flex;align-items:center;gap:12px">
             <div style="width:40px;height:40px;background:rgba(124,58,237,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">⚙️</div>
             <div>
-              <div style="font-weight:800;font-size:14px;color:var(--dark)">jain15</div>
+              <div style="font-weight:800;font-size:14px;color:var(--dark)">expert15</div>
               <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Manager Account</div>
             </div>
           </div>
@@ -1015,23 +986,27 @@
 <div class="csv-overlay" id="csvOverlay" onclick="if(event.target===this)closeCSV()">
   <div class="csv-modal">
     <div class="csv-header">
-      <h3><i class="fa fa-file-csv"></i> Import Products &mdash; CSV / Excel</h3>
+      <h3><i class="fa fa-file-csv"></i> Import Products â€” CSV / Excel</h3>
       <div style="display:flex;align-items:center;gap:8px">
         <button class="help-btn" onclick="showFormatHelp()"><i class="fa fa-question-circle"></i> Format Help</button>
         <button onclick="closeCSV()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#aaa"><i class="fa fa-times"></i></button>
       </div>
     </div>
     <div class="csv-body">
+      <div class="csv-section-label"><i class="fa fa-file-csv" style="color:var(--blue)"></i> Step 1 — Choose your CSV / Excel file</div>
       <label class="csv-drop" id="csvDrop" for="csvFile" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleCSVDrop(event)">
         <i class="fa fa-cloud-upload-alt"></i>
         <span>Click to choose file or drag &amp; drop here</span>
+        <small>Supports .csv and .xlsx (Excel) files</small>
       </label>
       <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" onchange="handleCSVFile(event)" style="display:none" />
 
       <hr class="csv-divider" />
+      <div class="csv-section-label"><i class="fa fa-images" style="color:#9333ea"></i> Step 2 — Upload product images (optional)</div>
       <label class="csv-img-zone" for="csvImages">
         <i class="fa fa-image"></i>
-        <span>Upload product images (optional)</span>
+        <span>Click to select image files</span>
+        <small>Name each image to match the "image" column in your CSV (e.g. drill.jpg)</small>
       </label>
       <input type="file" id="csvImages" accept="image/*" multiple onchange="handleCSVImages(event)" style="display:none" />
       <div class="csv-img-thumbs" id="csvImgThumbs"></div>
@@ -1177,7 +1152,7 @@
         <div style="display:flex;align-items:center;gap:12px">
           <div style="width:40px;height:40px;background:rgba(200,21,27,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div>
           <div>
-            <div style="font-weight:800;font-size:14px;color:var(--dark)">jain</div>
+            <div style="font-weight:800;font-size:14px;color:var(--dark)">expert</div>
             <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Admin Account</div>
           </div>
         </div>
@@ -1202,7 +1177,7 @@
 <script>
 /*
  * ============================================================
- *   Jain Hardware — ADMIN PANEL  (admin/index.html)
+ *   Expert Hardware — ADMIN PANEL  (admin/index.html)
  * ============================================================
  *
  *  HOW IT WORKS (plain English):
@@ -1242,11 +1217,11 @@
 
 // ── LOGIN CREDENTIALS ──────────────────────────────────────────────────────────
 // Change these to update usernames/passwords
-const ADMIN_USER    = 'jain';       // Regular admin username
+const ADMIN_USER    = 'expert';       // Regular admin username
 const ADMIN_PASS    = 'Kuw963258';   // Regular admin password
 const SUPER_USER    = 'ultimate15';  // Owner (super-admin) username
 const SUPER_PASS    = 'Zahab2011';   // Owner (super-admin) password
-const MANAGER_USER  = 'jain15';     // Manager account — same powers as owner except cannot disable ultimate15 or site
+const MANAGER_USER  = 'expert15';     // Manager account — same powers as owner except cannot disable ultimate15 or site
 const MANAGER_PASS  = 'Kuw963258';   // Manager password
 
 // ── SUPABASE CONNECTION ────────────────────────────────────────────────────────
@@ -1254,8 +1229,8 @@ const MANAGER_PASS  = 'Kuw963258';   // Manager password
 // SB_URL  = the database address
 // SB_KEY  = the access key (like a password to talk to the database — read-only for public)
 // SB_HDRS = the headers sent with every database request (authentication)
-const SB_URL  = 'https://sinzmodmefkyjkzzitjy.supabase.co';
-const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbnptb2RtZWZreWprenppdGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMjQ4MzYsImV4cCI6MjA5NTcwMDgzNn0.Ft88pQEKbSVP_yb7UTRVq2fLa_TScR97_jvJmgAMlSc';
+const SB_URL  = 'https://wjamqqwfpwqsafwcwajq.supabase.co';
+const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqYW1xcXdmcHdxc2Fmd2N3YWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NjIzMDEsImV4cCI6MjA5NjIzODMwMX0.OvuBO-kbWKA3Wnamla2n7PxSqebZQc6b_y6IuKMStpI';
 const SB_HDRS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
 
 // Default categories shown in the admin category filter dropdown
@@ -1321,9 +1296,9 @@ async function _fixCustomProductIds() {
     var isTrueDupe = baseIds.has(p.id) && baseNames.has((p.name||'').toLowerCase().trim());
 
     // 1. Delete old entry from Supabase
-    await sbFetch(SB_URL + '/rest/v1/jain_products?id=eq.' + p.id, { method:'DELETE', headers:SB_HDRS });
+    await sbFetch(SB_URL + '/rest/v1/expert_products?id=eq.' + p.id, { method:'DELETE', headers:SB_HDRS });
     // Also clean up orphaned stock/photos for old ID
-    await sbFetch(SB_URL + '/rest/v1/jain_stock?product_id=eq.' + p.id, { method:'DELETE', headers:SB_HDRS });
+    await sbFetch(SB_URL + '/rest/v1/expert_stock?product_id=eq.' + p.id, { method:'DELETE', headers:SB_HDRS });
 
     // Remove from local array
     var idx = _customProductRows.findIndex(function(r){ return r.id === p.id; });
@@ -1346,7 +1321,7 @@ async function _fixCustomProductIds() {
       img_url: p.img_url || '',
       hidden: p.hidden || false
     };
-    var result = await sbFetch(SB_URL + '/rest/v1/jain_products', {
+    var result = await sbFetch(SB_URL + '/rest/v1/expert_products', {
       method: 'POST',
       headers: Object.assign({}, SB_HDRS, {'Prefer':'return=representation'}),
       body: JSON.stringify([payload])
@@ -1356,7 +1331,7 @@ async function _fixCustomProductIds() {
       // Migrate stock to new ID
       var oldQty = stockData[p.id] || 50;
       stockData[result.data[0].id] = oldQty;
-      await sbFetch(SB_URL + '/rest/v1/jain_stock', {
+      await sbFetch(SB_URL + '/rest/v1/expert_stock', {
         method: 'POST',
         headers: Object.assign({}, SB_HDRS, {'Prefer':'resolution=merge-duplicates'}),
         body: JSON.stringify([{ product_id: result.data[0].id, qty: oldQty }])
@@ -1365,7 +1340,7 @@ async function _fixCustomProductIds() {
       var oldPhoto = null;
       try { var ph = JSON.parse(localStorage.getItem('jain_photos')||'{}'); oldPhoto = ph[String(p.id)]||null; } catch(_){}
       if (oldPhoto) {
-        sbFetch(SB_URL + '/rest/v1/jain_photos', {
+        sbFetch(SB_URL + '/rest/v1/expert_photos', {
           method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
           body:JSON.stringify([{product_id:result.data[0].id, url:oldPhoto}])
         });
@@ -1389,11 +1364,11 @@ async function _fixCustomProductIds() {
 async function loadFromSupabase() {
   showToast('Loading from cloud…');
   const [s, p, c, h, cb] = await Promise.all([
-    sbFetch(SB_URL + '/rest/v1/jain_stock?select=*',          { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/jain_photos?select=*',         { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/jain_products?select=*',       { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/jain_hidden?select=product_id',{ headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/jain_cat_bgs?select=*',        { headers: SB_HDRS })
+    sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',          { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',         { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/expert_products?select=*',       { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',{ headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        { headers: SB_HDRS })
   ]);
   // Category backgrounds
   if (!cb.error && Array.isArray(cb.data)) {
@@ -1458,7 +1433,7 @@ function getAllAdminProducts() {
       return { id:p.id, name:p.name, cat:p.cat, price:p.price, img:p.img, isBase:true, hidden:_hiddenBaseIds.has(p.id) };
     });
   const custom = _customProductRows
-    .filter(function(p){ return !deletedIds.has(p.id); }) // show all custom products (_fixCustomProductIds already removed true dupes)
+    .filter(function(p){ return !deletedIds.has(p.id) && !baseIds.has(p.id); }) // skip Supabase dupes of base IDs
     .map(function(p) {
       return { id:p.id, name:p.name, cat:p.category, price:parseFloat(p.price), img:p.img_url||'', isBase:false, hidden:p.hidden||false };
     });
@@ -1534,6 +1509,9 @@ const PRODUCTS = [
   {id:59, name:'Insulated Wire Connectors 100pc',   cat:'accessories', price:1.800,  img:UL(59)},
   {id:60, name:'Electrical Connector Assortment',   cat:'accessories', price:2.200,  img:UL(60)}
 ];
+
+// Brand for each built-in product (random); overridable per-product in the admin table
+const BASE_BRANDS = {1:'covax', 2:'dck', 3:'dck', 4:'bosch', 5:'itrust', 6:'covax', 7:'bosch', 8:'bosch', 9:'covax', 10:'itrust', 11:'itrust', 12:'bosch', 13:'covax', 14:'itrust', 15:'itrust', 16:'covax', 17:'bosch', 18:'covax', 19:'covax', 20:'dck', 21:'bosch', 22:'covax', 23:'itrust', 24:'itrust', 25:'itrust', 26:'dck', 27:'itrust', 28:'bosch', 29:'itrust', 30:'dck', 31:'itrust', 32:'dck', 33:'bosch', 34:'bosch', 35:'covax', 36:'itrust', 37:'dck', 38:'dck', 39:'itrust', 40:'dck', 41:'bosch', 42:'covax', 43:'bosch', 44:'dck', 45:'bosch', 46:'dck', 47:'covax', 48:'bosch', 49:'covax', 50:'bosch', 51:'covax', 52:'bosch', 53:'dck', 54:'dck', 55:'dck', 56:'covax', 57:'itrust', 58:'covax', 59:'dck', 60:'itrust'};
 
 // ── STOCK ──────────────────────────────────────────────────────────────────────
 // Stock quantities are stored locally in the browser (localStorage key: jain_stock)
@@ -1727,7 +1705,7 @@ function showManager() {
   var title = document.getElementById('ownerSectionTitle');
   if (title) title.innerHTML = '<i class="fa fa-user-shield" style="color:#c8151b;margin-right:8px"></i>Manager Control Panel';
   var sub = document.getElementById('ownerSectionSub');
-  if (sub) sub.innerHTML = 'Manager controls for <strong style="color:#c8151b">jain15</strong>';
+  if (sub) sub.innerHTML = 'Manager controls for <strong style="color:#c8151b">expert15</strong>';
   switchTab('owner');
   loadFromSupabase();
   _loadSavedHandles();
@@ -1755,7 +1733,7 @@ function toggleBaharAccount() {
     localStorage.removeItem('jain_user_disabled');
     showToast('✅ bahar account enabled');
   } else {
-    if (!confirm('Disable the jain account? They will not be able to login until you re-enable it.')) return;
+    if (!confirm('Disable the expert account? They will not be able to login until you re-enable it.')) return;
     localStorage.setItem('jain_user_disabled', '1');
     showToast('🚫 bahar account disabled');
   }
@@ -1769,7 +1747,7 @@ function toggleBahar15Account() {
     localStorage.removeItem('jain15_user_disabled');
     showToast('✅ bahar15 account enabled');
   } else {
-    if (!confirm('Disable the jain15 manager account? They will not be able to login until you re-enable it.')) return;
+    if (!confirm('Disable the expert15 manager account? They will not be able to login until you re-enable it.')) return;
     localStorage.setItem('jain15_user_disabled', '1');
     showToast('🚫 bahar15 account disabled');
   }
@@ -1787,7 +1765,7 @@ async function toggleSiteDisabled() {
     if (!confirm('Disable the public website? Visitors will see a "Site closed" page until you re-enable it.')) return;
   }
   // Save to Supabase jain_settings table
-  var r = await sbFetch(SB_URL + '/rest/v1/jain_settings', {
+  var r = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
     body: JSON.stringify([{ key: 'site_disabled', value: newVal }])
@@ -1813,7 +1791,7 @@ function renderSiteStatus(isDisabled) {
 
 // Load site status from Supabase on panel open
 async function loadSiteStatus() {
-  var r = await sbFetch(SB_URL + '/rest/v1/jain_settings?key=eq.site_disabled&select=value', { headers: SB_HDRS });
+  var r = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.site_disabled&select=value', { headers: SB_HDRS });
   if (r.data && r.data.length) {
     renderSiteStatus(r.data[0].value === 'true');
   } else {
@@ -1847,7 +1825,7 @@ function renderSuperAdmin() {
   if (!logEl && !logEl2) return;
   var html;
   if (!log.length) {
-    html = '<div class="su-empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p style="font-size:14px;font-weight:700;color:var(--green)">No actions this week</p><small>jain has not made any changes in the past 7 days.</small></div>';
+    html = '<div class="su-empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p style="font-size:14px;font-weight:700;color:var(--green)">No actions this week</p><small>expert has not made any changes in the past 7 days.</small></div>';
     if (logEl)  logEl.innerHTML  = html;
     if (logEl2) logEl2.innerHTML = html;
     return;
@@ -1919,11 +1897,11 @@ async function undoSingleAction(entry) {
       var item  = list.find(function(x) { return x.id === d.id; });
       if (!item) return true;
       if (item.isBase) {
-        var r = await sbFetch(SB_URL+'/rest/v1/jain_hidden?product_id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
+        var r = await sbFetch(SB_URL+'/rest/v1/expert_hidden?product_id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
         if (r.error) return false;
         _hiddenBaseIds.delete(d.id);
       } else {
-        var r = await sbFetch(SB_URL+'/rest/v1/jain_products', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}), body:JSON.stringify([{name:item.name,category:item.cat,price:item.price,img_url:item.img||'',hidden:false}]) });
+        var r = await sbFetch(SB_URL+'/rest/v1/expert_products', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}), body:JSON.stringify([{name:item.name,category:item.cat,price:item.price,img_url:item.img||'',hidden:false}]) });
         if (r.error) return false;
       }
       saveDeletedProducts(list.filter(function(x) { return x.id !== d.id; }));
@@ -1934,24 +1912,24 @@ async function undoSingleAction(entry) {
       var order = list.find(function(x) { return x.id === d.id; });
       if (!order) return true;
       var payload = { customer_name:order.customer_name, customer_phone:order.customer_phone, address:order.address, notes:order.notes||'', items:order.items, total:parseFloat(order.total||0), status:order.status||'pending' };
-      var r = await sbFetch(SB_URL+'/rest/v1/jain_orders', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}), body:JSON.stringify([payload]) });
+      var r = await sbFetch(SB_URL+'/rest/v1/expert_orders', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}), body:JSON.stringify([payload]) });
       if (r.error) return false;
       saveDeletedOrders(list.filter(function(x) { return x.id !== d.id; }));
       return true;
     }
     if (entry.action === 'stock_change') {
       stockData[d.id] = d.oldQty;
-      var r = await sbFetch(SB_URL+'/rest/v1/jain_stock', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}), body:JSON.stringify([{product_id:d.id,qty:d.oldQty}]) });
+      var r = await sbFetch(SB_URL+'/rest/v1/expert_stock', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}), body:JSON.stringify([{product_id:d.id,qty:d.oldQty}]) });
       return !r.error;
     }
     if (entry.action === 'status_change') {
-      var r = await sbFetch(SB_URL+'/rest/v1/jain_orders?id=eq.'+d.id, { method:'PATCH', headers:Object.assign({},SB_HDRS,{'Prefer':'return=minimal'}), body:JSON.stringify({status:d.oldStatus}) });
+      var r = await sbFetch(SB_URL+'/rest/v1/expert_orders?id=eq.'+d.id, { method:'PATCH', headers:Object.assign({},SB_HDRS,{'Prefer':'return=minimal'}), body:JSON.stringify({status:d.oldStatus}) });
       if (!r.error && _allOrders) { var o = _allOrders.find(function(x){return x.id===d.id;}); if (o) o.status = d.oldStatus; }
       return !r.error;
     }
     if (entry.action === 'add_product') {
-      var r = await sbFetch(SB_URL+'/rest/v1/jain_products?id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
-      await sbFetch(SB_URL+'/rest/v1/jain_stock?product_id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
+      var r = await sbFetch(SB_URL+'/rest/v1/expert_products?id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
+      await sbFetch(SB_URL+'/rest/v1/expert_stock?product_id=eq.'+d.id, { method:'DELETE', headers:SB_HDRS });
       return !r.error;
     }
     return true;
@@ -1988,7 +1966,6 @@ function switchTab(tab) {
   document.getElementById('deletedSection').style.display    = tab==='deleted'    ? 'block' : 'none';
   document.getElementById('ordersSection').style.display     = tab==='orders'     ? 'block' : 'none';
   document.getElementById('reportsSection').style.display    = tab==='reports'    ? 'block' : 'none';
-  document.getElementById('salesSection').style.display      = tab==='sales'      ? 'block' : 'none';
   document.getElementById('categoriesSection').style.display = tab==='categories' ? 'block' : 'none';
   document.getElementById('ownerSection').style.display      = tab==='owner'      ? 'block' : 'none';
   document.getElementById('tabInventory').classList.toggle('active',   tab==='inventory');
@@ -1996,14 +1973,12 @@ function switchTab(tab) {
   document.getElementById('tabDeleted').classList.toggle('active',     tab==='deleted');
   document.getElementById('tabOrders').classList.toggle('active',      tab==='orders');
   document.getElementById('tabReports').classList.toggle('active',     tab==='reports');
-  document.getElementById('tabSales').classList.toggle('active',       tab==='sales');
   document.getElementById('tabCategories').classList.toggle('active',  tab==='categories');
   document.getElementById('tabOwner').classList.toggle('active',       tab==='owner');
   if (tab==='analytics')   renderAnalytics();
   if (tab==='deleted')   { renderDeletedTab(); if (_deletedSubTab==='orders') renderDeletedOrdersTab(); }
   if (tab==='orders')    { loadOrders(false); }
   if (tab==='reports')   { renderReports(); renderOrdersReport(); _autoWriteReports(); }
-  if (tab==='sales')       renderSalesTab();
   if (tab==='categories')  renderCatEditor();
   if (tab==='owner')       renderSuperAdmin();
 }
@@ -2058,7 +2033,7 @@ function saveCatBg(slug, input) {
     bgs[slug] = e.target.result;
     localStorage.setItem('jain_cat_bgs', JSON.stringify(bgs));
     // Save to Supabase
-    sbFetch(SB_URL + '/rest/v1/jain_cat_bgs', {
+    sbFetch(SB_URL + '/rest/v1/expert_cat_bgs', {
       method: 'POST',
       headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
       body: JSON.stringify([{ slug: slug, img_url: e.target.result }])
@@ -2074,7 +2049,7 @@ function resetCatBg(slug) {
   try { bgs = JSON.parse(localStorage.getItem('jain_cat_bgs') || '{}'); } catch(e) {}
   delete bgs[slug];
   localStorage.setItem('jain_cat_bgs', JSON.stringify(bgs));
-  sbFetch(SB_URL + '/rest/v1/jain_cat_bgs?slug=eq.' + slug, { method: 'DELETE', headers: SB_HDRS });
+  sbFetch(SB_URL + '/rest/v1/expert_cat_bgs?slug=eq.' + slug, { method: 'DELETE', headers: SB_HDRS });
   showToast('Reset to default');
   renderCatEditor();
 }
@@ -2406,7 +2381,7 @@ var _ordFileHandle   = null;
 
 async function loadOrders(showToastMsg) {
   if (showToastMsg) showToast('Loading orders…');
-  var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?select=*&order=created_at.desc', { headers: SB_HDRS });
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_orders?select=*&order=created_at.desc', { headers: SB_HDRS });
   console.log('[Admin] loadOrders result:', res);
   if (res.error) {
     console.error('[Admin] Orders load FAILED:', res.error);
@@ -2474,10 +2449,7 @@ function renderOrdersTab() {
       '<td><div class="ord-items">'+items+'</div></td>'+
       '<td><span class="ord-total">'+parseFloat(o.total||0).toFixed(3)+'</span></td>'+
       '<td>'+statusSel+'</td>'+
-      '<td style="white-space:nowrap">'+
-        '<button class="del-btn" onclick="deleteOrder('+o.id+')" title="Delete order"><i class="fa fa-trash"></i></button> '+
-        '<button class="del-btn" style="background:#e8f4fd;color:#1d4ed8;border-color:#bfdbfe" onclick="printInvoice('+o.id+')" title="Print invoice"><i class="fa fa-print"></i></button>'+
-      '</td>'+
+      '<td><button class="del-btn" onclick="deleteOrder('+o.id+')" title="Delete order"><i class="fa fa-trash"></i></button></td>'+
     '</tr>';
   }).join('');
 }
@@ -2487,7 +2459,7 @@ async function updateOrderStatus(id, newStatus, selectEl) {
   var _ord = _allOrders ? _allOrders.find(function(o){return o.id===id;}) : null;
   logAction('status_change', { id:id, oldStatus:_ord?_ord.status:'unknown', newStatus:newStatus });
   if (_ord) _ord.status = newStatus;
-  var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?id=eq.'+id, {
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_orders?id=eq.'+id, {
     method: 'PATCH',
     headers: Object.assign({}, SB_HDRS, {'Content-Type':'application/json','Prefer':'return=minimal'}),
     body: JSON.stringify({ status: newStatus })
@@ -2593,47 +2565,25 @@ function renderOrdersReport() {
 
 // â”€â”€ STATS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderStats() {
-  const allProds = getAllAdminProducts();
-  const total  = allProds.length;
-  const units  = allProds.reduce(function(s,p) { return s+(stockData[p.id]||0); }, 0);
-  const value  = allProds.reduce(function(s,p) { return s+p.price*(stockData[p.id]||0); }, 0);
-  const low    = allProds.filter(function(p) { return (stockData[p.id]||0) > 0 && (stockData[p.id]||0) <= 10; }).length;
-  const out    = allProds.filter(function(p) { return (stockData[p.id]||0) === 0; }).length;
+  const total  = PRODUCTS.length;
+  const units  = PRODUCTS.reduce(function(s,p) { return s+(stockData[p.id]||0); }, 0);
+  const value  = PRODUCTS.reduce(function(s,p) { return s+p.price*(stockData[p.id]||0); }, 0);
+  const low    = PRODUCTS.filter(function(p) { return (stockData[p.id]||0) > 0 && (stockData[p.id]||0) <= 10; }).length;
+  const out    = PRODUCTS.filter(function(p) { return (stockData[p.id]||0) === 0; }).length;
   document.getElementById('statsGrid').innerHTML =
-    card('fa-boxes','ic-orange','Total Products', total, total + ' active products') +
+    card('fa-boxes','ic-orange','Total Products', total, getAllAdminProducts().length + ' active products') +
     card('fa-layer-group','ic-blue','Total Units', units.toLocaleString(), 'In stock') +
     card('fa-coins','ic-green','Inventory Value', value.toFixed(2)+' KWD', 'Total stock value') +
     card('fa-exclamation-triangle','ic-red','Alerts', low+out, low+' low &nbsp;|&nbsp; '+out+' out');
-  const lowList = allProds.filter(function(p) { return (stockData[p.id]||0) <= 10; });
+  const lowList = PRODUCTS.filter(function(p) { return (stockData[p.id]||0) <= 10; });
   const box = document.getElementById('alertsBox');
   if (lowList.length) {
     box.classList.add('show');
     document.getElementById('alertItems').innerHTML = lowList.map(function(p) {
-      return '<div class="alert-chip"><i class="fa fa-warning"></i> '+p.name+' &mdash; '+(stockData[p.id]||0)+' left'+
-        '<button class="alert-goto-btn" onclick="jumpToProduct('+p.id+')" title="Go to product"><i class="fa fa-arrow-right"></i> Add Stock</button>'+
-      '</div>';
+      return '<div class="alert-chip"><i class="fa fa-warning"></i> '+p.name+' &mdash; '+(stockData[p.id]||0)+' left</div>';
     }).join('');
   } else { box.classList.remove('show'); }
 }
-function jumpToProduct(id) {
-  // Make sure inventory tab is active and filter shows this product
-  switchTab('inventory');
-  var cf = document.getElementById('catFilter');
-  if (cf) cf.value = 'all';
-  document.getElementById('adminSearch').value = '';
-  renderTable();
-  // Scroll to the product row and flash it
-  setTimeout(function() {
-    var row = document.getElementById('si' + id);
-    if (row) {
-      row.closest('tr').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      row.closest('tr').classList.add('row-flash');
-      setTimeout(function() { row.closest('tr').classList.remove('row-flash'); }, 2000);
-      row.focus();
-    }
-  }, 150);
-}
-
 function card(icon, cls, label, val, sub) {
   return '<div class="stat-card"><div class="stat-icon '+cls+'"><i class="fa '+icon+'"></i></div>' +
     '<div class="stat-info"><label>'+label+'</label><strong>'+val+'</strong><small>'+sub+'</small></div></div>';
@@ -2647,8 +2597,7 @@ function renderTable() {
   const q   = document.getElementById('adminSearch').value.toLowerCase();
   const cat = document.getElementById('catFilter').value;
   const list = getAllAdminProducts().filter(function(p) {
-    var catOk = cat==='all' || (cat==='__custom__' ? !p.isBase : p.cat===cat);
-    return catOk && (!q||p.name.toLowerCase().includes(q));
+    return (cat==='all'||p.cat===cat) && (!q||p.name.toLowerCase().includes(q)||getBrand(p.id).toLowerCase().includes(q));
   });
   const rows = list.map(function(p) {
     const qty    = stockData[p.id]||0;
@@ -2686,6 +2635,7 @@ function renderTable() {
         '</div></div>' +
       '</div></td>' +
       '<td>'+catPills+'</td>' +
+      '<td><div class="brand-cell"><input class="brand-input" id="bi'+p.id+'" value="'+encodeHtml(getBrand(p.id))+'" placeholder="Brand" oninput="onBrandEdit('+p.id+')" /><button class="brand-menu-btn" title="Brand actions" onclick="openBrandMenu('+p.id+',event)"><i class="fa fa-ellipsis-v"></i></button></div></td>' +
       '<td><input class="price-input" id="pi'+p.id+'" type="number" step="0.001" min="0" value="'+((_prodOverrides[p.id]||{}).price!==undefined?(_prodOverrides[p.id].price).toFixed(3):p.price.toFixed(3))+'" oninput="onPriceEdit('+p.id+')" /></td>' +
       '<td><input type="number" class="stock-input '+cls+'" id="si'+p.id+'" value="'+qty+'" min="0" oninput="onStock('+p.id+')" /></td>' +
       '<td><span class="status-dot"><span class="dot '+dotCls+'"></span>'+status+'</span></td>' +
@@ -2704,7 +2654,7 @@ function renderTable() {
   const tv = list.reduce(function(s,p){ return s+p.price*(stockData[p.id]||0); },0);
   const tu = list.reduce(function(s,p){ return s+(stockData[p.id]||0); },0);
   document.getElementById('tblFoot').innerHTML =
-    '<tr class="tfoot-row"><td colspan="5">TOTAL ('+list.length+' shown, '+list.filter(function(p){return p.hidden;}).length+' hidden)</td>' +
+    '<tr class="tfoot-row"><td colspan="6">TOTAL ('+list.length+' shown, '+list.filter(function(p){return p.hidden;}).length+' hidden)</td>' +
     '<td>'+tu+' units</td><td></td><td>'+tv.toFixed(3)+' KWD</td><td></td></tr>';
   // Sync select-all checkbox state
   var allChks = document.querySelectorAll('.row-chk');
@@ -2735,6 +2685,13 @@ function onPriceEdit(id) {
   _prodOverrides[id].price = isNaN(val) ? 0 : val;
   renderStats();
 }
+function getBrand(id){ return ((_prodOverrides[id]||{}).brand)||BASE_BRANDS[id]||''; }
+function onBrandEdit(id){
+  var el=document.getElementById('bi'+id); if(!el) return;
+  if(!_prodOverrides[id]) _prodOverrides[id]={};
+  _prodOverrides[id].brand=el.value;
+  localStorage.setItem('bahar_overrides', JSON.stringify(_prodOverrides));
+}
 function setStock(id, qty) { _pushUndo(); stockData[id]=qty; renderTable(); renderStats(); }
 function addStock(id) { _pushUndo(); const cur=stockData[id]||0; const nq=Math.ceil((cur+1)/50)*50; logAction('stock_change',{id:id,name:(getAllAdminProducts().find(function(p){return p.id===id;})||{}).name||'#'+id,oldQty:cur,newQty:nq}); stockData[id]=nq; renderTable(); renderStats(); }
 async function saveAll() {
@@ -2748,10 +2705,10 @@ async function saveAll() {
   });
   localStorage.setItem('bahar_overrides', JSON.stringify(_prodOverrides));
 
-  getAllAdminProducts().forEach(function(p) { const el=document.getElementById('si'+p.id); if(el) stockData[p.id]=Math.max(0,parseInt(el.value)||0); });
+  PRODUCTS.forEach(function(p) { const el=document.getElementById('si'+p.id); if(el) stockData[p.id]=Math.max(0,parseInt(el.value)||0); });
   localStorage.setItem('jain_stock', JSON.stringify(stockData));
-  const rows = getAllAdminProducts().map(function(p) { return { product_id: p.id, qty: stockData[p.id]||0 }; });
-  const { error } = await sbFetch(SB_URL + '/rest/v1/jain_stock', {
+  const rows = PRODUCTS.map(function(p) { return { product_id: p.id, qty: stockData[p.id]||0 }; });
+  const { error } = await sbFetch(SB_URL + '/rest/v1/expert_stock', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
     body: JSON.stringify(rows)
@@ -2768,7 +2725,7 @@ async function renderAnalytics() {
   document.getElementById('searchesTable').innerHTML = '';
 
   // Read from Supabase (works regardless of which origin admin is opened from)
-  const result = await sbFetch(SB_URL + '/rest/v1/jain_analytics?select=*', { headers: SB_HDRS });
+  const result = await sbFetch(SB_URL + '/rest/v1/expert_analytics?select=*', { headers: SB_HDRS });
 
   var views = {}, searches = {};
   if (!result.error && Array.isArray(result.data) && result.data.length > 0) {
@@ -2804,110 +2761,7 @@ async function renderAnalytics() {
   const sortedSearches = PRODUCTS.slice().sort(function(a,b){ return (searches[b.id]||0)-(searches[a.id]||0); }).slice(0,10);
   const maxS = searches[sortedSearches[0] && sortedSearches[0].id] || 1;
   document.getElementById('searchesTable').innerHTML = buildAnTable(sortedSearches, searches, photos, maxS, 'bar-purple', 'searches');
-  renderSearchTerms();
 }
-// ── SEARCH TERMS (what customers actually typed) ─────────────────────────
-function renderSearchTerms() {
-  var box = document.getElementById('searchTermsBox');
-  if (!box) return;
-  var terms = {};
-  try { terms = JSON.parse(localStorage.getItem('jain_search_terms') || '{}'); } catch(e){}
-  var sorted = Object.entries(terms).sort(function(a,b){return b[1]-a[1];});
-  if (!sorted.length) {
-    box.innerHTML = '<p style="color:#aaa;font-size:13px;padding:8px 0">No search data yet — data is collected as customers search on the site.</p>';
-    return;
-  }
-  var max = sorted[0][1] || 1;
-  box.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">' +
-    sorted.slice(0,30).map(function(e){
-      var size = Math.max(11, Math.min(22, 11 + Math.round(e[1]/max * 11)));
-      return '<span style="background:rgba(200,21,27,0.1);color:var(--orange);padding:5px 12px;border-radius:20px;font-size:'+size+'px;font-weight:700;cursor:default" title="'+e[1]+' searches">'+encodeHtml(e[0])+'<small style="font-size:9px;margin-left:5px;opacity:0.7">×'+e[1]+'</small></span>';
-    }).join('') + '</div>' +
-    '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #f0f0f0"><th style="text-align:left;padding:6px 8px">Search Query</th><th style="padding:6px 8px;text-align:right">Times</th></tr></thead><tbody>' +
-    sorted.slice(0,20).map(function(e,i){
-      return '<tr style="border-bottom:1px solid #f9f9f9"><td style="padding:6px 8px"><span style="color:#aaa;margin-right:8px;font-size:10px">#'+(i+1)+'</span>'+encodeHtml(e[0])+'</td><td style="text-align:right;padding:6px 8px;font-weight:700;color:var(--orange)">'+e[1]+'</td></tr>';
-    }).join('') + '</tbody></table>';
-}
-function resetSearchTerms() {
-  if (!confirm('Clear all search term data?')) return;
-  localStorage.removeItem('jain_search_terms');
-  renderSearchTerms();
-}
-
-// ── SALES TAB ──────────────────────────────────────────────────────────────
-async function renderSalesTab() {
-  var period = (document.getElementById('salesPeriodFilter') || {}).value || 'week';
-  document.getElementById('salesStats').innerHTML = '<div style="color:#aaa;font-size:13px;padding:16px">Loading sales data...</div>';
-  document.getElementById('salesTopProducts').innerHTML = '';
-  document.getElementById('salesRecentOrders').innerHTML = '';
-
-  var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?select=*&order=created_at.desc', { headers: SB_HDRS });
-  if (res.error || !Array.isArray(res.data)) {
-    document.getElementById('salesStats').innerHTML = '<p style="color:#dc2626;padding:16px">Could not load orders.</p>';
-    return;
-  }
-
-  var now = Date.now();
-  var cutoff = period === 'week' ? now - 7*864e5 : period === 'month' ? now - 30*864e5 : 0;
-  var orders = res.data.filter(function(o){
-    return o.status !== 'cancelled' && (!cutoff || new Date(o.created_at||0).getTime() > cutoff);
-  });
-
-  // Aggregate by product
-  var prodSales = {}; // name → {qty, revenue}
-  var totalRevenue = 0, totalOrders = orders.length;
-  orders.forEach(function(o) {
-    totalRevenue += parseFloat(o.total||0);
-    var items = [];
-    try { items = typeof o.items==='string' ? JSON.parse(o.items) : (o.items||[]); } catch(e){}
-    items.forEach(function(it){
-      var k = it.name || 'Unknown';
-      if (!prodSales[k]) prodSales[k] = {qty:0, revenue:0};
-      prodSales[k].qty += parseInt(it.qty||1);
-      prodSales[k].revenue += parseFloat(it.price||0) * parseInt(it.qty||1);
-    });
-  });
-
-  var periodLabel = period==='week' ? 'Past 7 Days' : period==='month' ? 'Past 30 Days' : 'All Time';
-  document.getElementById('salesStats').innerHTML =
-    aCard('fa-shopping-bag','ic-orange','Orders ('+periodLabel+')', totalOrders, 'Completed orders') +
-    aCard('fa-coins','ic-orange','Revenue', totalRevenue.toFixed(3)+' KWD', 'Total from orders') +
-    aCard('fa-box','ic-purple','Products Sold', Object.values(prodSales).reduce(function(s,v){return s+v.qty;},0)+' units', 'Across all orders') +
-    aCard('fa-trophy','ic-purple','Top Product', Object.keys(prodSales).length ? Object.entries(prodSales).sort(function(a,b){return b[1].qty-a[1].qty;})[0][0].split(' ').slice(0,3).join(' ')+'…' : '—', 'Most units sold');
-
-  // Top products table
-  var sorted = Object.entries(prodSales).sort(function(a,b){return b[1].qty-a[1].qty;}).slice(0,15);
-  if (!sorted.length) {
-    document.getElementById('salesTopProducts').innerHTML = '<p style="color:#aaa;font-size:13px;padding:12px">No sales data for this period.</p>';
-  } else {
-    var maxQ = sorted[0][1].qty || 1;
-    document.getElementById('salesTopProducts').innerHTML =
-      '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #f0f0f0"><th style="text-align:left;padding:7px 8px">#</th><th style="text-align:left;padding:7px 8px">Product</th><th style="text-align:right;padding:7px 8px">Units</th><th style="text-align:right;padding:7px 8px">Revenue</th></tr></thead><tbody>' +
-      sorted.map(function(e,i){
-        var pct = Math.round(e[1].qty/maxQ*100);
-        return '<tr style="border-bottom:1px solid #f9f9f9"><td style="padding:7px 8px;color:#aaa;font-size:10px;font-weight:700">'+(i+1)+'</td>'+
-          '<td style="padding:7px 8px"><div style="font-weight:700;margin-bottom:3px">'+encodeHtml(e[0])+'</div>'+
-          '<div style="height:4px;background:#f0f0f0;border-radius:2px"><div style="height:4px;background:var(--orange);border-radius:2px;width:'+pct+'%"></div></div></td>'+
-          '<td style="text-align:right;padding:7px 8px;font-weight:800;color:var(--orange)">'+e[1].qty+'</td>'+
-          '<td style="text-align:right;padding:7px 8px;color:#555">'+e[1].revenue.toFixed(3)+'</td></tr>';
-      }).join('') + '</tbody></table>';
-  }
-
-  // Recent orders summary
-  var recent = orders.slice(0,10);
-  document.getElementById('salesRecentOrders').innerHTML = recent.length ?
-    '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #f0f0f0"><th style="text-align:left;padding:7px 8px">Customer</th><th style="text-align:right;padding:7px 8px">Total</th><th style="text-align:right;padding:7px 8px">Status</th></tr></thead><tbody>' +
-    recent.map(function(o){
-      var sc = {pending:'#f59e0b',confirmed:'#3b82f6',delivered:'#16a34a',cancelled:'#dc2626'};
-      var st = o.status||'pending';
-      return '<tr style="border-bottom:1px solid #f9f9f9">'+
-        '<td style="padding:7px 8px"><div style="font-weight:700">'+encodeHtml(o.customer_name||o.name||'—')+'</div><div style="font-size:10px;color:#aaa">'+encodeHtml(o.customer_phone||'')+'</div></td>'+
-        '<td style="text-align:right;padding:7px 8px;font-weight:700">'+parseFloat(o.total||0).toFixed(3)+' KWD</td>'+
-        '<td style="text-align:right;padding:7px 8px;font-weight:700;color:'+(sc[st]||'#aaa')+'">'+st+'</td></tr>';
-    }).join('') + '</tbody></table>' :
-    '<p style="color:#aaa;font-size:13px;padding:12px">No orders in this period.</p>';
-}
-
 function aCard(icon, cls, label, val, sub) {
   return '<div class="stat-card"><div class="stat-icon '+cls+'"><i class="fa '+icon+'"></i></div>' +
     '<div class="stat-info"><label>'+label+'</label><strong>'+val+'</strong><small>'+sub+'</small></div></div>';
@@ -2944,10 +2798,10 @@ async function resetViews() {
   if (!confirm('Reset all view data?')) return;
   localStorage.removeItem('bahar_views');
   // Zero out views in Supabase
-  await sbFetch(SB_URL + '/rest/v1/jain_analytics?select=product_id', { headers: SB_HDRS })
+  await sbFetch(SB_URL + '/rest/v1/expert_analytics?select=product_id', { headers: SB_HDRS })
     .then(function(r) {
       if (!r.error && Array.isArray(r.data)) {
-        return sbFetch(SB_URL + '/rest/v1/jain_analytics?product_id=gte.0', {
+        return sbFetch(SB_URL + '/rest/v1/expert_analytics?product_id=gte.0', {
           method: 'PATCH',
           headers: Object.assign({}, SB_HDRS, { 'Prefer': 'return=minimal' }),
           body: JSON.stringify({ views: 0 })
@@ -2961,7 +2815,7 @@ async function resetSearches() {
   if (!confirm('Reset all search data?')) return;
   localStorage.removeItem('bahar_searches');
   // Zero out searches in Supabase
-  await sbFetch(SB_URL + '/rest/v1/jain_analytics?product_id=gte.0', {
+  await sbFetch(SB_URL + '/rest/v1/expert_analytics?product_id=gte.0', {
     method: 'PATCH',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'return=minimal' }),
     body: JSON.stringify({ searches: 0 })
@@ -2990,7 +2844,7 @@ function openStats(id) {
   document.getElementById('smBody').innerHTML =
     '<div class="sm-prod-row">' +
       '<img src="'+thumb+'" onerror="this.style.opacity=0.2" />' +
-      '<div class="sm-prod-info"><strong>'+p.name+'</strong><span>#'+id+' &nbsp;•&nbsp; '+((p.cat||'').replace('-',' '))+'</span></div>' +
+      '<div class="sm-prod-info"><strong>'+p.name+'</strong><span>#'+id+' &nbsp;â€¢&nbsp; '+((p.cat||'').replace('-',' '))+'</span></div>' +
     '</div>' +
     '<div class="sm-metrics">' +
       '<div class="sm-metric"><i class="fa fa-eye" style="color:var(--orange)"></i>' +
@@ -3016,10 +2870,10 @@ async function toggleVisibility(id, isBase) {
   let err = null;
   if (isBase) {
     if (_hiddenBaseIds.has(id)) {
-      ({ error: err } = await sbFetch(SB_URL + '/rest/v1/jain_hidden?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS }));
+      ({ error: err } = await sbFetch(SB_URL + '/rest/v1/expert_hidden?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS }));
       if (!err) _hiddenBaseIds.delete(id);
     } else {
-      ({ error: err } = await sbFetch(SB_URL + '/rest/v1/jain_hidden', {
+      ({ error: err } = await sbFetch(SB_URL + '/rest/v1/expert_hidden', {
         method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
         body:JSON.stringify([{product_id:id, hidden:true}])
       }));
@@ -3029,7 +2883,7 @@ async function toggleVisibility(id, isBase) {
     const row = _customProductRows.find(function(p){ return p.id===id; });
     if (!row) return;
     const newHidden = !row.hidden;
-    ({ error: err } = await sbFetch(SB_URL + '/rest/v1/jain_products?id=eq.' + id, {
+    ({ error: err } = await sbFetch(SB_URL + '/rest/v1/expert_products?id=eq.' + id, {
       method:'PATCH', headers:SB_HDRS, body:JSON.stringify({hidden:newHidden})
     }));
     if (!err) row.hidden = newHidden;
@@ -3160,7 +3014,7 @@ async function saveNewProduct() {
     setProductSku(safeId, skuTyped);
   }
 
-  var { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/jain_products', {
+  var { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/expert_products', {
     method:'POST',
     headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}),
     body:JSON.stringify([{
@@ -3177,7 +3031,7 @@ async function saveNewProduct() {
     var newId = rows[0].id;
     var qty   = parseInt(document.getElementById('apStock').value) || 50;
     stockData[newId] = qty;
-    await sbFetch(SB_URL + '/rest/v1/jain_stock', {
+    await sbFetch(SB_URL + '/rest/v1/expert_stock', {
       method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
       body:JSON.stringify([{product_id:newId, qty}])
     });
@@ -3190,7 +3044,7 @@ async function saveNewProduct() {
         var photos = JSON.parse(localStorage.getItem('jain_photos')||'{}');
         photos[newId] = finalUrl;
         localStorage.setItem('jain_photos', JSON.stringify(photos));
-        await sbFetch(SB_URL + '/rest/v1/jain_photos', {
+        await sbFetch(SB_URL + '/rest/v1/expert_photos', {
           method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
           body:JSON.stringify([{product_id:newId, url:finalUrl}])
         });
@@ -3234,7 +3088,7 @@ async function deleteProduct(id, isBase) {
   saveDeletedProducts(deleted);
   logAction('delete_product', { id:prod.id, name:prod.name, isBase:prod.isBase });
   if (isBase) {
-    const { error } = await sbFetch(SB_URL + '/rest/v1/jain_hidden', {
+    const { error } = await sbFetch(SB_URL + '/rest/v1/expert_hidden', {
       method:'POST', headers: Object.assign({},SB_HDRS,{'Prefer':'resolution=ignore-duplicates'}),
       body:JSON.stringify({ product_id: id })
     });
@@ -3242,9 +3096,9 @@ async function deleteProduct(id, isBase) {
     _hiddenBaseIds.add(id);
   } else {
     await Promise.all([
-      sbFetch(SB_URL + '/rest/v1/jain_products?id=eq.' + id,       { method:'DELETE', headers:SB_HDRS }),
-      sbFetch(SB_URL + '/rest/v1/jain_stock?product_id=eq.' + id,  { method:'DELETE', headers:SB_HDRS }),
-      sbFetch(SB_URL + '/rest/v1/jain_photos?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS })
+      sbFetch(SB_URL + '/rest/v1/expert_products?id=eq.' + id,       { method:'DELETE', headers:SB_HDRS }),
+      sbFetch(SB_URL + '/rest/v1/expert_stock?product_id=eq.' + id,  { method:'DELETE', headers:SB_HDRS }),
+      sbFetch(SB_URL + '/rest/v1/expert_photos?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS })
     ]);
   }
   showToast('Deleted — restore from Deleted tab within 60 days');
@@ -3257,11 +3111,11 @@ async function restoreProduct(id, isBase) {
   const entry = deleted.find(function(d){ return d.id===id; });
   if (!entry) { showToast('Product not found'); return; }
   if (isBase) {
-    const { error } = await sbFetch(SB_URL + '/rest/v1/jain_hidden?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS });
+    const { error } = await sbFetch(SB_URL + '/rest/v1/expert_hidden?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS });
     if (error) { showToast('Restore failed: ' + error); return; }
     _hiddenBaseIds.delete(id);
   } else {
-    const { error } = await sbFetch(SB_URL + '/rest/v1/jain_products', {
+    const { error } = await sbFetch(SB_URL + '/rest/v1/expert_products', {
       method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}),
       body:JSON.stringify([{ name:entry.name, category:entry.cat, price:entry.price, img_url:entry.img||'', hidden:false }])
     });
@@ -3334,7 +3188,7 @@ async function deleteOrder(id) {
   saveDeletedOrders(del);
   logAction('delete_order', { id:order.id, customer_name:order.customer_name });
   // Remove from Supabase
-  var res = await sbFetch(SB_URL + '/rest/v1/jain_orders?id=eq.' + id, { method: 'DELETE', headers: SB_HDRS });
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_orders?id=eq.' + id, { method: 'DELETE', headers: SB_HDRS });
   if (res.error) { showToast('Delete failed: ' + res.error); return; }
   // Remove from local list and re-render
   _allOrders = _allOrders.filter(function(o){ return o.id !== id; });
@@ -3359,7 +3213,7 @@ async function restoreOrder(id) {
     total:          parseFloat(entry.total || 0),
     status:         entry.status || 'pending'
   };
-  var res = await sbFetch(SB_URL + '/rest/v1/jain_orders', {
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_orders', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, {'Prefer':'return=representation'}),
     body: JSON.stringify([payload])
@@ -3690,7 +3544,7 @@ async function importCSVProducts() {
     const imgDataUrl  = embeddedImg || namedImg;
     const imgUrl      = imgDataUrl || r.image_url || r.img_url || '';
 
-    const { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/jain_products', {
+    const { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/expert_products', {
       method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}),
       body:JSON.stringify([{
         name: r.name, category: r.category,
@@ -3706,7 +3560,7 @@ async function importCSVProducts() {
       const newId = rows[0].id;
       const qty   = parseInt(r.stock)||50;
       stockData[newId] = qty;
-      await sbFetch(SB_URL + '/rest/v1/jain_stock', {
+      await sbFetch(SB_URL + '/rest/v1/expert_stock', {
         method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
         body:JSON.stringify([{product_id:newId, qty}])
       });
@@ -3714,7 +3568,7 @@ async function importCSVProducts() {
       if (imgDataUrl) {
         localPhotos[String(newId)] = imgDataUrl;
         // Also save to Supabase photos table
-        sbFetch(SB_URL + '/rest/v1/jain_photos', {
+        sbFetch(SB_URL + '/rest/v1/expert_photos', {
           method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
           body:JSON.stringify([{product_id:newId, url:imgDataUrl}])
         });
@@ -3728,10 +3582,6 @@ async function importCSVProducts() {
   showToast(count + ' product'+(count!==1?'s':'')+' imported' + (imgCount ? ' with '+imgCount+' image'+(imgCount!==1?'s':'') : '') + '! ✅');
   closeCSV();
   await loadFromSupabase();
-  // Switch filter to show only imported/custom products so user can see them immediately
-  var cf = document.getElementById('catFilter');
-  if (cf) { cf.value = '__custom__'; }
-  renderTable();
   btn.disabled = false; btn.innerHTML = '<i class="fa fa-download"></i> Import All Products';
 }
 function downloadTemplate() {
@@ -3770,7 +3620,6 @@ function slugify(str) {
 function refreshCategorySelects() {
   const cats = getAllCats();
   const filterOpts = '<option value="all">All Categories</option>' +
-    '<option value="__custom__">⭐ Imported / Custom</option>' +
     cats.map(c => '<option value="'+c.slug+'">'+c.label+'</option>').join('');
   document.getElementById('catFilter').innerHTML = filterOpts;
 
@@ -4053,7 +3902,7 @@ function toggleSelectAll(checked) {
   var q = document.getElementById('adminSearch').value.toLowerCase();
   var cat = document.getElementById('catFilter').value;
   var list = getAllAdminProducts().filter(function(p){
-    return (cat==='all'||p.cat===cat) && (!q||p.name.toLowerCase().includes(q));
+    return (cat==='all'||p.cat===cat) && (!q||p.name.toLowerCase().includes(q)||getBrand(p.id).toLowerCase().includes(q));
   });
   list.forEach(function(p){ checked ? _selectedIds.add(p.id) : _selectedIds.delete(p.id); });
   document.querySelectorAll('.row-chk').forEach(function(c){ c.checked = checked; });
@@ -4098,10 +3947,10 @@ async function bulkHide() {
     var p = getAllAdminProducts().find(function(x){return x.id===id;});
     if (!p || p.hidden) continue;
     if (p.isBase) {
-      await sbFetch(SB_URL+'/rest/v1/jain_hidden',{method:'POST',headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify([{product_id:id,hidden:true}])});
+      await sbFetch(SB_URL+'/rest/v1/expert_hidden',{method:'POST',headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify([{product_id:id,hidden:true}])});
       _hiddenBaseIds.add(id);
     } else {
-      await sbFetch(SB_URL+'/rest/v1/jain_products?id=eq.'+id,{method:'PATCH',headers:SB_HDRS,body:JSON.stringify({hidden:true})});
+      await sbFetch(SB_URL+'/rest/v1/expert_products?id=eq.'+id,{method:'PATCH',headers:SB_HDRS,body:JSON.stringify({hidden:true})});
       var row=_customProductRows.find(function(r){return r.id===id;}); if(row) row.hidden=true;
     }
   }
@@ -4116,10 +3965,10 @@ async function bulkShow() {
     var p = getAllAdminProducts().find(function(x){return x.id===id;});
     if (!p || !p.hidden) continue;
     if (p.isBase) {
-      await sbFetch(SB_URL+'/rest/v1/jain_hidden?product_id=eq.'+id,{method:'DELETE',headers:SB_HDRS});
+      await sbFetch(SB_URL+'/rest/v1/expert_hidden?product_id=eq.'+id,{method:'DELETE',headers:SB_HDRS});
       _hiddenBaseIds.delete(id);
     } else {
-      await sbFetch(SB_URL+'/rest/v1/jain_products?id=eq.'+id,{method:'PATCH',headers:SB_HDRS,body:JSON.stringify({hidden:false})});
+      await sbFetch(SB_URL+'/rest/v1/expert_products?id=eq.'+id,{method:'PATCH',headers:SB_HDRS,body:JSON.stringify({hidden:false})});
       var row=_customProductRows.find(function(r){return r.id===id;}); if(row) row.hidden=false;
     }
   }
@@ -4155,17 +4004,62 @@ async function bulkDelete() {
     deleted.push({id:p.id,name:p.name,cat:p.cat,price:p.price,img:p.img,isBase:p.isBase,deletedAt:Date.now()});
     saveDeletedProducts(deleted);
     if (p.isBase) {
-      await sbFetch(SB_URL+'/rest/v1/jain_hidden',{method:'POST',headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=ignore-duplicates'}),body:JSON.stringify({product_id:id})});
+      await sbFetch(SB_URL+'/rest/v1/expert_hidden',{method:'POST',headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=ignore-duplicates'}),body:JSON.stringify({product_id:id})});
       _hiddenBaseIds.add(id);
     } else {
       await Promise.all([
-        sbFetch(SB_URL+'/rest/v1/jain_products?id=eq.'+id,{method:'DELETE',headers:SB_HDRS}),
-        sbFetch(SB_URL+'/rest/v1/jain_stock?product_id=eq.'+id,{method:'DELETE',headers:SB_HDRS})
+        sbFetch(SB_URL+'/rest/v1/expert_products?id=eq.'+id,{method:'DELETE',headers:SB_HDRS}),
+        sbFetch(SB_URL+'/rest/v1/expert_stock?product_id=eq.'+id,{method:'DELETE',headers:SB_HDRS})
       ]);
     }
   }
   showToast(_selectedIds.size+' products deleted');
   clearSelection(); await loadFromSupabase();
+}
+
+// BRAND ACTIONS: click a product's brand menu to act on EVERY product sharing
+// that brand. Reuses the existing bulk-select machinery.
+var _brandMenuBrand='';
+function closeBrandMenu(){ var m=document.getElementById('brandMenu'); if(m) m.remove(); document.removeEventListener('mousedown',_brandMenuOutside); }
+function _brandMenuOutside(e){ var m=document.getElementById('brandMenu'); if(m && !m.contains(e.target)) closeBrandMenu(); }
+function openBrandMenu(id,ev){
+  if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  var inp=document.getElementById('bi'+id);
+  var brand=(inp?inp.value:'').trim();
+  closeBrandMenu();
+  if(!brand){ showToast('Type a brand in this row first, then click the menu'); if(inp) inp.focus(); return; }
+  _brandMenuBrand=brand;
+  var n=getAllAdminProducts().filter(function(p){return getBrand(p.id).trim().toLowerCase()===brand.toLowerCase();}).length;
+  var m=document.createElement('div'); m.className='brand-menu'; m.id='brandMenu';
+  m.innerHTML=
+    '<div class="bm-head">'+encodeHtml(brand)+' · '+n+' product'+(n!==1?'s':'')+'</div>'+
+    '<button onclick="brandRun(\'select\')"><i class="fa fa-check-square"></i> Select all</button>'+
+    '<button onclick="brandRun(\'hide\')"><i class="fa fa-eye-slash"></i> Hide all</button>'+
+    '<button onclick="brandRun(\'show\')"><i class="fa fa-eye"></i> Show all</button>'+
+    '<button onclick="brandRun(\'clear\')"><i class="fa fa-times-circle"></i> Clear stock (all)</button>'+
+    '<button onclick="brandRun(\'add\')"><i class="fa fa-plus"></i> +50 stock (all)</button>'+
+    '<button class="bm-del" onclick="brandRun(\'delete\')"><i class="fa fa-trash"></i> Delete all</button>';
+  document.body.appendChild(m);
+  var r=(ev&&ev.currentTarget?ev.currentTarget:inp).getBoundingClientRect();
+  var mw=210;
+  m.style.top=(r.bottom+window.scrollY+5)+'px';
+  m.style.left=(Math.max(8,Math.min(r.left+window.scrollX, window.scrollX+window.innerWidth-mw-8)))+'px';
+  setTimeout(function(){ document.addEventListener('mousedown',_brandMenuOutside); },0);
+}
+function brandRun(action){
+  var brand=(_brandMenuBrand||'').trim(); closeBrandMenu();
+  if(!brand) return;
+  var ids=getAllAdminProducts().filter(function(p){return getBrand(p.id).trim().toLowerCase()===brand.toLowerCase();}).map(function(p){return p.id;});
+  if(!ids.length){ showToast('No products with brand "'+brand+'"'); return; }
+  _selectedIds=new Set(ids);
+  document.querySelectorAll('.row-chk').forEach(function(c){ c.checked=_selectedIds.has(parseInt(c.getAttribute('data-id'))); });
+  _syncBulkBar();
+  if(action==='select'){ showToast(ids.length+' "'+brand+'" product'+(ids.length!==1?'s':'')+' selected'); return; }
+  if(action==='hide')  return bulkHide();
+  if(action==='show')  return bulkShow();
+  if(action==='clear') return bulkClearStock();
+  if(action==='add')   return bulkAddStock();
+  if(action==='delete')return bulkDelete();
 }
 
 // ── MULTI-CATEGORY ─────────────────────────────────────────────────────────────
@@ -4293,7 +4187,7 @@ async function savePhoto() {
   if (th) th.src = finalUrl;
 
   // Save URL to Supabase jain_photos table
-  const { error: dbErr } = await sbFetch(SB_URL + '/rest/v1/jain_photos', {
+  const { error: dbErr } = await sbFetch(SB_URL + '/rest/v1/expert_photos', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
     body: JSON.stringify([{ product_id: currentPhotoId, url: finalUrl }])
@@ -4303,74 +4197,6 @@ async function savePhoto() {
   _pendingFile = null;
   closePhoto();
   showToast('Photo saved!');
-}
-
-// ── PRINT INVOICE ─────────────────────────────────────────────────────────────
-function printInvoice(orderId) {
-  var o = _allOrders.find(function(x){ return x.id === orderId; });
-  if (!o) return;
-  var dt = o.created_at ? new Date(o.created_at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
-  var items = [];
-  try { items = typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []); } catch(e){}
-  var rows = items.map(function(it, i) {
-    return '<tr><td>'+(i+1)+'</td><td>'+encodeHtml(it.name||'')+'</td><td>'+(it.sku||'')+'</td><td style="text-align:center">'+it.qty+'</td><td style="text-align:right">'+parseFloat(it.price).toFixed(3)+' KWD</td><td style="text-align:right;font-weight:700">'+(parseFloat(it.price)*it.qty).toFixed(3)+' KWD</td></tr>';
-  }).join('');
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Invoice #'+orderId+'</title><style>'+
-    'body{font-family:Arial,sans-serif;padding:40px;color:#222;max-width:700px;margin:0 auto}'+
-    'h1{font-size:24px;color:#c8151b;margin:0}.header{display:flex;justify-content:space-between;margin-bottom:30px;padding-bottom:16px;border-bottom:2px solid #c8151b}'+
-    '.brand{font-size:22px;font-weight:900;color:#4a0000}.brand span{color:#c8151b}'+
-    '.inv-info p{margin:3px 0;font-size:13px;color:#555}'+
-    'table{width:100%;border-collapse:collapse;margin-top:20px}'+
-    'th{background:#4a0000;color:#fff;padding:9px 10px;text-align:left;font-size:12px}'+
-    'td{padding:9px 10px;border-bottom:1px solid #f0f0f0;font-size:13px}'+
-    'tr:last-child td{border-bottom:2px solid #4a0000}'+
-    '.total-row{font-weight:900;font-size:15px;background:#fff9f9}'+
-    '.footer{margin-top:30px;padding-top:14px;border-top:1px solid #eee;font-size:11px;color:#aaa;text-align:center}'+
-    '@media print{body{padding:20px}}'+
-  '</style></head><body>'+
-  '<div class="header">'+
-    '<div><div class="brand">Jain <span>Hardware</span></div><div style="font-size:12px;color:#888;margin-top:4px">Kuwait City, Kuwait</div><div style="font-size:12px;color:#888">+965 9926 1620 | jainhardwareandtools@gmail.com</div></div>'+
-    '<div class="inv-info">'+
-      '<p><strong>Invoice #</strong> JH-'+String(orderId).padStart(4,'0')+'</p>'+
-      '<p><strong>Date:</strong> '+dt+'</p>'+
-      '<p><strong>Status:</strong> '+(o.status||'pending').toUpperCase()+'</p>'+
-    '</div>'+
-  '</div>'+
-  '<div style="margin-bottom:16px;font-size:13px">'+
-    '<strong>Customer:</strong> '+encodeHtml(o.customer_name||'—')+'<br>'+
-    '<strong>Phone:</strong> '+encodeHtml(o.customer_phone||'—')+'<br>'+
-    '<strong>Address:</strong> '+encodeHtml(o.address||'—')+
-    (o.notes ? '<br><strong>Notes:</strong> '+encodeHtml(o.notes) : '')+
-  '</div>'+
-  '<table><thead><tr><th>#</th><th>Product</th><th>SKU</th><th style="text-align:center">Qty</th><th style="text-align:right">Unit Price</th><th style="text-align:right">Total</th></tr></thead>'+
-  '<tbody>'+rows+'</tbody>'+
-  '<tfoot><tr class="total-row"><td colspan="5" style="text-align:right;padding-top:12px"><strong>TOTAL</strong></td><td style="text-align:right;padding-top:12px;color:#c8151b">'+parseFloat(o.total||0).toFixed(3)+' KWD</td></tr></tfoot>'+
-  '</table>'+
-  '<div class="footer">Thank you for your business! &nbsp;•&nbsp; Jain Hardware, Kuwait &nbsp;•&nbsp; jainhardwareandtools@gmail.com</div>'+
-  '</body></html>';
-  var w = window.open('', '_blank', 'width=800,height=700');
-  w.document.write(html);
-  w.document.close();
-  w.focus();
-  setTimeout(function(){ w.print(); }, 400);
-}
-
-// ── LOW STOCK ALERT ───────────────────────────────────────────────────────────
-function checkLowStock() {
-  var stock = getStock();
-  var allP  = getAllAdminProducts();
-  var low   = allP.filter(function(p) {
-    var status = getLiveStock ? getLiveStock(p.id) : (stock[p.id] && stock[p.id].status);
-    var qty    = stock[p.id] ? (stock[p.id].qty !== undefined ? stock[p.id].qty : null) : null;
-    return status === 'low-stock' || status === 'out-of-stock' || (qty !== null && qty <= 5);
-  });
-  var banner = document.getElementById('lowStockBanner');
-  if (!banner) return;
-  if (!low.length) { banner.style.display = 'none'; return; }
-  banner.style.display = 'flex';
-  var names = low.slice(0,5).map(function(p){ return p.name.split(' ').slice(0,3).join(' '); }).join(', ');
-  var more = low.length > 5 ? ' +' + (low.length-5) + ' more' : '';
-  document.getElementById('lowStockText').textContent = low.length + ' product(s) low/out of stock: ' + names + more;
 }
 </script>
 </body>
