@@ -59,7 +59,7 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 .hero-brand-name { font-size: 38px; font-weight: 900; color: #fff; letter-spacing: 6px; text-transform: uppercase; line-height: 1; text-shadow: 0 2px 16px rgba(0,0,0,0.5); }
 
 /* ── HERO ────────────────────────────────────────────────────── */
-#hero { min-height: 72vh; background: #d20d17 url('full.png') center/cover no-repeat; display: flex; align-items: center; overflow: hidden; padding-top: 68px; border-bottom: 1px solid var(--border); position: relative; }
+#hero { min-height: 72vh; background: #d20d17 url('full.jpg') center/cover no-repeat; display: flex; align-items: center; overflow: hidden; padding-top: 68px; border-bottom: 1px solid var(--border); position: relative; }
 #hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(45,0,0,0.88) 0%, rgba(45,0,0,0.70) 50%, rgba(45,0,0,0.45) 100%); z-index: 1; display: block; }
 
 /* Text on the LEFT — sits above overlay */
@@ -76,7 +76,7 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 .stat small { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
 .hero-left-ad { margin-top: 32px; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35); }
 .hero-left-ad img { width: 100%; height: auto; display: block; border-radius: 12px; }
-/* Right column hidden — full.png is now the background */
+/* Right column hidden — full.jpg is now the background */
 .hero-img-right { display: none; }
 
 /* ── BUTTONS ──────────────────────────────────────────────────────────── */
@@ -250,7 +250,7 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
   #intro {
     /* Use gradient as reliable fallback; image loads on top if available */
     background: linear-gradient(160deg, #d20d17),
-                url('full%20phone.png') center center / cover no-repeat;
+                url('full-phone.jpg') center center / cover no-repeat;
     background-blend-mode: overlay, normal;
     position: relative;
     border: none;
@@ -316,7 +316,7 @@ footer { background: #d20d17; padding: 64px 0 0; border-top: 1px solid rgba(0,0,
   .btn-cart span.cart-label { display: none; }
 
   /* Hero */
-  #hero { min-height: 65vh; padding-top: 68px; background: linear-gradient(160deg,#d20d17), url('full%20phone.png') center/cover no-repeat; background-blend-mode: overlay, normal; }
+  #hero { min-height: 65vh; padding-top: 68px; background: linear-gradient(160deg,#d20d17), url('full-phone.jpg') center/cover no-repeat; background-blend-mode: overlay, normal; }
   #hero::before { display: block; background: linear-gradient(to bottom, rgba(45,0,0,0.80) 0%, rgba(45,0,0,0.60) 100%); }
   .hero-img-right { display: none; }
   .hero-left-ad { display: none; }
