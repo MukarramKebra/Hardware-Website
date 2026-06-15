@@ -859,8 +859,10 @@ body.product-open .mob-cart-fab { opacity:0 !important; pointer-events:none !imp
 /* ── PRODUCT MODAL ACTION ROW ────────────────────────────────────────────── */
 .pm-action-row { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
 .pm-wl-btn,.pm-share-btn,.pm-review-btn { flex:1; min-width:80px; padding:9px 10px; border-radius:8px; border:1.5px solid; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s; }
-.pm-wl-btn { border-color:#fecaca; color:var(--orange); background:#fff0f0; }
-.pm-wl-btn.wishlisted,.pm-wl-btn:hover { background:var(--orange); color:#fff; border-color:var(--orange); }
+.pm-wl-btn { border-color:#e2e8f0; color:#64748b; background:#fff; }
+.pm-wl-btn:hover { border-color:var(--orange); color:var(--orange); background:#fff; }
+.pm-wl-btn.wishlisted { background:#fff; color:var(--orange); border-color:var(--orange); }
+.pm-wl-btn.wishlisted .fa-heart { color:var(--orange); }
 .pm-share-btn { border-color:#bbf7d0; color:#16a34a; background:#f0fdf4; }
 .pm-share-btn:hover { background:#16a34a; color:#fff; }
 .pm-review-btn { border-color:#fde68a; color:#92400e; background:#fffbeb; }
