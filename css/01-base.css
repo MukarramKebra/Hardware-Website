@@ -102,7 +102,7 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
 /* ── OFFERS CAROUSEL (images fill the frame, like product cards) ───────── */
-#offers { background: var(--dark); padding: 18px 0 20px; }
+#offers { background: var(--dark); padding: 86px 0 20px; }
 .offers-band {
   position: relative; width: 100%; overflow: hidden;
   -webkit-mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
