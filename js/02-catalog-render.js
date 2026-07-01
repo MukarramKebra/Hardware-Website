@@ -8,6 +8,16 @@ function getMultiCats(id) {
   } catch(e) { return []; }
 }
 
+// Moved up from js/06-features.js: renderProducts() (below) calls isWishlisted()
+// on every product card, and renderProducts() runs at page load from
+// js/03-product-cart-checkout.js — before js/06-features.js has loaded. Keeping
+// these two small localStorage helpers here (loaded before 03) avoids a
+// ReferenceError on first render.
+function getWishlist() {
+  try { return JSON.parse(localStorage.getItem('jain_wishlist') || '[]'); } catch(e) { return []; }
+}
+function isWishlisted(id) { return getWishlist().includes(id); }
+
 function imgError(el) {
   // Step 1: try the local Bahar-Products fallback path if we haven't yet
   const local = el.dataset.local;

@@ -32,10 +32,8 @@ function renderRecentlyViewed() {
 // ══════════════════════════════════════════════════════════════════════════════
 // FEATURE: WISHLIST
 // ══════════════════════════════════════════════════════════════════════════════
-function getWishlist() {
-  try { return JSON.parse(localStorage.getItem('jain_wishlist') || '[]'); } catch(e) { return []; }
-}
-function isWishlisted(id) { return getWishlist().includes(id); }
+// getWishlist() / isWishlisted() live in js/02-catalog-render.js (loaded earlier —
+// see the comment there for why).
 function showToast(msg, duration) {
   var el = document.getElementById('toastMsg');
   if (!el) return;
@@ -417,3 +415,9 @@ function openWAChat() {
     renderWishlistCount();
   }, 500);
 })();
+
+// Render products immediately from hardcoded array (instant display), then
+// load live stock/photos/hidden status from Supabase and re-render. This runs
+// here (last script to load) so every helper renderProducts() needs is defined.
+renderProducts();
+loadSBData();

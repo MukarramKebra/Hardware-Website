@@ -331,9 +331,7 @@ document.getElementById('contactForm').addEventListener('submit', e => {
   e.target.reset();
   setTimeout(() => document.getElementById('formSuccess').classList.remove('show'), 4000);
 });
-// Render products immediately from hardcoded array (instant display)
-// Supabase will update stock/photos/hidden status once it responds
-renderProducts();
-// Then load live data from Supabase and re-render
-loadSBData();
+// Initial renderProducts()/loadSBData() call moved to js/06-features.js (last
+// file to load) — renderProducts() depends on _lang and isWishlisted, which
+// are declared in files that load after this one.
 
