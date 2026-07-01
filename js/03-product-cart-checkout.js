@@ -139,7 +139,10 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ── CART ──────────────────────────────────────────────────────────────────
-function addToCart(id) {
+// btn (optional) is the clicked "Add" button — when given, it plays a brief
+// loading spinner -> checkmark sequence before the toast pops up.
+function addToCart(id, btn) {
+  if (btn && btn.dataset.busy === '1') return;
   trackView(id);
   const product  = getAllProducts().find(p => p.id === id);
   const liveQty  = getLiveQty(id);
@@ -148,8 +151,29 @@ function addToCart(id) {
   if (liveQty !== null && cartQty >= liveQty) {
     alert('Sorry, only ' + liveQty + ' units available in stock!'); return;
   }
-  if (inCart) { inCart.qty++; } else { cart.push({...product, qty:1}); }
-  updateCartUI(); showToast('Added to cart');
+  function commit() {
+    if (inCart) { inCart.qty++; } else { cart.push({...product, qty:1}); }
+    updateCartUI();
+  }
+  if (!btn) { commit(); showToast('Added to cart'); return; }
+  btn.dataset.busy = '1';
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.classList.add('btn-add-loading');
+  btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Adding...';
+  setTimeout(function() {
+    commit();
+    btn.classList.remove('btn-add-loading');
+    btn.classList.add('btn-add-added');
+    btn.innerHTML = '<i class="fa fa-check"></i> Added';
+    showToast('Added to cart');
+    setTimeout(function() {
+      btn.classList.remove('btn-add-added');
+      btn.innerHTML = original;
+      btn.disabled = false;
+      delete btn.dataset.busy;
+    }, 1000);
+  }, 600);
 }
 function removeFromCart(id) { cart = cart.filter(c => c.id !== id); updateCartUI(); }
 function updateCartUI() {

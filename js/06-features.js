@@ -86,7 +86,7 @@ function openWishlist() {
           '<div class="wl-price">'+p.price.toFixed(3)+' KWD</div>' +
         '</div>' +
         '<div class="wl-actions">' +
-          '<button class="wl-add-btn" onclick="addToCart('+p.id+');showToast(\'Added to cart\')"><i class="fa fa-cart-plus"></i> Add to Cart</button>' +
+          '<button class="wl-add-btn" onclick="addToCart('+p.id+')"><i class="fa fa-cart-plus"></i> Add to Cart</button>' +
           '<button class="wl-remove-btn" onclick="toggleWishlist('+p.id+', event)"><i class="fa fa-trash"></i></button>' +
         '</div>' +
       '</div>';

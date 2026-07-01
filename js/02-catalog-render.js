@@ -120,20 +120,54 @@ function initOffersTicker() {
 }
 initOffersTicker();
 
+// ── SKELETON LOADING CARDS ───────────────────────────────────────────────
+function renderProductSkeletons(count) {
+  const grid  = document.getElementById('productsGrid');
+  const empty = document.getElementById('productsEmpty');
+  if (!grid) return;
+  if (empty) empty.style.display = 'none';
+  const card = `
+    <div class="product-card skel-card">
+      <div class="product-img-wrap skel-bar"></div>
+      <div class="product-info">
+        <div class="skel-bar" style="width:40%;height:9px;margin-bottom:8px"></div>
+        <div class="skel-bar" style="width:85%;height:13px;margin-bottom:6px"></div>
+        <div class="skel-bar" style="width:60%;height:13px;margin-bottom:12px"></div>
+        <div class="product-footer">
+          <div class="skel-bar" style="width:55px;height:16px"></div>
+          <div class="skel-bar" style="width:64px;height:26px;border-radius:5px"></div>
+        </div>
+      </div>
+    </div>`;
+  grid.innerHTML = card.repeat(count || 8);
+}
+// Show skeleton placeholders, then swap in the real filtered grid a moment later.
+// The token guard means only the most recent call actually renders — if the
+// user clicks two categories quickly, the earlier pending one is dropped.
+let _skelToken = 0;
+function renderProductsAfterSkeleton(delay) {
+  renderProductSkeletons(8);
+  const token = ++_skelToken;
+  setTimeout(function() {
+    if (token !== _skelToken) return;
+    renderProducts();
+  }, delay || 450);
+}
+
 function jumpCat(cat) {
   activeFilter = cat;
   syncCatNav(cat);
   document.getElementById('searchInput').value = '';
-  renderProducts();
   scrollToProducts();
+  renderProductsAfterSkeleton();
 }
 
 function filterProducts(category) {
   activeFilter = category;
   syncCatNav(category);
   document.getElementById('searchInput').value = '';
-  renderProducts();
   scrollToProducts();
+  renderProductsAfterSkeleton();
 }
 // ── STOCK HELPERS ─────────────────────────────────────────────────────────
 function getLiveStock(productId) {
@@ -293,7 +327,7 @@ function renderProducts() {
             </div>
             ${isOut
               ? `<button class="btn-add btn-disabled" disabled onclick="event.stopPropagation()">${unavail}</button>`
-              : `<button class="btn-add" onclick="event.stopPropagation();addToCart(${p.id})"><i class="fa fa-plus"></i> ${addBtn}</button>`}
+              : `<button class="btn-add" onclick="event.stopPropagation();addToCart(${p.id}, this)"><i class="fa fa-plus"></i> ${addBtn}</button>`}
           </div>
         </div>
       </div>`;
