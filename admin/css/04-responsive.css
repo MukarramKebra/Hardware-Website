@@ -1,0 +1,57 @@
+    /* ── MOBILE FRIENDLY ──────────────────────────────────────────────────── */
+    @media(max-width:768px){
+      /* Top bar: compact on mobile */
+      .top-bar{padding:0 14px;height:56px;}
+      .top-logo{font-size:14px;gap:8px;}
+      .top-logo img{height:28px;width:28px;margin-right:6px!important;}
+      .admin-badge{font-size:9px;padding:2px 7px;}
+      .clock-txt{display:none;}
+      .logout-btn{padding:5px 10px;font-size:11px;}
+      /* Tab bar: scrollable on mobile */
+      .tab-bar{padding:0 8px;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;top:56px;}
+      .tab-bar::-webkit-scrollbar{display:none;}
+      .tab-btn{padding:12px 14px;font-size:11px;white-space:nowrap;flex-shrink:0;}
+      /* Stats grid: 2 columns on small tablet, 1 on phone */
+      .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+      .stat-card{padding:14px 16px;}
+      .stat-icon{width:40px;height:40px;font-size:16px;}
+      .stat-info strong{font-size:20px;}
+      /* Controls row: stack vertically */
+      .table-top{flex-direction:column;align-items:flex-start;gap:10px;}
+      .ctrl-right{flex-wrap:wrap;gap:8px;width:100%;}
+      .search-bar{width:100%;box-sizing:border-box;}
+      .search-bar input{width:100%;min-width:0;}
+      .filter-sel{flex:1;min-width:120px;}
+      .save-btn,.add-prod-btn{flex:1;}
+      /* Bulk bar */
+      .bulk-bar{flex-wrap:wrap;gap:8px;}
+      /* Analytics */
+      .analytics-stats{grid-template-columns:repeat(2,1fr);}
+      /* Orders */
+      .ord-stats{grid-template-columns:repeat(2,1fr);}
+      .ord-filter-row{flex-wrap:wrap;gap:8px;}
+      /* Reports */
+      .rpt-grid{grid-template-columns:1fr;}
+      .rpt-btn-group{flex-wrap:wrap;gap:6px;}
+      .rpt-header{flex-wrap:wrap;gap:8px;}
+      /* Modal */
+      .ap-row{grid-template-columns:1fr;}
+      .ap-modal,.csv-modal,.help-modal,.newcat-modal,.mc-modal{margin:10px;}
+      /* Login */
+      .login-box{padding:32px 22px;}
+      /* su cards */
+      .su-user-row{flex-wrap:wrap;gap:10px;}
+      .su-body{padding:20px 14px;}
+    }
+    @media(max-width:480px){
+      .stats-grid{grid-template-columns:1fr;}
+      .analytics-stats{grid-template-columns:1fr;}
+      .ord-stats{grid-template-columns:1fr;}
+      .an-2col{grid-template-columns:1fr;}
+      .top-right{gap:8px;}
+      /* Hide reload button on very small screens */
+      .top-right .logout-btn:first-of-type{display:none;}
+      .main{padding:10px;}
+      .tab-btn{padding:10px 12px;font-size:10px;}
+    }
+
