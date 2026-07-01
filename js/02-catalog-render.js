@@ -82,6 +82,35 @@ function filterProducts(category) {
   renderProducts();
   document.getElementById('products').scrollIntoView({ behavior:'smooth' });
 }
+
+// ── OFFERS CAROUSEL ───────────────────────────────────────────────────────
+// Moving row of offer cards (with images). Click a card to filter that category.
+function initOffersTicker() {
+  const track = document.getElementById('offersTrack');
+  if (!track) return;
+  const offers = [
+    { img:'Bahar-Products/SKU-0001.jpg', tag:'UP TO 20% OFF', name:'Power Tool Deals',       sub:'Drills · Grinders · Saws',    cat:'power-tools' },
+    { img:'Bahar-Products/SKU-0011.jpg', tag:'BEST PRICE',    name:'Hand Tools',             sub:'Hammers · Spanners · Pliers', cat:'hand-tools' },
+    { img:'Bahar-Products/SKU-0037.jpg', tag:'STAY SAFE',     name:'Safety Gear',            sub:'Helmets · Gloves · Boots',    cat:'safety' },
+    { img:'Bahar-Products/SKU-0021.jpg', tag:'BULK DEALS',    name:'Fasteners',              sub:'Screws · Bolts · Anchors',    cat:'fasteners' },
+    { img:'Bahar-Products/SKU-0031.jpg', tag:'10% OFF',       name:'Measuring Tools',        sub:'Tapes · Levels · Lasers',     cat:'measuring' },
+    { img:'Bahar-Products/SKU-0043.jpg', tag:'HOT DEAL',      name:'Cutting Tools',          sub:'Blades · Discs · Knives',     cat:'cutting' },
+    { img:'Bahar-Products/SKU-0048.jpg', tag:'COMBO OFFER',   name:'Storage & Accessories',  sub:'Toolboxes · Bags · Tape',     cat:'accessories' },
+    { img:'Bahar-Products/SKU-0006.jpg', tag:'NEW ARRIVAL',   name:'Cordless Range',         sub:'20V Battery Tools',           cat:'power-tools' }
+  ];
+  const cards = offers.map(o => `
+    <div class="offer-card" onclick="filterProducts('${o.cat}')">
+      <div class="offer-card-img"><img src="${o.img}" alt="${o.name}" onerror="imgError(this)"/></div>
+      <div class="offer-card-info">
+        <span class="offer-tag">${o.tag}</span>
+        <div class="offer-title">${o.name}</div>
+        <div class="offer-sub">${o.sub}</div>
+      </div>
+    </div>`).join('');
+  track.innerHTML = cards + cards; // duplicate for a seamless loop
+}
+initOffersTicker();
+
 // ── STOCK HELPERS ─────────────────────────────────────────────────────────
 function getLiveStock(productId) {
   const qty = _sbStock[productId];
