@@ -57,6 +57,12 @@
 
   /* Features */
   .features-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Offers */
+  .offer-card { width: 168px; }
+  .offers-track { gap: 12px; }
+  .offer-title { font-size: 13px; }
+  .offer-sub { font-size: 11px; }
 }
 
 /* ── MOBILE ── */
@@ -117,6 +123,17 @@
   /* About */
   .about-text h2 { font-size: 22px; }
   .about-img-wrap { display: none; }
+  .about-btns { flex-direction: column; }
+  .about-btns .btn { justify-content: center; }
+
+  /* Offers */
+  #offers { padding: 78px 0 16px; }
+  .offer-card { width: 148px; }
+  .offers-track { gap: 10px; }
+  .offer-tag { font-size: 9px; padding: 2px 7px; }
+  .offer-title { font-size: 12px; }
+  .offer-sub { font-size: 10px; }
+  .offer-card-info { padding: 8px 10px 11px; }
 
   /* Contact */
   .contact-form { padding: 20px 16px; }

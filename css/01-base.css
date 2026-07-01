@@ -36,6 +36,9 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 /* ── HEADER ─────────────────────────────────────────────────────────── */
 #header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: #d20d17; border-bottom: 1px solid rgba(0,0,0,0.14); transition: box-shadow 0.3s; }
 #header.scrolled { box-shadow: 0 2px 16px rgba(0,0,0,0.10); }
+/* Header spans the full window edge-to-edge (not capped at the 1240px container width)
+   so the logo sits at the true left corner and Sign In/language sit at the true right corner. */
+#header .container { max-width: 100%; }
 .header-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 24px; }
 .logo-wrap { display: flex; align-items: center; text-decoration: none; gap: 10px; }
 .logo-img { height: 52px; width: auto; object-fit: contain; border-radius: 0; background: transparent; padding: 0; box-shadow: none; }

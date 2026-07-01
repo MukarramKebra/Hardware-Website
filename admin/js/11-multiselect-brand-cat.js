@@ -317,3 +317,12 @@ async function savePhoto() {
   closePhoto();
   showToast('Photo saved!');
 }
+
+// ── AUTO-LOGIN ON PAGE LOAD ────────────────────────────────────────────────────
+// If the browser still has a saved session (from last time), skip the login screen.
+// jain_auth = '1'       → regular admin session (bahar)
+// jain_auth = 'super'   → owner session (ultimate15)
+// jain_auth = 'bahar15' → manager session (bahar15)
+if (localStorage.getItem('jain_auth') === '1')       { showAdmin(); }
+if (localStorage.getItem('jain_auth') === 'super')   { showSuperAdmin(); }
+if (localStorage.getItem('jain_auth') === 'bahar15') { showManager(); }

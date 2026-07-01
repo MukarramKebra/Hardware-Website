@@ -368,14 +368,12 @@ async function undoSingleAction(entry) {
   } catch(e) { return false; }
 }
 
-// ── AUTO-LOGIN ON PAGE LOAD ────────────────────────────────────────────────────
-// If the browser still has a saved session (from last time), skip the login screen.
-// jain_auth = '1'       → regular admin session (bahar)
-// jain_auth = 'super'   → owner session (ultimate15)
-// jain_auth = 'bahar15' → manager session (bahar15)
-if (localStorage.getItem('jain_auth') === '1')       { showAdmin(); }
-if (localStorage.getItem('jain_auth') === 'super')   { showSuperAdmin(); }
-if (localStorage.getItem('jain_auth') === 'bahar15') { showManager(); }
+// Auto-login trigger moved to the bottom of admin/js/11-multiselect-brand-cat.js
+// (the last file to load) — showAdmin()/showSuperAdmin()/showManager() call
+// switchTab(), which isn't defined until admin/js/04-tabs-nav.js loads. Calling
+// them here, before that file has loaded, throws a ReferenceError that silently
+// aborts the rest of showAdmin() — which is why the inventory table stayed
+// empty until the Reload button (a separate, later click) repopulated it.
 
 // ── CLOCK ──────────────────────────────────────────────────────────────────────
 // Updates the date/time shown in the top-right corner every second

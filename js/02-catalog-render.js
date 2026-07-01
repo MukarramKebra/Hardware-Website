@@ -116,58 +116,36 @@ function initOffersTicker() {
         <div class="offer-sub">${o.sub}</div>
       </div>
     </div>`).join('');
-  track.innerHTML = cards + cards; // duplicate for a seamless loop
+  // Repeat the card set enough times to comfortably exceed the viewport width
+  // (same technique as fillMarquee() in js/04-i18n-order.js) — with only one
+  // duplicate, wide screens could show the whole loop at once, making the
+  // restart visible/jarring instead of a seamless scroll.
+  track.innerHTML = cards;
+  const singleW = track.scrollWidth;
+  if (!singleW) { track.innerHTML = cards + cards; return; }
+  const vw     = window.innerWidth || 1280;
+  const copies = Math.max(2, Math.ceil(vw / singleW) + 1);
+  let half = '';
+  for (let i = 0; i < copies; i++) half += cards;
+  track.innerHTML = half + half;
+  track.style.animationDuration = Math.round((singleW * copies) / 70) + 's';
 }
 initOffersTicker();
-
-// ── SKELETON LOADING CARDS ───────────────────────────────────────────────
-function renderProductSkeletons(count) {
-  const grid  = document.getElementById('productsGrid');
-  const empty = document.getElementById('productsEmpty');
-  if (!grid) return;
-  if (empty) empty.style.display = 'none';
-  const card = `
-    <div class="product-card skel-card">
-      <div class="product-img-wrap skel-bar"></div>
-      <div class="product-info">
-        <div class="skel-bar" style="width:40%;height:9px;margin-bottom:8px"></div>
-        <div class="skel-bar" style="width:85%;height:13px;margin-bottom:6px"></div>
-        <div class="skel-bar" style="width:60%;height:13px;margin-bottom:12px"></div>
-        <div class="product-footer">
-          <div class="skel-bar" style="width:55px;height:16px"></div>
-          <div class="skel-bar" style="width:64px;height:26px;border-radius:5px"></div>
-        </div>
-      </div>
-    </div>`;
-  grid.innerHTML = card.repeat(count || 8);
-}
-// Show skeleton placeholders, then swap in the real filtered grid a moment later.
-// The token guard means only the most recent call actually renders — if the
-// user clicks two categories quickly, the earlier pending one is dropped.
-let _skelToken = 0;
-function renderProductsAfterSkeleton(delay) {
-  renderProductSkeletons(8);
-  const token = ++_skelToken;
-  setTimeout(function() {
-    if (token !== _skelToken) return;
-    renderProducts();
-  }, delay || 450);
-}
 
 function jumpCat(cat) {
   activeFilter = cat;
   syncCatNav(cat);
   document.getElementById('searchInput').value = '';
+  renderProducts();
   scrollToProducts();
-  renderProductsAfterSkeleton();
 }
 
 function filterProducts(category) {
   activeFilter = category;
   syncCatNav(category);
   document.getElementById('searchInput').value = '';
+  renderProducts();
   scrollToProducts();
-  renderProductsAfterSkeleton();
 }
 // ── STOCK HELPERS ─────────────────────────────────────────────────────────
 function getLiveStock(productId) {
