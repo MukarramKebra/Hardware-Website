@@ -106,6 +106,14 @@ function bulkAddStock() {
   clearSelection(); renderTable(); renderStats();
 }
 
+function bulkAdd5000Stock() {
+  if (!_selectedIds.size) return;
+  _pushUndo();
+  _selectedIds.forEach(function(id){ stockData[id]=(stockData[id]||0)+5000; });
+  showToast('+5000 added to '+_selectedIds.size+' products');
+  clearSelection(); renderTable(); renderStats();
+}
+
 async function bulkDelete() {
   if (!_selectedIds.size) return;
   if (!confirm('Delete '+_selectedIds.size+' selected products? They move to the Deleted tab.')) return;
