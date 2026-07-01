@@ -80,6 +80,36 @@ function scrollToProducts() {
   window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
 }
 
+// ── OFFERS CAROUSEL ───────────────────────────────────────────────────────
+// Moving row of offer cards; the image fills the whole card frame (like products).
+function initOffersTicker() {
+  const track = document.getElementById('offersTrack');
+  if (!track) return;
+  const offers = [
+    { img:'Bahar-Products/SKU-0001.jpg', tag:'UP TO 20% OFF', name:'Power Tool Deals',       sub:'Drills · Grinders · Saws',    cat:'power-tools' },
+    { img:'Bahar-Products/SKU-0011.jpg', tag:'BEST PRICE',    name:'Hand Tools',             sub:'Hammers · Spanners · Pliers', cat:'hand-tools' },
+    { img:'Bahar-Products/SKU-0037.jpg', tag:'STAY SAFE',     name:'Safety Gear',            sub:'Helmets · Gloves · Boots',    cat:'safety' },
+    { img:'Bahar-Products/SKU-0021.jpg', tag:'BULK DEALS',    name:'Fasteners',              sub:'Screws · Bolts · Anchors',    cat:'fasteners' },
+    { img:'Bahar-Products/SKU-0031.jpg', tag:'10% OFF',       name:'Measuring Tools',        sub:'Tapes · Levels · Lasers',     cat:'measuring' },
+    { img:'Bahar-Products/SKU-0043.jpg', tag:'HOT DEAL',      name:'Cutting Tools',          sub:'Blades · Discs · Knives',     cat:'cutting' },
+    { img:'Bahar-Products/SKU-0048.jpg', tag:'COMBO OFFER',   name:'Storage & Accessories',  sub:'Toolboxes · Bags · Tape',     cat:'accessories' },
+    { img:'Bahar-Products/SKU-0006.jpg', tag:'NEW ARRIVAL',   name:'Cordless Range',         sub:'20V Battery Tools',           cat:'power-tools' }
+  ];
+  const cards = offers.map(o => `
+    <div class="offer-card" onclick="filterProducts('${o.cat}')">
+      <div class="offer-card-img">
+        <span class="offer-tag">${o.tag}</span>
+        <img src="${o.img}" alt="${o.name}" loading="lazy" onerror="imgError(this)"/>
+      </div>
+      <div class="offer-card-info">
+        <div class="offer-title">${o.name}</div>
+        <div class="offer-sub">${o.sub}</div>
+      </div>
+    </div>`).join('');
+  track.innerHTML = cards + cards; // duplicate for a seamless loop
+}
+initOffersTicker();
+
 function jumpCat(cat) {
   activeFilter = cat;
   syncCatNav(cat);
