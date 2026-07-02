@@ -207,6 +207,28 @@ function _restartBannerTimer() {
   _bannerTimer = setInterval(bannerNext, 6000);
 }
 
+// Measures the actual empty space beside the centered category grid and
+// resizes/shows or hides the banners to fit it — adapts to whatever the
+// visitor's screen actually is, instead of a fixed pixel breakpoint that goes
+// stale (and can hide the banners entirely) every time the banner width changes.
+function _sizeSideBanners() {
+  const container = document.querySelector('#categories > .container');
+  const slots = document.querySelectorAll('.side-banner-slot');
+  if (!container || !slots.length) return;
+  const gutter    = (window.innerWidth - container.offsetWidth) / 2;
+  const available = gutter - 24 - 16; // 24px edge offset + 16px breathing room before the grid
+  if (available < 160) {
+    slots.forEach(function(s) { s.style.display = 'none'; });
+    return;
+  }
+  const width = Math.min(420, Math.round(available));
+  slots.forEach(function(s) { s.style.display = 'block'; s.style.width = width + 'px'; });
+}
+window.addEventListener('resize', function() {
+  clearTimeout(window._bannerResizeT);
+  window._bannerResizeT = setTimeout(_sizeSideBanners, 200);
+});
+
 function initSideBanners() {
   const leftEl  = document.getElementById('bannerLeft');
   const rightEl = document.getElementById('bannerRight');
@@ -220,6 +242,7 @@ function initSideBanners() {
   _renderBannerSlides(rightEl, split.right.length ? split.right : DEFAULT_BANNERS);
   _applyBannerIdx();
   _restartBannerTimer();
+  _sizeSideBanners();
 }
 initSideBanners();
 

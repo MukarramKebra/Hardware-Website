@@ -33,10 +33,14 @@
 /* Stretches top-to-bottom of the #categories section (instead of a small
    fixed-height card) so the banner actually fills the gutter space next to
    the grid, not just a small block floating in the middle of it. */
-.side-banner-slot { display: none; position: absolute; top: 0; bottom: 0; width: 380px; z-index: 2; }
+/* Width and show/hide are set by JS (_sizeSideBanners() in js/02-catalog-render.js)
+   based on how much gutter space is actually free next to the grid on THIS
+   screen — a fixed pixel breakpoint kept needing manual re-guessing every time
+   the banner size changed and could end up wider than the visitor's monitor,
+   hiding the banners entirely. */
+.side-banner-slot { display: none; position: absolute; top: 0; bottom: 0; z-index: 2; }
 .side-banner-slot.left  { left: 24px; }
 .side-banner-slot.right { right: 24px; }
-@media (min-width: 2100px) { .side-banner-slot { display: block; } }
 .side-banner { position: relative; width: 100%; height: 100%; border-radius: 0; overflow: hidden; box-shadow: var(--shadow-lg); }
 .banner-slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.9s ease; cursor: pointer; display: flex; align-items: flex-end; }
 .banner-slide.active { opacity: 1; }
