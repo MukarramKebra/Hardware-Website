@@ -73,9 +73,38 @@ function openProduct(id) {
       '</div>' +
     '</div>';
 
-  document.getElementById('prodOverlay').classList.add('open');
+  renderRelatedProducts(id, p.category);
+  const overlay = document.getElementById('prodOverlay');
+  overlay.classList.add('open');
+  overlay.scrollTop = 0;
   document.body.classList.add('product-open');
   document.body.style.overflow = 'hidden';
+}
+
+// "Customers Also Bought" — shown below the product info, same-category items
+// first, filled out with other products. Reuses the Recently Viewed card style.
+function renderRelatedProducts(currentId, category) {
+  const section = document.getElementById('pmRelatedSection');
+  if (!section) return;
+  const all     = getAllProducts().filter(p => p.id !== currentId);
+  const sameCat = all.filter(p => p.category === category);
+  const others  = all.filter(p => p.category !== category);
+  const picks   = sameCat.concat(others).slice(0, 6);
+  if (!picks.length) { section.innerHTML = ''; return; }
+  const customPhotos = _sbPhotos || {};
+  section.innerHTML =
+    '<div class="pm-related-head"><i class="fa fa-thumbs-up"></i> Customers Also Bought</div>' +
+    '<div class="rv-grid">' +
+    picks.map(p => {
+      const raw   = customPhotos[p.id];
+      const photo = (raw && (raw.startsWith('http') || raw.startsWith('data:'))) ? raw : p.img;
+      return '<div class="rv-card" onclick="openProduct(' + p.id + ')">' +
+        '<img src="' + photo + '" alt="' + p.name + '" onerror="imgError(this)" />' +
+        '<div class="rv-name">' + p.name + '</div>' +
+        '<div class="rv-price">' + p.price.toFixed(3) + ' KWD</div>' +
+      '</div>';
+    }).join('') +
+    '</div>';
 }
 
 function closeProduct() {

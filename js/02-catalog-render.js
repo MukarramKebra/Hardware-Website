@@ -132,6 +132,25 @@ function initOffersTicker() {
 }
 initOffersTicker();
 
+// ── SIDE BANNERS ──────────────────────────────────────────────────────────
+// Both vertical banners share one index so their slides always change
+// together, one at a time, every 6 seconds.
+function initSideBanners() {
+  const banners = document.querySelectorAll('.side-banner');
+  if (!banners.length) return;
+  let idx = 0;
+  setInterval(function() {
+    idx++;
+    banners.forEach(function(banner) {
+      const slides = banner.querySelectorAll('.banner-slide');
+      if (!slides.length) return;
+      slides.forEach(function(s) { s.classList.remove('active'); });
+      slides[idx % slides.length].classList.add('active');
+    });
+  }, 6000);
+}
+initSideBanners();
+
 function jumpCat(cat) {
   activeFilter = cat;
   syncCatNav(cat);

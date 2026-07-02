@@ -58,8 +58,8 @@
 .prod-modal { background:transparent; width:100%; max-width:none; margin:0; padding:0 40px 64px; display:block; overflow:visible; }
 @keyframes pmSlide { from { transform:translateY(24px); opacity:0; } to { transform:translateY(0); opacity:1; } }
 .prod-modal-topbar { position:sticky; top:0; z-index:5; background:#d20d17; padding:15px 40px; margin:0 -40px 26px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 10px rgba(0,0,0,0.12); }
-.prod-back-btn { background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.4); color:#fff; padding:8px 16px; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all .2s; font-family:inherit; }
-.prod-back-btn:hover { background:rgba(255,255,255,0.30); border-color:#fff; color:#fff; }
+.prod-back-btn { background:#fff; border:1px solid #fff; color:var(--orange); padding:8px 16px; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all .2s; font-family:inherit; }
+.prod-back-btn:hover { background:var(--gray-100); color:var(--orange-dark); }
 @media(max-width:700px) {
   .prod-overlay { padding:0; }
   .prod-modal { padding:0 14px 48px; }
@@ -112,6 +112,9 @@
 .pm-features { display:flex; flex-direction:column; gap:9px; }
 .pm-feat { display:flex; align-items:center; gap:10px; font-size:12px; color:var(--gray-600); font-weight:600; }
 .pm-feat i { color:var(--orange); width:15px; flex-shrink:0; font-size:12px; }
+.pm-related-section { max-width:1400px; margin:40px auto 0; }
+.pm-related-head { font-size:16px; font-weight:800; color:var(--dark); margin-bottom:16px; display:flex; align-items:center; gap:9px; }
+.pm-related-head i { color:var(--orange); }
 .product-img-wrap::after { content:'\f06e'; font-family:'Font Awesome 6 Free'; font-weight:900; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:24px; color:#fff; background:rgba(0,0,0,0); transition:all .22s; pointer-events:none; opacity:0; letter-spacing:0; }
 .product-card:hover .product-img-wrap::after { background:rgba(0,0,0,0.35); opacity:1; }
 @media(max-width:680px) {

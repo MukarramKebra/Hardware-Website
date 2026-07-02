@@ -12,21 +12,16 @@
 .about-features li i { color: var(--orange); font-size: 15px; flex-shrink: 0; }
 .about-btns { display: flex; gap: 12px; flex-wrap: wrap; }
 
-/* ── CATEGORIES ──────────────────────────────────────────────────────── */
-#categories { padding: 88px 0; background: var(--light); }
-.categories-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-.cat-card { background: #1a1a1a; border: none; border-radius: var(--radius); padding: 0; text-align: center; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; background-size: cover; background-position: center; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.cat-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.22) 55%, rgba(0,0,0,0.62) 100%); transition: background 0.25s; z-index: 1; }
-.cat-card:hover::before { background: rgba(200,21,27,0.72); }
-.cat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.28); }
-.cat-card .cat-icon, .cat-card h3, .cat-card p { position: relative; z-index: 2; }
-.cat-card .cat-icon { background: rgba(255,255,255,0.15); margin-bottom: 12px; }
-.cat-card .cat-icon i { color: #fff; }
-.cat-card:hover .cat-icon { background: rgba(255,255,255,0.25); }
-.cat-icon { width: 52px; height: 52px; background: rgba(200,21,27,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 13px; border: 1px solid rgba(200,21,27,0.15); }
-.cat-icon i { color: var(--orange); font-size: 21px; }
-.cat-card h3 { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; text-shadow: 0 1px 4px rgba(0,0,0,0.4); }
-.cat-card p { font-size: 12px; color: rgba(255,255,255,0.85); line-height: 1.4; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+/* ── SIDE BANNERS (auto-rotating, synced — replaces the old category grid) ── */
+#side-banners { padding: 44px 0; background: var(--light); }
+.side-banners-row { display: flex; justify-content: center; gap: 24px; }
+.side-banner { position: relative; width: 340px; height: 440px; border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); flex-shrink: 0; }
+.banner-slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.9s ease; cursor: pointer; display: flex; align-items: flex-end; }
+.banner-slide.active { opacity: 1; }
+.banner-slide::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.18) 45%, rgba(74,0,0,0.88) 100%); }
+.banner-overlay { position: relative; z-index: 1; padding: 22px 20px; color: #fff; width: 100%; }
+.banner-tag { display: inline-block; background: var(--orange); font-size: 12px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; padding: 5px 12px; border-radius: 20px; margin-bottom: 8px; }
+.banner-overlay p { font-size: 13px; font-weight: 600; opacity: 0.92; margin: 0; }
 
 /* ── PRODUCTS ────────────────────────────────────────────────────────── */
 #products { padding: 88px 0; background: var(--light); }
