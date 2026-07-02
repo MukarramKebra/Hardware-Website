@@ -151,11 +151,17 @@ function pmAddToCart() {
     return;
   }
   if (inCart) { inCart.qty += _pmQty; } else { cart.push(Object.assign({}, product, { qty: _pmQty })); }
-  // Flash button green then close
+  updateCartUI();
+  // Flash the button green — stay on the product page, no cart popup
   const btn = document.getElementById('pmAddBtn');
+  const original = btn.innerHTML;
   btn.classList.add('pm-added-flash');
   btn.innerHTML = '<i class="fa fa-check"></i> Added to Cart!';
-  setTimeout(function() { updateCartUI(); closeProduct(); openCart(); }, 700);
+  showToast('Added to cart');
+  setTimeout(function() {
+    btn.classList.remove('pm-added-flash');
+    btn.innerHTML = original;
+  }, 1200);
 }
 
 // ESC key closes any open modal

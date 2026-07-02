@@ -1,10 +1,10 @@
 /* ── RESPONSIVE ───────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
+  .categories-grid { grid-template-columns: repeat(2, 1fr); }
   .features-grid { grid-template-columns: repeat(2, 1fr); }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .about-grid { grid-template-columns: 1fr; }
   .about-img-wrap { max-width: 300px; margin: 0 auto; }
-  .side-banner { width: 280px; height: 380px; }
 }
 
 /* ── TABLET ── */
@@ -51,9 +51,9 @@
   .pill { flex-shrink: 0; }
   .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
-  /* Side banners */
-  .side-banners-row { flex-direction: column; align-items: center; }
-  .side-banner { width: 100%; max-width: 420px; height: 300px; }
+  /* Categories */
+  .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .cat-card { min-height: 150px; }
 
   /* Features */
   .features-grid { grid-template-columns: repeat(2, 1fr); }
@@ -107,10 +107,11 @@
   .cn-icon i { font-size: 13px; }
   .cn-item span { font-size: 8px; }
 
-  /* Side banners */
-  .side-banner { height: 220px; }
-  .banner-tag { font-size: 11px; padding: 4px 10px; }
-  .banner-overlay p { font-size: 12px; }
+  /* Categories grid */
+  .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .cat-icon { width: 44px; height: 44px; }
+  .cat-card h3 { font-size: 12px; }
+  .cat-card p { display: none; }
 
   /* Features */
   .features-grid { grid-template-columns: repeat(2, 1fr); }

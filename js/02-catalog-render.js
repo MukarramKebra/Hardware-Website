@@ -133,21 +133,93 @@ function initOffersTicker() {
 initOffersTicker();
 
 // ── SIDE BANNERS ──────────────────────────────────────────────────────────
-// Both vertical banners share one index so their slides always change
-// together, one at a time, every 6 seconds.
-function initSideBanners() {
-  const banners = document.querySelectorAll('.side-banner');
-  if (!banners.length) return;
-  let idx = 0;
-  setInterval(function() {
-    idx++;
-    banners.forEach(function(banner) {
-      const slides = banner.querySelectorAll('.banner-slide');
-      if (!slides.length) return;
-      slides.forEach(function(s) { s.classList.remove('active'); });
-      slides[idx % slides.length].classList.add('active');
+// Default set used until (or unless) the admin adds banners in Supabase —
+// see admin/js/05-categories.js. Images live in the Banners/ folder.
+const DEFAULT_BANNERS = [
+  { brand: 'DCK',    img: 'Banners/dck1.jpg' },
+  { brand: 'DCK',    img: 'Banners/dck2.jpg' },
+  { brand: 'Covax',  img: 'Banners/covax1.jpg' },
+  { brand: 'Covax',  img: 'Banners/covax2.jpg' },
+  { brand: 'iTrust', img: 'Banners/itrust1.jpg' },
+  { brand: 'iTrust', img: 'Banners/itrust2.jpg' },
+  { brand: 'iTrust', img: 'Banners/itrust3.jpg' },
+  { brand: 'iTrust', img: 'Banners/itrust4.jpg' }
+];
+
+// Groups banners by brand and interleaves them (one per brand per pass) so no
+// single brand's images sit consecutively — this is what lets _splitBanners()
+// spread brands evenly and mostly avoid showing the same brand on both
+// banners at once.
+function _interleaveByBrand(list) {
+  const byBrand = {}, order = [];
+  list.forEach(function(b) {
+    if (!byBrand[b.brand]) { byBrand[b.brand] = []; order.push(b.brand); }
+    byBrand[b.brand].push(b);
+  });
+  const result = [];
+  let more = true;
+  while (more) {
+    more = false;
+    order.forEach(function(brand) {
+      if (byBrand[brand].length) { result.push(byBrand[brand].shift()); more = true; }
     });
-  }, 6000);
+  }
+  return result;
+}
+function _splitBanners(list) {
+  const seq = _interleaveByBrand(list);
+  const left = [], right = [];
+  seq.forEach(function(b, i) { (i % 2 === 0 ? left : right).push(b); });
+  return { left: left, right: right };
+}
+
+function _renderBannerSlides(container, slides) {
+  if (!container) return;
+  container.innerHTML = slides.map(function(b, i) {
+    return '<div class="banner-slide' + (i === 0 ? ' active' : '') + '" onclick="scrollToProducts()" style="background-image:url(\'' + b.img + '\')">' +
+      '<div class="banner-overlay"><span class="banner-tag">' + b.brand + '</span></div>' +
+    '</div>';
+  }).join('') +
+  '<div class="banner-nav">' +
+    '<button class="banner-nav-btn" onclick="event.stopPropagation();bannerNext()" title="Next"><i class="fa fa-chevron-up"></i></button>' +
+    '<button class="banner-nav-btn" onclick="event.stopPropagation();bannerPrevious()" title="Previous"><i class="fa fa-chevron-down"></i></button>' +
+  '</div>';
+}
+
+// Both vertical banners share one index so their slides always change
+// together, one at a time. The up arrow moves to the next banner, the down
+// arrow goes back — either one restarts the 6-second auto-rotate timer.
+let _bannerIdx   = 0;
+let _bannerTimer = null;
+function _applyBannerIdx() {
+  document.querySelectorAll('.side-banner').forEach(function(banner) {
+    const slides = banner.querySelectorAll('.banner-slide');
+    if (!slides.length) return;
+    slides.forEach(function(s) { s.classList.remove('active'); });
+    const i = ((_bannerIdx % slides.length) + slides.length) % slides.length;
+    slides[i].classList.add('active');
+  });
+}
+function bannerNext()     { _bannerIdx++; _applyBannerIdx(); _restartBannerTimer(); }
+function bannerPrevious() { _bannerIdx--; _applyBannerIdx(); _restartBannerTimer(); }
+function _restartBannerTimer() {
+  clearInterval(_bannerTimer);
+  _bannerTimer = setInterval(bannerNext, 6000);
+}
+
+function initSideBanners() {
+  const leftEl  = document.getElementById('bannerLeft');
+  const rightEl = document.getElementById('bannerRight');
+  if (!leftEl || !rightEl) return;
+  const source = (_sbBanners && _sbBanners.length)
+    ? _sbBanners.map(function(b) { return { brand: b.brand, img: b.img_url }; })
+    : DEFAULT_BANNERS;
+  const split = _splitBanners(source);
+  _bannerIdx = 0;
+  _renderBannerSlides(leftEl,  split.left.length  ? split.left  : DEFAULT_BANNERS);
+  _renderBannerSlides(rightEl, split.right.length ? split.right : DEFAULT_BANNERS);
+  _applyBannerIdx();
+  _restartBannerTimer();
 }
 initSideBanners();
 

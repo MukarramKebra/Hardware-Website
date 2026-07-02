@@ -69,13 +69,15 @@ let _sbStock    = {};
 let _sbPhotos   = {};
 let _customProds = [];      // admin-added products from jain_products table
 let _hiddenIds   = new Set(); // base product IDs hidden by admin
+let _sbBanners   = [];       // admin-managed side banners (brand + img_url)
 
 async function loadSBData() {
-  const [s, p, c, h] = await Promise.all([
+  const [s, p, c, h, b] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',                         { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',                        { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc',          { headers: SB_H })
   ]);
   if (s.error) {
     console.warn('Supabase offline — using localStorage fallback');
@@ -90,8 +92,10 @@ async function loadSBData() {
       // Safety: if more than 55 of the 60 base products are "hidden", ignore — likely stale data
       if (hidSet.size < 55) _hiddenIds = hidSet;
     }
+    if (Array.isArray(b.data) && b.data.length > 0) _sbBanners = b.data;
   }
   renderProducts();
+  if (typeof initSideBanners === 'function') initSideBanners();
 }
 
 // Normalise category strings so "powertools", "power tools", "Power Tools" etc.
