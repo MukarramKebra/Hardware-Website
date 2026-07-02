@@ -278,6 +278,7 @@ function renderTable() {
         '<button class="vis-btn '+visCls+'" onclick="toggleVisibility('+p.id+','+p.isBase+')">'+visLbl+'</button>' +
         '<button class="act-btn" onclick="setStock('+p.id+',0)"><i class="fa fa-times"></i> Clear</button>' +
         '<button class="act-btn" onclick="addStock('+p.id+')"><i class="fa fa-plus"></i> +50</button>' +
+        '<button class="act-btn" onclick="addStock5000('+p.id+')"><i class="fa fa-plus"></i> +5000</button>' +
         '<button class="act-btn blue" onclick="openPhoto('+p.id+')"><i class="fa fa-camera"></i> Photo</button>' +
         '<button class="act-btn purple" onclick="openStats('+p.id+')"><i class="fa fa-chart-bar"></i> Stats</button>' +
         '<button class="del-btn" onclick="deleteProduct('+p.id+','+p.isBase+')"><i class="fa fa-trash"></i></button>' +
@@ -328,6 +329,7 @@ function onBrandEdit(id){
 }
 function setStock(id, qty) { _pushUndo(); stockData[id]=qty; renderTable(); renderStats(); }
 function addStock(id) { _pushUndo(); const cur=stockData[id]||0; const nq=Math.ceil((cur+1)/50)*50; logAction('stock_change',{id:id,name:(getAllAdminProducts().find(function(p){return p.id===id;})||{}).name||'#'+id,oldQty:cur,newQty:nq}); stockData[id]=nq; renderTable(); renderStats(); }
+function addStock5000(id) { _pushUndo(); const cur=stockData[id]||0; const nq=cur+5000; logAction('stock_change',{id:id,name:(getAllAdminProducts().find(function(p){return p.id===id;})||{}).name||'#'+id,oldQty:cur,newQty:nq}); stockData[id]=nq; renderTable(); renderStats(); }
 // Add an exact amount of stock (used by the +5000 button in the low/out-of-stock alerts)
 function addStockAmt(id, amt) {
   _pushUndo();

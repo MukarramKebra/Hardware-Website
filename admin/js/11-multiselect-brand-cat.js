@@ -19,6 +19,12 @@ function toggleSelectAll(checked) {
   document.querySelectorAll('.row-chk').forEach(function(c){ c.checked = checked; });
   _syncBulkBar();
 }
+// "Select All" button in the toolbar — same as ticking the header checkbox.
+function selectAllProducts() {
+  toggleSelectAll(true);
+  var headerChk = document.getElementById('selectAll');
+  if (headerChk) headerChk.checked = true;
+}
 
 function toggleRowSelect(id, checked) {
   checked ? _selectedIds.add(id) : _selectedIds.delete(id);

@@ -85,6 +85,7 @@
         <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="adminSearch" placeholder="Search products..." oninput="renderTable()" /></div>
         <select class="filter-sel" id="catFilter" onchange="renderTable()"></select>
         <button class="newcat-btn" onclick="openNewCat()"><i class="fa fa-plus"></i> Category</button>
+        <button class="ur-btn" onclick="selectAllProducts()"><i class="fa fa-check-square"></i> Select All</button>
         <div class="ur-group">
           <button class="ur-btn" id="undoBtn" onclick="undo()" disabled title="Undo (Ctrl+Z)"><i class="fa fa-undo"></i> Undo</button>
           <button class="ur-btn" id="redoBtn" onclick="redo()" disabled title="Redo (Ctrl+Y)"><i class="fa fa-redo"></i> Redo</button>

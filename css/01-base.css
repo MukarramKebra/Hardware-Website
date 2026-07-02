@@ -49,6 +49,12 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 #nav { display: flex; gap: 30px; }
 #nav a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; transition: color 0.2s; text-transform: uppercase; }
 #nav a:hover { color: #f87171; }
+/* #navMyOrders / #navSignIn are mobile-dropdown-only shortcuts (the header's
+   own Sign In / My Account button already covers desktop) — without this they
+   render as a near-invisible link in the middle of the desktop nav row. */
+@media (min-width: 769px) {
+  #navMyOrders, #navSignIn { display: none !important; }
+}
 
 .header-actions { display: flex; align-items: center; gap: 12px; }
 .btn-cart { background: var(--orange); border: none; color: #fff; padding: 9px 18px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
