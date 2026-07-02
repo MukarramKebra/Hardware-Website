@@ -63,6 +63,9 @@
     <button class="tab-btn" id="tabCategories" onclick="switchTab('categories')">
       <i class="fa fa-th-large"></i> Categories
     </button>
+    <button class="tab-btn" id="tabBanners" onclick="switchTab('banners')">
+      <i class="fa fa-images"></i> Banners
+    </button>
     <button class="tab-btn" id="tabOwner" onclick="switchTab('owner')" style="display:none;margin-left:auto;background:rgba(124,58,237,.12);color:#c4b5fd;border-bottom-color:transparent;">
       <i class="fa fa-crown"></i> Owner Controls
     </button>
@@ -315,8 +318,11 @@
       <h2><i class="fa fa-th-large" style="color:var(--orange);margin-right:8px"></i>Edit Category Images</h2>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px" id="catEditGrid"></div>
+  </div>
 
-    <div class="table-top" style="margin:36px 0 12px">
+  <!-- SIDE BANNERS SECTION -->
+  <div id="bannersSection" class="main" style="display:none">
+    <div class="table-top" style="margin-bottom:12px">
       <h2><i class="fa fa-images" style="color:var(--orange);margin-right:8px"></i>Side Banners</h2>
     </div>
     <p style="font-size:12px;color:var(--gray);margin:0 0 16px;max-width:640px">
@@ -332,6 +338,25 @@
       </label>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px" id="bannerEditGrid"></div>
+  </div>
+
+  <!-- EDIT BANNER MODAL -->
+  <div class="newcat-overlay" id="editBannerOverlay" onclick="if(event.target===this)closeEditBanner()">
+    <div class="newcat-modal">
+      <div class="newcat-header">
+        <h3><i class="fa fa-edit"></i> Edit Banner</h3>
+        <button onclick="closeEditBanner()"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="newcat-body">
+        <label>Brand Name</label>
+        <input type="text" id="editBannerBrand" placeholder="Brand name" style="margin-bottom:16px" />
+        <label class="add-prod-btn" style="cursor:pointer;display:inline-flex;margin-bottom:16px">
+          <i class="fa fa-upload"></i> Replace Image (optional)
+          <input type="file" accept="image/*" id="editBannerFile" style="display:none" />
+        </label>
+        <button class="newcat-save" onclick="saveEditBanner()"><i class="fa fa-save"></i>&nbsp; Save Changes</button>
+      </div>
+    </div>
   </div>
 
   <!-- OWNER CONTROLS SECTION -->
@@ -399,11 +424,56 @@
         </div>
       </div>
 
+      <!-- Team Accounts card — ultimate15 only -->
+      <div class="su-card owner-only-row">
+        <div class="su-card-h"><i class="fa fa-user-friends"></i> Team Accounts</div>
+        <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px">
+          Create restricted logins for staff. Pick exactly which tabs each account can see, and
+          whether they can edit or only view within those tabs.
+        </p>
+        <button class="add-prod-btn" onclick="openTeamAccountForm()" style="margin-bottom:14px"><i class="fa fa-plus"></i> Add Team Account</button>
+        <div id="teamAcctList"></div>
+      </div>
+
       <!-- Audit log card -->
       <div class="su-card">
         <div class="su-card-h"><i class="fa fa-history"></i> Admin Actions — Past 7 Days</div>
         <button class="su-undo-btn" id="suUndoBtn2" onclick="undoAllThisWeek()"><i class="fa fa-undo-alt"></i> Undo All This Week's Actions</button>
         <div id="suAuditLog2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEAM ACCOUNT FORM MODAL -->
+  <div class="teamacct-overlay" id="teamAcctOverlay" onclick="if(event.target===this)closeTeamAccountForm()">
+    <div class="teamacct-modal">
+      <div class="newcat-header">
+        <h3><i class="fa fa-user-friends"></i> <span id="teamAcctModalTitle">Add Team Account</span></h3>
+        <button onclick="closeTeamAccountForm()"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="newcat-body" style="max-height:70vh;overflow-y:auto">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label>Username</label>
+            <input type="text" id="taUsername" placeholder="e.g. sara" />
+          </div>
+          <div>
+            <label>Password</label>
+            <input type="text" id="taPassword" placeholder="Choose a password" />
+          </div>
+        </div>
+        <label style="margin-top:6px">Display Name</label>
+        <input type="text" id="taDisplayName" placeholder="e.g. Sara — Sales" style="margin-bottom:16px" />
+
+        <label style="margin-bottom:10px">Tab Permissions</label>
+        <div id="taPermsGrid" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px"></div>
+
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:600;color:var(--dark);cursor:pointer;margin-bottom:16px">
+          <input type="checkbox" id="taHideStock" style="width:auto;margin:0" />
+          Hide exact stock numbers (shows In Stock / Low / Out only, no quantity)
+        </label>
+
+        <button class="newcat-save" onclick="saveTeamAccount()"><i class="fa fa-save"></i>&nbsp; Save Account</button>
       </div>
     </div>
   </div>

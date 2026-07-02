@@ -97,6 +97,16 @@
     .newcat-slug span{font-weight:700;color:var(--orange);}
     .newcat-save{width:100%;padding:11px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;}
     .newcat-save:hover{background:#991b1b;}
+
+    /* Team account modal — same show/hide behaviour as .newcat-overlay, just wider */
+    .teamacct-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;padding:20px;}
+    .teamacct-overlay.open{opacity:1;pointer-events:all;}
+    .teamacct-modal{background:#fff;border-radius:14px;width:100%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,.3);border-top:4px solid var(--orange);}
+    .ta-perm-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--dark);}
+    .ta-perm-row:last-child{border-bottom:none;}
+    .ta-perm-row label{display:flex;align-items:center;gap:6px;text-transform:none;font-size:12px;font-weight:600;color:var(--gray);cursor:pointer;margin:0;}
+    .ta-perm-row input[type="checkbox"]{width:auto!important;margin:0!important;}
+    .teamacct-account-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;background:#fff;}
     .cat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
     .cat-chip{display:flex;align-items:center;gap:5px;background:rgba(255,98,0,.08);border:1px solid rgba(255,98,0,.2);color:var(--orange);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
     .cat-chip .del-cat{background:none;border:none;color:var(--orange);cursor:pointer;font-size:12px;padding:0;line-height:1;}

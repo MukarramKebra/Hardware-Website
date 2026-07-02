@@ -329,6 +329,12 @@ async function savePhoto() {
 // jain_auth = '1'       → regular admin session (bahar)
 // jain_auth = 'super'   → owner session (ultimate15)
 // jain_auth = 'bahar15' → manager session (bahar15)
+// jain_auth = 'custom'  → restricted team account (see admin/js/03-auth.js)
 if (localStorage.getItem('jain_auth') === '1')       { showAdmin(); }
 if (localStorage.getItem('jain_auth') === 'super')   { showSuperAdmin(); }
 if (localStorage.getItem('jain_auth') === 'bahar15') { showManager(); }
+if (localStorage.getItem('jain_auth') === 'custom')  {
+  var _savedPerms = {};
+  try { _savedPerms = JSON.parse(localStorage.getItem('jain_custom_perms') || '{}'); } catch(e) {}
+  showCustomAdmin(_savedPerms);
+}

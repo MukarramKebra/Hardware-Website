@@ -72,8 +72,11 @@ function resetCatBg(slug) {
 // ── SIDE BANNERS ─────────────────────────────────────────────────────────────
 // loadBanners()   — fetches the current banner list from Supabase and draws it
 // addBanner()     — uploads a new banner (brand name + image) to Supabase
+// editBanner()    — opens the edit modal for one banner
+// saveEditBanner()— saves the brand name / replacement image for that banner
 // deleteBanner()  — removes one banner
 var _bannerList = [];
+var _editBannerId = null;
 
 async function loadBanners() {
   var res = await sbFetch(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc', { headers: SB_HDRS });
@@ -93,7 +96,10 @@ function renderBannerEditor() {
       '<div style="height:130px;background:url(\'' + b.img_url + '\') center/cover no-repeat"></div>' +
       '<div style="padding:10px 12px">' +
         '<div style="font-weight:800;font-size:13px;color:#1c1c1c;margin-bottom:8px">' + encodeHtml(b.brand) + '</div>' +
-        '<button onclick="deleteBanner(' + b.id + ')" style="width:100%;background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:6px;font-size:11px;font-weight:700;cursor:pointer"><i class="fa fa-trash"></i> Delete</button>' +
+        '<div style="display:flex;gap:6px">' +
+          '<button onclick="editBanner(' + b.id + ')" style="flex:1;background:none;border:1px solid var(--border);color:var(--gray);border-radius:6px;padding:6px;font-size:11px;font-weight:700;cursor:pointer"><i class="fa fa-edit"></i> Edit</button>' +
+          '<button onclick="deleteBanner(' + b.id + ')" style="flex:1;background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:6px;font-size:11px;font-weight:700;cursor:pointer"><i class="fa fa-trash"></i> Delete</button>' +
+        '</div>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -119,6 +125,53 @@ function addBanner() {
     loadBanners();
   };
   reader.readAsDataURL(fileInput.files[0]);
+}
+
+function editBanner(id) {
+  var b = _bannerList.find(function(x) { return x.id === id; });
+  if (!b) return;
+  _editBannerId = id;
+  document.getElementById('editBannerBrand').value = b.brand;
+  document.getElementById('editBannerFile').value = '';
+  document.getElementById('editBannerOverlay').classList.add('open');
+}
+
+function closeEditBanner() {
+  document.getElementById('editBannerOverlay').classList.remove('open');
+  _editBannerId = null;
+}
+
+async function saveEditBanner() {
+  if (_editBannerId === null) return;
+  var brand = (document.getElementById('editBannerBrand').value || '').trim();
+  if (!brand) { showToast('Brand name can\'t be empty'); return; }
+  var fileInput = document.getElementById('editBannerFile');
+
+  function patch(imgUrl) {
+    var body = { brand: brand };
+    if (imgUrl) body.img_url = imgUrl;
+    return sbFetch(SB_URL + '/rest/v1/expert_banners?id=eq.' + _editBannerId, {
+      method: 'PATCH',
+      headers: Object.assign({}, SB_HDRS, { 'Prefer': 'return=representation' }),
+      body: JSON.stringify(body)
+    });
+  }
+
+  var res;
+  if (fileInput.files && fileInput.files[0]) {
+    var dataUrl = await new Promise(function(resolve) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result); };
+      reader.readAsDataURL(fileInput.files[0]);
+    });
+    res = await patch(dataUrl);
+  } else {
+    res = await patch(null);
+  }
+  if (res.error) { showToast('Failed to save changes'); return; }
+  showToast('Banner updated!');
+  closeEditBanner();
+  loadBanners();
 }
 
 async function deleteBanner(id) {

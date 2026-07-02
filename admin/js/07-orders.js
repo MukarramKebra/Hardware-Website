@@ -271,7 +271,9 @@ function renderTable() {
       '<td>'+catPills+'</td>' +
       '<td><div class="brand-cell"><input class="brand-input" id="bi'+p.id+'" value="'+encodeHtml(getBrand(p.id))+'" placeholder="Brand" oninput="onBrandEdit('+p.id+')" /><button class="brand-menu-btn" title="Brand actions" onclick="openBrandMenu('+p.id+',event)"><i class="fa fa-ellipsis-v"></i></button></div></td>' +
       '<td><input class="price-input" id="pi'+p.id+'" type="number" step="0.001" min="0" value="'+((_prodOverrides[p.id]||{}).price!==undefined?(_prodOverrides[p.id].price).toFixed(3):p.price.toFixed(3))+'" oninput="onPriceEdit('+p.id+')" /></td>' +
-      '<td><input type="number" class="stock-input '+cls+'" id="si'+p.id+'" value="'+qty+'" min="0" oninput="onStock('+p.id+')" /></td>' +
+      '<td>' + (window._hideStockNumbers
+        ? '<span class="status-dot"><span class="dot '+dotCls+'"></span>'+status+'</span>'
+        : '<input type="number" class="stock-input '+cls+'" id="si'+p.id+'" value="'+qty+'" min="0" oninput="onStock('+p.id+')" />') + '</td>' +
       '<td><span class="status-dot"><span class="dot '+dotCls+'"></span>'+status+'</span></td>' +
       '<td class="val-cell">'+val+'</td>' +
       '<td>' +

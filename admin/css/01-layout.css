@@ -71,5 +71,11 @@
     .tab-btn:hover{color:#fff;}
     .tab-btn.active{color:#fff;border-bottom-color:#fff;}
 
-    .main{padding:28px;max-width:1400px;margin:0 auto;}
+    .main{padding:28px;max-width:1400px;margin:0 auto;position:relative;}
+    /* Team accounts with "view only" access to a tab (see admin/js/03-auth.js
+       applyAccountPermissions) — everything is readable but nothing editable.
+       Search/filter stay usable since those don't change any data. */
+    .main.view-only input:not(#adminSearch), .main.view-only select:not(#catFilter),
+    .main.view-only textarea, .main.view-only button { pointer-events:none!important; opacity:.55; cursor:not-allowed!important; }
+    .main.view-only::before { content:'View Only'; position:absolute; top:0; right:28px; background:var(--gray-400,#9aa0a6); color:#fff; font-size:11px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; padding:5px 12px; border-radius:0 0 8px 8px; z-index:20; }
 

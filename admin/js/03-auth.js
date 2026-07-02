@@ -8,7 +8,7 @@ var _fpp = document.getElementById('fpPass'); if (_fpp) _fpp.textContent = ADMIN
 // Also ensure owner-only rows are visible by default (will be hidden if bahar15 logs in)
 document.querySelectorAll('.owner-only-row').forEach(function(el){ el.style.display = ''; });
 
-function doLogin(e) {
+async function doLogin(e) {
   if (e) e.preventDefault();
   const u   = document.getElementById('loginUser').value.trim();
   const p   = document.getElementById('loginPass').value;
@@ -50,18 +50,90 @@ function doLogin(e) {
     return;
   }
 
+  // ── Team accounts created by ultimate15 (Owner Controls) ──────────────────
+  const res = await sbFetch(SB_URL + '/rest/v1/expert_admin_accounts?username=eq.' + encodeURIComponent(u) + '&select=*', { headers: SB_HDRS });
+  if (Array.isArray(res.data) && res.data.length && res.data[0].password === p) {
+    const account = res.data[0];
+    localStorage.setItem('jain_auth', 'custom');
+    localStorage.setItem('jain_custom_perms', JSON.stringify(account.permissions || {}));
+    localStorage.setItem('jain_custom_name', account.display_name || account.username);
+    showCustomAdmin(account.permissions || {});
+    return;
+  }
+
   // ── Wrong credentials ─────────────────────────────────────────────────────
   err.textContent = 'Wrong username or password.';
   err.style.display = 'block';
   setTimeout(function() { err.style.display = 'none'; }, 3000);
 }
 function showAdmin() {
+  resetAccountPermissions();
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('adminPanel').style.display = 'block';
   switchTab('inventory');
   loadFromSupabase();
   _loadSavedHandles();
   loadOrders(false);
+}
+
+// ── TEAM ACCOUNTS (created by ultimate15 — see the Owner Controls "Team
+// Accounts" panel) — restricted logins with per-tab view/edit permissions.
+const TAB_KEYS = ['inventory','analytics','deleted','orders','reports','categories','banners'];
+
+// Restores full access — called whenever one of the three built-in accounts
+// (bahar / bahar15 / ultimate15) logs in, in case a restricted account used
+// this browser last and left tabs hidden / sections locked.
+function resetAccountPermissions() {
+  window._hideStockNumbers = false;
+  TAB_KEYS.forEach(function(key) {
+    var btn = document.getElementById('tab' + key.charAt(0).toUpperCase() + key.slice(1));
+    if (btn) btn.style.display = '';
+    var section = document.getElementById(key + 'Section');
+    if (section) section.classList.remove('view-only');
+  });
+}
+
+function applyAccountPermissions(perms) {
+  window._hideStockNumbers = !!perms.hideStockNumbers;
+  TAB_KEYS.forEach(function(key) {
+    var p = perms[key] || {};
+    var btn = document.getElementById('tab' + key.charAt(0).toUpperCase() + key.slice(1));
+    if (btn) btn.style.display = p.view ? '' : 'none';
+    var section = document.getElementById(key + 'Section');
+    if (section) section.classList.toggle('view-only', !!(p.view && !p.edit));
+  });
+  document.getElementById('tabOwner').style.display = 'none';
+}
+
+function showCustomAdmin(perms) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminPanel').style.display  = 'block';
+  applyAccountPermissions(perms);
+  var name = localStorage.getItem('jain_custom_name') || 'Team Member';
+  var badge = document.querySelector('.admin-badge');
+  if (badge) { badge.innerHTML = '<i class="fa fa-user"></i> ' + name; badge.style.background = '#5c0a0a'; }
+  var logoutBtn = document.querySelector('.top-right .logout-btn:last-child');
+  if (logoutBtn) { logoutBtn.setAttribute('onclick', 'logoutCustom()'); }
+  var firstTab = TAB_KEYS.find(function(key) { return perms[key] && perms[key].view; }) || 'inventory';
+  switchTab(firstTab);
+  loadFromSupabase();
+  _loadSavedHandles();
+  loadOrders(false);
+}
+
+function logoutCustom() {
+  localStorage.removeItem('jain_auth');
+  localStorage.removeItem('jain_custom_perms');
+  localStorage.removeItem('jain_custom_name');
+  resetAccountPermissions();
+  document.getElementById('adminPanel').style.display  = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  var badge = document.querySelector('.admin-badge');
+  if (badge) { badge.innerHTML = '<i class="fa fa-shield-alt"></i> Admin'; badge.style.background = ''; }
+  var logoutBtn = document.querySelector('.top-right .logout-btn:last-child');
+  if (logoutBtn) { logoutBtn.setAttribute('onclick', 'logout()'); }
 }
 function logout() {
   localStorage.removeItem('jain_auth');
@@ -77,6 +149,7 @@ function logout() {
 // toggleBaharAccount() — enables or disables the "bahar" login account
 // renderSuperAdmin()   — draws the audit log and status of bahar's account
 function showSuperAdmin() {
+  resetAccountPermissions();
   // Show the full admin panel + reveal the Owner Controls tab
   document.getElementById('loginScreen').style.display  = 'none';
   document.getElementById('adminPanel').style.display   = 'block';
@@ -99,6 +172,7 @@ function showSuperAdmin() {
   _loadSavedHandles();
   loadOrders(false);
   renderSuperAdmin();
+  loadTeamAccounts();
 }
 function logoutSuper() {
   localStorage.removeItem('jain_auth');
@@ -121,6 +195,7 @@ function logoutSuper() {
 //   • Cannot disable/enable themselves (bahar15 row hidden)
 // ultimate15 can disable bahar15 via the Owner Controls panel.
 function showManager() {
+  resetAccountPermissions();
   // Show full admin panel + reveal Owner Controls tab
   document.getElementById('loginScreen').style.display  = 'none';
   document.getElementById('adminPanel').style.display   = 'block';
@@ -384,4 +459,123 @@ function tick() {
     n.toLocaleTimeString('en-KW',{hour:'2-digit',minute:'2-digit'});
 }
 setInterval(tick, 1000); tick();
+
+// ── TEAM ACCOUNTS (ultimate15 only) ─────────────────────────────────────────────
+// loadTeamAccounts()   — fetches all accounts from Supabase, draws the list
+// openTeamAccountForm(id) — opens the modal, blank for a new account or
+//                           pre-filled if editing an existing one
+// saveTeamAccount()    — creates or updates the account + its permissions
+// deleteTeamAccount(id)— removes an account (it can no longer log in)
+var _teamAccounts     = [];
+var _editingAccountId = null;
+var TAB_LABELS = {
+  inventory: 'Inventory', analytics: 'Analytics', deleted: 'Deleted', orders: 'Orders',
+  reports: 'Reports', categories: 'Categories', banners: 'Banners'
+};
+
+function renderPermsGrid(existingPerms) {
+  var perms = existingPerms || {};
+  var grid = document.getElementById('taPermsGrid');
+  if (!grid) return;
+  grid.innerHTML = TAB_KEYS.map(function(key) {
+    var p = perms[key] || {};
+    return '<div class="ta-perm-row">' +
+      '<span>' + TAB_LABELS[key] + '</span>' +
+      '<div style="display:flex;gap:16px">' +
+        '<label><input type="checkbox" class="ta-view-chk" data-tab="' + key + '" ' + (p.view ? 'checked' : '') + ' onchange="_onTaViewChange(\'' + key + '\')" /> View</label>' +
+        '<label><input type="checkbox" class="ta-edit-chk" data-tab="' + key + '" ' + (p.edit ? 'checked' : '') + ' ' + (p.view ? '' : 'disabled') + ' /> Edit</label>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function _onTaViewChange(tab) {
+  var viewChk = document.querySelector('.ta-view-chk[data-tab="' + tab + '"]');
+  var editChk = document.querySelector('.ta-edit-chk[data-tab="' + tab + '"]');
+  editChk.disabled = !viewChk.checked;
+  if (!viewChk.checked) editChk.checked = false;
+}
+
+function openTeamAccountForm(id) {
+  _editingAccountId = id || null;
+  var account = id ? _teamAccounts.find(function(a) { return a.id === id; }) : null;
+  document.getElementById('teamAcctModalTitle').textContent = account ? 'Edit Team Account' : 'Add Team Account';
+  document.getElementById('taUsername').value    = account ? account.username : '';
+  document.getElementById('taPassword').value    = account ? account.password : '';
+  document.getElementById('taDisplayName').value = account ? (account.display_name || '') : '';
+  document.getElementById('taHideStock').checked = !!(account && account.permissions && account.permissions.hideStockNumbers);
+  renderPermsGrid(account ? account.permissions : {});
+  document.getElementById('teamAcctOverlay').classList.add('open');
+}
+
+function closeTeamAccountForm() {
+  document.getElementById('teamAcctOverlay').classList.remove('open');
+  _editingAccountId = null;
+}
+
+async function saveTeamAccount() {
+  var username    = document.getElementById('taUsername').value.trim();
+  var password    = document.getElementById('taPassword').value;
+  var displayName = document.getElementById('taDisplayName').value.trim();
+  if (!username || !password) { showToast('Username and password are required'); return; }
+
+  var perms = {};
+  TAB_KEYS.forEach(function(key) {
+    perms[key] = {
+      view: document.querySelector('.ta-view-chk[data-tab="' + key + '"]').checked,
+      edit: document.querySelector('.ta-edit-chk[data-tab="' + key + '"]').checked
+    };
+  });
+  perms.hideStockNumbers = document.getElementById('taHideStock').checked;
+
+  var body = { username: username, password: password, display_name: displayName, permissions: perms };
+  var res;
+  if (_editingAccountId) {
+    res = await sbFetch(SB_URL + '/rest/v1/expert_admin_accounts?id=eq.' + _editingAccountId, {
+      method: 'PATCH', headers: Object.assign({}, SB_HDRS, { 'Prefer': 'return=representation' }), body: JSON.stringify(body)
+    });
+  } else {
+    res = await sbFetch(SB_URL + '/rest/v1/expert_admin_accounts', {
+      method: 'POST', headers: Object.assign({}, SB_HDRS, { 'Prefer': 'return=representation' }), body: JSON.stringify([body])
+    });
+  }
+  if (res.error) { showToast('Failed to save — that username may already be taken'); return; }
+  showToast('Account saved!');
+  closeTeamAccountForm();
+  loadTeamAccounts();
+}
+
+async function loadTeamAccounts() {
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_admin_accounts?select=*&order=id.asc', { headers: SB_HDRS });
+  _teamAccounts = Array.isArray(res.data) ? res.data : [];
+  renderTeamAccountsList();
+}
+
+function renderTeamAccountsList() {
+  var list = document.getElementById('teamAcctList');
+  if (!list) return;
+  if (!_teamAccounts.length) { list.innerHTML = '<p style="color:#aaa;font-size:12px">No team accounts yet.</p>'; return; }
+  list.innerHTML = _teamAccounts.map(function(a) {
+    var tabs = TAB_KEYS.filter(function(k) { return a.permissions && a.permissions[k] && a.permissions[k].view; })
+      .map(function(k) { return TAB_LABELS[k]; }).join(', ') || 'No tabs granted';
+    return '<div class="teamacct-account-card">' +
+      '<div>' +
+        '<div style="font-weight:800;font-size:14px;color:var(--dark)">' + encodeHtml(a.display_name || a.username) +
+          ' <span style="font-weight:600;color:var(--gray);font-size:12px">(' + encodeHtml(a.username) + ')</span></div>' +
+        '<div style="font-size:11px;color:var(--gray);margin-top:3px">' + tabs + '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px">' +
+        '<button class="ur-btn" onclick="openTeamAccountForm(' + a.id + ')"><i class="fa fa-edit"></i> Edit</button>' +
+        '<button class="ur-btn" style="color:var(--red);border-color:var(--red)" onclick="deleteTeamAccount(' + a.id + ')"><i class="fa fa-trash"></i> Delete</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function deleteTeamAccount(id) {
+  if (!confirm('Delete this team account? They will no longer be able to log in.')) return;
+  await sbFetch(SB_URL + '/rest/v1/expert_admin_accounts?id=eq.' + id, { method: 'DELETE', headers: SB_HDRS });
+  showToast('Account deleted');
+  loadTeamAccounts();
+}
 
