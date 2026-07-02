@@ -70,17 +70,42 @@ function resetCatBg(slug) {
 }
 
 // ── SIDE BANNERS ─────────────────────────────────────────────────────────────
-// loadBanners()   — fetches the current banner list from Supabase and draws it
+// loadBanners()   — fetches the current banner list from Supabase and draws it.
+//                   The first time this runs with an empty table, it seeds the
+//                   database with the same defaults the storefront falls back
+//                   to (Banners/ folder) so they show up here as real rows you
+//                   can edit or delete — otherwise there'd be nothing to manage
+//                   until you added a banner yourself.
 // addBanner()     — uploads a new banner (brand name + image) to Supabase
 // editBanner()    — opens the edit modal for one banner
 // saveEditBanner()— saves the brand name / replacement image for that banner
 // deleteBanner()  — removes one banner
 var _bannerList = [];
 var _editBannerId = null;
+var DEFAULT_BANNERS = [
+  { brand: 'DCK',    img: 'Banners/dck1.jpg' },
+  { brand: 'DCK',    img: 'Banners/dck2.jpg' },
+  { brand: 'Covax',  img: 'Banners/covax1.jpg' },
+  { brand: 'Covax',  img: 'Banners/covax2.jpg' },
+  { brand: 'iTrust', img: 'Banners/itrust1.jpg' },
+  { brand: 'iTrust', img: 'Banners/itrust2.jpg' },
+  { brand: 'iTrust', img: 'Banners/itrust3.jpg' },
+  { brand: 'iTrust', img: 'Banners/itrust4.jpg' }
+];
 
 async function loadBanners() {
   var res = await sbFetch(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc', { headers: SB_HDRS });
-  _bannerList = Array.isArray(res.data) ? res.data : [];
+  var list = Array.isArray(res.data) ? res.data : [];
+  if (!list.length && !res.error) {
+    var seedRows = DEFAULT_BANNERS.map(function(b) { return { brand: b.brand, img_url: b.img }; });
+    var seedRes = await sbFetch(SB_URL + '/rest/v1/expert_banners', {
+      method: 'POST',
+      headers: Object.assign({}, SB_HDRS, { 'Prefer': 'return=representation' }),
+      body: JSON.stringify(seedRows)
+    });
+    list = Array.isArray(seedRes.data) ? seedRes.data : [];
+  }
+  _bannerList = list;
   renderBannerEditor();
 }
 
