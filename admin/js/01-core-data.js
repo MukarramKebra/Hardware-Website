@@ -52,8 +52,8 @@ const MANAGER_PASS  = 'Kuw963258';   // Manager password
 // SB_URL  = the database address
 // SB_KEY  = the access key (like a password to talk to the database — read-only for public)
 // SB_HDRS = the headers sent with every database request (authentication)
-const SB_URL  = 'https://wjamqqwfpwqsafwcwajq.supabase.co';
-const SB_KEY  = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5kcVlXMXhjWGRtY0hkeGMyRm1kMk4zWVdweElpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzT0RBMk5qSXpNREVzSW1WNGNDSTZNakE1TmpJek9ETXdNWDAuT3Z1Qk8ta2JXS0EzV25hbWxhMm43UHhTcWViWlFjNmJfeTZJdUtNU3RwSQ==');
+const SB_URL  = 'https://qhebhvllkovfbkqrcnmm.supabase.co';
+const SB_KEY  = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5Gb1pXSm9kbXhzYTI5MlptSnJjWEpqYm0xdElpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpZd05UZ3dNVGtzSW1WNGNDSTZNakE1TVRZek5EQXhPWDAuQVFsNVdBQjFfbWEzemNya1c0TkZLazZvQ0tCVWxUdGhENjh1amNTbG5hcw==');
 const SB_HDRS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
 
 // Default categories shown in the admin category filter dropdown

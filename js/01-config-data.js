@@ -6,8 +6,8 @@ const UL  = (id) => `Bahar-Products/SKU-${String(id).padStart(4,'0')}.jpg`;  // 
 // This runs on every page load and shows a "closed" overlay if the flag is set.
 (async function checkSiteStatus() {
   try {
-    const SB_URL_CHK = 'https://wjamqqwfpwqsafwcwajq.supabase.co';
-    const SB_KEY_CHK = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5kcVlXMXhjWGRtY0hkeGMyRm1kMk4zWVdweElpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzT0RBMk5qSXpNREVzSW1WNGNDSTZNakE1TmpJek9ETXdNWDAuT3Z1Qk8ta2JXS0EzV25hbWxhMm43UHhTcWViWlFjNmJfeTZJdUtNU3RwSQ==');
+    const SB_URL_CHK = 'https://qhebhvllkovfbkqrcnmm.supabase.co';
+    const SB_KEY_CHK = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5Gb1pXSm9kbXhzYTI5MlptSnJjWEpqYm0xdElpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpZd05UZ3dNVGtzSW1WNGNDSTZNakE1TVRZek5EQXhPWDAuQVFsNVdBQjFfbWEzemNya1c0TkZLazZvQ0tCVWxUdGhENjh1amNTbG5hcw==');
     const res = await fetch(SB_URL_CHK + '/rest/v1/expert_settings?key=eq.site_disabled&select=value', {
       headers: { 'apikey': SB_KEY_CHK, 'Authorization': 'Bearer ' + SB_KEY_CHK }
     });
@@ -47,8 +47,8 @@ function getProductSku(id) {
 }
 
 // ── SUPABASE CONFIG ───────────────────────────────────────────────────────
-const SB_URL = 'https://wjamqqwfpwqsafwcwajq.supabase.co';
-const SB_KEY = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5kcVlXMXhjWGRtY0hkeGMyRm1kMk4zWVdweElpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzT0RBMk5qSXpNREVzSW1WNGNDSTZNakE1TmpJek9ETXdNWDAuT3Z1Qk8ta2JXS0EzV25hbWxhMm43UHhTcWViWlFjNmJfeTZJdUtNU3RwSQ==');
+const SB_URL = 'https://qhebhvllkovfbkqrcnmm.supabase.co';
+const SB_KEY = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5Gb1pXSm9kbXhzYTI5MlptSnJjWEpqYm0xdElpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpZd05UZ3dNVGtzSW1WNGNDSTZNakE1TVRZek5EQXhPWDAuQVFsNVdBQjFfbWEzemNya1c0TkZLazZvQ0tCVWxUdGhENjh1amNTbG5hcw==');
 const SB_H   = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 
 // ── SUPABASE FETCH WRAPPER ────────────────────────────────────────────────
