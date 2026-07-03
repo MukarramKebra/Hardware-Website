@@ -196,9 +196,15 @@ async function _fixCustomProductIds() {
 
 async function loadFromSupabase() {
   showToast('Loading from cloud…');
-  const [s, p, c, h, cb, sk, bm] = await Promise.all([
+  // Photos (expert_photos) carries every product's full image as base64 —
+  // several MB total — and Supabase's free tier can take up to a minute to
+  // respond on its first request after being idle-paused. Fetching it inside
+  // this same Promise.all meant the ENTIRE inventory table sat blank until
+  // that one slow call finished (the "need to click Reload twice" symptom).
+  // It's now fetched separately below so the table renders immediately;
+  // thumbnails fill in once photos are ready.
+  const [s, c, h, cb, sk, bm] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',          { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',         { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',       { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',{ headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        { headers: SB_HDRS }),
@@ -233,15 +239,6 @@ async function loadFromSupabase() {
     localStorage.setItem('jain_stock', JSON.stringify(stockData));
   }
 
-  // Photos
-  if (p.error) {
-    console.warn('Photos load failed:', p.error);
-  } else if (Array.isArray(p.data)) {
-    const ph = JSON.parse(localStorage.getItem('jain_photos') || '{}');
-    p.data.forEach(function(r) { ph[r.product_id] = r.img_url; });
-    localStorage.setItem('jain_photos', JSON.stringify(ph));
-  }
-
   // Custom products
   if (c.error) {
     console.warn('Products load failed:', c.error);
@@ -267,6 +264,17 @@ async function loadFromSupabase() {
     console.error('Admin render error:', err);
     document.getElementById('tblBody').innerHTML = '<tr><td colspan="8" style="color:red;padding:20px;font-weight:700;font-size:13px">&#9888; RENDER ERROR: ' + err.message + '</td></tr>';
   }
+
+  // Photos load separately and re-render once ready (see comment above) —
+  // the table above already shows real names/prices/stock immediately.
+  sbFetch(SB_URL + '/rest/v1/expert_photos?select=*', { headers: SB_HDRS }).then(function(p) {
+    if (Array.isArray(p.data)) {
+      const ph = JSON.parse(localStorage.getItem('jain_photos') || '{}');
+      p.data.forEach(function(r) { ph[r.product_id] = r.img_url; });
+      localStorage.setItem('jain_photos', JSON.stringify(ph));
+      renderTable();
+    }
+  });
 }
 
 // Old built-in category slugs -> the Expert Hardware category set

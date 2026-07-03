@@ -195,17 +195,21 @@ function renderOrdersReport() {
 
 // â”€â”€ STATS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderStats() {
-  const total  = PRODUCTS.length;
-  const units  = PRODUCTS.reduce(function(s,p) { return s+(stockData[p.id]||0); }, 0);
-  const value  = PRODUCTS.reduce(function(s,p) { return s+p.price*(stockData[p.id]||0); }, 0);
-  const low    = PRODUCTS.filter(function(p) { return (stockData[p.id]||0) > 0 && (stockData[p.id]||0) <= 10; }).length;
-  const out    = PRODUCTS.filter(function(p) { return (stockData[p.id]||0) === 0; }).length;
+  // Was reading from the old hardcoded PRODUCTS array (the 60 demo products,
+  // now removed and empty) instead of the real inventory — every card showed
+  // 0 no matter how many actual products existed.
+  const allProducts = getAllAdminProducts();
+  const total  = allProducts.length;
+  const units  = allProducts.reduce(function(s,p) { return s+(stockData[p.id]||0); }, 0);
+  const value  = allProducts.reduce(function(s,p) { return s+p.price*(stockData[p.id]||0); }, 0);
+  const low    = allProducts.filter(function(p) { return (stockData[p.id]||0) > 0 && (stockData[p.id]||0) <= 10; }).length;
+  const out    = allProducts.filter(function(p) { return (stockData[p.id]||0) === 0; }).length;
   document.getElementById('statsGrid').innerHTML =
-    card('fa-boxes','ic-orange','Total Products', total, getAllAdminProducts().length + ' active products') +
+    card('fa-boxes','ic-orange','Total Products', total, total + ' active products') +
     card('fa-layer-group','ic-blue','Total Units', units.toLocaleString(), 'In stock') +
     card('fa-coins','ic-green','Inventory Value', value.toFixed(2)+' KWD', 'Total stock value') +
     card('fa-exclamation-triangle','ic-red','Alerts', low+out, low+' low &nbsp;|&nbsp; '+out+' out');
-  const lowList = PRODUCTS.filter(function(p) { return (stockData[p.id]||0) <= 10; });
+  const lowList = allProducts.filter(function(p) { return (stockData[p.id]||0) <= 10; });
   const box = document.getElementById('alertsBox');
   if (lowList.length) {
     box.classList.add('show');
@@ -391,9 +395,13 @@ async function saveAll() {
   });
   localStorage.setItem('bahar_overrides', JSON.stringify(_prodOverrides));
 
-  PRODUCTS.forEach(function(p) { const el=document.getElementById('si'+p.id); if(el) stockData[p.id]=Math.max(0,parseInt(el.value)||0); });
+  // Was iterating the old hardcoded PRODUCTS array (now empty since the demo
+  // products were removed) — stock quantity edits for the real 100 products
+  // were silently never reaching Supabase when "Save Changes" was clicked.
+  const allProductsForStock = getAllAdminProducts();
+  allProductsForStock.forEach(function(p) { const el=document.getElementById('si'+p.id); if(el) stockData[p.id]=Math.max(0,parseInt(el.value)||0); });
   localStorage.setItem('jain_stock', JSON.stringify(stockData));
-  const rows = PRODUCTS.map(function(p) { return { product_id: p.id, qty: stockData[p.id]||0 }; });
+  const rows = allProductsForStock.map(function(p) { return { product_id: p.id, qty: stockData[p.id]||0 }; });
   const { error } = await sbFetch(SB_URL + '/rest/v1/expert_stock', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
@@ -429,8 +437,12 @@ async function renderAnalytics() {
   const totalViews    = Object.values(views).reduce(function(a,b){return a+b;}, 0);
   const totalSearches = Object.values(searches).reduce(function(a,b){return a+b;}, 0);
 
-  const topV = PRODUCTS.slice().sort(function(a,b){ return (views[b.id]||0)-(views[a.id]||0); })[0];
-  const topS = PRODUCTS.slice().sort(function(a,b){ return (searches[b.id]||0)-(searches[a.id]||0); })[0];
+  // Was sorting the old hardcoded PRODUCTS array (now empty) instead of the
+  // real inventory — Analytics always showed "No data yet" regardless of
+  // actual views/searches.
+  const analyticsProducts = getAllAdminProducts();
+  const topV = analyticsProducts.slice().sort(function(a,b){ return (views[b.id]||0)-(views[a.id]||0); })[0];
+  const topS = analyticsProducts.slice().sort(function(a,b){ return (searches[b.id]||0)-(searches[a.id]||0); })[0];
 
   document.getElementById('analyticsStats').innerHTML =
     aCard('fa-eye','ic-orange','Total Views', totalViews, 'Add-to-cart clicks') +
@@ -439,12 +451,12 @@ async function renderAnalytics() {
     aCard('fa-trophy','ic-purple','Most Searched', topS ? (searches[topS.id]||0)+' times' : '—', topS ? topS.name : 'No data yet');
 
   // Top 10 viewed
-  const sortedViews = PRODUCTS.slice().sort(function(a,b){ return (views[b.id]||0)-(views[a.id]||0); }).slice(0,10);
+  const sortedViews = analyticsProducts.slice().sort(function(a,b){ return (views[b.id]||0)-(views[a.id]||0); }).slice(0,10);
   const maxV = views[sortedViews[0] && sortedViews[0].id] || 1;
   document.getElementById('viewsTable').innerHTML = buildAnTable(sortedViews, views, photos, maxV, 'bar-orange', 'views');
 
   // Top 10 searched
-  const sortedSearches = PRODUCTS.slice().sort(function(a,b){ return (searches[b.id]||0)-(searches[a.id]||0); }).slice(0,10);
+  const sortedSearches = analyticsProducts.slice().sort(function(a,b){ return (searches[b.id]||0)-(searches[a.id]||0); }).slice(0,10);
   const maxS = searches[sortedSearches[0] && sortedSearches[0].id] || 1;
   document.getElementById('searchesTable').innerHTML = buildAnTable(sortedSearches, searches, photos, maxS, 'bar-purple', 'searches');
 }
@@ -512,7 +524,11 @@ async function resetSearches() {
 
 // â”€â”€ PRODUCT STATS MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openStats(id) {
-  const p = PRODUCTS.find(function(x) { return x.id===id; });
+  // Was looking up the old hardcoded PRODUCTS array (now empty) — clicking
+  // "Stats" on any real product crashed here (p was undefined) instead of
+  // opening the modal.
+  const allStatsProducts = getAllAdminProducts();
+  const p = allStatsProducts.find(function(x) { return x.id===id; });
   const views   = JSON.parse(localStorage.getItem('bahar_views')||'{}');
   const searches= JSON.parse(localStorage.getItem('bahar_searches')||'{}');
   const photos  = JSON.parse(localStorage.getItem('jain_photos')||'{}');
@@ -520,8 +536,8 @@ function openStats(id) {
   const sCount  = searches[id]||0;
 
   // Compute ranks
-  const sortedV = PRODUCTS.slice().sort(function(a,b){ return (views[b.id]||0)-(views[a.id]||0); });
-  const sortedS = PRODUCTS.slice().sort(function(a,b){ return (searches[b.id]||0)-(searches[a.id]||0); });
+  const sortedV = allStatsProducts.slice().sort(function(a,b){ return (views[b.id]||0)-(views[a.id]||0); });
+  const sortedS = allStatsProducts.slice().sort(function(a,b){ return (searches[b.id]||0)-(searches[a.id]||0); });
   const vRank   = sortedV.findIndex(function(x){ return x.id===id; })+1;
   const sRank   = sortedS.findIndex(function(x){ return x.id===id; })+1;
   const rawPhS  = photos[id];

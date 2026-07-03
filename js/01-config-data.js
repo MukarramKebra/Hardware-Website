@@ -78,9 +78,17 @@ let _sbBanners   = [];       // admin-managed side banners (brand + img_url)
 let _sbBrandMap  = {};       // product id -> brand name, set from admin
 
 async function loadSBData() {
-  const [s, p, c, h, b, sk, bm] = await Promise.all([
+  // Photos (expert_photos) carries every product's full image as base64 —
+  // several MB total — and Supabase's free tier can take up to a minute to
+  // respond on its first request after being idle-paused. Fetching it inside
+  // the same Promise.all as everything else meant the ENTIRE page (names,
+  // prices, stock) sat blank until that one slow call finished. It's now
+  // fetched separately so the rest of the page renders immediately; photos
+  // fill in — starting from whatever was cached last visit — once ready.
+  try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
+
+  const [s, c, h, b, sk, bm] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',                         { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc',          { headers: SB_H }),
@@ -96,10 +104,8 @@ async function loadSBData() {
   if (s.error) {
     console.warn('Supabase offline — using localStorage fallback');
     try { _sbStock  = JSON.parse(localStorage.getItem('jain_stock')  || '{}'); } catch(_) {}
-    try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
   } else {
     if (Array.isArray(s.data)) s.data.forEach(r => { _sbStock[r.product_id]  = r.qty; });
-    if (Array.isArray(p.data)) p.data.forEach(r => { _sbPhotos[r.product_id] = r.img_url; });
     if (Array.isArray(c.data) && c.data.length > 0) _customProds = c.data.filter(r => !r.hidden);
     if (Array.isArray(h.data)) {
       var hidSet = new Set(h.data.map(r => r.product_id));
@@ -110,6 +116,16 @@ async function loadSBData() {
   }
   renderProducts();
   if (typeof initSideBanners === 'function') initSideBanners();
+
+  // Photos load separately and re-render once ready (see comment above) —
+  // products already show real names/prices/stock immediately either way.
+  sbFetch(SB_URL + '/rest/v1/expert_photos?select=*', { headers: SB_H }).then(function(p) {
+    if (Array.isArray(p.data)) {
+      p.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });
+      localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos));
+      renderProducts();
+    }
+  });
 }
 
 // Normalise category strings so "powertools", "power tools", "Power Tools" etc.
