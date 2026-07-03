@@ -216,6 +216,13 @@ async function importCSVProducts() {
     const namedImg    = imgFilename && _csvImageMap[imgFilename] ? _csvImageMap[imgFilename] : '';
     const imgDataUrl  = embeddedImg || namedImg;
     const imgUrl      = imgDataUrl || r.image_url || r.img_url || '';
+    // Never store the base64 image itself in expert_products.img_url — that
+    // column gets fetched on every single page load (select=*), so a base64
+    // blob per row there bloats and slows down every visitor's initial load.
+    // The real image already goes into expert_photos below, which is what
+    // rendering actually reads first; only a plain http(s) link is cheap
+    // enough to also keep on the product row.
+    const cheapImgUrl = imgUrl.startsWith('data:') ? '' : imgUrl;
 
     const { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/expert_products', {
       method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}),
@@ -224,7 +231,7 @@ async function importCSVProducts() {
         price: parseFloat(r.price)||0,
         description: r.description||r.desc||'',
         badge: r.badge||null,
-        img_url: imgUrl,
+        img_url: cheapImgUrl,
         hidden: false
       }])
     });
@@ -254,11 +261,23 @@ async function importCSVProducts() {
       // Save image to localStorage photos store (so storefront picks it up offline too)
       if (imgDataUrl) {
         localPhotos[String(newId)] = imgDataUrl;
-        // Also save to Supabase photos table
-        sbFetch(SB_URL + '/rest/v1/expert_photos', {
+        // Also save to Supabase photos table — MUST be awaited and checked.
+        // This used to be fire-and-forget (no await), which meant it could
+        // silently fail or get cancelled mid-import with no error shown —
+        // that's exactly how every photo from a previous import ended up
+        // living only in expert_products.img_url instead of here.
+        const photoRes = await sbFetch(SB_URL + '/rest/v1/expert_photos', {
           method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
-          body:JSON.stringify([{product_id:newId, url:imgDataUrl}])
+          body:JSON.stringify([{product_id:newId, img_url:imgDataUrl}])
         });
+        // Fallback: if the photos-table write failed for any reason, keep
+        // the image on the product row itself rather than losing it silently
+        if (photoRes.error) {
+          console.warn('Photo save failed for', r.name, '— keeping image on product row instead:', photoRes.error);
+          await sbFetch(SB_URL + '/rest/v1/expert_products?id=eq.' + newId, {
+            method: 'PATCH', headers: SB_HDRS, body: JSON.stringify({ img_url: imgDataUrl })
+          });
+        }
       }
       count++;
     }

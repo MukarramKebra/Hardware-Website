@@ -99,7 +99,7 @@ async function loadSBData() {
     try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
   } else {
     if (Array.isArray(s.data)) s.data.forEach(r => { _sbStock[r.product_id]  = r.qty; });
-    if (Array.isArray(p.data)) p.data.forEach(r => { _sbPhotos[r.product_id] = r.url; });
+    if (Array.isArray(p.data)) p.data.forEach(r => { _sbPhotos[r.product_id] = r.img_url; });
     if (Array.isArray(c.data) && c.data.length > 0) _customProds = c.data.filter(r => !r.hidden);
     if (Array.isArray(h.data)) {
       var hidSet = new Set(h.data.map(r => r.product_id));

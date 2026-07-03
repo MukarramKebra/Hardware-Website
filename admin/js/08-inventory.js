@@ -131,6 +131,13 @@ async function saveNewProduct() {
     setProductSku(safeId, /^\d+$/.test(skuRaw) ? parseInt(skuRaw) : skuRaw);
   }
 
+  // Never store the base64 image itself in expert_products.img_url — that
+  // column gets fetched on every visitor's page load (select=*), so a base64
+  // blob per row bloats and slows down every single page load. A file upload
+  // gets properly saved into expert_photos a few lines down instead; only a
+  // plain http(s) link (pasted URL) is cheap enough to also keep here.
+  var cheapImgUrl = imgUrl.startsWith('data:') ? '' : imgUrl;
+
   var { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/expert_products', {
     method:'POST',
     headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}),
@@ -139,7 +146,7 @@ async function saveNewProduct() {
       name, category:cat, price, hidden:false,
       description: document.getElementById('apDesc').value.trim(),
       badge:  document.getElementById('apBadge').value || null,
-      img_url: imgUrl
+      img_url: cheapImgUrl
     }])
   });
   if (error) {
@@ -163,7 +170,7 @@ async function saveNewProduct() {
         localStorage.setItem('jain_photos', JSON.stringify(photos));
         await sbFetch(SB_URL + '/rest/v1/expert_photos', {
           method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
-          body:JSON.stringify([{product_id:newId, url:finalUrl}])
+          body:JSON.stringify([{product_id:newId, img_url:finalUrl}])
         });
       } catch(e) { console.warn('Image rename failed:', e); }
     }

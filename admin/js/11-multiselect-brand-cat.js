@@ -315,7 +315,7 @@ async function savePhoto() {
   const { error: dbErr } = await sbFetch(SB_URL + '/rest/v1/expert_photos', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
-    body: JSON.stringify([{ product_id: currentPhotoId, url: finalUrl }])
+    body: JSON.stringify([{ product_id: currentPhotoId, img_url: finalUrl }])
   });
   if (dbErr) console.warn('Photo DB save failed:', dbErr);
 

@@ -175,7 +175,7 @@ async function _fixCustomProductIds() {
       if (oldPhoto) {
         sbFetch(SB_URL + '/rest/v1/expert_photos', {
           method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
-          body:JSON.stringify([{product_id:result.data[0].id, url:oldPhoto}])
+          body:JSON.stringify([{product_id:result.data[0].id, img_url:oldPhoto}])
         });
         // Update localStorage photo key
         try {
@@ -238,7 +238,7 @@ async function loadFromSupabase() {
     console.warn('Photos load failed:', p.error);
   } else if (Array.isArray(p.data)) {
     const ph = JSON.parse(localStorage.getItem('jain_photos') || '{}');
-    p.data.forEach(function(r) { ph[r.product_id] = r.url; });
+    p.data.forEach(function(r) { ph[r.product_id] = r.img_url; });
     localStorage.setItem('jain_photos', JSON.stringify(ph));
   }
 
