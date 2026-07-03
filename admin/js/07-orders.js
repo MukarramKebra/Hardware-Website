@@ -326,12 +326,30 @@ function onPriceEdit(id) {
   _prodOverrides[id].price = isNaN(val) ? 0 : val;
   renderStats();
 }
-function getBrand(id){ return ((_prodOverrides[id]||{}).brand)||BASE_BRANDS[id]||''; }
+// Brands live in Supabase (expert_settings key 'brand_map', loaded by
+// loadFromSupabase into window._sbBrandMap) so every visitor and every admin
+// account sees the same brand — _prodOverrides/localStorage is just the
+// pre-sync fallback for brands set before this existed.
+function getBrand(id){ return (window._sbBrandMap||{})[id] || ((_prodOverrides[id]||{}).brand) || BASE_BRANDS[id] || ''; }
 function onBrandEdit(id){
   var el=document.getElementById('bi'+id); if(!el) return;
   if(!_prodOverrides[id]) _prodOverrides[id]={};
   _prodOverrides[id].brand=el.value;
   localStorage.setItem('bahar_overrides', JSON.stringify(_prodOverrides));
+  if (!window._sbBrandMap) window._sbBrandMap = {};
+  window._sbBrandMap[id] = el.value;
+  _pushBrandMap();
+}
+// Debounced upsert of the whole brand map to Supabase
+function _pushBrandMap() {
+  clearTimeout(window._brandPushT);
+  window._brandPushT = setTimeout(function() {
+    sbFetch(SB_URL + '/rest/v1/expert_settings', {
+      method: 'POST',
+      headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+      body: JSON.stringify([{ key: 'brand_map', value: JSON.stringify(window._sbBrandMap || {}) }])
+    });
+  }, 400);
 }
 function setStock(id, qty) { _pushUndo(); stockData[id]=qty; renderTable(); renderStats(); }
 function addStock(id) { _pushUndo(); const cur=stockData[id]||0; const nq=Math.ceil((cur+1)/50)*50; logAction('stock_change',{id:id,name:(getAllAdminProducts().find(function(p){return p.id===id;})||{}).name||'#'+id,oldQty:cur,newQty:nq}); stockData[id]=nq; renderTable(); renderStats(); }

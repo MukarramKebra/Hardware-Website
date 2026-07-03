@@ -75,18 +75,23 @@ let _sbPhotos   = {};
 let _customProds = [];      // admin-added products from jain_products table
 let _hiddenIds   = new Set(); // base product IDs hidden by admin
 let _sbBanners   = [];       // admin-managed side banners (brand + img_url)
+let _sbBrandMap  = {};       // product id -> brand name, set from admin
 
 async function loadSBData() {
-  const [s, p, c, h, b, sk] = await Promise.all([
+  const [s, p, c, h, b, sk, bm] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',                         { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc',          { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',   { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',   { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value', { headers: SB_H })
   ]);
   if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
     try { _sbSkuMap = JSON.parse(sk.data[0].value) || {}; } catch(e) {}
+  }
+  if (!bm.error && Array.isArray(bm.data) && bm.data[0] && bm.data[0].value) {
+    try { _sbBrandMap = JSON.parse(bm.data[0].value) || {}; } catch(e) {}
   }
   if (s.error) {
     console.warn('Supabase offline — using localStorage fallback');
@@ -143,7 +148,7 @@ function getAllProducts() {
   // normalizeCategory maps the old built-in slugs (power-tools, fasteners, …)
   // onto the Expert Hardware category set so these stay filterable
   const base  = PRODUCTS.filter(p => !_hiddenIds.has(p.id))
-    .map(p => Object.assign({}, p, { category: normalizeCategory(p.category) }));
+    .map(p => Object.assign({}, p, { category: normalizeCategory(p.category), brand: _sbBrandMap[String(p.id)] || p.brand || '' }));
   // Only show custom products with safe IDs > 60 (ID fix in admin handles conflicts)
   const extra = _customProds.filter(p => !baseIds.has(p.id) && p.id > 60).map(p => ({
     id:       p.id,
@@ -153,6 +158,7 @@ function getAllProducts() {
     img:      p.img_url || p.img || `https://picsum.photos/seed/dt${p.id}/420/320`,
     desc:     p.description || p.desc || '',
     badge:    p.badge || null,
+    brand:    _sbBrandMap[String(p.id)] || '',
     stock:    'in-stock'
   }));
   return [...base, ...extra];

@@ -239,7 +239,12 @@ async function importCSVProducts() {
         if (!window._sbSkuMap) window._sbSkuMap = {};
         window._sbSkuMap[String(newId)] = skuVal;
       }
-      if (r.brand && r.brand.trim()) { if (!_prodOverrides[newId]) _prodOverrides[newId] = {}; _prodOverrides[newId].brand = r.brand.trim(); }
+      if (r.brand && r.brand.trim()) {
+        if (!_prodOverrides[newId]) _prodOverrides[newId] = {};
+        _prodOverrides[newId].brand = r.brand.trim();
+        if (!window._sbBrandMap) window._sbBrandMap = {};
+        window._sbBrandMap[String(newId)] = r.brand.trim();
+      }
       const qty   = parseInt(r.stock)||50;
       stockData[newId] = qty;
       await sbFetch(SB_URL + '/rest/v1/expert_stock', {
@@ -262,11 +267,12 @@ async function importCSVProducts() {
   localStorage.setItem('jain_photos', JSON.stringify(localPhotos));
   // Persist imported brands (stored like inline brand edits)
   localStorage.setItem('bahar_overrides', JSON.stringify(_prodOverrides));
-  // Persist real SKUs to Supabase so the storefront shows them
+  // Persist real SKUs + brands to Supabase so the storefront shows them
   if (window._sbSkuMap) {
     localStorage.setItem('jain_sku_map', JSON.stringify(window._sbSkuMap));
     if (typeof _pushSkuMap === 'function') _pushSkuMap();
   }
+  if (window._sbBrandMap && typeof _pushBrandMap === 'function') _pushBrandMap();
   const imgCount = Object.keys(_rowImageMap).length || Object.keys(_csvImageMap).length;
   showToast(count + ' product'+(count!==1?'s':'')+' imported' + (imgCount ? ' with '+imgCount+' image'+(imgCount!==1?'s':'') : '') + '! ✅');
   closeCSV();

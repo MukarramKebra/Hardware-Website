@@ -359,6 +359,7 @@ function matchesSearch(query, p) {
   const haystack = normalizeQ(p.name) + ' ' +
                    normalizeQ(p.desc || '') + ' ' +
                    normalizeQ(p.category || '') + ' ' +
+                   normalizeQ(p.brand || '') + ' ' +
                    (ARABIC_NAMES[p.id] || '');
   return words.every(w => haystack.includes(w));
 }
