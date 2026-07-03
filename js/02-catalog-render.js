@@ -87,7 +87,9 @@ function scrollToProducts() {
   const nav    = document.getElementById('cat-nav');
   const offset = (header ? header.offsetHeight : 0) + (nav ? nav.offsetHeight : 0) + 10;
   const y = prods.getBoundingClientRect().top + window.scrollY - offset;
-  window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+  // instant jump (no scroll animation) — category clicks should feel like
+  // switching a page, not scrolling down it
+  window.scrollTo({ top: Math.max(0, y), behavior: 'auto' });
 }
 
 // ── OFFERS CAROUSEL ───────────────────────────────────────────────────────

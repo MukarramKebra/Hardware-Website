@@ -289,76 +289,8 @@ function getAllAdminProducts() {
   return [...base, ...custom].sort(function(a,b){return a.id-b.id;});
 }
 
-const PRODUCTS = [
-  // POWER TOOLS
-  {id:1,  name:'Cordless Drill Driver 18V',          cat:'power-tools', price:18.500, img:UL(1)},
-  {id:2,  name:'Angle Grinder 115mm 900W',           cat:'power-tools', price:12.000, img:UL(2)},
-  {id:3,  name:'Circular Saw 1200W 185mm',           cat:'power-tools', price:22.000, img:UL(3)},
-  {id:4,  name:'Jigsaw 650W Variable Speed',         cat:'power-tools', price:16.000, img:UL(4)},
-  {id:5,  name:'Random Orbital Sander 125mm 280W',   cat:'power-tools', price:11.000, img:UL(5)},
-  {id:6,  name:'Cordless Combi Drill 20V',           cat:'power-tools', price:21.000, img:UL(6)},
-  {id:7,  name:'SDS-Plus Rotary Hammer 800W',        cat:'power-tools', price:28.000, img:UL(7)},
-  {id:8,  name:'Heat Gun 2000W Variable',            cat:'power-tools', price:8.500,  img:UL(8)},
-  {id:9,  name:'Reciprocating Saw 900W',             cat:'power-tools', price:19.000, img:UL(9)},
-  {id:10, name:'Electric Screwdriver 3.6V',          cat:'power-tools', price:6.500,  img:UL(10)},
-  // HAND TOOLS
-  {id:11, name:'Claw Hammer 16oz Fibreglass',        cat:'hand-tools',  price:3.500,  img:UL(11)},
-  {id:12, name:'Screwdriver Set 6-Piece',            cat:'hand-tools',  price:2.800,  img:UL(12)},
-  {id:13, name:'Screwdriver Set 12-Piece',           cat:'hand-tools',  price:4.500,  img:UL(13)},
-  {id:14, name:'Adjustable Wrench 250mm',            cat:'hand-tools',  price:2.200,  img:UL(14)},
-  {id:15, name:'Socket Ratchet Set 40-Piece',        cat:'hand-tools',  price:9.800,  img:UL(15)},
-  {id:16, name:'Combination Pliers Set 3-Piece',     cat:'hand-tools',  price:4.200,  img:UL(16)},
-  {id:17, name:'Hex Allen Key Set 9-Piece',          cat:'hand-tools',  price:1.500,  img:UL(17)},
-  {id:18, name:'Mixed Hand Tool Kit 85-Piece',       cat:'hand-tools',  price:15.000, img:UL(18)},
-  {id:19, name:'Rubber Mallet 16oz',                 cat:'hand-tools',  price:2.000,  img:UL(19)},
-  {id:20, name:'Screwdriver Bit Set 32-Piece',       cat:'hand-tools',  price:2.500,  img:UL(20)},
-  // FASTENERS
-  {id:21, name:'Common Wire Nails 2.5" — 1kg',      cat:'fasteners',   price:0.600,  img:UL(21)},
-  {id:22, name:'Common Wire Nails 3" — 1kg',        cat:'fasteners',   price:0.700,  img:UL(22)},
-  {id:23, name:'Panel Pins 30mm — 200g',            cat:'fasteners',   price:0.400,  img:UL(23)},
-  {id:24, name:'Wood Screws 4×40mm — 100 Pack',     cat:'fasteners',   price:0.500,  img:UL(24)},
-  {id:25, name:'Drywall Screws 3.5×35mm — 100 Pack',cat:'fasteners',   price:0.450,  img:UL(25)},
-  {id:26, name:'Hex Bolts & Nuts M8 — 20 Pack',    cat:'fasteners',   price:1.200,  img:UL(26)},
-  {id:27, name:'Assorted Screw Pack — 500 Piece',   cat:'fasteners',   price:1.800,  img:UL(27)},
-  {id:28, name:'HSS Drill Bit Set 19-Piece',        cat:'fasteners',   price:2.800,  img:UL(28)},
-  {id:29, name:'Wall Plug & Screw Assortment',      cat:'fasteners',   price:1.500,  img:UL(29)},
-  {id:30, name:'Cable Ties Assorted Pack 200pc',    cat:'fasteners',   price:0.600,  img:UL(30)},
-  // MEASURING
-  {id:31, name:'Tape Measure 5m Auto-Lock',         cat:'measuring',   price:1.800,  img:UL(31)},
-  {id:32, name:'Spirit Level 60cm Aluminium',       cat:'measuring',   price:3.200,  img:UL(32)},
-  {id:33, name:'Laser Cross-Line Level + Tripod',   cat:'measuring',   price:12.000, img:UL(33)},
-  {id:34, name:'Digital Vernier Caliper 150mm',     cat:'measuring',   price:3.500,  img:UL(34)},
-  {id:35, name:'Steel Try Square 300mm',            cat:'measuring',   price:2.200,  img:UL(35)},
-  {id:36, name:'Laser Distance Meter 40m',          cat:'measuring',   price:8.500,  img:UL(36)},
-  // SAFETY
-  {id:37, name:'Cut-Resistant Gloves Level 5',      cat:'safety',      price:1.800,  img:UL(37)},
-  {id:38, name:'Heavy Duty Leather Work Gloves',    cat:'safety',      price:1.200,  img:UL(38)},
-  {id:39, name:'Safety Glasses & Goggles Pack',     cat:'safety',      price:2.500,  img:UL(39)},
-  {id:40, name:'Hard Hat Yellow ABS',               cat:'safety',      price:2.800,  img:UL(40)},
-  {id:41, name:'Hi-Vis Safety Vest Yellow',         cat:'safety',      price:1.500,  img:UL(41)},
-  {id:42, name:'Safety Work Boots S1P',             cat:'safety',      price:8.500,  img:UL(42)},
-  // CUTTING TOOLS
-  {id:43, name:'Hand Panel Saw 22" 8TPI',           cat:'cutting',     price:3.500,  img:UL(43)},
-  {id:44, name:'Hacksaw Frame Adjustable 300mm',    cat:'cutting',     price:2.200,  img:UL(44)},
-  {id:45, name:'Heavy Duty Utility Knife',          cat:'cutting',     price:1.200,  img:UL(45)},
-  {id:46, name:'Wire Cutters & Long Nose Pliers',   cat:'cutting',     price:3.800,  img:UL(46)},
-  {id:47, name:'Plastic Pipe Cutter 3-35mm',        cat:'cutting',     price:2.500,  img:UL(47)},
-  // ACCESSORIES
-  {id:48, name:'Heavy Duty Tool Bag 18"',           cat:'accessories', price:6.500,  img:UL(48)},
-  {id:49, name:'Extension Lead 10m 4-Socket',       cat:'accessories', price:4.500,  img:UL(49)},
-  {id:50, name:'Hard Carry Toolbox 18"',            cat:'accessories', price:5.800,  img:UL(50)},
-  {id:51, name:'Cobalt Drill Bit Set 19-Piece',     cat:'fasteners',   price:4.500,  img:UL(51)},
-  {id:52, name:'Sandpaper Assorted Pack 40-Piece',  cat:'accessories', price:1.200,  img:UL(52)},
-  {id:53, name:'Heavy Duty Pipe Wrench 350mm',      cat:'hand-tools',  price:4.800,  img:UL(53)},
-  {id:54, name:'Electric Staple Gun 20-Gauge',      cat:'accessories', price:7.500,  img:UL(54)},
-  {id:55, name:'Duct Tape Silver 48mm × 25m',       cat:'accessories', price:1.200,  img:UL(55)},
-  {id:56, name:'Laser Distance Meter 60m',          cat:'measuring',   price:14.500, img:UL(56)},
-  {id:57, name:'Knee Protection Pads',              cat:'safety',      price:3.200,  img:UL(57)},
-  {id:58, name:'Circular Saw Blade Set 4-Piece',    cat:'cutting',     price:5.500,  img:UL(58)},
-  {id:59, name:'Insulated Wire Connectors 100pc',   cat:'accessories', price:1.800,  img:UL(59)},
-  {id:60, name:'Electrical Connector Assortment',   cat:'accessories', price:2.200,  img:UL(60)}
-];
+const PRODUCTS = [];
 
 // Brand for each built-in product (random); overridable per-product in the admin table
-const BASE_BRANDS = {1:'covax', 2:'dck', 3:'dck', 4:'bosch', 5:'itrust', 6:'covax', 7:'bosch', 8:'bosch', 9:'covax', 10:'itrust', 11:'itrust', 12:'bosch', 13:'covax', 14:'itrust', 15:'itrust', 16:'covax', 17:'bosch', 18:'covax', 19:'covax', 20:'dck', 21:'bosch', 22:'covax', 23:'itrust', 24:'itrust', 25:'itrust', 26:'dck', 27:'itrust', 28:'bosch', 29:'itrust', 30:'dck', 31:'itrust', 32:'dck', 33:'bosch', 34:'bosch', 35:'covax', 36:'itrust', 37:'dck', 38:'dck', 39:'itrust', 40:'dck', 41:'bosch', 42:'covax', 43:'bosch', 44:'dck', 45:'bosch', 46:'dck', 47:'covax', 48:'bosch', 49:'covax', 50:'bosch', 51:'covax', 52:'bosch', 53:'dck', 54:'dck', 55:'dck', 56:'covax', 57:'itrust', 58:'covax', 59:'dck', 60:'itrust'};
+const BASE_BRANDS = {};
 
