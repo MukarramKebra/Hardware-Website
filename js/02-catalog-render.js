@@ -215,13 +215,27 @@ function _sizeSideBanners() {
   const container = document.querySelector('#categories > .container');
   const slots = document.querySelectorAll('.side-banner-slot');
   if (!container || !slots.length) return;
-  const gutter    = (window.innerWidth - container.offsetWidth) / 2;
-  const available = gutter - 24 - 16; // 24px edge offset + 16px breathing room before the grid
-  if (available < 160) {
+  // Measure the natural gutter first (reset any shrink from a previous run)
+  container.style.maxWidth = '';
+  const naturalW  = container.offsetWidth;
+  let available = (window.innerWidth - naturalW) / 2 - 24 - 12; // edge offset + breathing room
+  const TARGET = 560; // wanted banner width
+  // If the free gutter is too narrow, narrow the category grid a little
+  // (up to 150px per side) to give the banners more room
+  if (available < TARGET) {
+    const steal = Math.min(TARGET - available, 150);
+    const shrunkW = naturalW - steal * 2;
+    if (shrunkW >= 760) {
+      container.style.maxWidth = shrunkW + 'px';
+      available += steal;
+    }
+  }
+  if (available < 150) {
+    container.style.maxWidth = '';
     slots.forEach(function(s) { s.style.display = 'none'; });
     return;
   }
-  const width = Math.min(420, Math.round(available));
+  const width = Math.min(TARGET, Math.round(available));
   slots.forEach(function(s) { s.style.display = 'block'; s.style.width = width + 'px'; });
 }
 window.addEventListener('resize', function() {

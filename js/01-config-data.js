@@ -37,13 +37,18 @@ const UL  = (id) => `Bahar-Products/SKU-${String(id).padStart(4,'0')}.jpg`;  // 
 
 // ── SKU HELPER ────────────────────────────────────────────────────────────
 // SKU is a separate display label from the internal product ID.
-// Admin can set a custom SKU; it's stored in jain_sku_map in localStorage.
+// Real SKUs live in Supabase (expert_settings key 'sku_map', loaded into
+// _sbSkuMap by loadSBData) so every visitor sees them — localStorage is only
+// a fallback for SKUs set before the cloud sync existed.
+var _sbSkuMap = {};
 function getProductSku(id) {
-  try {
-    var map = JSON.parse(localStorage.getItem('jain_sku_map') || '{}');
-    var val = map[String(id)];
-    return 'SKU-' + String(val !== undefined ? val : id).padStart(4, '0');
-  } catch(e) { return 'SKU-' + String(id).padStart(4, '0'); }
+  var val = _sbSkuMap[String(id)];
+  if (val === undefined) {
+    try { val = JSON.parse(localStorage.getItem('jain_sku_map') || '{}')[String(id)]; } catch(e) {}
+  }
+  if (val === undefined || val === null || val === '') return 'SKU-' + String(id).padStart(4, '0');
+  // legacy numeric labels keep the padded style; real catalogue SKUs (75721, P-43561…) show as-is
+  return /^\d{1,4}$/.test(String(val)) ? 'SKU-' + String(val).padStart(4, '0') : 'SKU: ' + val;
 }
 
 // ── SUPABASE CONFIG ───────────────────────────────────────────────────────
@@ -72,13 +77,17 @@ let _hiddenIds   = new Set(); // base product IDs hidden by admin
 let _sbBanners   = [];       // admin-managed side banners (brand + img_url)
 
 async function loadSBData() {
-  const [s, p, c, h, b] = await Promise.all([
+  const [s, p, c, h, b, sk] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',                         { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc',          { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc',          { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',   { headers: SB_H })
   ]);
+  if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
+    try { _sbSkuMap = JSON.parse(sk.data[0].value) || {}; } catch(e) {}
+  }
   if (s.error) {
     console.warn('Supabase offline — using localStorage fallback');
     try { _sbStock  = JSON.parse(localStorage.getItem('jain_stock')  || '{}'); } catch(_) {}

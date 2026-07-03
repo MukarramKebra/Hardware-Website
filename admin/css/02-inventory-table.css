@@ -31,6 +31,21 @@
     .search-bar{display:flex;align-items:center;gap:8px;background:var(--white);border:2px solid var(--border);border-radius:8px;padding:8px 14px;}
     .search-bar input{border:none;outline:none;font-size:13px;width:180px;font-family:inherit;}
     .filter-sel{padding:9px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:var(--white);font-weight:600;cursor:pointer;}
+
+    /* SEARCHABLE FILTER DROPDOWNS (category + brand) */
+    .filter-combo{position:relative;}
+    .fc-btn{display:flex;align-items:center;gap:8px;padding:9px 13px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--white);font-weight:600;cursor:pointer;color:var(--dark);white-space:nowrap;}
+    .fc-btn:hover{border-color:var(--orange);}
+    .fc-caret{font-size:10px;color:#999;}
+    .fc-panel{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:300;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.14);width:230px;overflow:hidden;}
+    .fc-panel.open{display:block;}
+    .fc-search{width:100%;box-sizing:border-box;border:none;border-bottom:1px solid var(--border);padding:10px 13px;font-size:13px;font-family:inherit;outline:none;}
+    .fc-list{max-height:240px;overflow-y:auto;}
+    .fc-opt{padding:9px 13px;font-size:13px;font-weight:600;color:var(--dark);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+    .fc-opt:hover{background:var(--light,#f6f7f9);}
+    .fc-opt.sel{color:var(--orange);}
+    .fc-opt.sel .fa-check{font-size:11px;}
+    .fc-empty{padding:12px 13px;font-size:12px;color:#aaa;}
     .save-btn{background:var(--green);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px;}
     .save-btn:hover{background:#16a34a;}
 

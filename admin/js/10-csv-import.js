@@ -231,6 +231,14 @@ async function importCSVProducts() {
     if (error) { console.warn('Row import failed:', r.name, error); continue; }
     if (rows && rows[0]) {
       const newId = rows[0].id;
+      // Real SKU: explicit "sku" column wins, else derive it from the image
+      // filename (our export names images after the product's SKU)
+      const rawImgName = (r.image || r.img || '').trim();
+      const skuVal = (r.sku && r.sku.trim()) || rawImgName.replace(/\.(png|jpe?g|webp|gif)$/i, '');
+      if (skuVal && skuVal !== rawImgName) {
+        if (!window._sbSkuMap) window._sbSkuMap = {};
+        window._sbSkuMap[String(newId)] = skuVal;
+      }
       if (r.brand && r.brand.trim()) { if (!_prodOverrides[newId]) _prodOverrides[newId] = {}; _prodOverrides[newId].brand = r.brand.trim(); }
       const qty   = parseInt(r.stock)||50;
       stockData[newId] = qty;
@@ -254,6 +262,11 @@ async function importCSVProducts() {
   localStorage.setItem('jain_photos', JSON.stringify(localPhotos));
   // Persist imported brands (stored like inline brand edits)
   localStorage.setItem('bahar_overrides', JSON.stringify(_prodOverrides));
+  // Persist real SKUs to Supabase so the storefront shows them
+  if (window._sbSkuMap) {
+    localStorage.setItem('jain_sku_map', JSON.stringify(window._sbSkuMap));
+    if (typeof _pushSkuMap === 'function') _pushSkuMap();
+  }
   const imgCount = Object.keys(_rowImageMap).length || Object.keys(_csvImageMap).length;
   showToast(count + ' product'+(count!==1?'s':'')+' imported' + (imgCount ? ' with '+imgCount+' image'+(imgCount!==1?'s':'') : '') + '! ✅');
   closeCSV();
@@ -295,13 +308,79 @@ function slugify(str) {
 }
 function refreshCategorySelects() {
   const cats = getAllCats();
-  const filterOpts = '<option value="all">All Categories</option>' +
-    cats.map(c => '<option value="'+c.slug+'">'+c.label+'</option>').join('');
-  document.getElementById('catFilter').innerHTML = filterOpts;
-
   const prodOpts = cats.map(c => '<option value="'+c.slug+'">'+c.label+'</option>').join('');
   const apCat = document.getElementById('apCat');
   if (apCat) apCat.innerHTML = prodOpts;
+}
+
+// ── SEARCHABLE FILTER DROPDOWNS (category + brand) ────────────────────────────
+// The toolbar's Category and Brand filters are custom dropdowns with a search
+// box inside. The chosen value lives in hidden inputs #catFilter/#brandFilter
+// so renderTable() reads them exactly like the old <select> it replaced.
+var _fcOptions = { cat: [], brand: [] };
+var _fcVisible = { cat: [], brand: [] };
+
+function _fcRebuild(kind) {
+  if (kind === 'cat') {
+    _fcOptions.cat = [{ value:'all', label:'All Categories' }].concat(
+      getAllCats().map(function(c){ return { value:c.slug, label:c.label }; }));
+  } else {
+    var brands = {};
+    getAllAdminProducts().forEach(function(p){ var b = getBrand(p.id); if (b) brands[b] = true; });
+    _fcOptions.brand = [{ value:'all', label:'All Brands' }].concat(
+      Object.keys(brands).sort(function(a,b){ return a.toLowerCase().localeCompare(b.toLowerCase()); })
+        .map(function(b){ return { value:b, label:b }; }));
+  }
+}
+function fcToggle(kind) {
+  var panel = document.getElementById(kind + 'ComboPanel');
+  var wasOpen = panel.classList.contains('open');
+  fcCloseAll();
+  if (wasOpen) return;
+  _fcRebuild(kind);
+  document.getElementById(kind + 'ComboSearch').value = '';
+  fcRenderList(kind, '');
+  panel.classList.add('open');
+  setTimeout(function(){ document.getElementById(kind + 'ComboSearch').focus(); }, 60);
+}
+function fcCloseAll() {
+  document.querySelectorAll('.fc-panel.open').forEach(function(p){ p.classList.remove('open'); });
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.filter-combo')) fcCloseAll();
+});
+function fcRenderList(kind, q) {
+  q = (q || '').toLowerCase();
+  var cur = document.getElementById(kind === 'cat' ? 'catFilter' : 'brandFilter').value;
+  _fcVisible[kind] = _fcOptions[kind].filter(function(o){ return !q || o.label.toLowerCase().includes(q); });
+  document.getElementById(kind + 'ComboList').innerHTML = _fcVisible[kind].length
+    ? _fcVisible[kind].map(function(o, i) {
+        return '<div class="fc-opt' + (o.value === cur ? ' sel' : '') + '" onclick="fcPick(\'' + kind + '\',' + i + ')">' +
+          encodeHtml(o.label) + (o.value === cur ? ' <i class="fa fa-check"></i>' : '') + '</div>';
+      }).join('')
+    : '<div class="fc-empty">No matches</div>';
+}
+function fcFilterList(kind) { fcRenderList(kind, document.getElementById(kind + 'ComboSearch').value); }
+function fcPick(kind, i) {
+  var o = _fcVisible[kind][i];
+  if (o) fcSet(kind, o.value, o.label);
+}
+function fcSet(kind, value, label) {
+  document.getElementById(kind === 'cat' ? 'catFilter' : 'brandFilter').value = value;
+  document.getElementById(kind + 'ComboLabel').textContent =
+    value === 'all' ? (kind === 'cat' ? 'All Categories' : 'All Brands') : (label || value);
+  fcCloseAll();
+  renderTable();
+}
+function fcReset() {
+  fcSetSilent('cat', 'all');
+  fcSetSilent('brand', 'all');
+}
+function fcSetSilent(kind, value) {
+  var hid = document.getElementById(kind === 'cat' ? 'catFilter' : 'brandFilter');
+  if (hid) hid.value = value;
+  var lbl = document.getElementById(kind + 'ComboLabel');
+  if (lbl) lbl.textContent = kind === 'cat' ? 'All Categories' : 'All Brands';
 }
 function openNewCat() {
   document.getElementById('newCatInput').value = '';

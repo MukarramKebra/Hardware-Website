@@ -230,8 +230,10 @@ function renderTable() {
   const searches = JSON.parse(localStorage.getItem('bahar_searches')||'{}');
   const q   = document.getElementById('adminSearch').value.toLowerCase();
   const cat = document.getElementById('catFilter').value;
+  const brandF = (document.getElementById('brandFilter') || { value:'all' }).value;
   const list = getAllAdminProducts().filter(function(p) {
-    return (cat==='all'||p.cat===cat) && (!q||p.name.toLowerCase().includes(q)||getBrand(p.id).toLowerCase().includes(q));
+    return (cat==='all'||p.cat===cat) && (brandF==='all'||getBrand(p.id)===brandF) &&
+      (!q||p.name.toLowerCase().includes(q)||getBrand(p.id).toLowerCase().includes(q)||getProductSku(p.id).toLowerCase().includes(q));
   });
   const rows = list.map(function(p) {
     const qty    = stockData[p.id]||0;
@@ -346,7 +348,7 @@ function addStockAmt(id, amt) {
 function jumpToProduct(id) {
   switchTab('inventory');
   const search = document.getElementById('adminSearch'); if (search) search.value = '';
-  const filter = document.getElementById('catFilter');  if (filter) filter.value = 'all';
+  if (typeof fcReset === 'function') fcReset();   // clear category + brand dropdowns
   renderTable();
   setTimeout(function() {
     const thumb = document.getElementById('thumb'+id);

@@ -196,13 +196,21 @@ async function _fixCustomProductIds() {
 
 async function loadFromSupabase() {
   showToast('Loading from cloud…');
-  const [s, p, c, h, cb] = await Promise.all([
+  const [s, p, c, h, cb, sk] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',          { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',         { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',       { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',{ headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        { headers: SB_HDRS })
+    sbFetch(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value', { headers: SB_HDRS })
   ]);
+  // Real SKU labels (shared with the storefront via expert_settings)
+  if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
+    try {
+      window._sbSkuMap = JSON.parse(sk.data[0].value) || {};
+      localStorage.setItem('jain_sku_map', JSON.stringify(window._sbSkuMap));
+    } catch(e) {}
+  }
   // Category backgrounds
   if (!cb.error && Array.isArray(cb.data)) {
     var catBgs = {};

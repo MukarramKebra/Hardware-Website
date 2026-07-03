@@ -4,26 +4,38 @@
 // formatSku()  — formats a number as "SKU-0001" style string
 // SKU is a display label; product ID is always sequential (count-based).
 // If user sets a custom SKU different from the product ID, it's stored here.
+// Real SKUs live in Supabase (expert_settings key 'sku_map', loaded by
+// loadFromSupabase into window._sbSkuMap) so the storefront shows them to
+// every visitor. localStorage keeps a copy as an offline fallback.
 function getProductSku(id) {
-  try {
-    var map = JSON.parse(localStorage.getItem('jain_sku_map') || '{}');
-    var val = map[String(id)];
-    return 'SKU-' + String(val !== undefined ? val : id).padStart(4, '0');
-  } catch(e) { return 'SKU-' + String(id).padStart(4, '0'); }
+  var val = (window._sbSkuMap || {})[String(id)];
+  if (val === undefined) {
+    try { val = JSON.parse(localStorage.getItem('jain_sku_map') || '{}')[String(id)]; } catch(e) {}
+  }
+  if (val === undefined || val === null || val === '') return 'SKU-' + String(id).padStart(4, '0');
+  return /^\d{1,4}$/.test(String(val)) ? 'SKU-' + String(val).padStart(4, '0') : 'SKU: ' + val;
 }
-function setProductSku(id, skuNum) {
-  try {
-    var map = JSON.parse(localStorage.getItem('jain_sku_map') || '{}');
-    map[String(id)] = skuNum;
-    localStorage.setItem('jain_sku_map', JSON.stringify(map));
-  } catch(e) {}
+function setProductSku(id, sku) {
+  if (!window._sbSkuMap) window._sbSkuMap = {};
+  window._sbSkuMap[String(id)] = sku;
+  try { localStorage.setItem('jain_sku_map', JSON.stringify(window._sbSkuMap)); } catch(e) {}
+  _pushSkuMap();
 }
 function removeProductSku(id) {
-  try {
-    var map = JSON.parse(localStorage.getItem('jain_sku_map') || '{}');
-    delete map[String(id)];
-    localStorage.setItem('jain_sku_map', JSON.stringify(map));
-  } catch(e) {}
+  if (window._sbSkuMap) delete window._sbSkuMap[String(id)];
+  try { localStorage.setItem('jain_sku_map', JSON.stringify(window._sbSkuMap || {})); } catch(e) {}
+  _pushSkuMap();
+}
+// Debounced upsert of the whole SKU map to Supabase
+function _pushSkuMap() {
+  clearTimeout(window._skuPushT);
+  window._skuPushT = setTimeout(function() {
+    sbFetch(SB_URL + '/rest/v1/expert_settings', {
+      method: 'POST',
+      headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+      body: JSON.stringify([{ key: 'sku_map', value: JSON.stringify(window._sbSkuMap || {}) }])
+    });
+  }, 400);
 }
 
 // ── ADD PRODUCT ────────────────────────────────────────────────────────────────
@@ -112,10 +124,11 @@ async function saveNewProduct() {
   var baseIds = new Set(PRODUCTS.map(function(p){return p.id;}));
   while (baseIds.has(safeId)) safeId++;
 
-  // If user typed a different SKU than the auto-filled sequential number, save it as display label
-  var skuTyped = parseInt(document.getElementById('apSku').value);
-  if (skuTyped && skuTyped > 0 && skuTyped !== safeId) {
-    setProductSku(safeId, skuTyped);
+  // If user typed a different SKU than the auto-filled sequential number, save it
+  // as display label. Text SKUs like "P-43561" are allowed, not just numbers.
+  var skuRaw = (document.getElementById('apSku').value || '').trim();
+  if (skuRaw && skuRaw !== String(safeId)) {
+    setProductSku(safeId, /^\d+$/.test(skuRaw) ? parseInt(skuRaw) : skuRaw);
   }
 
   var { data: rows, error } = await sbFetch(SB_URL + '/rest/v1/expert_products', {

@@ -22,6 +22,9 @@
       .search-bar{width:100%;box-sizing:border-box;}
       .search-bar input{width:100%;min-width:0;}
       .filter-sel{flex:1;min-width:120px;}
+      .filter-combo{flex:1;min-width:120px;}
+      .filter-combo .fc-btn{width:100%;justify-content:space-between;box-sizing:border-box;}
+      .filter-combo .fc-panel{width:100%;min-width:200px;}
       .save-btn,.add-prod-btn{flex:1;}
       /* Bulk bar */
       .bulk-bar{flex-wrap:wrap;gap:8px;}

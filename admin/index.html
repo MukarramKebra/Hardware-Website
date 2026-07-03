@@ -86,7 +86,22 @@
         <button class="add-prod-btn" onclick="openAddProduct()"><i class="fa fa-plus"></i> Add Product</button>
         <button class="csv-btn" onclick="openCSV()"><i class="fa fa-file-csv"></i> Import CSV/Excel</button>
         <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="adminSearch" placeholder="Search products..." oninput="renderTable()" /></div>
-        <select class="filter-sel" id="catFilter" onchange="renderTable()"></select>
+        <div class="filter-combo" id="catCombo">
+          <button class="fc-btn" type="button" onclick="fcToggle('cat')"><span id="catComboLabel">All Categories</span> <i class="fa fa-chevron-down fc-caret"></i></button>
+          <div class="fc-panel" id="catComboPanel">
+            <input type="text" class="fc-search" id="catComboSearch" placeholder="Search categories…" oninput="fcFilterList('cat')" autocomplete="off" />
+            <div class="fc-list" id="catComboList"></div>
+          </div>
+          <input type="hidden" id="catFilter" value="all" />
+        </div>
+        <div class="filter-combo" id="brandCombo">
+          <button class="fc-btn" type="button" onclick="fcToggle('brand')"><span id="brandComboLabel">All Brands</span> <i class="fa fa-chevron-down fc-caret"></i></button>
+          <div class="fc-panel" id="brandComboPanel">
+            <input type="text" class="fc-search" id="brandComboSearch" placeholder="Search brands…" oninput="fcFilterList('brand')" autocomplete="off" />
+            <div class="fc-list" id="brandComboList"></div>
+          </div>
+          <input type="hidden" id="brandFilter" value="all" />
+        </div>
         <button class="newcat-btn" onclick="openNewCat()"><i class="fa fa-plus"></i> Category</button>
         <button class="ur-btn" onclick="selectAllProducts()"><i class="fa fa-check-square"></i> Select All</button>
         <div class="ur-group">
@@ -517,7 +532,7 @@
           <label>SKU Number *</label>
           <div style="display:flex;align-items:stretch">
             <span style="padding:10px 12px;background:#f4f4f4;border:1.5px solid var(--border);border-right:none;border-radius:8px 0 0 8px;font-size:13px;font-weight:800;color:var(--orange);white-space:nowrap;display:flex;align-items:center">SKU-</span>
-            <input type="number" id="apSku" min="1" step="1" style="border-radius:0 8px 8px 0;border-left:none;flex:1;padding:10px 12px;border:1.5px solid var(--border);font-size:14px;font-weight:800;font-family:monospace;outline:none" />
+            <input type="text" id="apSku" style="border-radius:0 8px 8px 0;border-left:none;flex:1;padding:10px 12px;border:1.5px solid var(--border);font-size:14px;font-weight:800;font-family:monospace;outline:none" />
           </div>
           <small style="color:var(--gray);font-size:10px;margin-top:3px;display:block">Auto-filled — next available number</small>
         </div>
