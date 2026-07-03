@@ -468,9 +468,13 @@
         <label style="margin-bottom:10px">Tab Permissions</label>
         <div id="taPermsGrid" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px"></div>
 
-        <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:600;color:var(--dark);cursor:pointer;margin-bottom:16px">
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:600;color:var(--dark);cursor:pointer;margin-bottom:10px">
           <input type="checkbox" id="taHideStock" style="width:auto;margin:0" />
           Hide exact stock numbers (shows In Stock / Low / Out only, no quantity)
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:600;color:var(--dark);cursor:pointer;margin-bottom:16px">
+          <input type="checkbox" id="taHideStats" style="width:auto;margin:0" />
+          Hide the totals row (Total Products, Total Units, Inventory Value, Alerts)
         </label>
 
         <button class="newcat-save" onclick="saveTeamAccount()"><i class="fa fa-save"></i>&nbsp; Save Account</button>

@@ -91,6 +91,8 @@ function resetAccountPermissions() {
     var section = document.getElementById(key + 'Section');
     if (section) section.classList.remove('view-only');
   });
+  var statsGrid = document.getElementById('statsGrid');
+  if (statsGrid) statsGrid.style.display = '';
 }
 
 function applyAccountPermissions(perms) {
@@ -102,6 +104,8 @@ function applyAccountPermissions(perms) {
     var section = document.getElementById(key + 'Section');
     if (section) section.classList.toggle('view-only', !!(p.view && !p.edit));
   });
+  var statsGrid = document.getElementById('statsGrid');
+  if (statsGrid) statsGrid.style.display = perms.hideValueStats ? 'none' : '';
   document.getElementById('tabOwner').style.display = 'none';
 }
 
@@ -504,6 +508,7 @@ function openTeamAccountForm(id) {
   document.getElementById('taPassword').value    = account ? account.password : '';
   document.getElementById('taDisplayName').value = account ? (account.display_name || '') : '';
   document.getElementById('taHideStock').checked = !!(account && account.permissions && account.permissions.hideStockNumbers);
+  document.getElementById('taHideStats').checked = !!(account && account.permissions && account.permissions.hideValueStats);
   renderPermsGrid(account ? account.permissions : {});
   document.getElementById('teamAcctOverlay').classList.add('open');
 }
@@ -527,6 +532,7 @@ async function saveTeamAccount() {
     };
   });
   perms.hideStockNumbers = document.getElementById('taHideStock').checked;
+  perms.hideValueStats   = document.getElementById('taHideStats').checked;
 
   var body = { username: username, password: password, display_name: displayName, permissions: perms };
   var res;
