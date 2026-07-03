@@ -58,13 +58,23 @@ const SB_HDRS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Conten
 
 // Default categories shown in the admin category filter dropdown
 const DEFAULT_CATS = [
-  { slug:'power-tools',  label:'Power Tools' },
-  { slug:'hand-tools',   label:'Hand Tools' },
-  { slug:'fasteners',    label:'Fasteners' },
-  { slug:'measuring',    label:'Measuring' },
-  { slug:'safety',       label:'Safety' },
-  { slug:'cutting',      label:'Cutting Tools' },
-  { slug:'accessories',  label:'Accessories' }
+  { slug:'tools',            label:'DCK Power Tools' },
+  { slug:'hand-tools',       label:'Hand Tools' },
+  { slug:'fastener',         label:'Fasteners' },
+  { slug:'construction',     label:'Nails/Wires' },
+  { slug:'safety',           label:'Safety' },
+  { slug:'spray-adhesive',   label:'Adhesives' },
+  { slug:'tape',             label:'Tapes' },
+  { slug:'door-handle',      label:'Door Handles' },
+  { slug:'hardware',         label:'Hardware' },
+  { slug:'paint-tool',       label:'Paint Tools' },
+  { slug:'gardening',        label:'Garden Tools' },
+  { slug:'disc',             label:'Discs' },
+  { slug:'trolley-caster',   label:'Wheel Barrow' },
+  { slug:'household',        label:'Cleaning' },
+  { slug:'plumbing-fitting', label:'Fittings' },
+  { slug:'sanitary',         label:'Sanitary Ware' },
+  { slug:'filter',           label:'Filters' }
 ];
 
 // ── SUPABASE FETCH WRAPPER ─────────────────────────────────────────────────────
@@ -246,6 +256,14 @@ async function loadFromSupabase() {
   }
 }
 
+// Old built-in category slugs -> the Expert Hardware category set
+// (keeps the base catalogue filterable after the category change)
+var _OLD_CAT_MAP = {
+  'power-tools':'tools', 'fasteners':'fastener', 'measuring':'hand-tools',
+  'cutting':'hand-tools', 'accessories':'hardware', 'storage':'hardware'
+};
+function normalizeAdminCat(c) { return _OLD_CAT_MAP[c] || c; }
+
 // Merged list of all products (base + custom)
 function getAllAdminProducts() {
   var deletedIds = new Set(getDeletedProducts().map(function(d){return d.id;}));
@@ -253,12 +271,12 @@ function getAllAdminProducts() {
   const base = PRODUCTS
     .filter(function(p){ return !deletedIds.has(p.id); })
     .map(function(p) {
-      return { id:p.id, name:p.name, cat:p.cat, price:p.price, img:p.img, isBase:true, hidden:_hiddenBaseIds.has(p.id) };
+      return { id:p.id, name:p.name, cat:normalizeAdminCat(p.cat), price:p.price, img:p.img, isBase:true, hidden:_hiddenBaseIds.has(p.id) };
     });
   const custom = _customProductRows
     .filter(function(p){ return !deletedIds.has(p.id) && !baseIds.has(p.id); }) // skip Supabase dupes of base IDs
     .map(function(p) {
-      return { id:p.id, name:p.name, cat:p.category, price:parseFloat(p.price), img:p.img_url||'', isBase:false, hidden:p.hidden||false };
+      return { id:p.id, name:p.name, cat:normalizeAdminCat(p.category), price:parseFloat(p.price), img:p.img_url||'', isBase:false, hidden:p.hidden||false };
     });
   return [...base, ...custom].sort(function(a,b){return a.id-b.id;});
 }

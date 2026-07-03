@@ -103,18 +103,27 @@ async function loadSBData() {
 function normalizeCategory(raw) {
   const c = (raw || '').toLowerCase().replace(/[\s_]+/g, '-').trim();
   const map = {
-    'powertools':   'power-tools',
     'handtools':    'hand-tools',
     'hand':         'hand-tools',
-    'power':        'power-tools',
     'safety-gear':  'safety',
     'safetygear':   'safety',
-    'tool-storage': 'storage',
-    'toolstorage':  'storage',
-    'measuring-tools': 'measuring',
-    'measuringtools':  'measuring',
-    'cutting-tools':   'cutting',
-    'cuttingtools':    'cutting'
+    // old category slugs -> the Expert Hardware category set
+    'powertools':      'tools',
+    'power':           'tools',
+    'power-tools':     'tools',
+    'fasteners':       'fastener',
+    'measuring':       'hand-tools',
+    'measuring-tools': 'hand-tools',
+    'measuringtools':  'hand-tools',
+    'cutting':         'hand-tools',
+    'cutting-tools':   'hand-tools',
+    'cuttingtools':    'hand-tools',
+    'accessories':     'hardware',
+    'tool-storage':    'hardware',
+    'toolstorage':     'hardware',
+    'storage':         'hardware',
+    'adhesive':        'spray-adhesive',
+    'adhesives':       'spray-adhesive'
   };
   return map[c] || c;
 }
@@ -122,7 +131,10 @@ function normalizeCategory(raw) {
 // Merged base + admin-added products, with hidden ones removed
 function getAllProducts() {
   const baseIds = new Set(PRODUCTS.map(p => p.id));  // IDs 1-60 are authoritative
-  const base  = PRODUCTS.filter(p => !_hiddenIds.has(p.id));
+  // normalizeCategory maps the old built-in slugs (power-tools, fasteners, …)
+  // onto the Expert Hardware category set so these stay filterable
+  const base  = PRODUCTS.filter(p => !_hiddenIds.has(p.id))
+    .map(p => Object.assign({}, p, { category: normalizeCategory(p.category) }));
   // Only show custom products with safe IDs > 60 (ID fix in admin handles conflicts)
   const extra = _customProds.filter(p => !baseIds.has(p.id) && p.id > 60).map(p => ({
     id:       p.id,
@@ -283,13 +295,23 @@ var _AR_PRODUCTS = {
 
 // Arabic category display names
 var _AR_CATS = {
-  'power-tools': 'عدد كهربائية',
-  'hand-tools':  'عدد يدوية',
-  'fasteners':   'مسامير وبراغي',
-  'measuring':   'قياس ومسح',
-  'safety':      'معدات السلامة',
-  'cutting':     'أدوات القطع',
-  'accessories': 'ملحقات وتخزين'
+  'tools':            'عدد كهربائية DCK',
+  'hand-tools':       'عدد يدوية',
+  'fastener':         'مسامير وبراغي',
+  'construction':     'مسامير وأسلاك',
+  'safety':           'معدات السلامة',
+  'spray-adhesive':   'لواصق ومواد لاصقة',
+  'tape':             'أشرطة لاصقة',
+  'door-handle':      'مقابض الأبواب',
+  'hardware':         'أدوات معدنية',
+  'paint-tool':       'أدوات الدهان',
+  'gardening':        'أدوات الحديقة',
+  'disc':             'أقراص القطع والجلخ',
+  'trolley-caster':   'عربات وعجلات',
+  'household':        'أدوات التنظيف',
+  'plumbing-fitting': 'تمديدات السباكة',
+  'sanitary':         'أدوات صحية',
+  'filter':           'فلاتر'
 };
 
 let cart = [];

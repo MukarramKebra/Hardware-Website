@@ -96,14 +96,14 @@ function initOffersTicker() {
   const track = document.getElementById('offersTrack');
   if (!track) return;
   const offers = [
-    { img:'Bahar-Products/SKU-0001.jpg', tag:'UP TO 20% OFF', name:'Power Tool Deals',       sub:'Drills · Grinders · Saws',    cat:'power-tools' },
-    { img:'Bahar-Products/SKU-0011.jpg', tag:'BEST PRICE',    name:'Hand Tools',             sub:'Hammers · Spanners · Pliers', cat:'hand-tools' },
-    { img:'Bahar-Products/SKU-0037.jpg', tag:'STAY SAFE',     name:'Safety Gear',            sub:'Helmets · Gloves · Boots',    cat:'safety' },
-    { img:'Bahar-Products/SKU-0021.jpg', tag:'BULK DEALS',    name:'Fasteners',              sub:'Screws · Bolts · Anchors',    cat:'fasteners' },
-    { img:'Bahar-Products/SKU-0031.jpg', tag:'10% OFF',       name:'Measuring Tools',        sub:'Tapes · Levels · Lasers',     cat:'measuring' },
-    { img:'Bahar-Products/SKU-0043.jpg', tag:'HOT DEAL',      name:'Cutting Tools',          sub:'Blades · Discs · Knives',     cat:'cutting' },
-    { img:'Bahar-Products/SKU-0048.jpg', tag:'COMBO OFFER',   name:'Storage & Accessories',  sub:'Toolboxes · Bags · Tape',     cat:'accessories' },
-    { img:'Bahar-Products/SKU-0006.jpg', tag:'NEW ARRIVAL',   name:'Cordless Range',         sub:'20V Battery Tools',           cat:'power-tools' }
+    { img:'cat-images/tools.jpg',        tag:'UP TO 20% OFF', name:'DCK Power Tools',        sub:'Drills · Grinders · Saws',    cat:'tools' },
+    { img:'cat-images/hand-tools.png',   tag:'BEST PRICE',    name:'Hand Tools',             sub:'Hammers · Spanners · Pliers', cat:'hand-tools' },
+    { img:'cat-images/safety.jpg',       tag:'STAY SAFE',     name:'Safety Gear',            sub:'Helmets · Gloves · Boots',    cat:'safety' },
+    { img:'cat-images/fastener.png',     tag:'BULK DEALS',    name:'Fasteners',              sub:'Screws · Bolts · Anchors',    cat:'fastener' },
+    { img:'cat-images/tape.png',         tag:'10% OFF',       name:'Tapes',                  sub:'Clear · Duct · Masking',      cat:'tape' },
+    { img:'cat-images/disc.jpg',         tag:'HOT DEAL',      name:'Discs',                  sub:'Cutting · Grinding Discs',    cat:'disc' },
+    { img:'cat-images/door-handle.png',  tag:'COMBO OFFER',   name:'Door Handles',           sub:'Handles · Locks · Knobs',     cat:'door-handle' },
+    { img:'cat-images/gardening.png',    tag:'NEW ARRIVAL',   name:'Garden Tools',           sub:'Hoses · Trimmers · More',     cat:'gardening' }
   ];
   const cards = offers.map(o => `
     <div class="offer-card" onclick="filterProducts('${o.cat}')">

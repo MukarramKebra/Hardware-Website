@@ -242,9 +242,9 @@ async function importCSVProducts() {
 function downloadTemplate() {
   const csv = [
     'name,category,price,stock,description,badge,brand,image',
-    'Cordless Drill 20V,power-tools,18.500,50,20V drill with keyless chuck and LED light,Best Seller,Bosch,drill.jpg',
+    'Cordless Drill 20V,tools,18.500,50,20V drill with keyless chuck and LED light,Best Seller,DCK,drill.jpg',
     'Heavy Duty Hammer,hand-tools,3.200,100,16oz forged steel claw hammer,,Stanley,hammer.jpg',
-    'Wood Screws 200pc,fasteners,1.500,200,Self-tapping wood screws assorted sizes,Popular,Dewalt,screws.jpg'
+    'Wood Screws 200pc,fastener,1.500,200,Self-tapping wood screws assorted sizes,Popular,TOLSEN,screws.jpg'
   ].join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
