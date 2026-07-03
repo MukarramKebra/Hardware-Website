@@ -138,11 +138,32 @@ function _compressB64Image(dataUrl) {
 function parseCSVText(text) {
   const lines = text.split(/\r?\n/).map(function(l){return l.trim();}).filter(Boolean);
   if (!lines.length) return [];
-  const headers = lines[0].split(',').map(function(h){return h.trim().toLowerCase().replace(/['"]/g,'').replace(/\s+/g,'_');});
+  // Proper CSV field split: quoted fields may contain commas and "" (an
+  // escaped quote — e.g. product names with inch marks like 6"-1). The old
+  // regex stopped at the first quote it saw, shifting every later column and
+  // silently dropping those rows on import.
+  function splitCSVLine(line) {
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQ) {
+        if (ch === '"') {
+          if (line[i+1] === '"') { cur += '"'; i++; }
+          else inQ = false;
+        } else cur += ch;
+      } else if (ch === '"') inQ = true;
+      else if (ch === ',') { vals.push(cur); cur = ''; }
+      else cur += ch;
+    }
+    vals.push(cur);
+    return vals;
+  }
+  const headers = splitCSVLine(lines[0]).map(function(h){return h.trim().toLowerCase().replace(/['"]/g,'').replace(/\s+/g,'_');});
   return lines.slice(1).map(function(line) {
-    const vals = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|(?<=,)$|^(?=,))/g) || line.split(',');
+    const vals = splitCSVLine(line);
     const obj  = {};
-    headers.forEach(function(h,i){ obj[h] = (vals[i]||'').trim().replace(/^"|"$/g,''); });
+    headers.forEach(function(h,i){ obj[h] = (vals[i]||'').trim(); });
     return obj;
   });
 }
