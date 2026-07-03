@@ -87,9 +87,10 @@ function scrollToProducts() {
   const nav    = document.getElementById('cat-nav');
   const offset = (header ? header.offsetHeight : 0) + (nav ? nav.offsetHeight : 0) + 10;
   const y = prods.getBoundingClientRect().top + window.scrollY - offset;
-  // instant jump (no scroll animation) — category clicks should feel like
-  // switching a page, not scrolling down it
-  window.scrollTo({ top: Math.max(0, y), behavior: 'auto' });
+  // 'auto' isn't actually instant here — html has scroll-behavior:smooth in
+  // CSS, and per spec 'auto' just defers to that. 'instant' is the only
+  // value that bypasses CSS and truly snaps with zero animation.
+  window.scrollTo({ top: Math.max(0, y), behavior: 'instant' });
 }
 
 // ── OFFERS CAROUSEL ───────────────────────────────────────────────────────
