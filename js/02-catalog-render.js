@@ -180,15 +180,15 @@ function _renderBannerSlides(container, slides) {
       '<div class="banner-overlay"><span class="banner-tag">' + b.brand + '</span></div>' +
     '</div>';
   }).join('') +
-  '<div class="banner-nav">' +
-    '<button class="banner-nav-btn" onclick="event.stopPropagation();bannerNext()" title="Next"><i class="fa fa-chevron-up"></i></button>' +
-    '<button class="banner-nav-btn" onclick="event.stopPropagation();bannerPrevious()" title="Previous"><i class="fa fa-chevron-down"></i></button>' +
-  '</div>';
+  // Up arrow sits centred in the letterbox area above the image, down arrow
+  // in the area below it (instead of both stacked in a corner)
+  '<button class="banner-nav-btn banner-nav-up" onclick="event.stopPropagation();bannerNext()" title="Next"><i class="fa fa-chevron-up"></i></button>' +
+  '<button class="banner-nav-btn banner-nav-down" onclick="event.stopPropagation();bannerPrevious()" title="Previous"><i class="fa fa-chevron-down"></i></button>';
 }
 
 // Both vertical banners share one index so their slides always change
 // together, one at a time. The up arrow moves to the next banner, the down
-// arrow goes back — either one restarts the 6-second auto-rotate timer.
+// arrow goes back — either one restarts the 3-second auto-rotate timer.
 let _bannerIdx   = 0;
 let _bannerTimer = null;
 function _applyBannerIdx() {
@@ -204,7 +204,7 @@ function bannerNext()     { _bannerIdx++; _applyBannerIdx(); _restartBannerTimer
 function bannerPrevious() { _bannerIdx--; _applyBannerIdx(); _restartBannerTimer(); }
 function _restartBannerTimer() {
   clearInterval(_bannerTimer);
-  _bannerTimer = setInterval(bannerNext, 6000);
+  _bannerTimer = setInterval(bannerNext, 3000);
 }
 
 // Measures the actual empty space beside the centered category grid and

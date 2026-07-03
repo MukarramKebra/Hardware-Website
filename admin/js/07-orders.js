@@ -277,7 +277,9 @@ function renderTable() {
         ? '<span class="status-dot"><span class="dot '+dotCls+'"></span>'+status+'</span>'
         : '<input type="number" class="stock-input '+cls+'" id="si'+p.id+'" value="'+qty+'" min="0" oninput="onStock('+p.id+')" />') + '</td>' +
       '<td><span class="status-dot"><span class="dot '+dotCls+'"></span>'+status+'</span></td>' +
-      '<td class="val-cell">'+val+'</td>' +
+      // value = price × qty, so showing it would let a hidden-stock account
+      // derive the quantity by dividing — hide it under the same permission
+      '<td class="val-cell">'+(window._hideStockNumbers ? '—' : val)+'</td>' +
       '<td>' +
         '<button class="vis-btn '+visCls+'" onclick="toggleVisibility('+p.id+','+p.isBase+')">'+visLbl+'</button>' +
         '<button class="act-btn" onclick="setStock('+p.id+',0)"><i class="fa fa-times"></i> Clear</button>' +
