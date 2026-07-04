@@ -380,6 +380,49 @@ function matchesSearch(query, p) {
 }
 
 // ── RENDER PRODUCTS ───────────────────────────────────────────────────────
+// Injects/updates a Product ItemList structured-data block so Google can
+// understand and potentially show rich results for the actual catalog —
+// rebuilt from the real live product/brand/SKU data each time it loads
+// (see loadSBData) rather than being a static, easily-stale snapshot.
+function _injectProductSchema() {
+  const products = getAllProducts();
+  if (!products.length) return;
+  const itemList = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    'itemListElement': products.map(function(p, i) {
+      const photo = (_sbPhotos[p.id] && (_sbPhotos[p.id].startsWith('http') || _sbPhotos[p.id].startsWith('data:'))) ? _sbPhotos[p.id] : p.img;
+      const liveStatus = getLiveStock(p.id) || p.stock;
+      return {
+        '@type': 'ListItem',
+        'position': i + 1,
+        'item': {
+          '@type': 'Product',
+          'name': p.name,
+          'sku': getProductSku(p.id).replace(/^SKU[-:]\s*/, ''),
+          'brand': p.brand ? { '@type': 'Brand', 'name': p.brand } : undefined,
+          'category': p.category,
+          'image': (photo && photo.startsWith('http')) ? photo : undefined,
+          'offers': {
+            '@type': 'Offer',
+            'priceCurrency': 'KWD',
+            'price': p.price,
+            'availability': liveStatus === 'out-of-stock' ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'
+          }
+        }
+      };
+    })
+  };
+  let tag = document.getElementById('productListSchema');
+  if (!tag) {
+    tag = document.createElement('script');
+    tag.type = 'application/ld+json';
+    tag.id = 'productListSchema';
+    document.head.appendChild(tag);
+  }
+  tag.textContent = JSON.stringify(itemList);
+}
+
 function renderProducts() {
   const query = document.getElementById('searchInput').value.trim();
   const grid  = document.getElementById('productsGrid');

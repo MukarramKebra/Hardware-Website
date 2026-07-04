@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+
+Sitemap: https://mukarramkebra.github.io/Hardware-Website/sitemap.xml

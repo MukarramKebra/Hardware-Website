@@ -116,6 +116,7 @@ async function loadSBData() {
   }
   renderProducts();
   if (typeof initSideBanners === 'function') initSideBanners();
+  if (typeof _injectProductSchema === 'function') _injectProductSchema();
 
   // Photos load separately and re-render once ready (see comment above) —
   // products already show real names/prices/stock immediately either way.
@@ -124,6 +125,7 @@ async function loadSBData() {
       p.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });
       localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos));
       renderProducts();
+      if (typeof _injectProductSchema === 'function') _injectProductSchema();
     }
   });
 }
