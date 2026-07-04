@@ -93,4 +93,6 @@
 .low-stock { color: var(--yellow); }
 .products-empty { text-align: center; padding: 80px 0; color: var(--gray-400); }
 .products-empty i { font-size: 56px; margin-bottom: 14px; display: block; }
+.products-loading { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; padding: 100px 0; }
+.products-loading i { font-size: 40px; color: var(--orange); }
 

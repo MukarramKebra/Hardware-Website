@@ -267,16 +267,30 @@ function jumpCat(cat) {
   activeFilter = cat;
   syncCatNav(cat);
   document.getElementById('searchInput').value = '';
-  renderProducts();
   scrollToProducts();
+  _renderProductsWithLoadingDelay();
 }
 
 function filterProducts(category) {
   activeFilter = category;
   syncCatNav(category);
   document.getElementById('searchInput').value = '';
-  renderProducts();
   scrollToProducts();
+  _renderProductsWithLoadingDelay();
+}
+
+// Shows a brief spinner in place of the grid before swapping in the filtered
+// products — jumping straight to a fully-different product list with zero
+// transition felt too abrupt, so this gives a short, deliberate "loading"
+// beat instead.
+let _catLoadTimer = null;
+function _renderProductsWithLoadingDelay() {
+  clearTimeout(_catLoadTimer);
+  const grid  = document.getElementById('productsGrid');
+  const empty = document.getElementById('productsEmpty');
+  empty.style.display = 'none';
+  grid.innerHTML = '<div class="products-loading"><i class="fa fa-spinner fa-spin"></i></div>';
+  _catLoadTimer = setTimeout(renderProducts, 700);
 }
 // ── STOCK HELPERS ─────────────────────────────────────────────────────────
 function getLiveStock(productId) {
