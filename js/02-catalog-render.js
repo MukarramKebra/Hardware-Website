@@ -399,6 +399,7 @@ function _injectProductSchema() {
         'item': {
           '@type': 'Product',
           'name': p.name,
+          'description': p.desc || undefined,
           'sku': getProductSku(p.id).replace(/^SKU[-:]\s*/, ''),
           'brand': p.brand ? { '@type': 'Brand', 'name': p.brand } : undefined,
           'category': p.category,
