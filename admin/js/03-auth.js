@@ -78,7 +78,7 @@ function showAdmin() {
 
 // ── TEAM ACCOUNTS (created by ultimate15 — see the Owner Controls "Team
 // Accounts" panel) — restricted logins with per-tab view/edit permissions.
-const TAB_KEYS = ['inventory','analytics','deleted','orders','reports','categories','banners'];
+const TAB_KEYS = ['inventory','analytics','deleted','orders','reports','categories','banners','seo'];
 
 // Restores full access — called whenever one of the three built-in accounts
 // (bahar / bahar15 / ultimate15) logs in, in case a restricted account used

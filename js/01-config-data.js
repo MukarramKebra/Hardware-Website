@@ -35,6 +35,43 @@ const UL  = (id) => `Bahar-Products/SKU-${String(id).padStart(4,'0')}.jpg`;  // 
   } catch(e) { /* Network error — site remains visible */ }
 })();
 
+// ── SEO SETTINGS (editable in admin → SEO tab) ────────────────────────────
+// Overrides the title/description/keywords/OG tags that are baked into
+// index.html for crawlers that don't run JS — this lets the owner edit them
+// from admin without touching code or redeploying.
+(async function applySEOSettings() {
+  try {
+    const SB_URL_CHK = 'https://qhebhvllkovfbkqrcnmm.supabase.co';
+    const SB_KEY_CHK = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5Gb1pXSm9kbXhzYTI5MlptSnJjWEpqYm0xdElpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpZd05UZ3dNVGtzSW1WNGNDSTZNakE1TVRZek5EQXhPWDAuQVFsNVdBQjFfbWEzemNya1c0TkZLazZvQ0tCVWxUdGhENjh1amNTbG5hcw==');
+    const res = await fetch(SB_URL_CHK + '/rest/v1/expert_settings?key=eq.seo_settings&select=value', {
+      headers: { 'apikey': SB_KEY_CHK, 'Authorization': 'Bearer ' + SB_KEY_CHK }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data || !data.length || !data[0].value) return;
+    const seo = JSON.parse(data[0].value);
+    if (seo.title) {
+      document.title = seo.title;
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      const twTitle = document.querySelector('meta[name="twitter:title"]');
+      if (ogTitle) ogTitle.setAttribute('content', seo.title);
+      if (twTitle) twTitle.setAttribute('content', seo.title);
+    }
+    if (seo.description) {
+      const desc   = document.querySelector('meta[name="description"]');
+      const ogDesc = document.querySelector('meta[property="og:description"]');
+      const twDesc = document.querySelector('meta[name="twitter:description"]');
+      if (desc)   desc.setAttribute('content', seo.description);
+      if (ogDesc) ogDesc.setAttribute('content', seo.description);
+      if (twDesc) twDesc.setAttribute('content', seo.description);
+    }
+    if (seo.keywords) {
+      const kw = document.querySelector('meta[name="keywords"]');
+      if (kw) kw.setAttribute('content', seo.keywords);
+    }
+  } catch(e) { /* Network error — static meta tags in index.html remain as fallback */ }
+})();
+
 // ── SKU HELPER ────────────────────────────────────────────────────────────
 // SKU is a separate display label from the internal product ID.
 // Real SKUs live in Supabase (expert_settings key 'sku_map', loaded into

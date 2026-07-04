@@ -66,6 +66,9 @@
     <button class="tab-btn" id="tabBanners" onclick="switchTab('banners')">
       <i class="fa fa-images"></i> Banners
     </button>
+    <button class="tab-btn" id="tabSeo" onclick="switchTab('seo')">
+      <i class="fa fa-search-plus"></i> SEO
+    </button>
     <button class="tab-btn" id="tabOwner" onclick="switchTab('owner')" style="display:none;margin-left:auto;background:rgba(124,58,237,.12);color:#c4b5fd;border-bottom-color:transparent;">
       <i class="fa fa-crown"></i> Owner Controls
     </button>
@@ -353,6 +356,37 @@
       </label>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px" id="bannerEditGrid"></div>
+  </div>
+
+  <!-- SEO SECTION -->
+  <div id="seoSection" class="main" style="display:none">
+    <div class="table-top" style="margin-bottom:12px">
+      <h2><i class="fa fa-search-plus" style="color:var(--orange);margin-right:8px"></i>SEO Settings</h2>
+    </div>
+    <p style="font-size:12px;color:var(--gray);margin:0 0 20px;max-width:640px">
+      Controls what Google shows for this site in search results (title, description, keywords).
+      Changes here go live on the storefront within a few seconds — no code changes or GitHub needed.
+    </p>
+    <div style="max-width:640px;display:flex;flex-direction:column;gap:16px">
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--dark);margin-bottom:6px">Page Title <span style="color:#aaa;font-weight:400" id="seoTitleCount"></span></label>
+        <input type="text" id="seoTitle" placeholder="Expert Hardware Kuwait | Hand &amp; Power Tools..." style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px" oninput="_seoUpdateCounts()" />
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--dark);margin-bottom:6px">Meta Description <span style="color:#aaa;font-weight:400" id="seoDescCount"></span></label>
+        <textarea id="seoDescription" rows="3" placeholder="Short description shown under the title in Google search results..." style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical" oninput="_seoUpdateCounts()"></textarea>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--dark);margin-bottom:6px">Keywords <span style="color:#aaa;font-weight:400">(comma-separated)</span></label>
+        <textarea id="seoKeywords" rows="4" placeholder="hardware store Kuwait, hand tools Kuwait, DCK tools Kuwait, ..." style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical"></textarea>
+      </div>
+      <div class="seo-preview">
+        <div class="seo-preview-title" id="seoPreviewTitle">Page title preview</div>
+        <div class="seo-preview-url">mukarramkebra.github.io/Hardware-Website</div>
+        <div class="seo-preview-desc" id="seoPreviewDesc">Description preview will appear here as you type.</div>
+      </div>
+      <button class="newcat-save" style="width:fit-content" onclick="saveSEOSettings()"><i class="fa fa-save"></i>&nbsp; Save SEO Settings</button>
+    </div>
   </div>
 
   <!-- EDIT BANNER MODAL -->
@@ -763,6 +797,7 @@
 <script src="admin/js/09-deleted.js"></script>
 <script src="admin/js/10-csv-import.js"></script>
 <script src="admin/js/11-multiselect-brand-cat.js"></script>
+<script src="admin/js/12-seo.js"></script>
 </body>
 </html>
 

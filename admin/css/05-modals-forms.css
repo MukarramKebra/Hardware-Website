@@ -98,6 +98,12 @@
     .newcat-save{width:100%;padding:11px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;}
     .newcat-save:hover{background:#991b1b;}
 
+    /* SEO tab — mock Google search result preview */
+    .seo-preview{border:1px solid var(--border);border-radius:8px;padding:14px 16px;background:#fff;font-family:arial,sans-serif;}
+    .seo-preview-title{color:#1a0dab;font-size:18px;line-height:1.3;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .seo-preview-url{color:#006621;font-size:13px;margin-bottom:4px;}
+    .seo-preview-desc{color:#545454;font-size:13px;line-height:1.4;}
+
     /* Team account modal — same show/hide behaviour as .newcat-overlay, just wider */
     .teamacct-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;padding:20px;}
     .teamacct-overlay.open{opacity:1;pointer-events:all;}
