@@ -246,7 +246,7 @@ function renderTable() {
     const status = qty===0?'Out of Stock':qty<=10?'Low Stock':'In Stock';
     const val    = (p.price*qty).toFixed(3);
     const rawPh  = photos[p.id];
-    const thumb  = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : (p.img || ('https://picsum.photos/seed/dhow'+p.id+'/80/80'));
+    const thumb  = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : (p.img || NO_IMG);
     const vCount = views[p.id]||0;
     const sCount = searches[p.id]||0;
     const visLbl = p.hidden ? '<i class="fa fa-eye-slash"></i> Show' : '<i class="fa fa-eye"></i> Hide';
@@ -475,7 +475,7 @@ function buildAnTable(list, counts, photos, maxCount, barCls, unit) {
     const count = counts[p.id]||0;
     const pct = Math.round((count/maxCount)*100);
     const rawPh2 = photos[p.id];
-    const thumb = (rawPh2 && (rawPh2.startsWith('http') || rawPh2.startsWith('data:'))) ? rawPh2 : (p.img || ('https://picsum.photos/seed/dhow'+p.id+'/80/80'));
+    const thumb = (rawPh2 && (rawPh2.startsWith('http') || rawPh2.startsWith('data:'))) ? rawPh2 : (p.img || NO_IMG);
     return '<tr>' +
       '<td><div class="rank-badge '+rankCls(i)+'">'+(i+1)+'</div></td>' +
       '<td><div style="display:flex;align-items:center;gap:10px">' +
@@ -541,7 +541,7 @@ function openStats(id) {
   const vRank   = sortedV.findIndex(function(x){ return x.id===id; })+1;
   const sRank   = sortedS.findIndex(function(x){ return x.id===id; })+1;
   const rawPhS  = photos[id];
-  const thumb   = (rawPhS && (rawPhS.startsWith('http') || rawPhS.startsWith('data:'))) ? rawPhS : (p.img || ('https://picsum.photos/seed/dhow'+id+'/80/80'));
+  const thumb   = (rawPhS && (rawPhS.startsWith('http') || rawPhS.startsWith('data:'))) ? rawPhS : (p.img || NO_IMG);
 
   document.getElementById('smBody').innerHTML =
     '<div class="sm-prod-row">' +

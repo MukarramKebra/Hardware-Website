@@ -232,7 +232,7 @@ function renderDeletedTab() {
   }
   body.innerHTML = deleted.map(function(d) {
     const rawPhD   = photos[d.id];
-    const thumb    = (rawPhD && (rawPhD.startsWith('http') || rawPhD.startsWith('data:'))) ? rawPhD : (d.img || ('https://picsum.photos/seed/dhow'+d.id+'/80/80'));
+    const thumb    = (rawPhD && (rawPhD.startsWith('http') || rawPhD.startsWith('data:'))) ? rawPhD : (d.img || NO_IMG);
     const daysAgo  = Math.floor((Date.now()-d.deletedAt)/(24*60*60*1000));
     const daysLeft = 60 - daysAgo;
     const dateStr  = new Date(d.deletedAt).toLocaleDateString('en-KW',{day:'numeric',month:'short',year:'numeric'});

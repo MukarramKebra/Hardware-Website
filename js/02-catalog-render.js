@@ -483,8 +483,10 @@ function renderProducts() {
           ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
           ${isOut ? `<span class="out-badge">${isAr ? 'نفد المخزون' : 'OUT OF STOCK'}</span>` : ''}
           <button class="card-wl-btn ${isWishlisted(p.id)?'wishlisted':''}" onclick="toggleWishlist(${p.id}, event)" title="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}"><i class="fa fa-heart"></i></button>
-          <img src="${photo}" data-local="${p.img}" alt="${pName}" loading="lazy" onerror="imgError(this)" />
-          <div class="product-img-fallback" style="display:none"><i class="fa fa-tools"></i></div>
+          ${photo
+            ? `<img src="${photo}" data-local="${p.img}" alt="${pName}" loading="lazy" onerror="imgError(this)" />
+               <div class="product-img-fallback" style="display:none"><i class="fa fa-tools"></i></div>`
+            : `<div class="product-img-fallback" style="display:flex"><i class="fa fa-tools"></i></div>`}
         </div>
         <div class="product-info">
           <div class="product-cat">${pCat}</div>

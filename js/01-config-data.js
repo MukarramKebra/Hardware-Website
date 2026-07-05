@@ -214,7 +214,10 @@ function getAllProducts() {
     name:     p.name,
     category: normalizeCategory(p.category),
     price:    parseFloat(p.price),
-    img:      p.img_url || p.img || `https://picsum.photos/seed/dt${p.id}/420/320`,
+    // No random stock-photo fallback (picsum) — if a product has no image
+    // yet (e.g. photos still loading from Supabase), the card shows the
+    // neutral tools icon instead of an unrelated internet photo.
+    img:      p.img_url || p.img || '',
     desc:     p.description || p.desc || '',
     badge:    p.badge || null,
     brand:    _sbBrandMap[String(p.id)] || '',

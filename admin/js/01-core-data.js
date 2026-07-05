@@ -100,6 +100,10 @@ async function sbFetch(url, options) {
 // UL = local product image path  (e.g. "product-images/1.jpg" stored in the repo)
 const U  = id => 'https://picsum.photos/seed/' + id + '/80/80';
 const UL = id => 'Bahar-Products/SKU-' + String(id).padStart(4, '0') + '.jpg';
+// Neutral gray placeholder for products with no photo yet — never random
+// internet stock photos (picsum), which made missing images look like
+// completely wrong products.
+const NO_IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='80' height='80' rx='8' fill='%23eef0f3'/><g stroke='%23b9bfc7' stroke-width='4' fill='none' stroke-linecap='round'><path d='M28 52 L52 28'/><circle cx='25' cy='55' r='7'/><circle cx='55' cy='25' r='7'/></g></svg>";
 
 let _customProductRows = []; // products added by admin (fetched from Supabase jain_products table)
 let _hiddenBaseIds     = new Set(); // IDs of base products that have been hidden from the store

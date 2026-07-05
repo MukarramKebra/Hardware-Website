@@ -27,8 +27,10 @@ function openProduct(id) {
   document.getElementById('prodModalSku').textContent = getProductSku(id);
   document.getElementById('prodModalBody').innerHTML =
     '<div class="pm-img-col">' +
-      '<img src="' + bigImg + '" alt="' + p.name + '" onerror="imgError(this)" />' +
-      '<div class="pm-img-fallback" id="pmFallback"><i class="fa fa-tools"></i></div>' +
+      (bigImg
+        ? '<img src="' + bigImg + '" alt="' + p.name + '" onerror="imgError(this)" />' +
+          '<div class="pm-img-fallback" id="pmFallback"><i class="fa fa-tools"></i></div>'
+        : '<div class="pm-img-fallback" id="pmFallback" style="display:flex"><i class="fa fa-tools"></i></div>') +
     '</div>' +
     '<div class="pm-info-col">' +
       '<div class="pm-badge-row">' +
