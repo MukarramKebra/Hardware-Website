@@ -202,14 +202,20 @@ function renderStats() {
   const total  = allProducts.length;
   const units  = allProducts.reduce(function(s,p) { return s+(stockData[p.id]||0); }, 0);
   const value  = allProducts.reduce(function(s,p) { return s+p.price*(stockData[p.id]||0); }, 0);
-  const low    = allProducts.filter(function(p) { return (stockData[p.id]||0) > 0 && (stockData[p.id]||0) <= 10; }).length;
-  const out    = allProducts.filter(function(p) { return (stockData[p.id]||0) === 0; }).length;
+  // Products in the "Hidden" category (non-purchasable placeholder entries)
+  // never had real stock to begin with — counting them as low/out-of-stock
+  // alerts is misleading noise, so they're excluded from alerts entirely.
+  const alertable = allProducts.filter(function(p) { return p.cat !== 'hidden'; });
+  const low    = alertable.filter(function(p) { return (stockData[p.id]||0) > 0 && (stockData[p.id]||0) <= 10; }).length;
+  const out    = alertable.filter(function(p) { return (stockData[p.id]||0) === 0; }).length;
   document.getElementById('statsGrid').innerHTML =
     card('fa-boxes','ic-orange','Total Products', total, total + ' active products') +
     card('fa-layer-group','ic-blue','Total Units', units.toLocaleString(), 'In stock') +
     card('fa-coins','ic-green','Inventory Value', value.toFixed(2)+' KWD', 'Total stock value') +
     card('fa-exclamation-triangle','ic-red','Alerts', low+out, low+' low &nbsp;|&nbsp; '+out+' out');
-  const lowList = allProducts.filter(function(p) { return (stockData[p.id]||0) <= 10; });
+  // Manually-ignored alerts (see ignoreAlert()) — dismissed permanently until un-ignored
+  var ignored = window._sbIgnoredAlerts || {};
+  const lowList = alertable.filter(function(p) { return (stockData[p.id]||0) <= 10 && !ignored[p.id]; });
   const box = document.getElementById('alertsBox');
   if (lowList.length) {
     box.classList.add('show');
@@ -218,9 +224,23 @@ function renderStats() {
         '<span><i class="fa fa-warning"></i> '+p.name+' &mdash; '+(stockData[p.id]||0)+' left</span>' +
         '<button class="alert-chip-btn" onclick="jumpToProduct('+p.id+')" title="Go to this product"><i class="fa fa-arrow-right"></i> View</button>' +
         '<button class="alert-chip-btn add5k" onclick="addStockAmt('+p.id+',5000)" title="Add 5000 to stock"><i class="fa fa-plus"></i> 5000</button>' +
+        '<button class="alert-chip-btn ignore" onclick="ignoreAlert('+p.id+')" title="Stop showing this alert"><i class="fa fa-eye-slash"></i> Ignore</button>' +
       '</div>';
     }).join('');
   } else { box.classList.remove('show'); }
+}
+// Ignored low/out-of-stock alerts — stored in Supabase (expert_settings key
+// 'ignored_alerts') so the dismissal sticks across devices and admin accounts,
+// not just the browser that clicked Ignore.
+function ignoreAlert(id) {
+  if (!window._sbIgnoredAlerts) window._sbIgnoredAlerts = {};
+  window._sbIgnoredAlerts[id] = true;
+  sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'ignored_alerts', value: JSON.stringify(window._sbIgnoredAlerts) }])
+  });
+  renderStats();
 }
 function card(icon, cls, label, val, sub) {
   return '<div class="stat-card"><div class="stat-icon '+cls+'"><i class="fa '+icon+'"></i></div>' +

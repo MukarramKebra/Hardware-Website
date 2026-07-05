@@ -21,6 +21,8 @@
     .alert-chip-btn{background:var(--red);color:#fff;border:none;border-radius:5px;padding:3px 9px;font-size:11px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}
     .alert-chip-btn:hover{filter:brightness(1.12);}
     .alert-chip-btn.add5k{background:var(--green);}
+    .alert-chip-btn.ignore{background:none;border:1px solid currentColor;color:inherit;}
+    .alert-chip-btn.ignore:hover{background:rgba(239,68,68,.12);}
     tr.row-flash{animation:rowFlash 2s ease;}
     @keyframes rowFlash{0%{background:rgba(245,158,11,.5);}100%{background:transparent;}}
 

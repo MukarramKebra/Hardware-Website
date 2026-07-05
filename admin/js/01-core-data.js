@@ -74,7 +74,13 @@ const DEFAULT_CATS = [
   { slug:'household',        label:'Cleaning' },
   { slug:'plumbing-fitting', label:'Fittings' },
   { slug:'sanitary',         label:'Sanitary Ware' },
-  { slug:'filter',           label:'Filters' }
+  { slug:'filter',           label:'Filters' },
+  // Admin-only category for non-purchasable/placeholder entries (e.g. items
+  // scraped from a source catalog that aren't real products). Never appears
+  // on the storefront — index.html's category grid/nav/pills don't reference
+  // it — but it's a normal filterable category here, and products in it are
+  // excluded from the low/out-of-stock alerts (see renderStats).
+  { slug:'hidden',           label:'Hidden' }
 ];
 
 // ── SUPABASE FETCH WRAPPER ─────────────────────────────────────────────────────
@@ -207,14 +213,15 @@ async function loadFromSupabase() {
   // that one slow call finished (the "need to click Reload twice" symptom).
   // It's now fetched separately below so the table renders immediately;
   // thumbnails fill in once photos are ready.
-  const [s, c, h, cb, sk, bm, mc] = await Promise.all([
+  const [s, c, h, cb, sk, bm, mc, ia] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',          { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',       { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',{ headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',    { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value',  { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value', { headers: SB_HDRS })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value', { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.ignored_alerts&select=value', { headers: SB_HDRS })
   ]);
   // Real SKU labels (shared with the storefront via expert_settings)
   if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
@@ -233,6 +240,10 @@ async function loadFromSupabase() {
       window._sbMultiCats = JSON.parse(mc.data[0].value) || {};
       localStorage.setItem('bahar_multi_cats', JSON.stringify(window._sbMultiCats));
     } catch(e) {}
+  }
+  // Ignored low/out-of-stock alerts (see ignoreAlert() in 07-orders.js)
+  if (!ia.error && Array.isArray(ia.data) && ia.data[0] && ia.data[0].value) {
+    try { window._sbIgnoredAlerts = JSON.parse(ia.data[0].value) || {}; } catch(e) {}
   }
   // Category backgrounds
   if (!cb.error && Array.isArray(cb.data)) {

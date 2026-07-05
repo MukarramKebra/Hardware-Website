@@ -4,24 +4,24 @@
 // saveCatBg()  — saves a new background image when you click "Change Image"
 // resetCatBg() — puts the default image back
 var CAT_DEFS = [
-  { slug:'tools',            label:'DCK Power Tools', icon:'fa-bolt',         default:'../cat-images/tools.jpg' },
-  { slug:'hand-tools',       label:'Hand Tools',      icon:'fa-hammer',       default:'../cat-images/hand-tools.png' },
-  { slug:'fastener',         label:'Fasteners',       icon:'fa-cog',          default:'../cat-images/fastener.png' },
-  { slug:'construction',     label:'Nails/Wires',     icon:'fa-thumbtack',    default:'../cat-images/construction.png' },
-  { slug:'safety',           label:'Safety',          icon:'fa-hard-hat',     default:'../cat-images/safety.jpg' },
-  { slug:'spray-adhesive',   label:'Adhesives',       icon:'fa-spray-can',    default:'../cat-images/spray-adhesive.png' },
-  { slug:'tape',             label:'Tapes',           icon:'fa-tape',         default:'../cat-images/tape.png' },
-  { slug:'door-handle',      label:'Door Handles',    icon:'fa-door-open',    default:'../cat-images/door-handle.png' },
-  { slug:'hardware',         label:'Hardware',        icon:'fa-toolbox',      default:'../cat-images/hardware.png' },
-  { slug:'paint-tool',       label:'Paint Tools',     icon:'fa-paint-roller', default:'../cat-images/paint-tool.jpg' },
-  { slug:'gardening',        label:'Garden Tools',    icon:'fa-seedling',     default:'../cat-images/gardening.png' },
-  { slug:'disc',             label:'Discs',           icon:'fa-compact-disc', default:'../cat-images/disc.jpg' },
-  { slug:'trolley-caster',   label:'Wheel Barrow',    icon:'fa-dolly',        default:'../cat-images/trolley-caster.png' },
-  { slug:'household',        label:'Cleaning',        icon:'fa-broom',        default:'../cat-images/household.png' },
-  { slug:'plumbing-fitting', label:'Fittings',        icon:'fa-wrench',       default:'../cat-images/plumbing-fitting.png' },
-  { slug:'sanitary',         label:'Sanitary Ware',   icon:'fa-shower',       default:'../cat-images/sanitary.png' },
-  { slug:'filter',           label:'Filters',         icon:'fa-filter',       default:'../cat-images/filter.png' },
-  { slug:'all',              label:'All Products',    icon:'fa-th-large',     default:'../Bahar-Products/SKU-0015.jpg' }
+  { slug:'tools',            label:'DCK Power Tools', icon:'fa-bolt',         default:'cat-images/tools.jpg' },
+  { slug:'hand-tools',       label:'Hand Tools',      icon:'fa-hammer',       default:'cat-images/hand-tools.png' },
+  { slug:'fastener',         label:'Fasteners',       icon:'fa-cog',          default:'cat-images/fastener.png' },
+  { slug:'construction',     label:'Nails/Wires',     icon:'fa-thumbtack',    default:'cat-images/construction.png' },
+  { slug:'safety',           label:'Safety',          icon:'fa-hard-hat',     default:'cat-images/safety.jpg' },
+  { slug:'spray-adhesive',   label:'Adhesives',       icon:'fa-spray-can',    default:'cat-images/spray-adhesive.png' },
+  { slug:'tape',             label:'Tapes',           icon:'fa-tape',         default:'cat-images/tape.png' },
+  { slug:'door-handle',      label:'Door Handles',    icon:'fa-door-open',    default:'cat-images/door-handle.png' },
+  { slug:'hardware',         label:'Hardware',        icon:'fa-toolbox',      default:'cat-images/hardware.png' },
+  { slug:'paint-tool',       label:'Paint Tools',     icon:'fa-paint-roller', default:'cat-images/paint-tool.jpg' },
+  { slug:'gardening',        label:'Garden Tools',    icon:'fa-seedling',     default:'cat-images/gardening.png' },
+  { slug:'disc',             label:'Discs',           icon:'fa-compact-disc', default:'cat-images/disc.jpg' },
+  { slug:'trolley-caster',   label:'Wheel Barrow',    icon:'fa-dolly',        default:'cat-images/trolley-caster.png' },
+  { slug:'household',        label:'Cleaning',        icon:'fa-broom',        default:'cat-images/household.png' },
+  { slug:'plumbing-fitting', label:'Fittings',        icon:'fa-wrench',       default:'cat-images/plumbing-fitting.png' },
+  { slug:'sanitary',         label:'Sanitary Ware',   icon:'fa-shower',       default:'cat-images/sanitary.png' },
+  { slug:'filter',           label:'Filters',         icon:'fa-filter',       default:'cat-images/filter.png' },
+  { slug:'all',              label:'All Products',    icon:'fa-th-large',     default:'Bahar-Products/SKU-0015.jpg' }
 ];
 
 function renderCatEditor() {
