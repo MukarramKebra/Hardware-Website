@@ -194,18 +194,33 @@ function brandRun(action){
 // closeMC()    — closes the popup without saving
 var _mcCurrentId = null;
 
+// Extra-category assignments live in Supabase (expert_settings key
+// 'multi_cats', loaded by loadFromSupabase into window._sbMultiCats) so
+// visitors and every admin account see them — they used to be localStorage
+// only, which meant assignments silently never reached the storefront.
 function getExtraCats(id) {
+  if (window._sbMultiCats && Array.isArray(window._sbMultiCats[String(id)])) return window._sbMultiCats[String(id)];
   try {
     var map=JSON.parse(localStorage.getItem('bahar_multi_cats')||'{}');
     return Array.isArray(map[String(id)]) ? map[String(id)] : [];
   } catch(e){ return []; }
 }
 function saveExtraCats(id, cats) {
-  try {
-    var map=JSON.parse(localStorage.getItem('bahar_multi_cats')||'{}');
-    map[String(id)]=cats;
-    localStorage.setItem('bahar_multi_cats',JSON.stringify(map));
-  } catch(e){}
+  if (!window._sbMultiCats) window._sbMultiCats = {};
+  window._sbMultiCats[String(id)] = cats;
+  try { localStorage.setItem('bahar_multi_cats', JSON.stringify(window._sbMultiCats)); } catch(e){}
+  _pushMultiCats();
+}
+// Debounced upsert of the whole map to Supabase
+function _pushMultiCats() {
+  clearTimeout(window._mcPushT);
+  window._mcPushT = setTimeout(function() {
+    sbFetch(SB_URL + '/rest/v1/expert_settings', {
+      method: 'POST',
+      headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+      body: JSON.stringify([{ key: 'multi_cats', value: JSON.stringify(window._sbMultiCats || {}) }])
+    });
+  }, 400);
 }
 function getProductCatSlugs(p) {
   var primary = p.cat||'';

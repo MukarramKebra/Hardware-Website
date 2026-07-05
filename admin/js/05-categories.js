@@ -43,6 +43,9 @@ function renderCatEditor() {
           '<i class="fa fa-image"></i> Change Image' +
           '<input type="file" accept="image/*" style="display:none" onchange="saveCatBg(\'' + cat.slug + '\',this)" />' +
         '</label>' +
+        (cat.slug !== 'all'
+          ? '<button onclick="openCatProducts(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid var(--orange);border-radius:6px;padding:7px;font-size:11px;font-weight:700;color:var(--orange);cursor:pointer"><i class="fa fa-boxes"></i> Products</button>'
+          : '') +
         '<button onclick="resetCatBg(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid #e2e4e8;border-radius:6px;padding:6px;font-size:11px;color:#888;cursor:pointer"><i class="fa fa-undo"></i> Reset Default</button>' +
       '</div>' +
     '</div>';
@@ -214,5 +217,95 @@ async function deleteBanner(id) {
   await sbFetch(SB_URL + '/rest/v1/expert_banners?id=eq.' + id, { method: 'DELETE', headers: SB_HDRS });
   showToast('Banner deleted');
   loadBanners();
+}
+
+// ── CATEGORY PRODUCT MANAGER ─────────────────────────────────────────────────
+// "Products" button on each category card: tick/untick products to add or
+// remove them from that category. Adding puts the category in the product's
+// extra-categories list; removing takes it out. If the category is a product's
+// PRIMARY one, removing promotes one of its other categories to primary —
+// or is skipped (with a warning) when it has no other category to fall back on.
+var _cpSlug = null;
+var _cpState = {};   // product id -> currently ticked (true/false)
+
+function openCatProducts(slug) {
+  _cpSlug = slug;
+  _cpState = {};
+  var cat = getAllCats().find(function(c){ return c.slug === slug; });
+  document.getElementById('cpTitle').textContent = (cat ? cat.label : slug) + ' — Products';
+  document.getElementById('cpSearch').value = '';
+  getAllAdminProducts().forEach(function(p) {
+    _cpState[p.id] = getProductCatSlugs(p).includes(slug);
+  });
+  _cpRenderList('');
+  document.getElementById('catProdOverlay').classList.add('open');
+  setTimeout(function(){ document.getElementById('cpSearch').focus(); }, 100);
+}
+function closeCatProducts() {
+  document.getElementById('catProdOverlay').classList.remove('open');
+  _cpSlug = null;
+}
+function _cpRenderList(q) {
+  q = (q || '').toLowerCase();
+  var rows = getAllAdminProducts().filter(function(p) {
+    return !q || p.name.toLowerCase().includes(q) ||
+      getProductSku(p.id).toLowerCase().includes(q) ||
+      (typeof getBrand === 'function' && getBrand(p.id).toLowerCase().includes(q));
+  }).map(function(p) {
+    var ck = !!_cpState[p.id];
+    var isPrimary = p.cat === _cpSlug;
+    return '<div class="mc-cat-row' + (ck ? ' mc-selected' : '') + '" onclick="cpToggle(this,' + p.id + ')">' +
+      '<input type="checkbox"' + (ck ? ' checked' : '') + ' />' +
+      '<span class="mc-lbl">' + encodeHtml(p.name) + ' <span style="color:#aaa;font-weight:500;font-size:11px">' + getProductSku(p.id) + '</span></span>' +
+      (isPrimary ? '<span class="mc-primary-tag">primary</span>' : '') +
+    '</div>';
+  }).join('');
+  document.getElementById('cpList').innerHTML = rows || '<p style="color:#aaa;font-size:12px;padding:8px 2px">No products match this search.</p>';
+}
+function cpFilter() { _cpRenderList(document.getElementById('cpSearch').value); }
+function cpToggle(row, id) {
+  _cpState[id] = !_cpState[id];
+  row.classList.toggle('mc-selected', _cpState[id]);
+  row.querySelector('input[type="checkbox"]').checked = _cpState[id];
+}
+async function saveCatProducts() {
+  if (!_cpSlug) return;
+  var slug = _cpSlug;
+  var added = 0, removed = 0, skipped = [];
+  var products = getAllAdminProducts();
+  for (var i = 0; i < products.length; i++) {
+    var p = products[i];
+    var wasMember = getProductCatSlugs(p).includes(slug);
+    var nowMember = !!_cpState[p.id];
+    if (wasMember === nowMember) continue;
+
+    var extras = getExtraCats(p.id).filter(function(c){ return c !== p.cat; });
+    if (nowMember) {
+      if (!extras.includes(slug)) extras.push(slug);
+      saveExtraCats(p.id, extras);
+      added++;
+    } else if (p.cat === slug) {
+      // Removing the product's primary category — promote another one
+      var others = extras.filter(function(c){ return c !== slug; });
+      if (!others.length) { skipped.push(p.name); continue; }
+      var newPrimary = others[0];
+      var r = await sbFetch(SB_URL + '/rest/v1/expert_products?id=eq.' + p.id, {
+        method: 'PATCH', headers: SB_HDRS, body: JSON.stringify({ category: newPrimary })
+      });
+      if (r.error) { skipped.push(p.name); continue; }
+      var row = _customProductRows.find(function(x){ return x.id === p.id; });
+      if (row) row.category = newPrimary;
+      saveExtraCats(p.id, others.filter(function(c){ return c !== newPrimary; }));
+      removed++;
+    } else {
+      saveExtraCats(p.id, extras.filter(function(c){ return c !== slug; }));
+      removed++;
+    }
+  }
+  closeCatProducts();
+  renderTable();
+  var msg = added + ' added, ' + removed + ' removed';
+  if (skipped.length) msg += ' — ' + skipped.length + ' skipped (only category: ' + skipped.slice(0,2).join(', ') + (skipped.length > 2 ? '…' : '') + ')';
+  showToast(msg);
 }
 

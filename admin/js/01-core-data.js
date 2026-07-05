@@ -203,13 +203,14 @@ async function loadFromSupabase() {
   // that one slow call finished (the "need to click Reload twice" symptom).
   // It's now fetched separately below so the table renders immediately;
   // thumbnails fill in once photos are ready.
-  const [s, c, h, cb, sk, bm] = await Promise.all([
+  const [s, c, h, cb, sk, bm, mc] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',          { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',       { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',{ headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',   { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value', { headers: SB_HDRS })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',    { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value',  { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value', { headers: SB_HDRS })
   ]);
   // Real SKU labels (shared with the storefront via expert_settings)
   if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
@@ -221,6 +222,13 @@ async function loadFromSupabase() {
   // Brand labels (shared with the storefront via expert_settings)
   if (!bm.error && Array.isArray(bm.data) && bm.data[0] && bm.data[0].value) {
     try { window._sbBrandMap = JSON.parse(bm.data[0].value) || {}; } catch(e) {}
+  }
+  // Extra category assignments (shared with the storefront via expert_settings)
+  if (!mc.error && Array.isArray(mc.data) && mc.data[0] && mc.data[0].value) {
+    try {
+      window._sbMultiCats = JSON.parse(mc.data[0].value) || {};
+      localStorage.setItem('bahar_multi_cats', JSON.stringify(window._sbMultiCats));
+    } catch(e) {}
   }
   // Category backgrounds
   if (!cb.error && Array.isArray(cb.data)) {

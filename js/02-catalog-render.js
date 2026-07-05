@@ -1,7 +1,10 @@
 // ── MULTI-CATEGORY HELPER (storefront) ────────────────────────────────────
 // Returns array of extra category slugs assigned to a product via the admin
-// multi-category picker (stored in bahar_multi_cats in localStorage).
+// multi-category picker. Loaded from Supabase (expert_settings 'multi_cats',
+// see loadSBData) so every visitor sees the assignments; localStorage is only
+// a fallback for assignments made before the cloud sync existed.
 function getMultiCats(id) {
+  if (window._sbMultiCats && Array.isArray(window._sbMultiCats[String(id)])) return window._sbMultiCats[String(id)];
   try {
     var map = JSON.parse(localStorage.getItem('bahar_multi_cats') || '{}');
     return Array.isArray(map[String(id)]) ? map[String(id)] : [];

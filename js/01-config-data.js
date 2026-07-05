@@ -124,19 +124,23 @@ async function loadSBData() {
   // fill in — starting from whatever was cached last visit — once ready.
   try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
 
-  const [s, c, h, b, sk, bm] = await Promise.all([
+  const [s, c, h, b, sk, bm, mc] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',                         { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc',          { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',   { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value', { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value', { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value',{ headers: SB_H })
   ]);
   if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
     try { _sbSkuMap = JSON.parse(sk.data[0].value) || {}; } catch(e) {}
   }
   if (!bm.error && Array.isArray(bm.data) && bm.data[0] && bm.data[0].value) {
     try { _sbBrandMap = JSON.parse(bm.data[0].value) || {}; } catch(e) {}
+  }
+  if (!mc.error && Array.isArray(mc.data) && mc.data[0] && mc.data[0].value) {
+    try { window._sbMultiCats = JSON.parse(mc.data[0].value) || {}; } catch(e) {}
   }
   if (s.error) {
     console.warn('Supabase offline — using localStorage fallback');

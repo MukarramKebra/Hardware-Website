@@ -747,6 +747,22 @@
   </div>
 </div>
 
+<!-- CATEGORY PRODUCTS MODAL (opened from Categories tab "Products" buttons) -->
+<div class="mc-overlay" id="catProdOverlay" onclick="if(event.target===this)closeCatProducts()">
+  <div class="mc-modal" style="max-width:520px;width:94%">
+    <div class="mc-header">
+      <h3><i class="fa fa-boxes"></i> <span id="cpTitle">Products</span></h3>
+      <button onclick="closeCatProducts()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="mc-body">
+      <p class="mc-note">Tick products to add them to this category — untick to remove. Removing a product's <b>primary</b> category moves it to one of its other categories (products with no other category are skipped).</p>
+      <input type="text" id="cpSearch" placeholder="Search products, SKU or brand…" oninput="cpFilter()" autocomplete="off" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:10px;outline:none" />
+      <div class="mc-cats-list" id="cpList" style="max-height:320px;overflow-y:auto"></div>
+      <button class="mc-save-btn" onclick="saveCatProducts()"><i class="fa fa-check"></i>&nbsp; Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <!-- SUPER ADMIN PANEL (legacy standalone — kept for fallback) -->
 <div id="superAdminPanel" style="display:none!important">
   <div class="su-bar">
