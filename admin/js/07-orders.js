@@ -243,6 +243,24 @@ function ignoreAlert(id) {
   });
   renderStats();
 }
+// ── HIDE PRICE TOGGLE ─────────────────────────────────────────────────────────
+// Lets a product's price be hidden from the storefront (shows "Price on
+// request" + an "Ask Price on WhatsApp" button instead) while KEEPING the
+// real price stored for your own records/reports — unlike setting price to
+// 0, which throws the real number away. Stored in Supabase (expert_settings
+// key 'hidden_prices') so it applies for every visitor, not just this browser.
+function isPriceHidden(id) { return !!(window._sbPriceHidden || {})[id]; }
+function togglePriceHidden(id) {
+  if (!window._sbPriceHidden) window._sbPriceHidden = {};
+  if (window._sbPriceHidden[id]) delete window._sbPriceHidden[id];
+  else window._sbPriceHidden[id] = true;
+  sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'hidden_prices', value: JSON.stringify(window._sbPriceHidden) }])
+  });
+  renderTable();
+}
 function card(icon, cls, label, val, sub) {
   return '<div class="stat-card"><div class="stat-icon '+cls+'"><i class="fa '+icon+'"></i></div>' +
     '<div class="stat-info"><label>'+label+'</label><strong>'+val+'</strong><small>'+sub+'</small></div></div>';
@@ -312,6 +330,9 @@ function renderTable() {
         '<button class="act-btn" onclick="addStock5000('+p.id+')"><i class="fa fa-plus"></i> +5000</button>' +
         '<button class="act-btn blue" onclick="openPhoto('+p.id+')"><i class="fa fa-camera"></i> Photo</button>' +
         '<button class="act-btn purple" onclick="openStats('+p.id+')"><i class="fa fa-chart-bar"></i> Stats</button>' +
+        (isPriceHidden(p.id)
+          ? '<button class="act-btn" style="background:#fff7ed;color:#c2410c;border-color:#fed7aa" onclick="togglePriceHidden('+p.id+')"><i class="fa fa-eye"></i> Show Price</button>'
+          : '<button class="act-btn" onclick="togglePriceHidden('+p.id+')"><i class="fa fa-eye-slash"></i> Hide Price</button>') +
         '<button class="act-btn" style="background:#eef2ff;color:#4338ca;border-color:#c7d2fe" onclick="openProductSEO('+p.id+')"><i class="fa fa-search-plus"></i> SEO</button>' +
         '<button class="del-btn" onclick="deleteProduct('+p.id+','+p.isBase+')"><i class="fa fa-trash"></i></button>' +
       '</td>' +

@@ -114,6 +114,7 @@ let _hiddenIds   = new Set(); // base product IDs hidden by admin
 let _sbBanners   = [];       // admin-managed side banners (brand + img_url)
 let _sbBrandMap  = {};       // product id -> brand name, set from admin
 let _sbProductKeywords = {}; // product id -> SEO keyword phrases, set from admin
+window._sbPriceHidden = {};  // product id -> true if price is manually hidden (Ask Price on WhatsApp instead)
 
 async function loadSBData() {
   // Photos (expert_photos) carries every product's full image as base64 —
@@ -125,7 +126,7 @@ async function loadSBData() {
   // fill in — starting from whatever was cached last visit — once ready.
   try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
 
-  const [s, c, h, b, sk, bm, mc, pk] = await Promise.all([
+  const [s, c, h, b, sk, bm, mc, pk, hp] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',                         { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H }),
@@ -133,7 +134,8 @@ async function loadSBData() {
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',   { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value', { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value',{ headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_H })
   ]);
   if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
     try { _sbSkuMap = JSON.parse(sk.data[0].value) || {}; } catch(e) {}
@@ -143,6 +145,9 @@ async function loadSBData() {
   }
   if (!mc.error && Array.isArray(mc.data) && mc.data[0] && mc.data[0].value) {
     try { window._sbMultiCats = JSON.parse(mc.data[0].value) || {}; } catch(e) {}
+  }
+  if (!hp.error && Array.isArray(hp.data) && hp.data[0] && hp.data[0].value) {
+    try { window._sbPriceHidden = JSON.parse(hp.data[0].value) || {}; } catch(e) {}
   }
   if (!pk.error && Array.isArray(pk.data) && pk.data[0] && pk.data[0].value) {
     try { _sbProductKeywords = JSON.parse(pk.data[0].value) || {}; } catch(e) {}

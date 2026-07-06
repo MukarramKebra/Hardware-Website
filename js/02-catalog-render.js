@@ -496,7 +496,7 @@ function renderProducts() {
           <h3>${pName}</h3>
           <p>${pDesc}</p>
           <div class="product-footer">
-            ${p.price > 0 ? `
+            ${(p.price > 0 && !window._sbPriceHidden[p.id]) ? `
             <div>
               <div class="product-price">${p.price.toFixed(3)} <small>KWD</small></div>
               <div class="stock-badge ${stockClass}">${stockLabel}</div>

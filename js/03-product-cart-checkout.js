@@ -39,7 +39,7 @@ function openProduct(id) {
       '</div>' +
       '<h2 class="pm-name">' + p.name + '</h2>' +
       '<p class="pm-desc">' + p.desc + '</p>' +
-      (p.price > 0 ? (
+      ((p.price > 0 && !window._sbPriceHidden[p.id]) ? (
       '<div class="pm-price">' + p.price.toFixed(3) + ' <small>KWD</small></div>' +
       '<div class="pm-stock-line ' + stockCls + '"><i class="fa ' + stockIcon + '"></i> ' + stockTxt + '</div>' +
       (!isOut ?
