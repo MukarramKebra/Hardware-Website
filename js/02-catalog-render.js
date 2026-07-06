@@ -378,6 +378,7 @@ function matchesSearch(query, p) {
                    normalizeQ(p.desc || '') + ' ' +
                    normalizeQ(p.category || '') + ' ' +
                    normalizeQ(p.brand || '') + ' ' +
+                   normalizeQ(_sbProductKeywords[p.id] || '') + ' ' +
                    (ARABIC_NAMES[p.id] || '');
   return words.every(w => haystack.includes(w));
 }
@@ -406,6 +407,7 @@ function _injectProductSchema() {
           'sku': getProductSku(p.id).replace(/^SKU[-:]\s*/, ''),
           'brand': p.brand ? { '@type': 'Brand', 'name': p.brand } : undefined,
           'category': p.category,
+          'keywords': _sbProductKeywords[p.id] || undefined,
           'image': (photo && photo.startsWith('http')) ? photo : undefined,
           'offers': {
             '@type': 'Offer',

@@ -213,7 +213,7 @@ async function loadFromSupabase() {
   // that one slow call finished (the "need to click Reload twice" symptom).
   // It's now fetched separately below so the table renders immediately;
   // thumbnails fill in once photos are ready.
-  const [s, c, h, cb, sk, bm, mc, ia] = await Promise.all([
+  const [s, c, h, cb, sk, bm, mc, ia, pk] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',          { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',       { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',{ headers: SB_HDRS }),
@@ -221,7 +221,8 @@ async function loadFromSupabase() {
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',    { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value',  { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value', { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.ignored_alerts&select=value', { headers: SB_HDRS })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.ignored_alerts&select=value', { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_HDRS })
   ]);
   // Real SKU labels (shared with the storefront via expert_settings)
   if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
@@ -244,6 +245,10 @@ async function loadFromSupabase() {
   // Ignored low/out-of-stock alerts (see ignoreAlert() in 07-orders.js)
   if (!ia.error && Array.isArray(ia.data) && ia.data[0] && ia.data[0].value) {
     try { window._sbIgnoredAlerts = JSON.parse(ia.data[0].value) || {}; } catch(e) {}
+  }
+  // Per-product SEO keywords (shared with the storefront via expert_settings)
+  if (!pk.error && Array.isArray(pk.data) && pk.data[0] && pk.data[0].value) {
+    try { window._sbProductKeywords = JSON.parse(pk.data[0].value) || {}; } catch(e) {}
   }
   // Category backgrounds
   if (!cb.error && Array.isArray(cb.data)) {

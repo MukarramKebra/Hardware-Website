@@ -718,6 +718,8 @@
       </p>
       <label style="display:block;font-size:12px;font-weight:700;color:var(--dark);margin-bottom:6px">Description <span style="color:#aaa;font-weight:400" id="seoProdDescCount"></span></label>
       <textarea id="seoProdDesc" rows="5" oninput="document.getElementById('seoProdDescCount').textContent = this.value.length + ' characters'" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;margin-bottom:16px"></textarea>
+      <label style="display:block;font-size:12px;font-weight:700;color:var(--dark);margin-bottom:6px">Search Keywords <span style="color:#aaa;font-weight:400">(comma-separated — specific to this product)</span></label>
+      <textarea id="seoProdKeywords" rows="3" placeholder="e.g. 21mm hole saw Kuwait, TOLSEN hole saw Kuwait, buy TOLSEN hole saw Kuwait" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;margin-bottom:16px"></textarea>
       <button class="ph-save-btn" onclick="saveProductSEO()"><i class="fa fa-check"></i>&nbsp; Save</button>
     </div>
   </div>
