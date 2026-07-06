@@ -496,6 +496,7 @@ function renderProducts() {
           <h3>${pName}</h3>
           <p>${pDesc}</p>
           <div class="product-footer">
+            ${p.price > 0 ? `
             <div>
               <div class="product-price">${p.price.toFixed(3)} <small>KWD</small></div>
               <div class="stock-badge ${stockClass}">${stockLabel}</div>
@@ -503,6 +504,12 @@ function renderProducts() {
             ${isOut
               ? `<button class="btn-add btn-disabled" disabled onclick="event.stopPropagation()">${unavail}</button>`
               : `<button class="btn-add" onclick="event.stopPropagation();addToCart(${p.id}, this)"><i class="fa fa-plus"></i> ${addBtn}</button>`}
+            ` : `
+            <div>
+              <div class="product-price" style="font-size:12px;color:var(--gray-600)">${isAr ? 'السعر عند الطلب' : 'Price on request'}</div>
+            </div>
+            <button class="btn-add" style="background:#25D366" onclick="event.stopPropagation();askPriceOnWhatsApp(${p.id})"><i class="fab fa-whatsapp"></i> ${isAr ? 'اسأل عن السعر' : 'Ask Price'}</button>
+            `}
           </div>
         </div>
       </div>`;

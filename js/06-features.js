@@ -113,6 +113,19 @@ function shareProduct(id) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// FEATURE: ASK PRICE ON WHATSAPP (for price-on-request items, price = 0)
+// ══════════════════════════════════════════════════════════════════════════════
+function askPriceOnWhatsApp(id) {
+  var p = getAllProducts().find(function(x){ return x.id === id; });
+  if (!p) return;
+  // getProductSku() already returns a "SKU-xxxx" / "SKU: xxxx" formatted
+  // string, so it's inserted directly rather than wrapped in another
+  // "(SKU: ...)" label, which used to print "SKU: SKU: ..." twice.
+  var msg = 'Hi, I want this ' + p.name + ' (' + getProductSku(id) + ') price';
+  window.open('https://wa.me/96597656372?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 // FEATURE: PRODUCT REVIEWS & RATINGS
 // ══════════════════════════════════════════════════════════════════════════════
 var _currentReviewProductId = null;

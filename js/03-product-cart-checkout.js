@@ -39,6 +39,7 @@ function openProduct(id) {
       '</div>' +
       '<h2 class="pm-name">' + p.name + '</h2>' +
       '<p class="pm-desc">' + p.desc + '</p>' +
+      (p.price > 0 ? (
       '<div class="pm-price">' + p.price.toFixed(3) + ' <small>KWD</small></div>' +
       '<div class="pm-stock-line ' + stockCls + '"><i class="fa ' + stockIcon + '"></i> ' + stockTxt + '</div>' +
       (!isOut ?
@@ -54,7 +55,13 @@ function openProduct(id) {
       '<button class="pm-add-btn" id="pmAddBtn" ' + (isOut ? 'disabled' : 'onclick="pmAddToCart()"') + '>' +
         '<i class="fa ' + (isOut ? 'fa-ban' : 'fa-shopping-cart') + '"></i> ' +
         (isOut ? 'Out of Stock' : 'Add to Cart') +
-      '</button>' +
+      '</button>'
+      ) : (
+      '<div class="pm-price" style="font-size:15px;color:var(--gray-600)">Price on request</div>' +
+      '<button class="pm-add-btn" id="pmAddBtn" style="background:#25D366" onclick="askPriceOnWhatsApp(' + id + ')">' +
+        '<i class="fab fa-whatsapp"></i> Ask Price on WhatsApp' +
+      '</button>'
+      )) +
       '<div class="pm-action-row">' +
         '<button class="pm-wl-btn '+(isWishlisted(id)?'wishlisted':'')+'" onclick="toggleWishlist('+id+', event)">' +
           '<i class="fa fa-heart"></i> '+(isWishlisted(id)?'Saved':'Save') +
