@@ -115,6 +115,8 @@ let _sbBanners   = [];       // admin-managed side banners (brand + img_url)
 let _sbBrandMap  = {};       // product id -> brand name, set from admin
 let _sbProductKeywords = {}; // product id -> SEO keyword phrases, set from admin
 window._sbPriceHidden = {};  // product id -> true if price is manually hidden (Ask Price on WhatsApp instead)
+window._sbQtyLimits = {};    // product id -> { min, max } order quantity, set from admin (0 = no limit)
+function getQtyLimits(id) { return (window._sbQtyLimits || {})[id] || { min: 0, max: 0 }; }
 
 async function loadSBData() {
   // Photos (expert_photos) carries every product's full image as base64 —
@@ -126,7 +128,7 @@ async function loadSBData() {
   // fill in — starting from whatever was cached last visit — once ready.
   try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
 
-  const [s, c, h, b, sk, bm, mc, pk, hp] = await Promise.all([
+  const [s, c, h, b, sk, bm, mc, pk, hp, ql] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',                         { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H }),
@@ -135,7 +137,8 @@ async function loadSBData() {
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value', { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value',{ headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_H })
   ]);
   if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
     try { _sbSkuMap = JSON.parse(sk.data[0].value) || {}; } catch(e) {}
@@ -151,6 +154,9 @@ async function loadSBData() {
   }
   if (!pk.error && Array.isArray(pk.data) && pk.data[0] && pk.data[0].value) {
     try { _sbProductKeywords = JSON.parse(pk.data[0].value) || {}; } catch(e) {}
+  }
+  if (!ql.error && Array.isArray(ql.data) && ql.data[0] && ql.data[0].value) {
+    try { window._sbQtyLimits = JSON.parse(ql.data[0].value) || {}; } catch(e) {}
   }
   if (s.error) {
     console.warn('Supabase offline — using localStorage fallback');

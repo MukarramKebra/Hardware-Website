@@ -6,7 +6,8 @@ function openProduct(id) {
   trackView(id);
   trackRecentlyViewed(id);
   _pmId  = id;
-  _pmQty = 1;
+  const limits = getQtyLimits(id);
+  _pmQty = Math.max(1, limits.min);
   const p           = getAllProducts().find(x => x.id === id);
   const liveStatus  = getLiveStock(id) || p.stock;
   const liveQty     = getLiveQty(id);
@@ -47,7 +48,7 @@ function openProduct(id) {
           '<span class="pm-qty-lbl">Quantity</span>' +
           '<div class="pm-qty-ctrl">' +
             '<button onclick="pmChangeQty(-1)"><i class="fa fa-minus"></i></button>' +
-            '<input type="number" id="pmQtyDisplay" value="1" min="1" autocomplete="off" oninput="pmQtyInput(this)" onblur="pmQtyBlur(this)" />' +
+            '<input type="number" id="pmQtyDisplay" value="' + _pmQty + '" min="' + Math.max(1, limits.min) + '" autocomplete="off" oninput="pmQtyInput(this)" onblur="pmQtyBlur(this)" />' +
             '<button onclick="pmChangeQty(1)"><i class="fa fa-plus"></i></button>' +
           '</div>' +
         '</div>'
@@ -123,29 +124,39 @@ function closeProduct() {
   _pmId = null; _pmQty = 1;
 }
 
-function pmChangeQty(delta) {
+// Effective ceiling for the quantity stepper: the smallest of live stock and
+// this product's admin-set max order quantity (0 = no limit on that side).
+function _pmMaxQty() {
   const liveQty = getLiveQty(_pmId);
-  const max = liveQty !== null ? liveQty : 999;
-  _pmQty = Math.max(1, Math.min(max, _pmQty + delta));
+  const limits  = getQtyLimits(_pmId);
+  let max = liveQty !== null ? liveQty : 999;
+  if (limits.max > 0) max = Math.min(max, limits.max);
+  return max;
+}
+function _pmMinQty() {
+  return Math.max(1, getQtyLimits(_pmId).min);
+}
+
+function pmChangeQty(delta) {
+  const min = _pmMinQty(), max = _pmMaxQty();
+  _pmQty = Math.max(min, Math.min(max, _pmQty + delta));
   var el = document.getElementById('pmQtyDisplay');
   if (el) el.value = _pmQty;
 }
 
 function pmQtyInput(el) {
-  const liveQty = getLiveQty(_pmId);
-  const max = liveQty !== null ? liveQty : 999;
+  const min = _pmMinQty(), max = _pmMaxQty();
   var v = parseInt(el.value, 10);
-  if (isNaN(v) || v < 1) { _pmQty = 1; return; }
+  if (isNaN(v) || v < min) { _pmQty = min; return; }
   if (v > max) { v = max; el.value = max; }
   _pmQty = v;
 }
 
 function pmQtyBlur(el) {
   // Snap to valid value when user leaves the field
+  const min = _pmMinQty(), max = _pmMaxQty();
   var v = parseInt(el.value, 10);
-  if (isNaN(v) || v < 1) v = 1;
-  const liveQty = getLiveQty(_pmId);
-  const max = liveQty !== null ? liveQty : 999;
+  if (isNaN(v) || v < min) v = min;
   _pmQty = Math.min(v, max);
   el.value = _pmQty;
 }
@@ -155,8 +166,17 @@ function pmAddToCart() {
   const liveQty  = getLiveQty(_pmId);
   const inCart   = cart.find(c => c.id === _pmId);
   const cartQty  = inCart ? inCart.qty : 0;
+  const limits   = getQtyLimits(_pmId);
   if (liveQty !== null && cartQty + _pmQty > liveQty) {
     alert('Only ' + liveQty + ' units available. You already have ' + cartQty + ' in your cart.');
+    return;
+  }
+  if (limits.max > 0 && cartQty + _pmQty > limits.max) {
+    alert('Maximum order quantity for this product is ' + limits.max + '.');
+    return;
+  }
+  if (limits.min > 0 && _pmQty < limits.min) {
+    alert('Minimum order quantity for this product is ' + limits.min + '.');
     return;
   }
   if (inCart) { inCart.qty += _pmQty; } else { cart.push(Object.assign({}, product, { qty: _pmQty })); }
@@ -192,11 +212,16 @@ function addToCart(id, btn) {
   const liveQty  = getLiveQty(id);
   const inCart   = cart.find(c => c.id === id);
   const cartQty  = inCart ? inCart.qty : 0;
+  const limits   = getQtyLimits(id);
+  const step     = inCart ? 1 : Math.max(1, limits.min); // first add jumps to the minimum order qty
   if (liveQty !== null && cartQty >= liveQty) {
     alert('Sorry, only ' + liveQty + ' units available in stock!'); return;
   }
+  if (limits.max > 0 && cartQty + step > limits.max) {
+    alert('Maximum order quantity for this product is ' + limits.max + '.'); return;
+  }
   function commit() {
-    if (inCart) { inCart.qty++; } else { cart.push({...product, qty:1}); }
+    if (inCart) { inCart.qty += step; } else { cart.push({...product, qty:step}); }
     updateCartUI();
   }
   if (!btn) { commit(); showToast('Added to cart'); return; }

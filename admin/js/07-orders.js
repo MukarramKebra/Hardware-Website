@@ -334,6 +334,7 @@ function renderTable() {
           ? '<button class="act-btn" style="background:#fff7ed;color:#c2410c;border-color:#fed7aa" onclick="togglePriceHidden('+p.id+')"><i class="fa fa-eye"></i> Show Price</button>'
           : '<button class="act-btn" onclick="togglePriceHidden('+p.id+')"><i class="fa fa-eye-slash"></i> Hide Price</button>') +
         '<button class="act-btn" style="background:#eef2ff;color:#4338ca;border-color:#c7d2fe" onclick="openProductSEO('+p.id+')"><i class="fa fa-search-plus"></i> SEO</button>' +
+        '<button class="act-btn" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0" onclick="openQtyLimits('+p.id+')"><i class="fa fa-sort-numeric-up"></i> Qty Limits</button>' +
         '<button class="del-btn" onclick="deleteProduct('+p.id+','+p.isBase+')"><i class="fa fa-trash"></i></button>' +
       '</td>' +
     '</tr>';

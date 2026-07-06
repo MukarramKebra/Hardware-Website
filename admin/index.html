@@ -703,6 +703,28 @@
   </div>
 </div>
 
+<!-- PER-PRODUCT QTY LIMITS MODAL -->
+<div class="photo-overlay" id="qtyLimitsOverlay" onclick="if(event.target===this)closeQtyLimits()">
+  <div class="photo-box">
+    <div class="ph-header">
+      <h3><i class="fa fa-sort-numeric-up"></i> Quantity Limits</h3>
+      <button onclick="closeQtyLimits()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="ph-body">
+      <div class="ph-prod-name" id="qtyLimitsProdName"></div>
+      <p style="font-size:12px;color:var(--gray);margin:0 0 14px">
+        Set 0 for no limit. Minimum is the smallest quantity a customer must order (e.g. sold in packs of 5).
+        Maximum caps how many they can order at once, regardless of stock on hand.
+      </p>
+      <label style="display:block;font-size:12px;font-weight:700;color:var(--dark);margin-bottom:6px">Minimum Order Quantity</label>
+      <input type="number" id="qtyLimitsMin" min="0" step="1" value="0" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:16px" />
+      <label style="display:block;font-size:12px;font-weight:700;color:var(--dark);margin-bottom:6px">Maximum Order Quantity</label>
+      <input type="number" id="qtyLimitsMax" min="0" step="1" value="0" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:16px" />
+      <button class="ph-save-btn" onclick="saveQtyLimits()"><i class="fa fa-check"></i>&nbsp; Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- PER-PRODUCT SEO MODAL -->
 <div class="photo-overlay" id="seoProdOverlay" onclick="if(event.target===this)closeProductSEO()">
   <div class="photo-box">

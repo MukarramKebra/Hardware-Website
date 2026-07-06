@@ -180,3 +180,42 @@ async function saveNewProduct() {
   }
   btn.disabled = false; btn.innerHTML = '<i class="fa fa-plus"></i>&nbsp; Add Product';
 }
+
+// ── PER-PRODUCT MIN / MAX ORDER QUANTITY ──────────────────────────────────────
+// Stored in Supabase (expert_settings key 'qty_limits') as {id: {min, max}} —
+// same key-value pattern as sku_map/brand_map/hidden_prices. 0 means "no
+// limit" for either field. Read by the storefront's add-to-cart and quantity
+// selector logic (see js/03-product-cart-checkout.js).
+var _qlProdId = null;
+function getQtyLimits(id) {
+  return (window._sbQtyLimits || {})[id] || { min: 0, max: 0 };
+}
+function openQtyLimits(id) {
+  var p = getAllAdminProducts().find(function(x){ return x.id === id; });
+  if (!p) return;
+  _qlProdId = id;
+  var lim = getQtyLimits(id);
+  document.getElementById('qtyLimitsProdName').textContent = '#' + id + ' — ' + p.name;
+  document.getElementById('qtyLimitsMin').value = lim.min || 0;
+  document.getElementById('qtyLimitsMax').value = lim.max || 0;
+  document.getElementById('qtyLimitsOverlay').classList.add('open');
+}
+function closeQtyLimits() {
+  document.getElementById('qtyLimitsOverlay').classList.remove('open');
+  _qlProdId = null;
+}
+function saveQtyLimits() {
+  if (!_qlProdId) return;
+  var min = Math.max(0, parseInt(document.getElementById('qtyLimitsMin').value, 10) || 0);
+  var max = Math.max(0, parseInt(document.getElementById('qtyLimitsMax').value, 10) || 0);
+  if (max > 0 && min > max) { showToast('Minimum can\'t be greater than maximum'); return; }
+  if (!window._sbQtyLimits) window._sbQtyLimits = {};
+  window._sbQtyLimits[_qlProdId] = { min: min, max: max };
+  sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'qty_limits', value: JSON.stringify(window._sbQtyLimits) }])
+  });
+  showToast('Quantity limits saved ✅');
+  closeQtyLimits();
+}
