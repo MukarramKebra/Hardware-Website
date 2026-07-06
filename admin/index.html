@@ -9,11 +9,11 @@
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="admin/css/01-layout.css" />
-  <link rel="stylesheet" href="admin/css/02-inventory-table.css" />
-  <link rel="stylesheet" href="admin/css/03-sections.css" />
-  <link rel="stylesheet" href="admin/css/04-responsive.css" />
-  <link rel="stylesheet" href="admin/css/05-modals-forms.css" />
+  <link rel="stylesheet" href="admin/css/01-layout.css?v=202607061527" />
+  <link rel="stylesheet" href="admin/css/02-inventory-table.css?v=202607061527" />
+  <link rel="stylesheet" href="admin/css/03-sections.css?v=202607061527" />
+  <link rel="stylesheet" href="admin/css/04-responsive.css?v=202607061527" />
+  <link rel="stylesheet" href="admin/css/05-modals-forms.css?v=202607061527" />
 </head>
 <body>
 
@@ -488,9 +488,11 @@
         </div>
         <div style="margin-top:10px;font-size:11px;color:var(--gray);padding:8px 12px;background:var(--light);border-radius:8px">
           <i class="fa fa-info-circle" style="color:var(--orange)"></i>
-          Clears this browser's saved copy of stock, photos, SKUs and other admin data, then reloads everything fresh
-          from Supabase. Use this if the panel is showing something that looks stuck or out of date. This only affects
-          this browser/computer — it doesn't touch other admin accounts or customers visiting the site.
+          Clears <b>this browser's own</b> saved copy of stock, photos, SKUs and other admin data. No website can reach
+          into a customer's phone or computer and clear their cache for them — but you don't need that here: product,
+          price and stock changes go live for every visitor the instant you save them (the storefront always pulls
+          fresh data, never a cached copy). Site design/code updates are also automatically forced fresh for every
+          visitor on their next visit. This button is just for your own screen, if it ever looks stuck.
         </div>
       </div>
 
@@ -867,18 +869,18 @@
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="admin/js/01-core-data.js"></script>
-<script src="admin/js/02-helpers.js"></script>
-<script src="admin/js/03-auth.js"></script>
-<script src="admin/js/04-tabs-nav.js"></script>
-<script src="admin/js/05-categories.js"></script>
-<script src="admin/js/06-reports.js"></script>
-<script src="admin/js/07-orders.js"></script>
-<script src="admin/js/08-inventory.js"></script>
-<script src="admin/js/09-deleted.js"></script>
-<script src="admin/js/10-csv-import.js"></script>
-<script src="admin/js/11-multiselect-brand-cat.js"></script>
-<script src="admin/js/12-seo.js"></script>
+<script src="admin/js/01-core-data.js?v=202607061527"></script>
+<script src="admin/js/02-helpers.js?v=202607061527"></script>
+<script src="admin/js/03-auth.js?v=202607061527"></script>
+<script src="admin/js/04-tabs-nav.js?v=202607061527"></script>
+<script src="admin/js/05-categories.js?v=202607061527"></script>
+<script src="admin/js/06-reports.js?v=202607061527"></script>
+<script src="admin/js/07-orders.js?v=202607061527"></script>
+<script src="admin/js/08-inventory.js?v=202607061527"></script>
+<script src="admin/js/09-deleted.js?v=202607061527"></script>
+<script src="admin/js/10-csv-import.js?v=202607061527"></script>
+<script src="admin/js/11-multiselect-brand-cat.js?v=202607061527"></script>
+<script src="admin/js/12-seo.js?v=202607061527"></script>
 </body>
 </html>
 
