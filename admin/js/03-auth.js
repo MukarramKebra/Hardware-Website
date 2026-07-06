@@ -300,6 +300,24 @@ function renderSiteStatus(isDisabled) {
   btn.dataset.disabled  = isDisabled ? '1' : '0';
 }
 
+// ── FLUSH CACHE (ultimate15 only) ─────────────────────────────────────────────
+// Clears this browser's saved copies of data that Supabase already owns —
+// stock, photos, SKUs, category backgrounds, multi-category assignments —
+// then does a cache-busting reload so everything comes back fresh. Only
+// clears pure caches of remote data; deliberately leaves alone things that
+// have no Supabase backup (deleted-items list, custom categories, unsaved
+// inline table edits) so nothing is lost, just refreshed.
+function flushCache() {
+  if (!confirm('Clear this browser\'s cached admin data and reload fresh from Supabase?')) return;
+  ['jain_stock', 'jain_photos', 'jain_sku_map', 'jain_cat_bgs', 'bahar_multi_cats'].forEach(function(k) {
+    localStorage.removeItem(k);
+  });
+  showToast('Cache cleared — reloading…');
+  setTimeout(function() {
+    window.location.href = window.location.pathname + '?_flush=' + Date.now();
+  }, 700);
+}
+
 // Load site status from Supabase on panel open
 async function loadSiteStatus() {
   var r = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.site_disabled&select=value', { headers: SB_HDRS });

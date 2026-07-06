@@ -473,6 +473,27 @@
         </div>
       </div>
 
+      <!-- Flush Cache card — ultimate15 only -->
+      <div class="su-card owner-only-row">
+        <div class="su-card-h"><i class="fa fa-broom"></i> Flush Cache</div>
+        <div class="su-user-row">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:40px;height:40px;background:rgba(124,58,237,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🧹</div>
+            <div>
+              <div style="font-weight:800;font-size:14px;color:var(--dark)">Clear locally cached data</div>
+              <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Forces a fresh reload from the cloud</div>
+            </div>
+          </div>
+          <button class="su-toggle-btn" style="background:#7c3aed" onclick="flushCache()"><i class="fa fa-broom"></i> Flush</button>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--gray);padding:8px 12px;background:var(--light);border-radius:8px">
+          <i class="fa fa-info-circle" style="color:var(--orange)"></i>
+          Clears this browser's saved copy of stock, photos, SKUs and other admin data, then reloads everything fresh
+          from Supabase. Use this if the panel is showing something that looks stuck or out of date. This only affects
+          this browser/computer — it doesn't touch other admin accounts or customers visiting the site.
+        </div>
+      </div>
+
       <!-- Team Accounts card — ultimate15 only -->
       <div class="su-card owner-only-row">
         <div class="su-card-h"><i class="fa fa-user-friends"></i> Team Accounts</div>
