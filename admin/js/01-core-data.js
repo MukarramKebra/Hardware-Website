@@ -315,12 +315,12 @@ function getAllAdminProducts() {
   const base = PRODUCTS
     .filter(function(p){ return !deletedIds.has(p.id); })
     .map(function(p) {
-      return { id:p.id, name:p.name, cat:normalizeAdminCat(p.cat), price:p.price, img:p.img, isBase:true, hidden:_hiddenBaseIds.has(p.id) };
+      return { id:p.id, name:p.name, cat:normalizeAdminCat(p.cat), price:p.price, img:p.img, desc:p.desc||'', isBase:true, hidden:_hiddenBaseIds.has(p.id) };
     });
   const custom = _customProductRows
     .filter(function(p){ return !deletedIds.has(p.id) && !baseIds.has(p.id); }) // skip Supabase dupes of base IDs
     .map(function(p) {
-      return { id:p.id, name:p.name, cat:normalizeAdminCat(p.category), price:parseFloat(p.price), img:p.img_url||'', isBase:false, hidden:p.hidden||false };
+      return { id:p.id, name:p.name, cat:normalizeAdminCat(p.category), price:parseFloat(p.price), img:p.img_url||'', desc:p.description||'', isBase:false, hidden:p.hidden||false };
     });
   return [...base, ...custom].sort(function(a,b){return a.id-b.id;});
 }

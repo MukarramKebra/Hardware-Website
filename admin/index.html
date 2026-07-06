@@ -703,6 +703,26 @@
   </div>
 </div>
 
+<!-- PER-PRODUCT SEO MODAL -->
+<div class="photo-overlay" id="seoProdOverlay" onclick="if(event.target===this)closeProductSEO()">
+  <div class="photo-box">
+    <div class="ph-header">
+      <h3><i class="fa fa-search-plus"></i> Product SEO</h3>
+      <button onclick="closeProductSEO()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="ph-body">
+      <div class="ph-prod-name" id="seoProdName"></div>
+      <p style="font-size:12px;color:var(--gray);margin:0 0 14px">
+        This description is what customers see on the product page and what Google reads for search results —
+        mention the brand, what it's used for, and any size/spec that matters.
+      </p>
+      <label style="display:block;font-size:12px;font-weight:700;color:var(--dark);margin-bottom:6px">Description <span style="color:#aaa;font-weight:400" id="seoProdDescCount"></span></label>
+      <textarea id="seoProdDesc" rows="5" oninput="document.getElementById('seoProdDescCount').textContent = this.value.length + ' characters'" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;margin-bottom:16px"></textarea>
+      <button class="ph-save-btn" onclick="saveProductSEO()"><i class="fa fa-check"></i>&nbsp; Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- PRODUCT STATS MODAL -->
 <div class="stats-overlay" id="statsOverlay" onclick="if(event.target===this)closeStats()">
   <div class="stats-box">

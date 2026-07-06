@@ -43,3 +43,35 @@ async function saveSEOSettings() {
   });
   showToast(res.error ? 'Failed to save SEO settings' : 'SEO settings saved — live on the site now ✅');
 }
+
+// ── PER-PRODUCT SEO (description) ────────────────────────────────────────────
+// Every product's description doubles as its SEO text — it's what shows in
+// the product popup and what feeds the Product structured data Google reads
+// (see _injectProductSchema in js/02-catalog-render.js). This lets it be
+// edited any time from the Inventory tab, not just when the product is added.
+var _seoProdId = null;
+function openProductSEO(id) {
+  var p = getAllAdminProducts().find(function(x){ return x.id === id; });
+  if (!p) return;
+  _seoProdId = id;
+  document.getElementById('seoProdName').textContent = '#' + id + ' — ' + p.name;
+  document.getElementById('seoProdDesc').value = p.desc || '';
+  document.getElementById('seoProdDescCount').textContent = (p.desc || '').length + ' characters';
+  document.getElementById('seoProdOverlay').classList.add('open');
+}
+function closeProductSEO() {
+  document.getElementById('seoProdOverlay').classList.remove('open');
+  _seoProdId = null;
+}
+async function saveProductSEO() {
+  if (!_seoProdId) return;
+  var desc = document.getElementById('seoProdDesc').value.trim();
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_products?id=eq.' + _seoProdId, {
+    method: 'PATCH', headers: SB_HDRS, body: JSON.stringify({ description: desc })
+  });
+  if (res.error) { showToast('Failed to save'); return; }
+  var row = _customProductRows.find(function(r){ return r.id === _seoProdId; });
+  if (row) row.description = desc;
+  showToast('Product SEO saved ✅');
+  closeProductSEO();
+}
