@@ -242,7 +242,19 @@ function _sizeSideBanners() {
     return;
   }
   const width = Math.min(TARGET, Math.round(available));
-  slots.forEach(function(s) { s.style.display = 'block'; s.style.width = width + 'px'; });
+  // Banner images are all ~9:16 portrait (measured across the actual files).
+  // Size the box to that ratio (instead of stretching it to the section's
+  // full height) so it hugs the image with no leftover space, capped to the
+  // section's own height so it can never overflow past it.
+  const IMG_RATIO  = 1024 / 572; // height / width
+  const maxHeight  = document.getElementById('categories').offsetHeight;
+  const height     = Math.min(Math.round(width * IMG_RATIO), maxHeight);
+  slots.forEach(function(s) {
+    s.style.display    = 'block';
+    s.style.width      = width + 'px';
+    s.style.height     = height + 'px';
+    s.style.marginTop  = -(height / 2) + 'px';
+  });
 }
 window.addEventListener('resize', function() {
   clearTimeout(window._bannerResizeT);

@@ -30,32 +30,33 @@
 
 /* ── SIDE BANNERS — fill the leftover gutter space beside the category grid
    on wide screens; hidden below that so they never crowd the grid. ── */
-/* Stretches top-to-bottom of the #categories section (instead of a small
-   fixed-height card) so the banner actually fills the gutter space next to
-   the grid, not just a small block floating in the middle of it. */
-/* Width and show/hide are set by JS (_sizeSideBanners() in js/02-catalog-render.js)
-   based on how much gutter space is actually free next to the grid on THIS
-   screen — a fixed pixel breakpoint kept needing manual re-guessing every time
-   the banner size changed and could end up wider than the visitor's monitor,
-   hiding the banners entirely. */
-.side-banner-slot { display: none; position: absolute; top: 0; bottom: 0; z-index: 2; }
+/* Height is set by JS (_sizeSideBanners() in js/02-catalog-render.js) to match
+   the banner images' own ~9:16 aspect ratio at the current width, then
+   vertically centered in the gutter — instead of stretching top-to-bottom of
+   the #categories section, which left big black letterboxed gaps above/below
+   the image since the section is taller than a 9:16 image needs to be.
+   Width and show/hide are set the same way, based on how much gutter space is
+   actually free next to the grid on THIS screen — a fixed pixel breakpoint
+   kept needing manual re-guessing every time the banner size changed and
+   could end up wider than the visitor's monitor, hiding the banners entirely. */
+.side-banner-slot { display: none; position: absolute; top: 50%; z-index: 2; }
 .side-banner-slot.left  { left: 24px; }
 .side-banner-slot.right { right: 24px; }
-.side-banner { position: relative; width: 100%; height: 100%; border-radius: 0; overflow: hidden; box-shadow: var(--shadow-lg); }
-/* "contain" (not "cover") so the whole banner image is always visible — the
-   slot is much taller than it is wide, and "cover" was cropping the top off
-   images to fill that shape. Any letterboxed space is filled with black. */
-.banner-slide { position: absolute; inset: 0; background-color: #000; background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0; transition: opacity 0.9s ease; cursor: pointer; display: flex; align-items: flex-end; }
+.side-banner { position: relative; width: 100%; height: 100%; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg); }
+/* "cover" (not "contain") — the box now hugs the image's own aspect ratio, so
+   there's no letterbox space left to fill; cover just guarantees zero black
+   sliver even if a future image's ratio is slightly off. */
+.banner-slide { position: absolute; inset: 0; background-size: cover; background-repeat: no-repeat; background-position: center; opacity: 0; transition: opacity 0.9s ease; cursor: pointer; display: flex; align-items: flex-end; }
 .banner-slide.active { opacity: 1; }
-.banner-slide::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.12) 45%, rgba(0,0,0,0.8) 100%); }
+.banner-slide::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.05) 18%, rgba(0,0,0,0.12) 45%, rgba(0,0,0,0.8) 100%); }
 .banner-overlay { position: relative; z-index: 1; padding: 22px 20px; color: #fff; width: 100%; }
 .banner-tag { display: inline-block; background: var(--orange); font-size: 13px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; padding: 6px 14px; border-radius: 20px; }
-/* Arrows live in the black letterbox areas: up arrow centred above the image,
-   down arrow centred below it */
-.banner-nav-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.14); color: #fff; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; position: absolute; left: 50%; transform: translateX(-50%); z-index: 3; }
-.banner-nav-up   { top: 12px; }
-.banner-nav-down { bottom: 12px; }
-.banner-nav-btn:hover { background: rgba(255,255,255,0.92); color: var(--orange); }
+/* Arrows now overlay directly on the image (top/bottom edges, inset) instead
+   of floating in the black letterbox gutter that used to exist above/below it. */
+.banner-nav-btn { width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(0,0,0,0.32); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); color: #fff; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, transform 0.15s; position: absolute; left: 50%; transform: translateX(-50%); z-index: 3; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+.banner-nav-up   { top: 10px; }
+.banner-nav-down { bottom: 10px; }
+.banner-nav-btn:hover { background: var(--orange); transform: translateX(-50%) scale(1.08); }
 
 /* ── PRODUCTS ────────────────────────────────────────────────────────── */
 #products { padding: 88px 0; background: var(--light); }
