@@ -119,16 +119,17 @@ window._sbQtyLimits = {};    // product id -> { min, max } order quantity, set f
 function getQtyLimits(id) { return (window._sbQtyLimits || {})[id] || { min: 0, max: 0 }; }
 
 async function loadSBData() {
-  // Photos (expert_photos) carries every product's full image as base64 —
-  // several MB total — and Supabase's free tier can take up to a minute to
-  // respond on its first request after being idle-paused. Fetching it inside
-  // the same Promise.all as everything else meant the ENTIRE page (names,
-  // prices, stock) sat blank until that one slow call finished. It's now
-  // fetched separately so the rest of the page renders immediately; photos
-  // fill in — starting from whatever was cached last visit — once ready.
+  // Photos (expert_photos) used to carry every product's full image as
+  // base64 — several MB total, slow enough on Supabase's free tier that it
+  // was split into its own delayed fetch so the rest of the page didn't sit
+  // blank waiting for it. Photos are now just lightweight URL strings
+  // (~25KB for all 200 products), so it's back in the same batch as
+  // everything else — this also means the SEO product schema below is
+  // complete on the very first render instead of missing images until a
+  // second pass, which is what Google's Merchant Listings report was flagging.
   try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
 
-  const [s, c, h, b, sk, bm, mc, pk, hp, ql] = await Promise.all([
+  const [s, c, h, b, sk, bm, mc, pk, hp, ql, ph] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',                         { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H }),
@@ -138,8 +139,13 @@ async function loadSBData() {
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value',{ headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',                        { headers: SB_H })
   ]);
+  if (Array.isArray(ph.data)) {
+    ph.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });
+    localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos));
+  }
   if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
     try { _sbSkuMap = JSON.parse(sk.data[0].value) || {}; } catch(e) {}
   }
@@ -174,17 +180,6 @@ async function loadSBData() {
   renderProducts();
   if (typeof initSideBanners === 'function') initSideBanners();
   if (typeof _injectProductSchema === 'function') _injectProductSchema();
-
-  // Photos load separately and re-render once ready (see comment above) —
-  // products already show real names/prices/stock immediately either way.
-  sbFetch(SB_URL + '/rest/v1/expert_photos?select=*', { headers: SB_H }).then(function(p) {
-    if (Array.isArray(p.data)) {
-      p.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });
-      localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos));
-      renderProducts();
-      if (typeof _injectProductSchema === 'function') _injectProductSchema();
-    }
-  });
 
   checkAssetVersion();
 }
