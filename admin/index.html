@@ -9,11 +9,16 @@
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="admin/css/01-layout.css?v=202607061527" />
-  <link rel="stylesheet" href="admin/css/02-inventory-table.css?v=202607061527" />
-  <link rel="stylesheet" href="admin/css/03-sections.css?v=202607061527" />
-  <link rel="stylesheet" href="admin/css/04-responsive.css?v=202607061527" />
-  <link rel="stylesheet" href="admin/css/05-modals-forms.css?v=202607061527" />
+  <script>
+  // See index.html for why this is dynamic — same shared localStorage key
+  // (expert_asset_v, same origin) so Flush Cache refreshes the admin panel too.
+  (function() {
+    var v = localStorage.getItem('expert_asset_v') || '202607061527';
+    ['01-layout','02-inventory-table','03-sections','04-responsive','05-modals-forms'].forEach(function(f) {
+      document.write('<link rel="stylesheet" href="admin/css/' + f + '.css?v=' + v + '" />');
+    });
+  })();
+  </script>
 </head>
 <body>
 
@@ -480,19 +485,19 @@
           <div style="display:flex;align-items:center;gap:12px">
             <div style="width:40px;height:40px;background:rgba(124,58,237,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🧹</div>
             <div>
-              <div style="font-weight:800;font-size:14px;color:var(--dark)">Clear locally cached data</div>
-              <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Forces a fresh reload from the cloud</div>
+              <div style="font-weight:800;font-size:14px;color:var(--dark)">Flush for every visitor</div>
+              <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Forces fresh files for everyone, not just you</div>
             </div>
           </div>
           <button class="su-toggle-btn" style="background:#7c3aed" onclick="flushCache()"><i class="fa fa-broom"></i> Flush</button>
         </div>
         <div style="margin-top:10px;font-size:11px;color:var(--gray);padding:8px 12px;background:var(--light);border-radius:8px">
           <i class="fa fa-info-circle" style="color:var(--orange)"></i>
-          Clears <b>this browser's own</b> saved copy of stock, photos, SKUs and other admin data. No website can reach
-          into a customer's phone or computer and clear their cache for them — but you don't need that here: product,
-          price and stock changes go live for every visitor the instant you save them (the storefront always pulls
-          fresh data, never a cached copy). Site design/code updates are also automatically forced fresh for every
-          visitor on their next visit. This button is just for your own screen, if it ever looks stuck.
+          Clears this browser's own saved copy of stock, photos, SKUs and other admin data, <b>and</b> bumps a shared
+          version marker in the cloud that every visitor's browser checks in the background — so after a real site
+          design/code update, one click here forces everyone onto the fresh files immediately instead of waiting for
+          their browser cache to expire on its own. Product, price and stock changes never needed this — those always
+          go live instantly for every visitor either way.
         </div>
       </div>
 
@@ -869,18 +874,14 @@
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="admin/js/01-core-data.js?v=202607061527"></script>
-<script src="admin/js/02-helpers.js?v=202607061527"></script>
-<script src="admin/js/03-auth.js?v=202607061527"></script>
-<script src="admin/js/04-tabs-nav.js?v=202607061527"></script>
-<script src="admin/js/05-categories.js?v=202607061527"></script>
-<script src="admin/js/06-reports.js?v=202607061527"></script>
-<script src="admin/js/07-orders.js?v=202607061527"></script>
-<script src="admin/js/08-inventory.js?v=202607061527"></script>
-<script src="admin/js/09-deleted.js?v=202607061527"></script>
-<script src="admin/js/10-csv-import.js?v=202607061527"></script>
-<script src="admin/js/11-multiselect-brand-cat.js?v=202607061527"></script>
-<script src="admin/js/12-seo.js?v=202607061527"></script>
+<script>
+(function() {
+  var v = localStorage.getItem('expert_asset_v') || '202607061527';
+  ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo'].forEach(function(f) {
+    document.write('<script src="admin/js/' + f + '.js?v=' + v + '"><\/script>');
+  });
+})();
+</script>
 </body>
 </html>
 

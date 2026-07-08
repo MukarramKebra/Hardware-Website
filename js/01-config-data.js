@@ -185,6 +185,29 @@ async function loadSBData() {
       if (typeof _injectProductSchema === 'function') _injectProductSchema();
     }
   });
+
+  checkAssetVersion();
+}
+
+// ── ASSET VERSION CHECK ─────────────────────────────────────────────────────
+// Lets admin's "Flush Cache" button force fresh JS/CSS onto every visitor,
+// not just the admin's own browser: the current version lives in Supabase
+// (expert_settings, key 'asset_version'). Each page load compares it in the
+// background against what this browser last used; a mismatch means new
+// files were deployed and flushed, so we save the new version and reload
+// once to pick them up. No-op (just records the version) on a visitor's
+// very first load, so nobody gets an unnecessary reload.
+function checkAssetVersion() {
+  sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.asset_version&select=value', { headers: SB_H }).then(function(r) {
+    if (r.error || !r.data || !r.data[0] || !r.data[0].value) return;
+    var serverV = r.data[0].value;
+    var localV  = localStorage.getItem('expert_asset_v');
+    if (!localV) { localStorage.setItem('expert_asset_v', serverV); return; }
+    if (serverV !== localV) {
+      localStorage.setItem('expert_asset_v', serverV);
+      window.location.reload();
+    }
+  });
 }
 
 // Normalise category strings so "powertools", "power tools", "Power Tools" etc.

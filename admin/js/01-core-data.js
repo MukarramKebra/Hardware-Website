@@ -313,6 +313,26 @@ async function loadFromSupabase() {
       renderTable();
     }
   });
+
+  checkAssetVersion();
+}
+
+// ── ASSET VERSION CHECK ─────────────────────────────────────────────────────
+// Mirrors the storefront's check (js/01-config-data.js) — same Supabase key
+// (expert_settings, 'asset_version') and same shared localStorage key
+// (expert_asset_v, same origin as the storefront), so bumping it from
+// Flush Cache refreshes the admin panel's own JS/CSS too.
+function checkAssetVersion() {
+  sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.asset_version&select=value', { headers: SB_HDRS }).then(function(r) {
+    if (r.error || !r.data || !r.data[0] || !r.data[0].value) return;
+    var serverV = r.data[0].value;
+    var localV  = localStorage.getItem('expert_asset_v');
+    if (!localV) { localStorage.setItem('expert_asset_v', serverV); return; }
+    if (serverV !== localV) {
+      localStorage.setItem('expert_asset_v', serverV);
+      window.location.reload();
+    }
+  });
 }
 
 // Old built-in category slugs -> the Expert Hardware category set

@@ -303,16 +303,30 @@ function renderSiteStatus(isDisabled) {
 // ── FLUSH CACHE (ultimate15 only) ─────────────────────────────────────────────
 // Clears this browser's saved copies of data that Supabase already owns —
 // stock, photos, SKUs, category backgrounds, multi-category assignments —
-// then does a cache-busting reload so everything comes back fresh. Only
-// clears pure caches of remote data; deliberately leaves alone things that
-// have no Supabase backup (deleted-items list, custom categories, unsaved
-// inline table edits) so nothing is lost, just refreshed.
-function flushCache() {
-  if (!confirm('Clear this browser\'s cached admin data and reload fresh from Supabase?')) return;
+// AND bumps expert_settings.asset_version so every visitor's browser (not
+// just this one) is forced onto fresh JS/CSS the next time its background
+// checkAssetVersion() check runs (see js/01-config-data.js). Then does a
+// cache-busting reload so this browser comes back fresh too. Only clears
+// pure caches of remote data; deliberately leaves alone things that have no
+// Supabase backup (deleted-items list, custom categories, unsaved inline
+// table edits) so nothing is lost, just refreshed.
+async function flushCache() {
+  if (!confirm('Flush cache for ALL visitors (forces fresh JS/CSS site-wide) and reload this browser fresh from Supabase?')) return;
   ['jain_stock', 'jain_photos', 'jain_sku_map', 'jain_cat_bgs', 'bahar_multi_cats'].forEach(function(k) {
     localStorage.removeItem(k);
   });
-  showToast('Cache cleared — reloading…');
+  var newV = String(Date.now());
+  var r = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'asset_version', value: newV }])
+  });
+  if (r.error) {
+    showToast('⚠️ Could not flush for all visitors — check Supabase expert_settings table');
+    return;
+  }
+  localStorage.setItem('expert_asset_v', newV);
+  showToast('Cache flushed for everyone — reloading…');
   setTimeout(function() {
     window.location.href = window.location.pathname + '?_flush=' + Date.now();
   }, 700);

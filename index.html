@@ -50,15 +50,19 @@
     "sameAs": ["https://wa.me/96597656372"]
   }
   </script>
-  <link rel="stylesheet" href="css/01-base.css?v=202607061527" />
-  <link rel="stylesheet" href="css/02-sections.css?v=202607061527" />
-  <link rel="stylesheet" href="css/03-cart-features-contact.css?v=202607061527" />
-  <link rel="stylesheet" href="css/04-footer.css?v=202607061527" />
-  <link rel="stylesheet" href="css/05-responsive.css?v=202607061527" />
-  <link rel="stylesheet" href="css/06-lang-rtl.css?v=202607061527" />
-  <link rel="stylesheet" href="css/07-modals.css?v=202607061527" />
-  <link rel="stylesheet" href="css/08-account-auth.css?v=202607061527" />
-  <link rel="stylesheet" href="css/09-widgets.css?v=202607061527" />
+  <script>
+  // Version comes from localStorage (kept in sync with Supabase's
+  // expert_settings.asset_version by checkAssetVersion() in
+  // js/01-config-data.js) so admin's Flush Cache button can force fresh
+  // CSS/JS onto every visitor, not just their own browser. Falls back to
+  // the last known-good baked-in version on a visitor's very first load.
+  (function() {
+    var v = localStorage.getItem('expert_asset_v') || '202607061527';
+    ['01-base','02-sections','03-cart-features-contact','04-footer','05-responsive','06-lang-rtl','07-modals','08-account-auth','09-widgets'].forEach(function(f) {
+      document.write('<link rel="stylesheet" href="css/' + f + '.css?v=' + v + '" />');
+    });
+  })();
+  </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
@@ -896,11 +900,13 @@
     </div>
   </div>
 
-  <script src="js/01-config-data.js?v=202607061527"></script>
-  <script src="js/02-catalog-render.js?v=202607061527"></script>
-  <script src="js/03-product-cart-checkout.js?v=202607061527"></script>
-  <script src="js/04-i18n-order.js?v=202607061527"></script>
-  <script src="js/05-accounts.js?v=202607061527"></script>
-  <script src="js/06-features.js?v=202607061527"></script>
+  <script>
+  (function() {
+    var v = localStorage.getItem('expert_asset_v') || '202607061527';
+    ['01-config-data','02-catalog-render','03-product-cart-checkout','04-i18n-order','05-accounts','06-features'].forEach(function(f) {
+      document.write('<script src="js/' + f + '.js?v=' + v + '"><\/script>');
+    });
+  })();
+  </script>
 </body>
 </html>
