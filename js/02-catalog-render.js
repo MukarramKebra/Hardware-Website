@@ -491,11 +491,16 @@ function renderProducts() {
     else            { stockLabel = (isAr ? '&#10003; متوفر'      : '&#10003; In Stock')  + (liveQty !== null ? ' (' + liveQty + ')' : ''); stockClass = 'in-stock'; }
     const addBtn   = isAr ? 'أضف' : 'Add';
     const unavail  = isAr ? 'غير متاح' : 'Unavailable';
+    // Price-hidden ("Ask Price on WhatsApp") products are services, not real
+    // stocked inventory — their stock field is meaningless, so never show the
+    // Out of Stock ribbon/dimming for them.
+    const priceHidden = !!window._sbPriceHidden[p.id];
+    const showOut = isOut && !priceHidden;
     return `
-      <div class="product-card ${isOut ? 'card-out' : ''}" onclick="openProduct(${p.id})">
+      <div class="product-card ${showOut ? 'card-out' : ''}" onclick="openProduct(${p.id})">
         <div class="product-img-wrap">
           ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
-          ${isOut ? `<span class="out-badge">${isAr ? 'نفد المخزون' : 'OUT OF STOCK'}</span>` : ''}
+          ${showOut ? `<span class="out-badge">${isAr ? 'نفد المخزون' : 'OUT OF STOCK'}</span>` : ''}
           <button class="card-wl-btn ${isWishlisted(p.id)?'wishlisted':''}" onclick="toggleWishlist(${p.id}, event)" title="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}"><i class="fa fa-heart"></i></button>
           ${photo
             ? `<img src="${photo}" data-local="${p.img}" alt="${pName}" loading="lazy" onerror="imgError(this)" />
