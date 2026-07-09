@@ -1,0 +1,101 @@
+id,sku,name,category,price,brand,options,image
+100201,2" 222-B,"WHITE STEEL NAIL-2"" (50 box/ctn)",construction,7,iTrust,0,201-250/2in-222-B.jpg
+100202,2" WHT NAIL 25BOX,"WHITE STEEL NAIL A GRADE-2""(25 box/ctn)",construction,3.5,iTrust,0,201-250/2in-WHT-NAIL-25BOX.png
+100203,GC-255350,"COTTON GLOVES MEDIUM- YELLOW",safety,11.75,Generic,0,201-250/GC-255350.png
+100204,GC-26448,"COTTON GLOVES HEAVY- L",safety,16,Generic,0,201-250/GC-26448.png
+100205,2.5X11 6.5KG BAG,"2.5"" X 6.5 KG BAG NAIL SAFI",construction,1.9,iTrust,0,201-250/2.5X11-6.5KG-BAG.png
+100206,TRUST B GRADE-1,"WHITE STEEL NAIL TRUST CH",construction,7,iTrust,3,201-250/TRUST-B-GRADE-1.jpg
+100207,IG-343230,"INDUSTRIAL GLOVES XL",safety,2,Generic,0,201-250/IG-343230.png
+100208,GC-34302,"COTTON GLOVES LIGHT",safety,9.5,Generic,0,201-250/GC-34302.png
+100209,GC-34352,"COTTON GLOVES MEDIUM",safety,13.75,Generic,0,201-250/GC-34352.png
+100210,SAFI NAILS 4″ x 8 KG,"SAFI NAILS 4"" x 8 KG",construction,3,iTrust,0,201-250/SAFI-NAILS-4in-x-8-KG.png
+100211,1.25X15 8KG BAG,"SAFI NAILS 1.25"" x15 8 KG",construction,2.5,iTrust,0,201-250/1.25X15-8KG-BAG.png
+100212,SAFI NAILS 2.5″ x 9 KG,"SAFI NAILS 2.5"" x 9 KG",construction,2.5,iTrust,0,201-250/SAFI-NAILS-2.5in-x-9-KG.png
+100213,2x12 8 KG,"SAFI NAILS 2""x 12 x 8 KG",construction,2.7,iTrust,0,201-250/2x12-8-KG.png
+100214,TRUST B GRADE,"WHITE STEEL NAIL TRUST B GRADE",construction,7,iTrust,3,201-250/TRUST-B-GRADE.jpg
+100215,WRS-6HDP,"SHABAK MALHOOM 6 KG",construction,3.25,Generic,0,201-250/WRS-6HDP.png
+100216,WHITE BL GRN,"WHITE STEEL NAIL LW",construction,4.1,iTrust,6,201-250/WHITE-BL-GRN.jpg
+100217,A GRADE,"WHITE STEEL NAIL A GRADE",construction,4,iTrust,6,201-250/A-GRADE.png
+100218,PWL22622,"POWER LOADS 622 EPS",construction,1.1,EPS,0,201-250/PWL22622.png
+100219,TGS-341782,"TANKER GLOVES SMOOTH XL",safety,4.25,Generic,0,201-250/TGS-341782.png
+100220,TANKER GLOVE ROUGH,"TANKER GLOVE ROUGH",safety,6,Generic,0,201-250/TANKER-GLOVE-ROUGH.jpg
+100221,CH-34452,"PU NITRILE GLOVES XL",safety,1.4,Generic,0,201-250/CH-34452.png
+100222,HOUSEHOLD GLOVES RED,"HOUSEHOLD GLOVES RED",safety,1.55,Generic,2,201-250/HOUSEHOLD-GLOVES-RED.png
+100223,GC-34482,"COTTON GLOVES HEAVY",safety,15.5,Generic,0,201-250/GC-34482.png
+100224,LEATHER GLOVES ORANGE,"LEATHER GLOVES ORANGE",safety,2.35,Generic,0,201-250/LEATHER-GLOVES-ORANGE.jpg
+100225,WELDING ELECTRODE,"WELDING ELECTRODE",tools,6.75,CENMET,3,201-250/WELDING-ELECTRODE.png
+100226,BARBED WIRE,"BARBED WIRE",construction,3.5,iTrust,2,201-250/BARBED-WIRE.png
+100227,G.I.WIRE,"BWG",construction,1.1,Generic,6,201-250/G.I.WIRE.png
+100228,ANT-121422,"ALUMINIUM NETTING",construction,4.7,Generic,0,201-250/ANT-121422.jpg
+100229,GREEN SHADING MESH,"GREEN SHADING MESH",construction,3.9,Generic,4,201-250/GREEN-SHADING-MESH.png
+100230,CAMPING MESH,"CAMPING MESH",construction,3.45,Generic,2,201-250/CAMPING-MESH.png
+100231,FIBER MESH ROLL,"FIBER MESH ROLL",construction,1.75,Generic,2,201-250/FIBER-MESH-ROLL.png
+100232,TARPAULIN,"TARPAULIN",construction,0.234,Generic,24,201-250/TARPAULIN.png
+100233,TARPAULIN BLUE/ORANGE,"TARPAULIN BLUE/ORANGE",construction,1.575,Generic,7,201-250/TARPAULIN-BLUE-ORANGE.png
+100234,BRAD NAIL F-30,"BRAD NAIL F-30",construction,0.79,Generic,0,201-250/BRAD-NAIL-F-30.jpg
+100235,BRAD NAIL F-20,"BRAD NAIL F-20",construction,0.55,Generic,0,201-250/BRAD-NAIL-F-20.jpg
+100236,3.5 X 1MM,"G I NAIL WASHER",construction,1.2,iTrust,0,201-250/3.5-X-1MM.png
+100237,E-200 1 1/2" X 1/4","EYELET PIN E-200 EPS",construction,0.57,EPS,0,201-250/E-200-1-1-2in-X-1-4in.png
+100238,TRUST BRAND,"BLACK STEEL NAILS",construction,3.45,iTrust,7,201-250/TRUST-BRAND.jpg
+100239,2X12 10KG BAG,"SAFI NAILS 2""X12 x 10 KG",construction,3.25,iTrust,0,201-250/2X12-10KG-BAG.png
+100240,SAFI NAILS 2.5″ x 8 KG,"SAFI NAILS 2.5"" x 8 KG",construction,2.9,iTrust,0,201-250/SAFI-NAILS-2.5in-x-8-KG.png
+100241,SFF-633220,"STRETCH FILM 3.00 KG",tape,1.4,Generic,0,201-250/SFF-633220.png
+100242,MTP-320YL YELLOW,"SURE TAPE 2""x30Y YELLOW",tape,4.25,Suretape,0,201-250/MTP-320YL-YELLOW.jpg
+100243,TLF-125632 CTN,"TEFLON TAPE ITRUST CTN",tape,30,iTrust,0,201-250/TLF-125632-CTN.jpg
+100244,TLF-125632,"TEFLON TAPE ITRUST RETAIL",tape,7.5,iTrust,0,201-250/TLF-125632.jpg
+100245,MTP-230WT WHITE,"SURE TAPE 2""x30Y",tape,3.65,Suretape,0,201-250/MTP-230WT-WHITE.jpg
+100246,MTP-320Y WHITE,"SURE TAPE 2""x20Y WHITE",tape,3.05,Suretape,0,201-250/MTP-320Y-WHITE.jpg
+100247,MTP-220Y YELLOW,"SURE TAPE 2""x20Y YELLOW",tape,3.1,Suretape,0,201-250/MTP-220Y-YELLOW.jpg
+100248,MTP-1520Y WHITE,"SURETAPE WHITE 1.5""x20Y",tape,2.5,Suretape,0,201-250/MTP-1520Y-WHITE.jpg
+100249,MTP-130Y WHITE,"SURETAPE WHITE 1""x30 Y",tape,3.35,Suretape,0,251-300/MTP-130Y-WHITE.jpg
+100250,MTP-120Y WHITE,"SURE TAPE WHITE 1""x20 Y",tape,2.45,Suretape,0,251-300/MTP-120Y-WHITE.jpg
+100251,PTB-1910BK,"INSULATING TAPE BLACK",tape,11.9,iTrust,0,251-300/PTB-1910BK.png
+100252,PTW-1910WT,"INSULATING TAPE WHITE",tape,11.9,iTrust,0,251-300/PTW-1910WT.png
+100253,PTR-1910RD,"INSULATING TAPE RED",tape,11.9,iTrust,0,251-300/PTR-1910RD.png
+100254,STF-055230,"STRETCH FILM 3.5 KG",tape,1.6,Generic,0,251-300/STF-055230.png
+100255,STF-15362,"STRETCH FILM 1.5 KG",tape,0.69,Generic,0,251-300/STF-15362.png
+100256,ALUMINIUM TAPE,"ALUMINIUM TAPE",tape,5.9,iTrust,2,251-300/ALUMINIUM-TAPE.png
+100257,DBS-22302,"DOUBLE SIDE TAPE 1""",tape,0.2,Generic,0,251-300/DBS-22302.png
+100258,DUCT TAPE,"DUCT TAPE",tape,5.9,iTrust,2,251-300/DUCT-TAPE.png
+100259,DBS-11102,"DOUBLE SIDE TAPE 2""",tape,0.39,Generic,0,251-300/DBS-11102.png
+100260,2" FIBER TAPE,"FIBER TAPE",tape,5.9,Generic,0,251-300/2in-FIBER-TAPE.png
+100261,SCB-80652,"BROWN TAPE",tape,7.75,Generic,0,251-300/SCB-80652.png
+100262,SCT-841971,"CLEAR TAPE 100",tape,9.15,iTrust,0,251-300/SCT-841971.png
+100263,SCT-841451,"CLEAR TAPE",tape,5.79,iTrust,0,251-300/SCT-841451.png
+100264,SPECIAL OFFER TAPE- OFFER,"SPECIAL OFFER TAPE",tape,14,Generic,0,251-300/SPECIAL-OFFER-TAPE-OFFER.jpg
+100265,TAFL-256533,"TEFLON TAPE AGILE RETAIL",tape,5.5,Agile,0,251-300/TAFL-256533.png
+100266,PVC-488123,"PVC BLACK TAPE",tape,8.45,Generic,0,251-300/PVC-488123.png
+100267,Bolt 20mm x 100mm (1 pc),"Bolt 20mm x 100mm (1 pc)",fastener,0.25,Generic,0,251-300/Bolt-20mm-x-100mm-1-pc.png
+100268,Bolt 20mm x 70mm (1 pc),"Bolt 20mm x 70mm (1 pc)",fastener,0.2,Generic,0,251-300/Bolt-20mm-x-70mm-1-pc.png
+100269,Bolt 16mm x 100mm (1 pc),"Bolt 16mm x 100mm (1 pc)",fastener,0.2,Generic,0,251-300/Bolt-16mm-x-100mm-1-pc.png
+100270,Bolt 16mm x 70mm (1 pc),"Bolt 16mm x 70mm (1 pc)",fastener,0.15,Generic,0,251-300/Bolt-16mm-x-70mm-1-pc.png
+100271,Bolt 12mm x 60mm (1 KG),"Bolt 12mm x 60mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-12mm-x-60mm-1-KG.png
+100272,Bolt 12mm x 40mm (1 KG),"Bolt 12mm x 40mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-12mm-x-40mm-1-KG.png
+100273,Bolt 12mm x 30mm (1 KG),"Bolt 12mm x 30mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-12mm-x-30mm-1-KG.png
+100274,Bolt 10mm x 150mm (1 KG),"Bolt 10mm x 150mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-10mm-x-150mm-1-KG.png
+100275,Bolt 10mm x 80mm (1 KG),"Bolt 10mm x 80mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-10mm-x-80mm-1-KG.png
+100276,Bolt 10mm x 60mm (1 KG),"Bolt 10mm x 60mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-10mm-x-60mm-1-KG.png
+100277,Bolt 10mm x 50mm (1 KG),"Bolt 10mm x 50mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-10mm-x-50mm-1-KG.png
+100278,Bolt 10mm x 40mm (1 KG),"Bolt 10mm x 40mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-10mm-x-40mm-1-KG.png
+100279,Bolt 8mm x 120mm (1 KG),"Bolt 8mm x 120mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-8mm-x-120mm-1-KG.png
+100280,Bolt 8mm x 100mm (1 KG),"Bolt 8mm x 100mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-8mm-x-100mm-1-KG.png
+100281,Bolt 8mm x 50mm (1 KG),"Bolt 8mm x 50mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-8mm-x-50mm-1-KG.png
+100282,Bolt 8mm x 40mm (1 KG),"Bolt 8mm x 40mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-8mm-x-40mm-1-KG.png
+100283,Bolt 6mm x 100mm (1 KG),"Bolt 6mm x 100mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-6mm-x-100mm-1-KG.png
+100284,Bolt 6mm x 80mm (1 KG),"Bolt 6mm x 80mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-6mm-x-80mm-1-KG.png
+100285,Bolt 6mm x 60mm (1 KG),"Bolt 6mm x 60mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-6mm-x-60mm-1-KG.png
+100286,Bolt 6mm x 50mm (1 KG),"Bolt 6mm x 50mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-6mm-x-50mm-1-KG.png
+100287,Bolt 6mm x 40mm (1 KG),"Bolt 6mm x 40mm (1 KG)",fastener,0.65,Generic,0,251-300/Bolt-6mm-x-40mm-1-KG.png
+100288,Threaded rod 20mm,"Threaded rod 20mm",fastener,2,Generic,0,251-300/Threaded-rod-20mm.png
+100289,Threaded rod 16mm,"Threaded rod 16mm",fastener,1.25,Generic,0,251-300/Threaded-rod-16mm.png
+100290,Threaded rod 14mm,"Threaded rod 14mm",fastener,1,Generic,0,251-300/Threaded-rod-14mm.png
+100291,Threaded rod 12mm,"Threaded rod 12mm",fastener,0.75,Generic,0,251-300/Threaded-rod-12mm.png
+100292,Threaded rod 10mm,"Threaded rod 10mm",fastener,0.45,Generic,0,251-300/Threaded-rod-10mm.png
+100293,6X5 CASE-1,"WOOD NAILS 9 KG",construction,2.75,Generic,7,251-300/6X5-CASE-1.png
+100294,SAFI NAILS 1.5″ x 7 KG,"SAFI NAILS 1.5"" x 7 KG",construction,2.5,iTrust,0,251-300/SAFI-NAILS-1.5in-x-7-KG.png
+100295,IG341602,"INDUSTRIAL GLOVES BLACK XL",safety,3.25,Generic,0,251-300/IG341602.png
+100296,BWG 22 4kg,"BWG 22 x 4kg",construction,1.3,Generic,0,251-300/BWG-22-4kg.png
+100297,BWG 21 4KG,"BWG 21 x 4kg",construction,1.25,Generic,0,251-300/BWG-21-4KG.png
+100298,2.5X11 CASE 9KG,"WOOD NAILS 2.5"" x 11 9KG CASE",construction,3.15,Generic,0,251-300/2.5X11-CASE-9KG.png
+100299,Threaded rod 8mm,"Threaded rod 8mm",fastener,0.35,Generic,0,251-300/Threaded-rod-8mm.png
+100300,Threaded rod 6mm,"Threaded rod 6mm",fastener,0.25,Generic,0,251-300/Threaded-rod-6mm.png

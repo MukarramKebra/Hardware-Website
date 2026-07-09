@@ -13,7 +13,7 @@
   // See index.html for why this is dynamic — same shared localStorage key
   // (expert_asset_v, same origin) so Flush Cache refreshes the admin panel too.
   (function() {
-    var v = localStorage.getItem('expert_asset_v') || '202607061527';
+    var v = localStorage.getItem('expert_asset_v') || '202607091635';
     ['01-layout','02-inventory-table','03-sections','04-responsive','05-modals-forms'].forEach(function(f) {
       document.write('<link rel="stylesheet" href="admin/css/' + f + '.css?v=' + v + '" />');
     });
@@ -896,7 +896,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 (function() {
-  var v = localStorage.getItem('expert_asset_v') || '202607061527';
+  var v = localStorage.getItem('expert_asset_v') || '202607091635';
   ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo'].forEach(function(f) {
     document.write('<script src="admin/js/' + f + '.js?v=' + v + '"><\/script>');
   });
