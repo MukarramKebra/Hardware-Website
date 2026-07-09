@@ -1,11 +1,29 @@
 // ── PRODUCT DETAIL MODAL ──────────────────────────────────────────────────
 let _pmQty = 1;
 let _pmId  = null;
+let _pmVariantIdx = 0; // which size/pack option is selected (0 when none exist)
+
+// Price for the currently selected option — options without their own price
+// sell at the product's base price
+function _pmCurrentPrice(p) {
+  const opts = getVariants(_pmId);
+  if (!opts.length) return p.price;
+  const v = opts[_pmVariantIdx] || opts[0];
+  return (v.price > 0) ? v.price : p.price;
+}
+
+function pmVariantChange(sel) {
+  _pmVariantIdx = parseInt(sel.value, 10) || 0;
+  const p = getAllProducts().find(x => x.id === _pmId);
+  const el = document.getElementById('pmPriceDisplay');
+  if (el && p) el.innerHTML = _pmCurrentPrice(p).toFixed(3) + ' <small>KWD</small>';
+}
 
 function openProduct(id) {
   trackView(id);
   trackRecentlyViewed(id);
   _pmId  = id;
+  _pmVariantIdx = 0;
   const limits = getQtyLimits(id);
   _pmQty = Math.max(1, limits.min);
   const p           = getAllProducts().find(x => x.id === id);
@@ -41,8 +59,18 @@ function openProduct(id) {
       '<h2 class="pm-name">' + p.name + '</h2>' +
       '<p class="pm-desc">' + p.desc + '</p>' +
       ((p.price > 0 && !window._sbPriceHidden[p.id]) ? (
-      '<div class="pm-price">' + p.price.toFixed(3) + ' <small>KWD</small></div>' +
+      '<div class="pm-price" id="pmPriceDisplay">' + _pmCurrentPrice(p).toFixed(3) + ' <small>KWD</small></div>' +
       '<div class="pm-stock-line ' + stockCls + '"><i class="fa ' + stockIcon + '"></i> ' + stockTxt + '</div>' +
+      (getVariants(id).length ?
+        '<div class="pm-qty-row">' +
+          '<span class="pm-qty-lbl">Size / Pack</span>' +
+          '<select class="pm-variant-sel" id="pmVariantSel" onchange="pmVariantChange(this)">' +
+            getVariants(id).map(function(v, i) {
+              return '<option value="' + i + '">' + v.label + ((v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : '') + '</option>';
+            }).join('') +
+          '</select>' +
+        '</div>'
+      : '') +
       (!isOut ?
         '<div class="pm-qty-row">' +
           '<span class="pm-qty-lbl">Quantity</span>' +
@@ -164,8 +192,12 @@ function pmQtyBlur(el) {
 function pmAddToCart() {
   const product  = getAllProducts().find(p => p.id === _pmId);
   const liveQty  = getLiveQty(_pmId);
-  const inCart   = cart.find(c => c.id === _pmId);
-  const cartQty  = inCart ? inCart.qty : 0;
+  // Each size/pack option is its own cart line; options share the parent
+  // product's stock pool, so stock checks count ALL lines of this product.
+  const opts     = getVariants(_pmId);
+  const variant  = opts.length ? (opts[_pmVariantIdx] || opts[0]).label : null;
+  const inCart   = cart.find(c => c.id === _pmId && (c.variant || null) === variant);
+  const cartQty  = cart.filter(c => c.id === _pmId).reduce((s,c) => s + c.qty, 0);
   const limits   = getQtyLimits(_pmId);
   if (liveQty !== null && cartQty + _pmQty > liveQty) {
     alert('Only ' + liveQty + ' units available. You already have ' + cartQty + ' in your cart.');
@@ -179,7 +211,17 @@ function pmAddToCart() {
     alert('Minimum order quantity for this product is ' + limits.min + '.');
     return;
   }
-  if (inCart) { inCart.qty += _pmQty; } else { cart.push(Object.assign({}, product, { qty: _pmQty })); }
+  if (inCart) { inCart.qty += _pmQty; }
+  else {
+    cart.push(Object.assign({}, product, {
+      qty: _pmQty,
+      variant: variant,
+      // Bake the option into the line's name/price so cart, checkout, the
+      // WhatsApp message and the saved order all show it with no extra code
+      name:  variant ? product.name + ' (' + variant + ')' : product.name,
+      price: _pmCurrentPrice(product)
+    }));
+  }
   updateCartUI();
   // Flash the button green — stay on the product page, no cart popup
   const btn = document.getElementById('pmAddBtn');
@@ -207,6 +249,9 @@ document.addEventListener('keydown', function(e) {
 // loading spinner -> checkmark sequence before the toast pops up.
 function addToCart(id, btn) {
   if (btn && btn.dataset.busy === '1') return;
+  // Products with size/pack options can't be one-click added — the shopper
+  // has to pick an option first, so open the product page instead
+  if (getVariants(id).length) { openProduct(id); return; }
   trackView(id);
   const product  = getAllProducts().find(p => p.id === id);
   const liveQty  = getLiveQty(id);
@@ -244,7 +289,9 @@ function addToCart(id, btn) {
     }, 1000);
   }, 600);
 }
-function removeFromCart(id) { cart = cart.filter(c => c.id !== id); updateCartUI(); }
+// Removes one cart line by array index (not product id) — a product with
+// size/pack options can occupy several lines at once, one per chosen option
+function removeFromCart(idx) { cart.splice(idx, 1); updateCartUI(); }
 function updateCartUI() {
   const count = cart.reduce((s,c) => s+c.qty, 0);
   // Update any cart count badges safely (header count may not exist)
@@ -257,7 +304,7 @@ function updateCartUI() {
   document.getElementById('cartTotal').textContent = total.toFixed(3) + ' KWD';
   const customPhotos = _sbPhotos;
   if (!cart.length) { body.innerHTML = '<p class="empty-cart">Your cart is empty.</p>'; return; }
-  body.innerHTML = cart.map(c => {
+  body.innerHTML = cart.map((c, idx) => {
     // Only use stored photo if it's a real URL — otherwise fall back to local image
     const rawPh = customPhotos[c.id];
     const imgSrc = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : c.img;
@@ -270,7 +317,7 @@ function updateCartUI() {
       </div>
       <div class="cart-item-actions">
         <span class="cart-item-price">${(c.price*c.qty).toFixed(3)} KWD</span>
-        <button class="btn-remove" onclick="removeFromCart(${c.id})"><i class="fa fa-trash"></i></button>
+        <button class="btn-remove" onclick="removeFromCart(${idx})"><i class="fa fa-trash"></i></button>
       </div>
     </div>`;
   }).join('');

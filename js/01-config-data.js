@@ -117,6 +117,14 @@ let _sbProductKeywords = {}; // product id -> SEO keyword phrases, set from admi
 window._sbPriceHidden = {};  // product id -> true if price is manually hidden (Ask Price on WhatsApp instead)
 window._sbQtyLimits = {};    // product id -> { min, max } order quantity, set from admin (0 = no limit)
 function getQtyLimits(id) { return (window._sbQtyLimits || {})[id] || { min: 0, max: 0 }; }
+// product id -> [{ label, price }] size/pack options ("accolades") shown as a
+// dropdown on the product; price is optional — options without one sell at
+// the product's own price
+window._sbVariants = {};
+function getVariants(id) {
+  var v = (window._sbVariants || {})[id];
+  return Array.isArray(v) ? v : [];
+}
 
 async function loadSBData() {
   // Photos (expert_photos) used to carry every product's full image as
@@ -129,7 +137,7 @@ async function loadSBData() {
   // second pass, which is what Google's Merchant Listings report was flagging.
   try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
 
-  const [s, c, h, b, sk, bm, mc, pk, hp, ql, ph] = await Promise.all([
+  const [s, c, h, b, sk, bm, mc, pk, hp, ql, ph, vr] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',                         { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H }),
@@ -140,8 +148,12 @@ async function loadSBData() {
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',                        { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',                        { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_variants&select=value', { headers: SB_H })
   ]);
+  if (!vr.error && Array.isArray(vr.data) && vr.data[0] && vr.data[0].value) {
+    try { window._sbVariants = JSON.parse(vr.data[0].value) || {}; } catch(e) {}
+  }
   if (Array.isArray(ph.data)) {
     ph.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });
     localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos));

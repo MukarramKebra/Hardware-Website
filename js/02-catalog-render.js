@@ -520,7 +520,9 @@ function renderProducts() {
             </div>
             ${isOut
               ? `<button class="btn-add btn-disabled" disabled onclick="event.stopPropagation()">${unavail}</button>`
-              : `<button class="btn-add" onclick="event.stopPropagation();addToCart(${p.id}, this)"><i class="fa fa-plus"></i> ${addBtn}</button>`}
+              : getVariants(p.id).length
+                ? `<button class="btn-add" onclick="event.stopPropagation();openProduct(${p.id})"><i class="fa fa-list-ul"></i> ${isAr ? 'الخيارات' : 'Options'}</button>`
+                : `<button class="btn-add" onclick="event.stopPropagation();addToCart(${p.id}, this)"><i class="fa fa-plus"></i> ${addBtn}</button>`}
             ` : `
             <div>
               <div class="product-price" style="font-size:12px;color:var(--gray-600)">${isAr ? 'السعر عند الطلب' : 'Price on request'}</div>

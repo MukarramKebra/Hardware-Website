@@ -87,7 +87,10 @@ const DEFAULT_CATS = [
 // encodeHtml — converts special characters so text is safe to show inside HTML
 //              e.g. prevents product names with < or > from breaking the page
 function encodeHtml(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/”/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // The straight double quote (") matters most here — product names use it
+  // for inch sizes (2" nails) and an unescaped one ends an HTML attribute
+  // early, silently truncating the value
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/”/g,'&#8221;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 // sbFetch — the main function used for ALL database calls (get, add, update, delete)
 //           Always returns { data, error } so we can check if it worked
@@ -213,7 +216,7 @@ async function loadFromSupabase() {
   // that one slow call finished (the "need to click Reload twice" symptom).
   // It's now fetched separately below so the table renders immediately;
   // thumbnails fill in once photos are ready.
-  const [s, c, h, cb, sk, bm, mc, ia, pk, hp, ql] = await Promise.all([
+  const [s, c, h, cb, sk, bm, mc, ia, pk, hp, ql, vr] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',          { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',       { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',{ headers: SB_HDRS }),
@@ -224,8 +227,13 @@ async function loadFromSupabase() {
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.ignored_alerts&select=value', { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_HDRS })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_HDRS }),
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_variants&select=value', { headers: SB_HDRS })
   ]);
+  // Size/pack options per product (shared with the storefront via expert_settings)
+  if (!vr.error && Array.isArray(vr.data) && vr.data[0] && vr.data[0].value) {
+    try { window._sbVariants = JSON.parse(vr.data[0].value) || {}; } catch(e) {}
+  }
   // Real SKU labels (shared with the storefront via expert_settings)
   if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
     try {

@@ -219,3 +219,61 @@ function saveQtyLimits() {
   showToast('Quantity limits saved ✅');
   closeQtyLimits();
 }
+
+// ── PER-PRODUCT SIZE/PACK OPTIONS ─────────────────────────────────────────────
+// Stored in Supabase (expert_settings key 'product_variants') as
+// {id: [{label, price}]} — same key-value pattern as qty_limits. The
+// storefront shows them as a dropdown on the product and each option becomes
+// its own cart line (see js/03-product-cart-checkout.js). price 0 = sell at
+// the product's own price.
+var _vrProdId = null;
+function openVariants(id) {
+  var p = getAllAdminProducts().find(function(x){ return x.id === id; });
+  if (!p) return;
+  _vrProdId = id;
+  document.getElementById('variantsProdName').textContent = '#' + id + ' — ' + p.name;
+  var rows = (window._sbVariants || {})[id] || [];
+  document.getElementById('variantRows').innerHTML = '';
+  rows.forEach(function(v) { addVariantRow(v.label, v.price); });
+  if (!rows.length) addVariantRow();
+  document.getElementById('variantsOverlay').classList.add('open');
+}
+function closeVariants() {
+  document.getElementById('variantsOverlay').classList.remove('open');
+  _vrProdId = null;
+}
+function addVariantRow(label, price) {
+  var row = document.createElement('div');
+  row.className = 'variant-row';
+  row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center';
+  row.innerHTML =
+    '<input type="text" class="vr-label" placeholder="e.g. 2&quot; (50 box/ctn)" style="flex:1;min-width:0;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px" />' +
+    '<input type="number" class="vr-price" min="0" step="0.001" placeholder="0.000" title="Price (KWD) — leave empty to use the product price" style="width:90px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px" />' +
+    '<button class="del-btn" onclick="this.parentNode.remove()" title="Remove option"><i class="fa fa-trash"></i></button>';
+  // Values set via the DOM (not baked into the HTML string) so labels with
+  // quotes — 2" nails etc. — can never truncate the attribute
+  row.querySelector('.vr-label').value = label || '';
+  row.querySelector('.vr-price').value = price > 0 ? price : '';
+  document.getElementById('variantRows').appendChild(row);
+}
+function saveVariants() {
+  if (!_vrProdId) return;
+  var opts = [];
+  document.querySelectorAll('#variantRows .variant-row').forEach(function(row) {
+    var label = row.querySelector('.vr-label').value.trim();
+    if (!label) return;
+    var price = parseFloat(row.querySelector('.vr-price').value) || 0;
+    opts.push({ label: label, price: price > 0 ? price : 0 });
+  });
+  if (!window._sbVariants) window._sbVariants = {};
+  if (opts.length) { window._sbVariants[_vrProdId] = opts; }
+  else { delete window._sbVariants[_vrProdId]; }
+  sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'product_variants', value: JSON.stringify(window._sbVariants) }])
+  });
+  showToast(opts.length ? 'Options saved ✅' : 'Options removed');
+  closeVariants();
+  renderTable();
+}

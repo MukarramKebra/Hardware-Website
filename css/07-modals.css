@@ -95,6 +95,9 @@
 .pm-stock-line.out-of-stock { color:var(--red); }
 .pm-qty-row { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
 .pm-qty-lbl { font-size:11px; font-weight:700; color:var(--dark); text-transform:uppercase; letter-spacing:0.8px; }
+/* Size/pack option dropdown — shares the row style of the quantity stepper */
+.pm-variant-sel { flex:1; min-width:0; max-width:320px; height:38px; padding:0 10px; border:1px solid var(--border); border-radius:7px; font-size:13px; font-weight:700; color:var(--dark); background:#fff; cursor:pointer; font-family:inherit; outline:none; }
+.pm-variant-sel:focus { border-color:var(--orange); }
 .pm-qty-ctrl { display:flex; align-items:center; border:1px solid var(--border); border-radius:7px; overflow:hidden; }
 .pm-qty-ctrl button { width:38px; height:38px; background:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer; color:var(--dark); transition:all .18s; display:flex; align-items:center; justify-content:center; font-family:inherit; }
 .pm-qty-ctrl button:hover { background:var(--orange); color:#fff; }

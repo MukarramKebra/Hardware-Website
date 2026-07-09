@@ -753,6 +753,26 @@
   </div>
 </div>
 
+<!-- PER-PRODUCT SIZE/PACK OPTIONS MODAL -->
+<div class="photo-overlay" id="variantsOverlay" onclick="if(event.target===this)closeVariants()">
+  <div class="photo-box">
+    <div class="ph-header">
+      <h3><i class="fa fa-list-ul"></i> Size / Pack Options</h3>
+      <button onclick="closeVariants()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="ph-body">
+      <div class="ph-prod-name" id="variantsProdName"></div>
+      <p style="font-size:12px;color:var(--gray);margin:0 0 14px">
+        Options appear as a dropdown on the product (e.g. <b>2" (50 box/ctn)</b>). Leave an option's
+        price at 0 to sell it at the product's own price. Remove all rows to turn the dropdown off.
+      </p>
+      <div id="variantRows"></div>
+      <button class="act-btn" style="margin-bottom:16px" onclick="addVariantRow()"><i class="fa fa-plus"></i> Add Option</button>
+      <button class="ph-save-btn" onclick="saveVariants()"><i class="fa fa-check"></i>&nbsp; Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- PER-PRODUCT SEO MODAL -->
 <div class="photo-overlay" id="seoProdOverlay" onclick="if(event.target===this)closeProductSEO()">
   <div class="photo-box">
