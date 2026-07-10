@@ -71,7 +71,9 @@
     .tab-btn:hover{color:#fff;}
     .tab-btn.active{color:#fff;border-bottom-color:#fff;}
 
-    .main{padding:28px;max-width:1400px;margin:0 auto;position:relative;}
+    /* 1400px cap clipped the inventory Actions buttons on wide monitors —
+       let the layout use the screen, capped only against ultrawide extremes */
+    .main{padding:28px;max-width:1860px;margin:0 auto;position:relative;}
     /* Team accounts with "view only" access to a tab (see admin/js/03-auth.js
        applyAccountPermissions) — everything is readable but nothing editable.
        Search/filter stay usable since those don't change any data. */

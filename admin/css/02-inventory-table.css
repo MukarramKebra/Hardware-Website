@@ -52,7 +52,9 @@
     .save-btn:hover{background:#16a34a;}
 
     /* TABLE */
-    .tbl-wrap{background:var(--white);border-radius:12px;border:2px solid var(--border);overflow:hidden;}
+    /* overflow-x auto (not hidden) — hidden silently cut off the rightmost
+       Actions buttons whenever the table outgrew the page width */
+    .tbl-wrap{background:var(--white);border-radius:12px;border:2px solid var(--border);overflow-x:auto;overflow-y:hidden;}
     table{width:100%;border-collapse:collapse;}
     thead{background:#d20d17;}
     thead th{padding:12px 14px;text-align:left;font-size:10px;font-weight:800;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:1px;}
