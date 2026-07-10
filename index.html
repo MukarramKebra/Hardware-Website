@@ -56,13 +56,32 @@
   // js/01-config-data.js) so admin's Flush Cache button can force fresh
   // CSS/JS onto every visitor, not just their own browser. Falls back to
   // the last known-good baked-in version on a visitor's very first load.
+  // Injected via DOM appends, NOT document.write — several ad-block/privacy
+  // extensions and Chrome's own interventions neuter document.write, which
+  // left the whole site unstyled for those visitors.
   (function() {
-    var v = localStorage.getItem('expert_asset_v') || '202607091635';
+    var v = '';
+    try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
+    v = /^[0-9]+$/.test(v) ? v : '202607091635';
     ['01-base','02-sections','03-cart-features-contact','04-footer','05-responsive','06-lang-rtl','07-modals','08-account-auth','09-widgets'].forEach(function(f) {
-      document.write('<link rel="stylesheet" href="css/' + f + '.css?v=' + v + '" />');
+      var l = document.createElement('link');
+      l.rel = 'stylesheet';
+      l.href = 'css/' + f + '.css?v=' + v;
+      document.head.appendChild(l);
     });
   })();
   </script>
+  <noscript>
+    <link rel="stylesheet" href="css/01-base.css" />
+    <link rel="stylesheet" href="css/02-sections.css" />
+    <link rel="stylesheet" href="css/03-cart-features-contact.css" />
+    <link rel="stylesheet" href="css/04-footer.css" />
+    <link rel="stylesheet" href="css/05-responsive.css" />
+    <link rel="stylesheet" href="css/06-lang-rtl.css" />
+    <link rel="stylesheet" href="css/07-modals.css" />
+    <link rel="stylesheet" href="css/08-account-auth.css" />
+    <link rel="stylesheet" href="css/09-widgets.css" />
+  </noscript>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
@@ -901,10 +920,18 @@
   </div>
 
   <script>
+  // DOM appends with async=false keep the same in-order execution
+  // document.write gave us, without being vulnerable to the extensions/
+  // interventions that block document.write (see the CSS loader in <head>)
   (function() {
-    var v = localStorage.getItem('expert_asset_v') || '202607091635';
+    var v = '';
+    try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
+    v = /^[0-9]+$/.test(v) ? v : '202607091635';
     ['01-config-data','02-catalog-render','03-product-cart-checkout','04-i18n-order','05-accounts','06-features'].forEach(function(f) {
-      document.write('<script src="js/' + f + '.js?v=' + v + '"><\/script>');
+      var s = document.createElement('script');
+      s.src = 'js/' + f + '.js?v=' + v;
+      s.async = false;
+      document.body.appendChild(s);
     });
   })();
   </script>

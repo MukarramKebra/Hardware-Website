@@ -11,14 +11,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <script>
   // See index.html for why this is dynamic — same shared localStorage key
-  // (expert_asset_v, same origin) so Flush Cache refreshes the admin panel too.
+  // (expert_asset_v, same origin) so Flush Cache refreshes the admin panel
+  // too. DOM appends, not document.write — blockers neuter document.write.
   (function() {
-    var v = localStorage.getItem('expert_asset_v') || '202607091635';
+    var v = '';
+    try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
+    v = /^[0-9]+$/.test(v) ? v : '202607091635';
     ['01-layout','02-inventory-table','03-sections','04-responsive','05-modals-forms'].forEach(function(f) {
-      document.write('<link rel="stylesheet" href="admin/css/' + f + '.css?v=' + v + '" />');
+      var l = document.createElement('link');
+      l.rel = 'stylesheet';
+      l.href = 'admin/css/' + f + '.css?v=' + v;
+      document.head.appendChild(l);
     });
   })();
   </script>
+  <noscript>
+    <link rel="stylesheet" href="admin/css/01-layout.css" />
+    <link rel="stylesheet" href="admin/css/02-inventory-table.css" />
+    <link rel="stylesheet" href="admin/css/03-sections.css" />
+    <link rel="stylesheet" href="admin/css/04-responsive.css" />
+    <link rel="stylesheet" href="admin/css/05-modals-forms.css" />
+  </noscript>
 </head>
 <body>
 
@@ -895,10 +908,17 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
+// async=false keeps in-order execution; DOM appends dodge the extensions/
+// interventions that block document.write (see the CSS loader in <head>)
 (function() {
-  var v = localStorage.getItem('expert_asset_v') || '202607091635';
+  var v = '';
+  try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
+  v = /^[0-9]+$/.test(v) ? v : '202607091635';
   ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo'].forEach(function(f) {
-    document.write('<script src="admin/js/' + f + '.js?v=' + v + '"><\/script>');
+    var s = document.createElement('script');
+    s.src = 'admin/js/' + f + '.js?v=' + v;
+    s.async = false;
+    document.body.appendChild(s);
   });
 })();
 </script>
