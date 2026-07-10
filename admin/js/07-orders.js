@@ -323,21 +323,15 @@ function renderTable() {
       // value = price × qty, so showing it would let a hidden-stock account
       // derive the quantity by dividing — hide it under the same permission
       '<td class="val-cell">'+(window._hideStockNumbers ? '—' : val)+'</td>' +
-      '<td>' +
+      // Only the everyday actions stay inline — everything else lives in the
+      // per-row "More" menu (openRowMenu) so rows stay one line tall
+      '<td><div style="display:flex;gap:4px;align-items:center;flex-wrap:nowrap">' +
         '<button class="vis-btn '+visCls+'" onclick="toggleVisibility('+p.id+','+p.isBase+')">'+visLbl+'</button>' +
-        '<button class="act-btn" onclick="setStock('+p.id+',0)"><i class="fa fa-times"></i> Clear</button>' +
-        '<button class="act-btn" onclick="addStock('+p.id+')"><i class="fa fa-plus"></i> +50</button>' +
-        '<button class="act-btn" onclick="addStock5000('+p.id+')"><i class="fa fa-plus"></i> +5000</button>' +
         '<button class="act-btn blue" onclick="openPhoto('+p.id+')"><i class="fa fa-camera"></i> Photo</button>' +
-        '<button class="act-btn purple" onclick="openStats('+p.id+')"><i class="fa fa-chart-bar"></i> Stats</button>' +
-        (isPriceHidden(p.id)
-          ? '<button class="act-btn" style="background:#fff7ed;color:#c2410c;border-color:#fed7aa" onclick="togglePriceHidden('+p.id+')"><i class="fa fa-eye"></i> Show Price</button>'
-          : '<button class="act-btn" onclick="togglePriceHidden('+p.id+')"><i class="fa fa-eye-slash"></i> Hide Price</button>') +
-        '<button class="act-btn" style="background:#eef2ff;color:#4338ca;border-color:#c7d2fe" onclick="openProductSEO('+p.id+')"><i class="fa fa-search-plus"></i> SEO</button>' +
-        '<button class="act-btn" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0" onclick="openQtyLimits('+p.id+')"><i class="fa fa-sort-numeric-up"></i> Qty Limits</button>' +
         '<button class="act-btn" style="background:#fdf4ff;color:#a21caf;border-color:#f5d0fe" onclick="openVariants('+p.id+')"><i class="fa fa-list-ul"></i> Options'+(((window._sbVariants||{})[p.id]||[]).length ? ' ('+window._sbVariants[p.id].length+')' : '')+'</button>' +
+        '<button class="act-btn" onclick="openRowMenu('+p.id+','+p.isBase+',event)" title="More actions"><i class="fa fa-ellipsis-h"></i> More</button>' +
         '<button class="del-btn" onclick="deleteProduct('+p.id+','+p.isBase+')"><i class="fa fa-trash"></i></button>' +
-      '</td>' +
+      '</div></td>' +
     '</tr>';
   }).join('');
   document.getElementById('tblBody').innerHTML = rows;
@@ -362,6 +356,35 @@ function onStock(id) {
   stockData[id] = v;
   el.className = 'stock-input' + (v===0?' out':v<=10?' low':'');
   renderStats();
+}
+
+// ── PER-ROW "MORE" ACTIONS MENU ───────────────────────────────────────────────
+// The less-used row actions live here instead of as always-visible buttons —
+// ten buttons per row made the Actions column wrap to four lines. Reuses the
+// brand-menu popover styling/outside-click pattern (see 11-multiselect).
+function closeRowMenu(){ var m=document.getElementById('rowMenu'); if(m) m.remove(); document.removeEventListener('mousedown',_rowMenuOutside); }
+function _rowMenuOutside(e){ var m=document.getElementById('rowMenu'); if(m && !m.contains(e.target)) closeRowMenu(); }
+function openRowMenu(id, isBase, ev) {
+  if (ev) { ev.stopPropagation(); ev.preventDefault(); }
+  closeRowMenu(); closeBrandMenu();
+  var m = document.createElement('div'); m.className='brand-menu'; m.id='rowMenu';
+  m.innerHTML =
+    '<button onclick="closeRowMenu();openProductSEO('+id+')"><i class="fa fa-edit"></i> Edit Description &amp; SEO</button>' +
+    '<button onclick="closeRowMenu();openStats('+id+')"><i class="fa fa-chart-bar"></i> Stats</button>' +
+    '<button onclick="closeRowMenu();openQtyLimits('+id+')"><i class="fa fa-sort-numeric-up"></i> Qty Limits</button>' +
+    (isPriceHidden(id)
+      ? '<button onclick="closeRowMenu();togglePriceHidden('+id+')"><i class="fa fa-eye"></i> Show Price</button>'
+      : '<button onclick="closeRowMenu();togglePriceHidden('+id+')"><i class="fa fa-eye-slash"></i> Hide Price</button>') +
+    '<button onclick="closeRowMenu();addStock('+id+')"><i class="fa fa-plus"></i> +50 Stock</button>' +
+    '<button onclick="closeRowMenu();addStock5000('+id+')"><i class="fa fa-plus"></i> +5000 Stock</button>' +
+    '<button onclick="closeRowMenu();setStock('+id+',0)"><i class="fa fa-times-circle"></i> Clear Stock</button>';
+  document.body.appendChild(m);
+  var anchor = ev && (ev.currentTarget || ev.target);
+  var r = anchor ? anchor.getBoundingClientRect() : { bottom: 80, left: 80 };
+  var mw = 210;
+  m.style.top  = (r.bottom + window.scrollY + 5) + 'px';
+  m.style.left = (Math.max(8, Math.min(r.left + window.scrollX, window.scrollX + window.innerWidth - mw - 8))) + 'px';
+  setTimeout(function(){ document.addEventListener('mousedown', _rowMenuOutside); }, 0);
 }
 
 function onNameEdit(id) {
