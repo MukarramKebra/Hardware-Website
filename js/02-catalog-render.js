@@ -395,6 +395,81 @@ function matchesSearch(query, p) {
   return words.every(w => haystack.includes(w));
 }
 
+// ── "DID YOU MEAN" SEARCH SUGGESTIONS ─────────────────────────────────────
+// When a search finds nothing, suggest the closest real spelling — e.g.
+// "drimel" → Did you mean "dremel"? Each query word is compared (edit
+// distance) against every word that actually appears in product names,
+// brands, categories and keywords, and the whole corrected query is only
+// offered if it genuinely returns results.
+function _levenshtein(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  var prev = [], cur = [];
+  for (var j = 0; j <= b.length; j++) prev[j] = j;
+  for (var i = 1; i <= a.length; i++) {
+    cur[0] = i;
+    var rowMin = i;
+    for (var k = 1; k <= b.length; k++) {
+      cur[k] = Math.min(prev[k] + 1, cur[k - 1] + 1, prev[k - 1] + (a[i - 1] === b[k - 1] ? 0 : 1));
+      if (cur[k] < rowMin) rowMin = cur[k];
+    }
+    if (rowMin > max) return max + 1; // no path can recover — stop early
+    var t = prev; prev = cur; cur = t;
+  }
+  return prev[b.length];
+}
+
+// normalized word -> original display spelling, built from the live catalog
+var _vocabCache = null, _vocabCacheCount = 0;
+function _searchVocab() {
+  var products = getAllProducts();
+  if (_vocabCache && _vocabCacheCount === products.length) return _vocabCache;
+  var vocab = {};
+  function addWords(text) {
+    String(text || '').split(/[\s\/,()+×x-]+/).forEach(function(w) {
+      var display = w.trim();
+      if (display.length < 3 || /^[\d.]+$/.test(display)) return;
+      var norm = normalizeQ(display);
+      if (norm.length >= 3 && !vocab[norm]) vocab[norm] = display.toLowerCase();
+    });
+  }
+  products.forEach(function(p) {
+    addWords(p.name);
+    addWords(p.brand);
+    addWords((p.category || '').replace(/-/g, ' '));
+    addWords(_sbProductKeywords[p.id]);
+    addWords(ARABIC_NAMES[p.id]);
+  });
+  _vocabCache = vocab; _vocabCacheCount = products.length;
+  return vocab;
+}
+
+function _didYouMean(query) {
+  var vocab = _searchVocab();
+  var changed = false;
+  var corrected = normalizeQ(query).split(' ').map(function(word) {
+    if (word.length < 3 || vocab[word]) return word; // fine as-is
+    var maxDist = word.length <= 4 ? 1 : word.length <= 7 ? 2 : 3;
+    var best = null, bestDist = maxDist + 1;
+    for (var norm in vocab) {
+      var d = _levenshtein(word, norm, maxDist);
+      if (d < bestDist) { bestDist = d; best = vocab[norm]; }
+    }
+    if (best) { changed = true; return best; }
+    return word;
+  }).join(' ');
+  if (!changed) return null;
+  // only suggest spellings that actually find something
+  var hits = getAllProducts().filter(function(p) { return matchesSearch(corrected, p); }).length;
+  return hits > 0 ? corrected : null;
+}
+
+function applySearchSuggestion(q) {
+  var input = document.getElementById('searchInput');
+  input.value = q;
+  renderProducts();
+  input.focus();
+}
+
 // ── RENDER PRODUCTS ───────────────────────────────────────────────────────
 // Injects/updates a Product ItemList structured-data block so Google can
 // understand and potentially show rich results for the actual catalog —
@@ -417,7 +492,10 @@ function _injectProductSchema() {
           'name': p.name,
           'description': p.desc || undefined,
           'sku': getProductSku(p.id).replace(/^SKU[-:]\s*/, ''),
-          'brand': p.brand ? { '@type': 'Brand', 'name': p.brand } : undefined,
+          // "Generic" is the admin's marker for unbranded commodity items
+          // (bolts, gloves, mesh...) — omit the field entirely rather than
+          // telling Google the brand is literally "Generic"
+          'brand': (p.brand && p.brand !== 'Generic') ? { '@type': 'Brand', 'name': p.brand } : undefined,
           'category': p.category,
           'keywords': _sbProductKeywords[p.id] || undefined,
           'image': (photo && photo.startsWith('http')) ? photo : undefined,
@@ -450,7 +528,21 @@ function renderProducts() {
     const matchSearch = matchesSearch(query, p);
     return matchCat && matchSearch;
   });
-  if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  if (!filtered.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    // Offer the closest real spelling when the search itself found nothing
+    var suggestion = query ? _didYouMean(query) : null;
+    var isArU = _lang === 'ar';
+    empty.innerHTML = '<i class="fa fa-box-open"></i>' +
+      '<p data-i18n="no_results">' + (isArU ? 'لا توجد منتجات مطابقة. جرّب بحثاً آخر.' : 'No products found. Try a different search.') + '</p>' +
+      (suggestion
+        ? '<p style="margin-top:10px;font-size:15px">' + (isArU ? 'هل تقصد' : 'Did you mean') + ' ' +
+          '<a href="#" style="color:var(--orange);font-weight:800;text-decoration:underline" ' +
+          'onclick="applySearchSuggestion(this.textContent);return false;">' + suggestion.replace(/</g, '&lt;') + '</a>' + (isArU ? '؟' : '?') + '</p>'
+        : '');
+    return;
+  }
   empty.style.display = 'none';
   // Best Sellers always first, then other badged items, then the rest
   const badgeOrder = { 'Best Seller': 0, 'Popular': 1, 'Pro': 2, 'New': 3, 'Sale': 4 };
