@@ -16,7 +16,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607101342';
+    v = /^[0-9]+$/.test(v) ? v : '202607101426';
     ['01-layout','02-inventory-table','03-sections','04-responsive','05-modals-forms'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -404,6 +404,27 @@
         <div class="seo-preview-desc" id="seoPreviewDesc">Description preview will appear here as you type.</div>
       </div>
       <button class="newcat-save" style="width:fit-content" onclick="saveSEOSettings()"><i class="fa fa-save"></i>&nbsp; Save SEO Settings</button>
+    </div>
+
+    <!-- PER-PRODUCT DESCRIPTIONS & KEYWORDS — same editor as the Inventory
+         row menu, listed here so all SEO work happens in one tab -->
+    <div class="table-top" style="margin:34px 0 12px">
+      <h2><i class="fa fa-edit" style="color:var(--orange);margin-right:8px"></i>Product Descriptions &amp; Keywords</h2>
+      <div class="ctrl-right">
+        <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="seoProdSearch" placeholder="Search products..." oninput="renderSEOProducts()" /></div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--gray);margin:0 0 14px;max-width:640px">
+      Each product's description shows in its popup on the storefront and is what Google reads for that
+      product. Keywords are extra search phrases specific to that product.
+    </p>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th style="width:56px"></th><th>Product</th><th>Category</th><th>Description</th><th>Keywords</th><th style="width:90px"></th></tr>
+        </thead>
+        <tbody id="seoProdBody"></tbody>
+      </table>
     </div>
   </div>
 
@@ -913,7 +934,7 @@
 (function() {
   var v = '';
   try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-  v = /^[0-9]+$/.test(v) ? v : '202607101342';
+  v = /^[0-9]+$/.test(v) ? v : '202607101426';
   ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo'].forEach(function(f) {
     var s = document.createElement('script');
     s.src = 'admin/js/' + f + '.js?v=' + v;

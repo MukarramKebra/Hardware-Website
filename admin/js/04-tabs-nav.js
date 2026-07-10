@@ -28,7 +28,7 @@ function switchTab(tab) {
   if (tab==='reports')   { renderReports(); renderOrdersReport(); _autoWriteReports(); }
   if (tab==='categories')  renderCatEditor();
   if (tab==='banners')     loadBanners();
-  if (tab==='seo')         loadSEOSettings();
+  if (tab==='seo')       { loadSEOSettings(); renderSEOProducts(); }
   if (tab==='owner')       renderSuperAdmin();
 }
 

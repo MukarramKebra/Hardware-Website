@@ -85,4 +85,39 @@ async function saveProductSEO() {
   });
   showToast('Product SEO saved ✅');
   closeProductSEO();
+  // keep the SEO tab's product list in sync if it's the active view
+  if (document.getElementById('seoSection').style.display !== 'none') renderSEOProducts();
+}
+
+// ── SEO TAB PRODUCT LIST ─────────────────────────────────────────────────────
+// Every product with just its description/keyword status and an Edit button —
+// so all SEO editing happens in this tab without hunting through Inventory's
+// row menus. Reuses openProductSEO(), the same editor the Inventory tab uses.
+function renderSEOProducts() {
+  var body = document.getElementById('seoProdBody');
+  if (!body) return;
+  var q = (document.getElementById('seoProdSearch').value || '').toLowerCase().trim();
+  var photos = {};
+  try { photos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(e) {}
+  var list = getAllAdminProducts().filter(function(p) {
+    return !q || p.name.toLowerCase().indexOf(q) !== -1 || getProductSku(p.id).toLowerCase().indexOf(q) !== -1;
+  });
+  body.innerHTML = list.map(function(p) {
+    var desc = p.desc || '';
+    var kw   = (window._sbProductKeywords || {})[p.id] || '';
+    var ph   = photos[p.id];
+    var thumb = (ph && (ph.indexOf('http') === 0 || ph.indexOf('data:') === 0)) ? ph : '';
+    return '<tr>' +
+      '<td>' + (thumb ? '<img class="prod-img" src="' + thumb + '" loading="lazy" onerror="this.style.opacity=0.3" />' : '<div class="prod-img" style="background:var(--light)"></div>') + '</td>' +
+      '<td><div class="prod-name">' + encodeHtml(p.name) + '</div><div class="prod-sku">' + getProductSku(p.id) + '</div></td>' +
+      '<td><span class="cat-pill">' + encodeHtml((function(){ var s = (getProductCatSlugs(p)[0]) || ''; var m = getAllCats().find(function(c){ return c.slug === s; }); return m ? m.label : (s ? s.replace(/-/g, ' ') : '—'); })()) + '</span></td>' +
+      '<td style="max-width:340px">' + (desc
+        ? '<span style="font-size:12px;color:var(--gray);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:340px" title="' + encodeHtml(desc) + '">' + encodeHtml(desc) + '</span>'
+        : '<span style="color:var(--red);font-size:11px;font-weight:700"><i class="fa fa-exclamation-triangle"></i> Missing</span>') + '</td>' +
+      '<td>' + (kw
+        ? '<span style="color:var(--green);font-size:11px;font-weight:700"><i class="fa fa-check"></i> ' + kw.split(',').length + '</span>'
+        : '<span style="color:#b45309;font-size:11px;font-weight:700">None</span>') + '</td>' +
+      '<td><button class="act-btn" style="background:#eef2ff;color:#4338ca;border-color:#c7d2fe" onclick="openProductSEO(' + p.id + ')"><i class="fa fa-edit"></i> Edit</button></td>' +
+    '</tr>';
+  }).join('') || '<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--gray)">No products match your search.</td></tr>';
 }
