@@ -519,6 +519,23 @@ function _injectProductSchema() {
   tag.textContent = JSON.stringify(itemList);
 }
 
+// Card-level size/pack picker — mirrors the product popup's own
+// _pmCurrentPrice/pmVariantChange, but scoped to one grid card instead of
+// the modal, so a shopper can pick an option without leaving the grid.
+function _cardVariantPrice(p, idx) {
+  const opts = getVariants(p.id);
+  if (!opts.length) return p.price;
+  const v = opts[idx || 0] || opts[0];
+  return (v.price > 0) ? v.price : p.price;
+}
+function cardVariantChange(id, sel) {
+  const p = getAllProducts().find(x => x.id === id);
+  if (!p) return;
+  const idx = parseInt(sel.value, 10) || 0;
+  const priceEl = document.getElementById('cardPrice' + id);
+  if (priceEl) priceEl.innerHTML = _cardVariantPrice(p, idx).toFixed(3) + ' <small>KWD</small>';
+}
+
 function renderProducts() {
   const query = document.getElementById('searchInput').value.trim();
   const grid  = document.getElementById('productsGrid');
@@ -604,17 +621,20 @@ function renderProducts() {
           <div style="font-size:10px;font-weight:700;color:#aaa;letter-spacing:0.5px;margin-bottom:3px">${getProductSku(p.id)}</div>
           <h3>${pName}</h3>
           <p>${pDesc}</p>
+          ${(getVariants(p.id).length && p.price > 0 && !window._sbPriceHidden[p.id]) ? `
+          <select class="card-variant-sel" id="cardVarSel${p.id}" onclick="event.stopPropagation()" onchange="event.stopPropagation();cardVariantChange(${p.id},this)">
+            ${getVariants(p.id).map((v, i) => `<option value="${i}">${v.label}${(v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : ''}</option>`).join('')}
+          </select>
+          ` : ''}
           <div class="product-footer">
             ${(p.price > 0 && !window._sbPriceHidden[p.id]) ? `
             <div>
-              <div class="product-price">${p.price.toFixed(3)} <small>KWD</small></div>
+              <div class="product-price" id="cardPrice${p.id}">${_cardVariantPrice(p).toFixed(3)} <small>KWD</small></div>
               <div class="stock-badge ${stockClass}">${stockLabel}</div>
             </div>
             ${isOut
               ? `<button class="btn-add btn-disabled" disabled onclick="event.stopPropagation()">${unavail}</button>`
-              : getVariants(p.id).length
-                ? `<button class="btn-add" onclick="event.stopPropagation();openProduct(${p.id})"><i class="fa fa-list-ul"></i> ${isAr ? 'الخيارات' : 'Options'}</button>`
-                : `<button class="btn-add" onclick="event.stopPropagation();addToCart(${p.id}, this)"><i class="fa fa-plus"></i> ${addBtn}</button>`}
+              : `<button class="btn-add" onclick="event.stopPropagation();addToCart(${p.id}, this)"><i class="fa fa-plus"></i> ${addBtn}</button>`}
             ` : `
             <div>
               <div class="product-price" style="font-size:12px;color:var(--gray-600)">${isAr ? 'السعر عند الطلب' : 'Price on request'}</div>

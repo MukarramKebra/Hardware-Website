@@ -267,14 +267,22 @@ document.addEventListener('keydown', function(e) {
 // loading spinner -> checkmark sequence before the toast pops up.
 function addToCart(id, btn) {
   if (btn && btn.dataset.busy === '1') return;
-  // Products with size/pack options can't be one-click added — the shopper
-  // has to pick an option first, so open the product page instead
-  if (getVariants(id).length) { openProduct(id); return; }
   trackView(id);
-  const product  = getAllProducts().find(p => p.id === id);
+  const product = getAllProducts().find(p => p.id === id);
+  // If this product has size/pack options, read whichever one is selected
+  // in the card's own dropdown (cardVariantChange keeps it live) — each
+  // option is its own cart line, same as picking one in the product popup
+  const opts    = getVariants(id);
+  const sel     = opts.length ? document.getElementById('cardVarSel' + id) : null;
+  const variant = opts.length ? (opts[sel ? (parseInt(sel.value, 10) || 0) : 0] || opts[0]) : null;
+  const vLabel  = variant ? variant.label : null;
+  const price   = variant ? ((variant.price > 0) ? variant.price : product.price) : product.price;
+
   const liveQty  = getLiveQty(id);
-  const inCart   = cart.find(c => c.id === id);
-  const cartQty  = inCart ? inCart.qty : 0;
+  // Options share the parent product's stock pool, so stock/limit checks
+  // count every line of this product, not just the one matching this option
+  const inCart   = cart.find(c => c.id === id && (c.variant || null) === vLabel);
+  const cartQty  = cart.filter(c => c.id === id).reduce((s, c) => s + c.qty, 0);
   const limits   = getQtyLimits(id);
   const step     = inCart ? 1 : Math.max(1, limits.min); // first add jumps to the minimum order qty
   if (liveQty !== null && cartQty >= liveQty) {
@@ -284,7 +292,15 @@ function addToCart(id, btn) {
     alert('Maximum order quantity for this product is ' + limits.max + '.'); return;
   }
   function commit() {
-    if (inCart) { inCart.qty += step; } else { cart.push({...product, qty:step}); }
+    if (inCart) { inCart.qty += step; }
+    else {
+      cart.push(Object.assign({}, product, {
+        qty: step,
+        variant: vLabel,
+        name: vLabel ? product.name + ' (' + vLabel + ')' : product.name,
+        price: price
+      }));
+    }
     updateCartUI();
   }
   if (!btn) { commit(); showToast('Added to cart'); return; }
