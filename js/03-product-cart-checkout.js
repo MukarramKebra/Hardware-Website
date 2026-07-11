@@ -2,6 +2,7 @@
 let _pmQty = 1;
 let _pmId  = null;
 let _pmVariantIdx = 0; // which size/pack option is selected (0 when none exist)
+let _pmBaseImg = null; // the product's own image, for options that don't override it
 
 // Price for the currently selected option — options without their own price
 // sell at the product's base price
@@ -12,11 +13,28 @@ function _pmCurrentPrice(p) {
   return (v.price > 0) ? v.price : p.price;
 }
 
+// Applies the currently-selected option's own image/description ("duplicated"
+// from the product when the admin created it, then edited) — falls back to
+// the product's own when the option didn't override one. Shared by the
+// initial render and every dropdown change so both stay in sync.
+function _pmApplyVariantDisplay(p) {
+  const v = getVariants(_pmId)[_pmVariantIdx];
+  const descEl = document.getElementById('pmDescDisplay');
+  if (descEl) descEl.textContent = (v && v.description) || p.desc;
+  const imgEl = document.getElementById('pmMainImg');
+  if (imgEl) {
+    const src = (v && v.image) || _pmBaseImg;
+    if (src) { imgEl.src = src; imgEl.style.display = ''; document.getElementById('pmFallback').style.display = 'none'; }
+    else { imgEl.style.display = 'none'; document.getElementById('pmFallback').style.display = 'flex'; }
+  }
+}
 function pmVariantChange(sel) {
   _pmVariantIdx = parseInt(sel.value, 10) || 0;
   const p = getAllProducts().find(x => x.id === _pmId);
-  const el = document.getElementById('pmPriceDisplay');
-  if (el && p) el.innerHTML = _pmCurrentPrice(p).toFixed(3) + ' <small>KWD</small>';
+  if (!p) return;
+  const priceEl = document.getElementById('pmPriceDisplay');
+  if (priceEl) priceEl.innerHTML = _pmCurrentPrice(p).toFixed(3) + ' <small>KWD</small>';
+  _pmApplyVariantDisplay(p);
 }
 
 function openProduct(id) {
@@ -37,6 +55,7 @@ function openProduct(id) {
   const bigImg = (rawPhoto && (rawPhoto.startsWith('http') || rawPhoto.startsWith('data:')))
     ? rawPhoto
     : p.img;
+  _pmBaseImg = bigImg; // remembered so pmVariantChange can fall back to it
 
   let stockIcon, stockTxt, stockCls;
   if (isOut)      { stockIcon = 'fa-times-circle'; stockTxt = 'Out of Stock'; stockCls = 'out-of-stock'; }
@@ -46,10 +65,8 @@ function openProduct(id) {
   document.getElementById('prodModalSku').textContent = getProductSku(id);
   document.getElementById('prodModalBody').innerHTML =
     '<div class="pm-img-col">' +
-      (bigImg
-        ? '<img src="' + bigImg + '" alt="' + p.name + '" onerror="imgError(this)" />' +
-          '<div class="pm-img-fallback" id="pmFallback"><i class="fa fa-tools"></i></div>'
-        : '<div class="pm-img-fallback" id="pmFallback" style="display:flex"><i class="fa fa-tools"></i></div>') +
+      '<img id="pmMainImg" src="' + (bigImg || '') + '" alt="' + p.name + '" onerror="imgError(this)" style="display:' + (bigImg ? '' : 'none') + '" />' +
+      '<div class="pm-img-fallback" id="pmFallback" style="display:' + (bigImg ? 'none' : 'flex') + '"><i class="fa fa-tools"></i></div>' +
     '</div>' +
     '<div class="pm-info-col">' +
       '<div class="pm-badge-row">' +
@@ -57,7 +74,7 @@ function openProduct(id) {
         (p.badge ? '<span class="pm-badge orange">' + p.badge + '</span>' : '') +
       '</div>' +
       '<h2 class="pm-name">' + p.name + '</h2>' +
-      '<p class="pm-desc">' + p.desc + '</p>' +
+      '<p class="pm-desc" id="pmDescDisplay">' + p.desc + '</p>' +
       ((p.price > 0 && !window._sbPriceHidden[p.id]) ? (
       '<div class="pm-price" id="pmPriceDisplay">' + _pmCurrentPrice(p).toFixed(3) + ' <small>KWD</small></div>' +
       '<div class="pm-stock-line ' + stockCls + '"><i class="fa ' + stockIcon + '"></i> ' + stockTxt + '</div>' +
@@ -111,6 +128,7 @@ function openProduct(id) {
       '</div>' +
     '</div>';
 
+  if (getVariants(id).length) _pmApplyVariantDisplay(p);
   renderRelatedProducts(id, p.category);
   const overlay = document.getElementById('prodOverlay');
   overlay.classList.add('open');

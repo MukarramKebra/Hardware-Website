@@ -222,10 +222,14 @@ function saveQtyLimits() {
 
 // ── PER-PRODUCT SIZE/PACK OPTIONS ─────────────────────────────────────────────
 // Stored in Supabase (expert_settings key 'product_variants') as
-// {id: [{label, price}]} — same key-value pattern as qty_limits. The
-// storefront shows them as a dropdown on the product and each option becomes
-// its own cart line (see js/03-product-cart-checkout.js). price 0 = sell at
-// the product's own price.
+// {id: [{label, price, image, description}]} — same key-value pattern as
+// qty_limits. The storefront shows them as a dropdown on the product; each
+// option becomes its own cart line, and swaps in its own image/description
+// on the product page when it has one (see js/03-product-cart-checkout.js).
+// price 0 = sell at the product's own price; empty image/description = use
+// the product's own. New rows start as a "duplicate" of the product's own
+// image/description so admin only has to change what's different for that
+// option, not re-enter everything.
 var _vrProdId = null;
 function openVariants(id) {
   var p = getAllAdminProducts().find(function(x){ return x.id === id; });
@@ -234,7 +238,7 @@ function openVariants(id) {
   document.getElementById('variantsProdName').textContent = '#' + id + ' — ' + p.name;
   var rows = (window._sbVariants || {})[id] || [];
   document.getElementById('variantRows').innerHTML = '';
-  rows.forEach(function(v) { addVariantRow(v.label, v.price); });
+  rows.forEach(function(v) { addVariantRow(v.label, v.price, v.image, v.description); });
   if (!rows.length) addVariantRow();
   document.getElementById('variantsOverlay').classList.add('open');
 }
@@ -242,19 +246,55 @@ function closeVariants() {
   document.getElementById('variantsOverlay').classList.remove('open');
   _vrProdId = null;
 }
-function addVariantRow(label, price) {
+// The product's own current image (admin's local photo cache first, falling
+// back to its base image) and description — what a new option duplicates.
+function _variantProductDefaults() {
+  var p = getAllAdminProducts().find(function(x){ return x.id === _vrProdId; }) || {};
+  var photos = {};
+  try { photos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(e) {}
+  var ph = photos[_vrProdId];
+  var image = (ph && (ph.indexOf('http') === 0 || ph.indexOf('data:') === 0)) ? ph : (p.img || '');
+  return { image: image, description: p.desc || '' };
+}
+function addVariantRow(label, price, image, description) {
+  var isDuplicate = image === undefined && description === undefined;
+  var defaults = isDuplicate ? _variantProductDefaults() : { image: '', description: '' };
   var row = document.createElement('div');
   row.className = 'variant-row';
-  row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center';
+  row.style.cssText = 'display:flex;gap:10px;margin-bottom:10px;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--light)';
   row.innerHTML =
-    '<input type="text" class="vr-label" placeholder="e.g. 2&quot; (50 box/ctn)" style="flex:1;min-width:0;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px" />' +
-    '<input type="number" class="vr-price" min="0" step="0.001" placeholder="0.000" title="Price (KWD) — leave empty to use the product price" style="width:90px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px" />' +
-    '<button class="del-btn" onclick="this.parentNode.remove()" title="Remove option"><i class="fa fa-trash"></i></button>';
+    '<div style="display:flex;flex-direction:column;gap:2px;justify-content:center">' +
+      '<button type="button" class="vr-move" onclick="moveVariantRow(this,-1)" title="Move up"><i class="fa fa-chevron-up"></i></button>' +
+      '<button type="button" class="vr-move" onclick="moveVariantRow(this,1)" title="Move down"><i class="fa fa-chevron-down"></i></button>' +
+    '</div>' +
+    '<img class="vr-thumb" style="width:52px;height:52px;object-fit:cover;border-radius:7px;border:1px solid var(--border);background:#fff;flex-shrink:0" onerror="this.style.opacity=0.3" />' +
+    '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">' +
+      '<div style="display:flex;gap:8px">' +
+        '<input type="text" class="vr-label" placeholder="e.g. 2&quot; (50 box/ctn)" style="flex:1;min-width:0;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px" />' +
+        '<input type="number" class="vr-price" min="0" step="0.001" placeholder="0.000" title="Price (KWD) — leave empty to use the product price" style="width:90px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px" />' +
+        '<button type="button" class="del-btn" onclick="this.closest(\'.variant-row\').remove()" title="Remove option"><i class="fa fa-trash"></i></button>' +
+      '</div>' +
+      '<input type="text" class="vr-image" placeholder="Image URL — defaults to the product\'s own photo" style="padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px" oninput="this.closest(\'.variant-row\').querySelector(\'.vr-thumb\').src=this.value" />' +
+      '<textarea class="vr-desc" rows="2" placeholder="Description — defaults to the product\'s own" style="padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;resize:vertical"></textarea>' +
+    '</div>';
   // Values set via the DOM (not baked into the HTML string) so labels with
   // quotes — 2" nails etc. — can never truncate the attribute
   row.querySelector('.vr-label').value = label || '';
   row.querySelector('.vr-price').value = price > 0 ? price : '';
+  row.querySelector('.vr-image').value = image !== undefined ? (image || '') : defaults.image;
+  row.querySelector('.vr-desc').value  = description !== undefined ? (description || '') : defaults.description;
+  row.querySelector('.vr-thumb').src   = row.querySelector('.vr-image').value;
   document.getElementById('variantRows').appendChild(row);
+}
+// Swaps a row with its neighbor — the order here is exactly the order the
+// dropdown shows on the storefront, so "put this option first" just means
+// moving its row to the top of this list.
+function moveVariantRow(btn, dir) {
+  var row = btn.closest('.variant-row');
+  var sibling = dir < 0 ? row.previousElementSibling : row.nextElementSibling;
+  if (!sibling) return;
+  if (dir < 0) row.parentNode.insertBefore(row, sibling);
+  else row.parentNode.insertBefore(sibling, row);
 }
 function saveVariants() {
   if (!_vrProdId) return;
@@ -263,7 +303,9 @@ function saveVariants() {
     var label = row.querySelector('.vr-label').value.trim();
     if (!label) return;
     var price = parseFloat(row.querySelector('.vr-price').value) || 0;
-    opts.push({ label: label, price: price > 0 ? price : 0 });
+    var image = row.querySelector('.vr-image').value.trim();
+    var description = row.querySelector('.vr-desc').value.trim();
+    opts.push({ label: label, price: price > 0 ? price : 0, image: image || undefined, description: description || undefined });
   });
   if (!window._sbVariants) window._sbVariants = {};
   if (opts.length) { window._sbVariants[_vrProdId] = opts; }

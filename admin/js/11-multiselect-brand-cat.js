@@ -102,8 +102,18 @@ function bulkClearStock() {
   clearSelection(); renderTable(); renderStats();
 }
 
+// Clear Stock and Delete confirm before touching many products, but Add
+// Stock didn't — a "select all [products of a brand]" from the brand menu
+// followed by one click here could silently restock dozens of products at
+// once. Skip the prompt for a small, deliberate selection (a handful of
+// rows ticked by hand); require it once the count is large enough that it
+// was almost certainly a "select all"-style action, not individual picks.
+function _bulkConfirmIfLarge(action, n) {
+  return n <= 5 || confirm(action + ' for ' + n + ' selected products?');
+}
 function bulkAddStock() {
   if (!_selectedIds.size) return;
+  if (!_bulkConfirmIfLarge('Add +50 stock', _selectedIds.size)) return;
   _pushUndo();
   _selectedIds.forEach(function(id){
     var cur=stockData[id]||0; stockData[id]=Math.ceil((cur+1)/50)*50;
@@ -114,6 +124,7 @@ function bulkAddStock() {
 
 function bulkAdd5000Stock() {
   if (!_selectedIds.size) return;
+  if (!_bulkConfirmIfLarge('Add +5000 stock', _selectedIds.size)) return;
   _pushUndo();
   _selectedIds.forEach(function(id){ stockData[id]=(stockData[id]||0)+5000; });
   showToast('+5000 added to '+_selectedIds.size+' products');
