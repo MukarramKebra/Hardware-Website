@@ -274,7 +274,13 @@ function addVariantRow(label, price, image, description) {
         '<input type="number" class="vr-price" min="0" step="0.001" placeholder="0.000" title="Price (KWD) — leave empty to use the product price" style="width:90px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px" />' +
         '<button type="button" class="del-btn" onclick="this.closest(\'.variant-row\').remove()" title="Remove option"><i class="fa fa-trash"></i></button>' +
       '</div>' +
-      '<input type="text" class="vr-image" placeholder="Image URL — defaults to the product\'s own photo" style="padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px" oninput="this.closest(\'.variant-row\').querySelector(\'.vr-thumb\').src=this.value" />' +
+      '<div style="display:flex;gap:6px">' +
+        '<input type="text" class="vr-image" placeholder="Image URL — defaults to the product\'s own photo" style="flex:1;min-width:0;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px" oninput="this.closest(\'.variant-row\').querySelector(\'.vr-thumb\').src=this.value" />' +
+        '<label style="display:flex;align-items:center;gap:5px;padding:8px 10px;border:1px dashed var(--border);border-radius:8px;font-size:11px;font-weight:700;color:var(--gray);cursor:pointer;white-space:nowrap" title="Upload a photo from your computer for this option">' +
+          '<i class="fa fa-upload"></i> Upload' +
+          '<input type="file" accept="image/*" style="display:none" onchange="_vrFileChosen(this)" />' +
+        '</label>' +
+      '</div>' +
       '<textarea class="vr-desc" rows="2" placeholder="Description — defaults to the product\'s own" style="padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;resize:vertical"></textarea>' +
     '</div>';
   // Values set via the DOM (not baked into the HTML string) so labels with
@@ -285,6 +291,23 @@ function addVariantRow(label, price, image, description) {
   row.querySelector('.vr-desc').value  = description !== undefined ? (description || '') : defaults.description;
   row.querySelector('.vr-thumb').src   = row.querySelector('.vr-image').value;
   document.getElementById('variantRows').appendChild(row);
+}
+// No cropping here (unlike the main product Photo editor) — option thumbnails
+// are small, and a modal-based crop tool is built as a single global instance
+// that can't run once per row. Read straight to a data URL and drop it in
+// the same URL field, so the rest of the row (thumbnail preview, save) just
+// works without knowing whether the string came from typing or uploading.
+function _vrFileChosen(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  var row = input.closest('.variant-row');
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var urlField = row.querySelector('.vr-image');
+    urlField.value = ev.target.result;
+    row.querySelector('.vr-thumb').src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 // Swaps a row with its neighbor — the order here is exactly the order the
 // dropdown shows on the storefront, so "put this option first" just means
