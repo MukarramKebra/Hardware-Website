@@ -36,13 +36,19 @@ function _pmApplyVariantDisplay(p) {
     else { imgEl.style.display = 'none'; document.getElementById('pmFallback').style.display = 'flex'; }
   }
 }
-function pmVariantChange(sel) {
-  _pmVariantIdx = parseInt(sel.value, 10) || 0;
+// Tile order is exactly getVariants()'s array order — the same order the
+// admin's up/down arrows control (see moveVariantRow in admin/js/08-inventory.js) —
+// so "make this option show first" is entirely an admin-side concern.
+function pmSelectVariant(idx) {
+  _pmVariantIdx = idx;
   const p = getAllProducts().find(x => x.id === _pmId);
   if (!p) return;
   const priceEl = document.getElementById('pmPriceDisplay');
   if (priceEl) priceEl.innerHTML = _pmCurrentPrice(p).toFixed(3) + ' <small>KWD</small>';
   _pmApplyVariantDisplay(p);
+  document.querySelectorAll('#pmVariantTiles .pm-variant-tile').forEach(function(t, i) {
+    t.classList.toggle('selected', i === idx);
+  });
 }
 
 function openProduct(id) {
@@ -63,7 +69,7 @@ function openProduct(id) {
   const bigImg = (rawPhoto && (rawPhoto.startsWith('http') || rawPhoto.startsWith('data:')))
     ? rawPhoto
     : p.img;
-  _pmBaseImg = bigImg; // remembered so pmVariantChange can fall back to it
+  _pmBaseImg = bigImg; // remembered so pmSelectVariant can fall back to it
 
   let stockIcon, stockTxt, stockCls;
   if (isOut)      { stockIcon = 'fa-times-circle'; stockTxt = 'Out of Stock'; stockCls = 'out-of-stock'; }
@@ -87,13 +93,20 @@ function openProduct(id) {
       '<div class="pm-price" id="pmPriceDisplay">' + _pmCurrentPrice(p).toFixed(3) + ' <small>KWD</small></div>' +
       '<div class="pm-stock-line ' + stockCls + '"><i class="fa ' + stockIcon + '"></i> ' + stockTxt + '</div>' +
       (getVariants(id).length ?
-        '<div class="pm-qty-row">' +
+        '<div class="pm-variant-block">' +
           '<span class="pm-qty-lbl">Size / Pack</span>' +
-          '<select class="pm-variant-sel" id="pmVariantSel" onchange="pmVariantChange(this)">' +
+          '<div class="pm-variant-tiles" id="pmVariantTiles">' +
             getVariants(id).map(function(v, i) {
-              return '<option value="' + i + '">' + v.label + ((v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : '') + '</option>';
+              var thumb = v.image || bigImg || '';
+              var safeLabel = v.label.replace(/"/g, '&quot;');
+              return '<div class="pm-variant-tile' + (i === 0 ? ' selected' : '') + '" onclick="pmSelectVariant(' + i + ')">' +
+                (thumb
+                  ? '<img src="' + thumb + '" alt="' + safeLabel + '" onerror="this.parentNode.classList.add(\'pm-variant-tile-broken\')" />'
+                  : '<div class="pm-variant-tile-noimg"><i class="fa fa-tools"></i></div>') +
+                '<span>' + v.label + ((v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : '') + '</span>' +
+              '</div>';
             }).join('') +
-          '</select>' +
+          '</div>' +
         '</div>'
       : '') +
       (!isOut ?

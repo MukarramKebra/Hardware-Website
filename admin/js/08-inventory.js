@@ -321,7 +321,7 @@ function moveVariantRow(btn, dir) {
   if (dir < 0) row.parentNode.insertBefore(row, sibling);
   else row.parentNode.insertBefore(sibling, row);
 }
-function saveVariants() {
+async function saveVariants() {
   if (!_vrProdId) return;
   var opts = [];
   document.querySelectorAll('#variantRows .variant-row').forEach(function(row) {
@@ -333,13 +333,25 @@ function saveVariants() {
     var description = row.querySelector('.vr-desc').value.trim();
     opts.push({ label: label, price: price > 0 ? price : 0, sku: sku || undefined, image: image || undefined, description: description || undefined });
   });
-  if (!window._sbVariants) window._sbVariants = {};
-  if (opts.length) { window._sbVariants[_vrProdId] = opts; }
-  else { delete window._sbVariants[_vrProdId]; }
-  sbFetch(SB_URL + '/rest/v1/expert_settings', {
+  // This setting is one JSON blob covering every product's options, and the
+  // save below overwrites that whole blob — so saving from a stale in-memory
+  // copy of window._sbVariants (e.g. this tab sat open while another admin
+  // session, or an earlier action in this same one, changed a DIFFERENT
+  // product's options) would silently erase that other product's data. Pull
+  // the current value fresh right before merging this product's change in,
+  // so the write only ever touches _vrProdId's own entry.
+  var fresh = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_variants&select=value', { headers: SB_HDRS });
+  var allVariants = {};
+  if (!fresh.error && fresh.data && fresh.data[0] && fresh.data[0].value) {
+    try { allVariants = JSON.parse(fresh.data[0].value) || {}; } catch(e) {}
+  }
+  if (opts.length) { allVariants[_vrProdId] = opts; }
+  else { delete allVariants[_vrProdId]; }
+  window._sbVariants = allVariants;
+  await sbFetch(SB_URL + '/rest/v1/expert_settings', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
-    body: JSON.stringify([{ key: 'product_variants', value: JSON.stringify(window._sbVariants) }])
+    body: JSON.stringify([{ key: 'product_variants', value: JSON.stringify(allVariants) }])
   });
   showToast(opts.length ? 'Options saved ✅' : 'Options removed');
   closeVariants();
