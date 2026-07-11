@@ -222,12 +222,12 @@ function saveQtyLimits() {
 
 // ── PER-PRODUCT SIZE/PACK OPTIONS ─────────────────────────────────────────────
 // Stored in Supabase (expert_settings key 'product_variants') as
-// {id: [{label, price, image, description}]} — same key-value pattern as
-// qty_limits. The storefront shows them as a dropdown on the product; each
-// option becomes its own cart line, and swaps in its own image/description
-// on the product page when it has one (see js/03-product-cart-checkout.js).
-// price 0 = sell at the product's own price; empty image/description = use
-// the product's own. New rows start as a "duplicate" of the product's own
+// {id: [{label, price, sku, image, description}]} — same key-value pattern
+// as qty_limits. The storefront shows them as a dropdown on the product;
+// each option becomes its own cart line, and swaps in its own SKU/image/
+// description on the product page when it has one (see js/03-product-cart-checkout.js).
+// price 0 = sell at the product's own price; empty sku/image/description =
+// use the product's own. New rows start as a "duplicate" of the product's own
 // image/description so admin only has to change what's different for that
 // option, not re-enter everything.
 var _vrProdId = null;
@@ -238,7 +238,7 @@ function openVariants(id) {
   document.getElementById('variantsProdName').textContent = '#' + id + ' — ' + p.name;
   var rows = (window._sbVariants || {})[id] || [];
   document.getElementById('variantRows').innerHTML = '';
-  rows.forEach(function(v) { addVariantRow(v.label, v.price, v.image, v.description); });
+  rows.forEach(function(v) { addVariantRow(v.label, v.price, v.image, v.description, v.sku); });
   if (!rows.length) addVariantRow();
   document.getElementById('variantsOverlay').classList.add('open');
 }
@@ -256,7 +256,7 @@ function _variantProductDefaults() {
   var image = (ph && (ph.indexOf('http') === 0 || ph.indexOf('data:') === 0)) ? ph : (p.img || '');
   return { image: image, description: p.desc || '' };
 }
-function addVariantRow(label, price, image, description) {
+function addVariantRow(label, price, image, description, sku) {
   var isDuplicate = image === undefined && description === undefined;
   var defaults = isDuplicate ? _variantProductDefaults() : { image: '', description: '' };
   var row = document.createElement('div');
@@ -274,6 +274,7 @@ function addVariantRow(label, price, image, description) {
         '<input type="number" class="vr-price" min="0" step="0.001" placeholder="0.000" title="Price (KWD) — leave empty to use the product price" style="width:90px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px" />' +
         '<button type="button" class="del-btn" onclick="this.closest(\'.variant-row\').remove()" title="Remove option"><i class="fa fa-trash"></i></button>' +
       '</div>' +
+      '<input type="text" class="vr-sku" placeholder="SKU for this option — defaults to the product\'s own" style="padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px" />' +
       '<div style="display:flex;gap:6px">' +
         '<input type="text" class="vr-image" placeholder="Image URL — defaults to the product\'s own photo" style="flex:1;min-width:0;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px" oninput="this.closest(\'.variant-row\').querySelector(\'.vr-thumb\').src=this.value" />' +
         '<label style="display:flex;align-items:center;gap:5px;padding:8px 10px;border:1px dashed var(--border);border-radius:8px;font-size:11px;font-weight:700;color:var(--gray);cursor:pointer;white-space:nowrap" title="Upload a photo from your computer for this option">' +
@@ -287,6 +288,7 @@ function addVariantRow(label, price, image, description) {
   // quotes — 2" nails etc. — can never truncate the attribute
   row.querySelector('.vr-label').value = label || '';
   row.querySelector('.vr-price').value = price > 0 ? price : '';
+  row.querySelector('.vr-sku').value   = sku || '';
   row.querySelector('.vr-image').value = image !== undefined ? (image || '') : defaults.image;
   row.querySelector('.vr-desc').value  = description !== undefined ? (description || '') : defaults.description;
   row.querySelector('.vr-thumb').src   = row.querySelector('.vr-image').value;
@@ -326,9 +328,10 @@ function saveVariants() {
     var label = row.querySelector('.vr-label').value.trim();
     if (!label) return;
     var price = parseFloat(row.querySelector('.vr-price').value) || 0;
+    var sku = row.querySelector('.vr-sku').value.trim();
     var image = row.querySelector('.vr-image').value.trim();
     var description = row.querySelector('.vr-desc').value.trim();
-    opts.push({ label: label, price: price > 0 ? price : 0, image: image || undefined, description: description || undefined });
+    opts.push({ label: label, price: price > 0 ? price : 0, sku: sku || undefined, image: image || undefined, description: description || undefined });
   });
   if (!window._sbVariants) window._sbVariants = {};
   if (opts.length) { window._sbVariants[_vrProdId] = opts; }

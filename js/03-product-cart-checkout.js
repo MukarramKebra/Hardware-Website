@@ -12,13 +12,21 @@ function _pmCurrentPrice(p) {
   const v = opts[_pmVariantIdx] || opts[0];
   return (v.price > 0) ? v.price : p.price;
 }
+// SKU for a specific option — options without their own SKU sell under the
+// product's own (matches the source catalog, which suffixes the base SKU
+// per option rather than leaving it blank)
+function _variantSku(v, productId) {
+  return (v && v.sku) ? v.sku : getProductSku(productId);
+}
 
-// Applies the currently-selected option's own image/description ("duplicated"
-// from the product when the admin created it, then edited) — falls back to
-// the product's own when the option didn't override one. Shared by the
-// initial render and every dropdown change so both stay in sync.
+// Applies the currently-selected option's own SKU/image/description
+// ("duplicated" from the product when the admin created it, then edited) —
+// falls back to the product's own when the option didn't override one.
+// Shared by the initial render and every dropdown change so both stay in sync.
 function _pmApplyVariantDisplay(p) {
   const v = getVariants(_pmId)[_pmVariantIdx];
+  const skuEl = document.getElementById('prodModalSku');
+  if (skuEl) skuEl.textContent = _variantSku(v, p.id);
   const descEl = document.getElementById('pmDescDisplay');
   if (descEl) descEl.textContent = (v && v.description) || p.desc;
   const imgEl = document.getElementById('pmMainImg');
@@ -213,7 +221,8 @@ function pmAddToCart() {
   // Each size/pack option is its own cart line; options share the parent
   // product's stock pool, so stock checks count ALL lines of this product.
   const opts     = getVariants(_pmId);
-  const variant  = opts.length ? (opts[_pmVariantIdx] || opts[0]).label : null;
+  const selOpt   = opts.length ? (opts[_pmVariantIdx] || opts[0]) : null;
+  const variant  = selOpt ? selOpt.label : null;
   const inCart   = cart.find(c => c.id === _pmId && (c.variant || null) === variant);
   const cartQty  = cart.filter(c => c.id === _pmId).reduce((s,c) => s + c.qty, 0);
   const limits   = getQtyLimits(_pmId);
@@ -234,10 +243,11 @@ function pmAddToCart() {
     cart.push(Object.assign({}, product, {
       qty: _pmQty,
       variant: variant,
-      // Bake the option into the line's name/price so cart, checkout, the
-      // WhatsApp message and the saved order all show it with no extra code
+      // Bake the option into the line's name/price/sku so cart, checkout,
+      // the WhatsApp message and the saved order all show it with no extra code
       name:  variant ? product.name + ' (' + variant + ')' : product.name,
-      price: _pmCurrentPrice(product)
+      price: _pmCurrentPrice(product),
+      sku:   _variantSku(selOpt, _pmId)
     }));
   }
   updateCartUI();
@@ -298,7 +308,8 @@ function addToCart(id, btn) {
         qty: step,
         variant: vLabel,
         name: vLabel ? product.name + ' (' + vLabel + ')' : product.name,
-        price: price
+        price: price,
+        sku: _variantSku(variant, id)
       }));
     }
     updateCartUI();
@@ -451,7 +462,7 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
   deductStock(cart);
 
   // Save order to Supabase
-  saveOrderToSupabase({ name, phone, address: isPickup ? 'PICK UP' : address, notes, items: cart.map(c=>({name:c.name,sku:getProductSku(c.id),qty:c.qty,price:c.price})), total });
+  saveOrderToSupabase({ name, phone, address: isPickup ? 'PICK UP' : address, notes, items: cart.map(c=>({name:c.name,sku:c.sku||getProductSku(c.id),qty:c.qty,price:c.price})), total });
 
   // Open WhatsApp
   window.open('https://wa.me/96597656372?text=' + encodeURIComponent(msg), '_blank');

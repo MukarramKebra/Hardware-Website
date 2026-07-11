@@ -534,6 +534,8 @@ function cardVariantChange(id, sel) {
   const idx = parseInt(sel.value, 10) || 0;
   const priceEl = document.getElementById('cardPrice' + id);
   if (priceEl) priceEl.innerHTML = _cardVariantPrice(p, idx).toFixed(3) + ' <small>KWD</small>';
+  const skuEl = document.getElementById('cardSku' + id);
+  if (skuEl) skuEl.textContent = _variantSku(getVariants(id)[idx], id);
 }
 
 function renderProducts() {
@@ -618,7 +620,7 @@ function renderProducts() {
         </div>
         <div class="product-info">
           <div class="product-cat">${pCat}</div>
-          <div style="font-size:10px;font-weight:700;color:#aaa;letter-spacing:0.5px;margin-bottom:3px">${getProductSku(p.id)}</div>
+          <div style="font-size:10px;font-weight:700;color:#aaa;letter-spacing:0.5px;margin-bottom:3px" id="cardSku${p.id}">${_variantSku(getVariants(p.id)[0], p.id)}</div>
           <h3>${pName}</h3>
           <p>${pDesc}</p>
           ${(getVariants(p.id).length && p.price > 0 && !window._sbPriceHidden[p.id]) ? `
