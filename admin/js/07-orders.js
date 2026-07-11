@@ -323,11 +323,13 @@ function renderTable() {
       // value = price × qty, so showing it would let a hidden-stock account
       // derive the quantity by dividing — hide it under the same permission
       '<td class="val-cell">'+(window._hideStockNumbers ? '—' : val)+'</td>' +
-      // Trimmed action set: description editing moved to the SEO tab, and the
-      // stock shortcuts went away (type in the Stock column, or use the bulk
-      // bar for many products at once)
+      // Description editing lives in the SEO tab; everything else (including
+      // the stock shortcuts) stays here inline per-row
       '<td><div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;min-width:300px">' +
         '<button class="vis-btn '+visCls+'" onclick="toggleVisibility('+p.id+','+p.isBase+')">'+visLbl+'</button>' +
+        '<button class="act-btn" onclick="setStock('+p.id+',0)"><i class="fa fa-times"></i> Clear</button>' +
+        '<button class="act-btn" onclick="addStock('+p.id+')"><i class="fa fa-plus"></i> +50</button>' +
+        '<button class="act-btn" onclick="addStock5000('+p.id+')"><i class="fa fa-plus"></i> +5000</button>' +
         '<button class="act-btn blue" onclick="openPhoto('+p.id+')"><i class="fa fa-camera"></i> Photo</button>' +
         '<button class="act-btn" style="background:#fdf4ff;color:#a21caf;border-color:#f5d0fe" onclick="openVariants('+p.id+')"><i class="fa fa-list-ul"></i> Options'+(((window._sbVariants||{})[p.id]||[]).length ? ' ('+window._sbVariants[p.id].length+')' : '')+'</button>' +
         '<button class="act-btn purple" onclick="openStats('+p.id+')"><i class="fa fa-chart-bar"></i> Stats</button>' +
