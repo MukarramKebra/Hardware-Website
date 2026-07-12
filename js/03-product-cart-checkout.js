@@ -78,6 +78,7 @@ function openProduct(id) {
 
   document.getElementById('prodModalBody').innerHTML =
     '<div class="pm-img-col">' +
+      '<button class="pm-img-back-btn" onclick="closeProduct()" title="Back to Products"><i class="fa fa-arrow-left"></i></button>' +
       '<img id="pmMainImg" src="' + (bigImg || '') + '" alt="' + p.name + '" onerror="imgError(this)" style="display:' + (bigImg ? '' : 'none') + '" />' +
       '<div class="pm-img-fallback" id="pmFallback" style="display:' + (bigImg ? 'none' : 'flex') + '"><i class="fa fa-tools"></i></div>' +
     '</div>' +
