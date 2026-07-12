@@ -309,3 +309,81 @@ async function saveCatProducts() {
   showToast(msg);
 }
 
+// ── FEATURED PRODUCTS (homepage offers strip) ────────────────────────────────
+// Admin picks up to FO_MAX_PRODUCTS real products to show in the scrolling
+// strip at the top of the homepage (js/02-catalog-render.js initOffersTicker),
+// which used to show 8 hardcoded category tiles instead of real products.
+// Stored in expert_settings key 'featured_offers' as a JSON array of product
+// ids — array order is also the display order on the storefront.
+var FO_MAX_PRODUCTS = 50;
+var _foIds = []; // ordered array of currently-picked product ids (pending save)
+
+async function loadFeaturedOffersSummary() {
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_HDRS });
+  var ids = [];
+  if (!res.error && Array.isArray(res.data) && res.data[0] && res.data[0].value) {
+    try { ids = JSON.parse(res.data[0].value) || []; } catch(e) {}
+  }
+  var el = document.getElementById('foSummary');
+  if (el) el.textContent = ids.length ? (ids.length + ' product' + (ids.length === 1 ? '' : 's') + ' featured on homepage') : 'None picked yet — the homepage strip is hidden';
+}
+
+async function openFeaturedOffers() {
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_HDRS });
+  _foIds = [];
+  if (!res.error && Array.isArray(res.data) && res.data[0] && res.data[0].value) {
+    try { _foIds = JSON.parse(res.data[0].value) || []; } catch(e) {}
+  }
+  document.getElementById('foSearch').value = '';
+  _foRenderList('');
+  _foUpdateCount();
+  document.getElementById('featOfferOverlay').classList.add('open');
+  setTimeout(function(){ document.getElementById('foSearch').focus(); }, 100);
+}
+function closeFeaturedOffers() {
+  document.getElementById('featOfferOverlay').classList.remove('open');
+}
+function _foUpdateCount() {
+  var el = document.getElementById('foCount');
+  if (el) el.textContent = _foIds.length + ' / ' + FO_MAX_PRODUCTS + ' selected';
+}
+function _foRenderList(q) {
+  q = (q || '').toLowerCase();
+  var rows = getAllAdminProducts().filter(function(p) {
+    return !q || p.name.toLowerCase().includes(q) ||
+      getProductSku(p.id).toLowerCase().includes(q) ||
+      (typeof getBrand === 'function' && getBrand(p.id).toLowerCase().includes(q));
+  }).map(function(p) {
+    var ck = _foIds.includes(p.id);
+    return '<div class="mc-cat-row' + (ck ? ' mc-selected' : '') + '" onclick="foToggle(this,' + p.id + ')">' +
+      '<input type="checkbox"' + (ck ? ' checked' : '') + ' />' +
+      '<span class="mc-lbl">' + encodeHtml(p.name) + ' <span style="color:#aaa;font-weight:500;font-size:11px">' + getProductSku(p.id) + '</span></span>' +
+    '</div>';
+  }).join('');
+  document.getElementById('foList').innerHTML = rows || '<p style="color:#aaa;font-size:12px;padding:8px 2px">No products match this search.</p>';
+}
+function foFilter() { _foRenderList(document.getElementById('foSearch').value); }
+function foToggle(row, id) {
+  var idx = _foIds.indexOf(id);
+  if (idx === -1) {
+    if (_foIds.length >= FO_MAX_PRODUCTS) { showToast('Maximum ' + FO_MAX_PRODUCTS + ' products allowed'); return; }
+    _foIds.push(id);
+  } else {
+    _foIds.splice(idx, 1);
+  }
+  row.classList.toggle('mc-selected', _foIds.includes(id));
+  row.querySelector('input[type="checkbox"]').checked = _foIds.includes(id);
+  _foUpdateCount();
+}
+async function saveFeaturedOffers() {
+  var r = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'featured_offers', value: JSON.stringify(_foIds) }])
+  });
+  if (r.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
+  closeFeaturedOffers();
+  loadFeaturedOffersSummary();
+  showToast('Featured products saved!');
+}
+

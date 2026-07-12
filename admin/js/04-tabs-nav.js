@@ -27,7 +27,7 @@ function switchTab(tab) {
   if (tab==='orders')    { loadOrders(false); }
   if (tab==='reports')   { renderReports(); renderOrdersReport(); _autoWriteReports(); }
   if (tab==='categories')  renderCatEditor();
-  if (tab==='banners')     loadBanners();
+  if (tab==='banners')   { loadBanners(); loadFeaturedOffersSummary(); }
   if (tab==='seo')       { loadSEOSettings(); renderSEOProducts(); }
   if (tab==='owner')       renderSuperAdmin();
 }

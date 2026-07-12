@@ -97,31 +97,38 @@ function scrollToProducts() {
 }
 
 // ── OFFERS CAROUSEL ───────────────────────────────────────────────────────
-// Moving row of offer cards; the image fills the whole card frame (like products).
+// Moving row of real featured products (admin-picked, see admin's Banners tab
+// "Manage Featured Products" — expert_settings key 'featured_offers', a JSON
+// array of product ids capped at 50, in display order). Called from
+// loadSBData() once product/photo data is available; hides the whole section
+// if the admin hasn't picked anything yet.
 function initOffersTicker() {
-  const track = document.getElementById('offersTrack');
-  if (!track) return;
-  const offers = [
-    { img:'cat-images/tools.jpg',        tag:'UP TO 20% OFF', name:'DCK Power Tools',        sub:'Drills · Grinders · Saws',    cat:'tools' },
-    { img:'cat-images/hand-tools.png',   tag:'BEST PRICE',    name:'Hand Tools',             sub:'Hammers · Spanners · Pliers', cat:'hand-tools' },
-    { img:'cat-images/safety.jpg',       tag:'STAY SAFE',     name:'Safety Gear',            sub:'Helmets · Gloves · Boots',    cat:'safety' },
-    { img:'cat-images/fastener.png',     tag:'BULK DEALS',    name:'Fasteners',              sub:'Screws · Bolts · Anchors',    cat:'fastener' },
-    { img:'cat-images/tape.png',         tag:'10% OFF',       name:'Tapes',                  sub:'Clear · Duct · Masking',      cat:'tape' },
-    { img:'cat-images/disc.jpg',         tag:'HOT DEAL',      name:'Discs',                  sub:'Cutting · Grinding Discs',    cat:'disc' },
-    { img:'cat-images/door-handle.png',  tag:'COMBO OFFER',   name:'Door Handles',           sub:'Handles · Locks · Knobs',     cat:'door-handle' },
-    { img:'cat-images/gardening.png',    tag:'NEW ARRIVAL',   name:'Garden Tools',           sub:'Hoses · Trimmers · More',     cat:'gardening' }
-  ];
-  const cards = offers.map(o => `
-    <div class="offer-card" onclick="filterProducts('${o.cat}')">
+  const track   = document.getElementById('offersTrack');
+  const section = document.getElementById('offers');
+  if (!track || !section) return;
+  const ids  = Array.isArray(window._sbFeaturedOffers) ? window._sbFeaturedOffers : [];
+  const all  = getAllProducts();
+  const offers = ids.map(id => all.find(p => p.id === id)).filter(Boolean);
+  if (!offers.length) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  const customPhotos = _sbPhotos || {};
+  const cards = offers.map(p => {
+    const raw   = customPhotos[p.id];
+    const photo = (raw && (raw.startsWith('http') || raw.startsWith('data:'))) ? raw : p.img;
+    const priceHidden = !!window._sbPriceHidden[p.id];
+    const sub = (p.price > 0 && !priceHidden) ? p.price.toFixed(3) + ' KWD' : p.category.replace('-', ' ');
+    return `
+    <div class="offer-card" onclick="openProduct(${p.id})">
       <div class="offer-card-img">
-        <span class="offer-tag">${o.tag}</span>
-        <img src="${o.img}" alt="${o.name}" loading="lazy" onerror="imgError(this)"/>
+        ${p.badge ? `<span class="offer-tag">${p.badge}</span>` : ''}
+        <img src="${photo}" alt="${p.name}" loading="lazy" onerror="imgError(this)"/>
       </div>
       <div class="offer-card-info">
-        <div class="offer-title">${o.name}</div>
-        <div class="offer-sub">${o.sub}</div>
+        <div class="offer-title">${p.name}</div>
+        <div class="offer-sub">${sub}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   // Repeat the card set enough times to comfortably exceed the viewport width
   // (same technique as fillMarquee() in js/04-i18n-order.js) — with only one
   // duplicate, wide screens could show the whole loop at once, making the
@@ -136,7 +143,6 @@ function initOffersTicker() {
   track.innerHTML = half + half;
   track.style.animationDuration = Math.round((singleW * copies) / 70) + 's';
 }
-initOffersTicker();
 
 // ── SIDE BANNERS ──────────────────────────────────────────────────────────
 // Default set used until (or unless) the admin adds banners in Supabase —
