@@ -282,30 +282,31 @@ function jumpCat(cat) {
   activeFilter = cat;
   syncCatNav(cat);
   document.getElementById('searchInput').value = '';
-  scrollToProducts();
-  _renderProductsWithLoadingDelay();
+  _switchCategoryWithLoading();
 }
 
 function filterProducts(category) {
   activeFilter = category;
   syncCatNav(category);
   document.getElementById('searchInput').value = '';
-  scrollToProducts();
-  _renderProductsWithLoadingDelay();
+  _switchCategoryWithLoading();
 }
 
-// Shows a brief spinner in place of the grid before swapping in the filtered
-// products — jumping straight to a fully-different product list with zero
-// transition felt too abrupt, so this gives a short, deliberate "loading"
-// beat instead.
+// Covers the screen with a brief loading flash BEFORE touching the grid or
+// scroll position — the products render and the jump to #products both
+// happen while hidden behind the overlay, so what the visitor sees is
+// "click → brief load → already looking at the right section", never a
+// visible scroll or a flash of the old category's products.
 let _catLoadTimer = null;
-function _renderProductsWithLoadingDelay() {
+function _switchCategoryWithLoading() {
   clearTimeout(_catLoadTimer);
-  const grid  = document.getElementById('productsGrid');
-  const empty = document.getElementById('productsEmpty');
-  empty.style.display = 'none';
-  grid.innerHTML = '<div class="products-loading"><i class="fa fa-spinner fa-spin"></i></div>';
-  _catLoadTimer = setTimeout(renderProducts, 700);
+  const overlay = document.getElementById('catLoadOverlay');
+  if (overlay) overlay.classList.add('show');
+  _catLoadTimer = setTimeout(function() {
+    renderProducts();
+    scrollToProducts();
+    if (overlay) overlay.classList.remove('show');
+  }, 500);
 }
 // ── STOCK HELPERS ─────────────────────────────────────────────────────────
 function getLiveStock(productId) {
