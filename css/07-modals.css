@@ -57,21 +57,23 @@
 .prod-overlay.open { display:block; }
 .prod-modal { background:transparent; width:100%; max-width:none; margin:0; padding:0 40px 64px; display:block; overflow:visible; }
 @keyframes pmSlide { from { transform:translateY(24px); opacity:0; } to { transform:translateY(0); opacity:1; } }
-/* Back button sits directly above the image, in the same grid column, on
-   desktop — instead of a separate full-width bar spanning both columns —
-   so it visually reads as grouped with the image, not with the whole modal. */
-.pm-back-row { grid-column:1; grid-row:1; display:flex; }
-.prod-back-btn { position:sticky; top:14px; z-index:5; background:#fff; border:2px solid var(--orange); color:var(--orange); padding:11px 22px; border-radius:8px; font-size:15px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:10px; transition:all .2s; font-family:inherit; box-shadow:0 2px 8px rgba(0,0,0,0.14); }
+/* Full-width red bar again, but its inner content is capped at the same
+   max-width/centering as the grid below, so the button lines up with the
+   left edge of the image column instead of sitting flush against the bar's
+   own edge — "beside the product image" rather than centered in the bar. */
+.prod-modal-topbar { position:sticky; top:0; z-index:5; background:#d20d17; padding:15px 40px; margin:0 -40px 26px; box-shadow:0 2px 10px rgba(0,0,0,0.12); }
+.prod-modal-topbar-inner { max-width:1400px; margin:0 auto; display:flex; }
+.prod-back-btn { background:#fff; border:2px solid #fff; color:var(--orange); padding:11px 22px; border-radius:8px; font-size:15px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:10px; transition:all .2s; font-family:inherit; box-shadow:0 2px 8px rgba(0,0,0,0.18); }
 .prod-back-btn i { font-size:16px; }
-.prod-back-btn:hover { background:var(--orange); color:#fff; transform:translateX(-2px); }
-/* SKU now sits with the product info, near the description, instead of a
-   separate topbar — same id (#prodModalSku), only its location moved. */
-.prod-modal-sku { font-size:11px; font-weight:700; color:var(--gray-400); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; display:block; }
-.prod-modal-body { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); grid-template-rows:auto 1fr; gap:14px 28px; align-items:start; max-width:1400px; margin:20px auto 0; }
-.pm-img-col { grid-column:1; grid-row:2; width:100%; aspect-ratio:1/1; max-height:600px; background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
+.prod-back-btn:hover { background:var(--gray-100); color:var(--orange-dark); transform:translateX(-2px); }
+/* SKU sits with the product info, near the description, instead of the
+   topbar — bumped up from 11px so it doesn't read as an afterthought. */
+.prod-modal-sku { font-size:13px; font-weight:700; color:var(--gray-400); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; display:block; }
+.prod-modal-body { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); gap:28px; align-items:start; max-width:1400px; margin:0 auto; }
+.pm-img-col { width:100%; aspect-ratio:1/1; max-height:600px; background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
 .pm-img-col img { width:100%; height:100%; object-fit:contain; padding:28px; display:block; }
 .pm-img-fallback { position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:72px; color:var(--orange); background:var(--light); }
-.pm-info-col { grid-column:2; grid-row:1 / span 2; background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); padding:30px 32px; display:flex; flex-direction:column; }
+.pm-info-col { background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); padding:30px 32px; display:flex; flex-direction:column; }
 .pm-badge-row { display:flex; gap:7px; margin-bottom:11px; flex-wrap:wrap; }
 .pm-badge { font-size:10px; font-weight:700; padding:4px 10px; border-radius:4px; text-transform:uppercase; letter-spacing:0.8px; }
 .pm-badge.orange { background:var(--orange); color:#fff; }
@@ -81,12 +83,12 @@
 @media(max-width:700px) {
   .prod-overlay { padding:0; }
   .prod-modal { padding:0 14px 48px; }
-  .pm-back-row { padding:13px 16px; margin:0 -14px; grid-row:1; }
-  .prod-back-btn { position:static; padding:10px 16px; font-size:14px; box-shadow:none; }
+  .prod-modal-topbar { padding:13px 16px; margin:0 -14px 20px; }
+  .prod-back-btn { padding:10px 16px; font-size:14px; }
   .prod-back-btn span { display:inline; }
-  .prod-modal-body { grid-template-columns:1fr; grid-template-rows:auto auto auto; margin-top:0; }
-  .pm-img-col { grid-column:1; grid-row:2; aspect-ratio:4/3; max-height:340px; }
-  .pm-info-col { grid-column:1; grid-row:3; padding:20px 18px; }
+  .prod-modal-body { grid-template-columns:1fr; }
+  .pm-img-col { aspect-ratio:4/3; max-height:340px; }
+  .pm-info-col { padding:20px 18px; }
   .pm-name { font-size:20px; }
   .pm-price { font-size:26px; }
   .pm-add-btn { width:100%; padding:14px; font-size:14px; }

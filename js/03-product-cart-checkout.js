@@ -77,11 +77,6 @@ function openProduct(id) {
   else            { stockIcon = 'fa-check-circle'; stockTxt = 'In Stock' + (liveQty !== null ? ' — ' + liveQty + ' available' : ''); stockCls = 'in-stock'; }
 
   document.getElementById('prodModalBody').innerHTML =
-    '<div class="pm-back-row">' +
-      '<button class="prod-back-btn" onclick="closeProduct()">' +
-        '<i class="fa fa-arrow-left"></i> <span data-i18n="back_btn">Back to Products</span>' +
-      '</button>' +
-    '</div>' +
     '<div class="pm-img-col">' +
       '<img id="pmMainImg" src="' + (bigImg || '') + '" alt="' + p.name + '" onerror="imgError(this)" style="display:' + (bigImg ? '' : 'none') + '" />' +
       '<div class="pm-img-fallback" id="pmFallback" style="display:' + (bigImg ? 'none' : 'flex') + '"><i class="fa fa-tools"></i></div>' +
