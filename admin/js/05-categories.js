@@ -383,7 +383,7 @@ async function saveFeaturedOffers() {
   });
   if (r.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
   closeFeaturedOffers();
-  loadFeaturedOffersSummary();
+  await loadFeaturedOffersSummary();
   showToast('Featured products saved!');
 }
 
