@@ -349,15 +349,24 @@ function _foUpdateCount() {
 }
 function _foRenderList(q) {
   q = (q || '').toLowerCase();
+  var photos = JSON.parse(localStorage.getItem('jain_photos') || '{}');
   var rows = getAllAdminProducts().filter(function(p) {
     return !q || p.name.toLowerCase().includes(q) ||
       getProductSku(p.id).toLowerCase().includes(q) ||
       (typeof getBrand === 'function' && getBrand(p.id).toLowerCase().includes(q));
   }).map(function(p) {
     var ck = _foIds.includes(p.id);
-    return '<div class="mc-cat-row' + (ck ? ' mc-selected' : '') + '" onclick="foToggle(this,' + p.id + ')">' +
-      '<input type="checkbox"' + (ck ? ' checked' : '') + ' />' +
-      '<span class="mc-lbl">' + encodeHtml(p.name) + ' <span style="color:#aaa;font-weight:500;font-size:11px">' + getProductSku(p.id) + '</span></span>' +
+    var rawPh = photos[p.id];
+    var thumb = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : (p.img || NO_IMG);
+    var brand = (typeof getBrand === 'function' ? getBrand(p.id) : '') || '';
+    return '<div class="mc-cat-row' + (ck ? ' mc-selected' : '') + '" onclick="foToggle(this,' + p.id + ')" style="align-items:flex-start">' +
+      '<input type="checkbox" style="margin-top:4px"' + (ck ? ' checked' : '') + ' />' +
+      '<img class="prod-img" src="' + thumb + '" alt="" onerror="this.onerror=null;this.src=NO_IMG" style="flex-shrink:0" />' +
+      '<span class="mc-lbl" style="display:flex;flex-direction:column;gap:2px;font-weight:400">' +
+        '<span style="font-weight:800;font-size:13px;color:var(--dark)">' + encodeHtml(p.name) + '</span>' +
+        '<span style="font-size:11px;color:#999;font-weight:600">' + getProductSku(p.id) + (brand ? ' · ' + encodeHtml(brand) : '') + ' · ' + p.price.toFixed(3) + ' KWD</span>' +
+        (p.desc ? '<span style="font-size:11px;color:#888;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:420px">' + encodeHtml(p.desc) + '</span>' : '') +
+      '</span>' +
     '</div>';
   }).join('');
   document.getElementById('foList').innerHTML = rows || '<p style="color:#aaa;font-size:12px;padding:8px 2px">No products match this search.</p>';
