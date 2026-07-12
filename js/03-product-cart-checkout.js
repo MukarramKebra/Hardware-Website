@@ -76,8 +76,12 @@ function openProduct(id) {
   else if (isLow) { stockIcon = 'fa-exclamation-circle'; stockTxt = 'Low Stock — only ' + (liveQty||'few') + ' left!'; stockCls = 'low-stock'; }
   else            { stockIcon = 'fa-check-circle'; stockTxt = 'In Stock' + (liveQty !== null ? ' — ' + liveQty + ' available' : ''); stockCls = 'in-stock'; }
 
-  document.getElementById('prodModalSku').textContent = getProductSku(id);
   document.getElementById('prodModalBody').innerHTML =
+    '<div class="pm-back-row">' +
+      '<button class="prod-back-btn" onclick="closeProduct()">' +
+        '<i class="fa fa-arrow-left"></i> <span data-i18n="back_btn">Back to Products</span>' +
+      '</button>' +
+    '</div>' +
     '<div class="pm-img-col">' +
       '<img id="pmMainImg" src="' + (bigImg || '') + '" alt="' + p.name + '" onerror="imgError(this)" style="display:' + (bigImg ? '' : 'none') + '" />' +
       '<div class="pm-img-fallback" id="pmFallback" style="display:' + (bigImg ? 'none' : 'flex') + '"><i class="fa fa-tools"></i></div>' +
@@ -88,6 +92,7 @@ function openProduct(id) {
         (p.badge ? '<span class="pm-badge orange">' + p.badge + '</span>' : '') +
       '</div>' +
       '<h2 class="pm-name">' + p.name + '</h2>' +
+      '<span class="prod-modal-sku" id="prodModalSku">' + getProductSku(id) + '</span>' +
       '<p class="pm-desc" id="pmDescDisplay">' + p.desc + '</p>' +
       ((p.price > 0 && !window._sbPriceHidden[p.id]) ? (
       '<div class="pm-price" id="pmPriceDisplay">' + _pmCurrentPrice(p).toFixed(3) + ' <small>KWD</small></div>' +
