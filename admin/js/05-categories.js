@@ -405,21 +405,20 @@ function _foRenderList(q) {
 function foFilter() { _foRenderList(document.getElementById('foSearch').value); }
 
 // ── SELECT ALL (respects the search + category/brand filters; no cap) ────────
-function foToggleSelectAll(checked) {
+// Select-only, on purpose — it always adds whatever's currently shown and
+// never removes already-featured products, even clicking it again once
+// everything shown is already selected. To unfeature something, click its
+// row (or that group's rows) directly.
+function foToggleSelectAll() {
   var q = document.getElementById('foSearch').value;
   var list = _foFilteredList(q);
-  if (checked) {
-    list.filter(function(p) { return !_foFind(p.id); }).forEach(function(p) { _foItems.push({ id: p.id, sale: 0 }); });
-  } else {
-    var ids = new Set(list.map(function(p) { return p.id; }));
-    _foItems = _foItems.filter(function(x) { return !ids.has(x.id); });
-  }
+  list.filter(function(p) { return !_foFind(p.id); }).forEach(function(p) { _foItems.push({ id: p.id, sale: 0 }); });
   _foUpdateCount();
   _foRenderList(q);
 }
 // Toolbar "Select All" button — same as ticking the header checkbox.
 function foSelectAllVisible() {
-  foToggleSelectAll(true);
+  foToggleSelectAll();
 }
 
 // ── BULK SALE (applies to whatever the search/category/brand filters + your

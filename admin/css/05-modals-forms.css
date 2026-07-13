@@ -13,9 +13,11 @@
     .del-btn{background:none;border:1px solid var(--border);color:#aaa;padding:5px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;}
     .del-btn:hover{border-color:var(--red);color:var(--red);}
 
-    /* Reorder arrows on each size/pack option row (openVariants) */
-    .vr-move{background:#fff;border:1px solid var(--border);color:var(--gray);width:26px;height:22px;border-radius:5px;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;}
-    .vr-move:hover{border-color:var(--orange);color:var(--orange);}
+    /* Drag handle to reorder each size/pack option row (openVariants) */
+    .vr-drag-handle{width:26px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--gray);cursor:grab;font-size:14px;touch-action:none;}
+    .vr-drag-handle:hover{color:var(--orange);}
+    .vr-drag-handle:active{cursor:grabbing;}
+    .variant-row.vr-dragging{opacity:0.4;}
 
     /* ADD PRODUCT MODAL */
     .ap-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}

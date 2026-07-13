@@ -231,6 +231,7 @@ function saveQtyLimits() {
 // image/description so admin only has to change what's different for that
 // option, not re-enter everything.
 var _vrProdId = null;
+var _vrDragged = null; // the .variant-row currently being dragged, if any
 function openVariants(id) {
   var p = getAllAdminProducts().find(function(x){ return x.id === id; });
   if (!p) return;
@@ -263,10 +264,7 @@ function addVariantRow(label, price, image, description, sku) {
   row.className = 'variant-row';
   row.style.cssText = 'display:flex;gap:10px;margin-bottom:10px;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--light)';
   row.innerHTML =
-    '<div style="display:flex;flex-direction:column;gap:2px;justify-content:center">' +
-      '<button type="button" class="vr-move" onclick="moveVariantRow(this,-1)" title="Move up"><i class="fa fa-chevron-up"></i></button>' +
-      '<button type="button" class="vr-move" onclick="moveVariantRow(this,1)" title="Move down"><i class="fa fa-chevron-down"></i></button>' +
-    '</div>' +
+    '<div class="vr-drag-handle" draggable="true" title="Drag to reorder"><i class="fa fa-grip-vertical"></i></div>' +
     '<img class="vr-thumb" style="width:52px;height:52px;object-fit:cover;border-radius:7px;border:1px solid var(--border);background:#fff;flex-shrink:0" onerror="this.style.opacity=0.3" />' +
     '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">' +
       '<div style="display:flex;gap:8px">' +
@@ -292,7 +290,32 @@ function addVariantRow(label, price, image, description, sku) {
   row.querySelector('.vr-image').value = image !== undefined ? (image || '') : defaults.image;
   row.querySelector('.vr-desc').value  = description !== undefined ? (description || '') : defaults.description;
   row.querySelector('.vr-thumb').src   = row.querySelector('.vr-image').value;
+  _vrWireDrag(row);
   document.getElementById('variantRows').appendChild(row);
+}
+// Drag-and-drop reordering — grab the handle to drag a row, drop it above or
+// below whichever row you're hovering (based on which half of it the cursor
+// is over). Only the handle initiates the drag (not the whole row) so
+// clicking into the label/price/description fields still just works.
+function _vrWireDrag(row) {
+  var handle = row.querySelector('.vr-drag-handle');
+  handle.addEventListener('dragstart', function(e) {
+    _vrDragged = row;
+    row.classList.add('vr-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', ''); } catch(err) {}
+  });
+  handle.addEventListener('dragend', function() {
+    row.classList.remove('vr-dragging');
+    _vrDragged = null;
+  });
+  row.addEventListener('dragover', function(e) {
+    if (!_vrDragged || _vrDragged === row) return;
+    e.preventDefault();
+    var rect = row.getBoundingClientRect();
+    var before = (e.clientY - rect.top) < rect.height / 2;
+    row.parentNode.insertBefore(_vrDragged, before ? row : row.nextSibling);
+  });
 }
 // No cropping here (unlike the main product Photo editor) — option thumbnails
 // are small, and a modal-based crop tool is built as a single global instance
@@ -310,16 +333,6 @@ function _vrFileChosen(input) {
     row.querySelector('.vr-thumb').src = ev.target.result;
   };
   reader.readAsDataURL(file);
-}
-// Swaps a row with its neighbor — the order here is exactly the order the
-// dropdown shows on the storefront, so "put this option first" just means
-// moving its row to the top of this list.
-function moveVariantRow(btn, dir) {
-  var row = btn.closest('.variant-row');
-  var sibling = dir < 0 ? row.previousElementSibling : row.nextElementSibling;
-  if (!sibling) return;
-  if (dir < 0) row.parentNode.insertBefore(row, sibling);
-  else row.parentNode.insertBefore(sibling, row);
 }
 async function saveVariants() {
   if (!_vrProdId) return;

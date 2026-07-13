@@ -37,8 +37,9 @@ function _pmApplyVariantDisplay(p) {
   }
 }
 // Tile order is exactly getVariants()'s array order — the same order the
-// admin's up/down arrows control (see moveVariantRow in admin/js/08-inventory.js) —
-// so "make this option show first" is entirely an admin-side concern.
+// admin's drag-and-drop reordering controls (see _vrWireDrag in
+// admin/js/08-inventory.js) — so "make this option show first" is entirely
+// an admin-side concern.
 function pmSelectVariant(idx) {
   _pmVariantIdx = idx;
   const p = getAllProducts().find(x => x.id === _pmId);
