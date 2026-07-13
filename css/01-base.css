@@ -135,7 +135,10 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 .offer-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .35s ease; }
 .offer-card:hover .offer-card-img img { transform: scale(1.06); }
 .offer-tag { position: absolute; top: 8px; left: 8px; z-index: 2; background: var(--orange); color: #fff; font-size: 10px; font-weight: 900; letter-spacing: .04em; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; }
+.offer-tag-sale { background: var(--red); }
 .offer-card-info { padding: 10px 12px 13px; display: flex; flex-direction: column; gap: 3px; }
 .offer-title { font-size: 14px; font-weight: 800; color: var(--dark); line-height: 1.3; }
 .offer-sub { font-size: 11.5px; font-weight: 600; color: #777; }
+.offer-price-now { color: var(--red); font-weight: 900; font-size: 12.5px; }
+.offer-price-was { color: #999; font-weight: 600; text-decoration: line-through; }
 

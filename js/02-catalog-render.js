@@ -97,30 +97,41 @@ function scrollToProducts() {
 }
 
 // ── OFFERS CAROUSEL ───────────────────────────────────────────────────────
-// Moving row of real featured products (admin-picked, see admin's Banners tab
-// "Manage Featured Products" — expert_settings key 'featured_offers', a JSON
-// array of product ids capped at 50, in display order). Called from
-// loadSBData() once product/photo data is available; hides the whole section
-// if the admin hasn't picked anything yet.
+// Moving row of real featured products (admin-picked, see admin's Featured
+// tab — expert_settings key 'featured_offers', a JSON array of
+// { id, sale } capped at 50, in display order; 'sale' is an optional % off
+// shown only in this strip — the product's real price elsewhere is
+// untouched). Called from loadSBData() once product/photo data is
+// available; hides the whole section if the admin hasn't picked anything.
 function initOffersTicker() {
   const track   = document.getElementById('offersTrack');
   const section = document.getElementById('offers');
   if (!track || !section) return;
-  const ids  = Array.isArray(window._sbFeaturedOffers) ? window._sbFeaturedOffers : [];
-  const all  = getAllProducts();
-  const offers = ids.map(id => all.find(p => p.id === id)).filter(Boolean);
+  const items = Array.isArray(window._sbFeaturedOffers) ? window._sbFeaturedOffers : [];
+  const all   = getAllProducts();
+  const offers = items.map(item => {
+    const p = all.find(x => x.id === item.id);
+    return p ? { p, sale: item.sale || 0 } : null;
+  }).filter(Boolean);
   if (!offers.length) { section.style.display = 'none'; return; }
   section.style.display = '';
   const customPhotos = _sbPhotos || {};
-  const cards = offers.map(p => {
+  const cards = offers.map(({ p, sale }) => {
     const raw   = customPhotos[p.id];
     const photo = (raw && (raw.startsWith('http') || raw.startsWith('data:'))) ? raw : p.img;
     const priceHidden = !!window._sbPriceHidden[p.id];
-    const sub = (p.price > 0 && !priceHidden) ? p.price.toFixed(3) + ' KWD' : p.category.replace('-', ' ');
+    const hasSale = sale > 0 && p.price > 0 && !priceHidden;
+    const offerPrice = hasSale ? p.price * (1 - sale / 100) : p.price;
+    const sub = (p.price > 0 && !priceHidden)
+      ? (hasSale
+          ? `<span class="offer-price-now">${offerPrice.toFixed(3)} KWD</span> <span class="offer-price-was">${p.price.toFixed(3)} KWD</span>`
+          : `${p.price.toFixed(3)} KWD`)
+      : p.category.replace('-', ' ');
+    const tag = hasSale ? `-${sale}%` : p.badge;
     return `
     <div class="offer-card" onclick="openProduct(${p.id})">
       <div class="offer-card-img">
-        ${p.badge ? `<span class="offer-tag">${p.badge}</span>` : ''}
+        ${tag ? `<span class="offer-tag${hasSale ? ' offer-tag-sale' : ''}">${tag}</span>` : ''}
         <img src="${photo}" alt="${p.name}" loading="lazy" onerror="imgError(this)"/>
       </div>
       <div class="offer-card-info">

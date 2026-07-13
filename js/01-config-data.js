@@ -156,7 +156,11 @@ async function loadSBData() {
     try { window._sbVariants = JSON.parse(vr.data[0].value) || {}; } catch(e) {}
   }
   if (!fo.error && Array.isArray(fo.data) && fo.data[0] && fo.data[0].value) {
-    try { window._sbFeaturedOffers = JSON.parse(fo.data[0].value) || []; } catch(e) {}
+    try {
+      var rawFo = JSON.parse(fo.data[0].value) || [];
+      // Older saves stored plain product ids (no sale support yet) — migrate.
+      window._sbFeaturedOffers = rawFo.map(function(x) { return (typeof x === 'number') ? { id: x, sale: 0 } : { id: x.id, sale: x.sale || 0 }; });
+    } catch(e) {}
   }
   if (Array.isArray(ph.data)) {
     ph.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });

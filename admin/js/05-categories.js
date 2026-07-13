@@ -313,26 +313,33 @@ async function saveCatProducts() {
 // Its own full-width tab (not a modal) so it reads like the Inventory table —
 // thumbnail, name, SKU, brand, price, description — just without Inventory's
 // stock/bulk-action buttons, which don't apply to picking homepage products.
-// Admin picks up to FO_MAX_PRODUCTS real products to show in the scrolling
-// strip at the top of the homepage (js/02-catalog-render.js initOffersTicker).
-// Stored in expert_settings key 'featured_offers' as a JSON array of product
-// ids — array order is also the display order on the storefront.
+// Admin picks up to FO_MAX_PRODUCTS real products, each optionally with a
+// Sale % that discounts its price only in the homepage strip (the product's
+// real price everywhere else — cart, checkout, its own page — is untouched).
+// Stored in expert_settings key 'featured_offers' as a JSON array of
+// { id, sale } objects — array order is also the display order on the
+// storefront, and 'sale' is the % off (0/absent = no sale).
 var FO_MAX_PRODUCTS = 50;
-var _foIds = []; // ordered array of currently-picked product ids (pending save)
+var _foItems = []; // ordered array of { id, sale } (pending save)
+
+function _foFind(id) { return _foItems.find(function(x) { return x.id === id; }); }
+function _foOfferPrice(price, sale) { return sale > 0 ? price * (1 - sale / 100) : price; }
 
 async function renderFeaturedTab() {
   var res = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_HDRS });
-  _foIds = [];
+  var raw = [];
   if (!res.error && Array.isArray(res.data) && res.data[0] && res.data[0].value) {
-    try { _foIds = JSON.parse(res.data[0].value) || []; } catch(e) {}
+    try { raw = JSON.parse(res.data[0].value) || []; } catch(e) {}
   }
+  // Older saves stored plain product ids (no sale support yet) — migrate those in-memory.
+  _foItems = raw.map(function(x) { return (typeof x === 'number') ? { id: x, sale: 0 } : { id: x.id, sale: x.sale || 0 }; });
   document.getElementById('foSearch').value = '';
   _foRenderList('');
   _foUpdateCount();
 }
 function _foUpdateCount() {
   var el = document.getElementById('foCount');
-  if (el) el.textContent = _foIds.length + ' / ' + FO_MAX_PRODUCTS + ' selected';
+  if (el) el.textContent = _foItems.length + ' / ' + FO_MAX_PRODUCTS + ' selected';
 }
 function _foRenderList(q) {
   q = (q || '').toLowerCase();
@@ -342,10 +349,23 @@ function _foRenderList(q) {
       getProductSku(p.id).toLowerCase().includes(q) ||
       (typeof getBrand === 'function' && getBrand(p.id).toLowerCase().includes(q));
   }).map(function(p) {
-    var ck = _foIds.includes(p.id);
+    var item = _foFind(p.id);
+    var ck = !!item;
+    var sale = item ? item.sale : 0;
     var rawPh = photos[p.id];
     var thumb = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : (p.img || NO_IMG);
     var brand = (typeof getBrand === 'function' ? getBrand(p.id) : '') || '';
+    var priceCell = sale > 0
+      ? '<div><div style="text-decoration:line-through;color:#aaa;font-size:11px">' + p.price.toFixed(3) + '</div>' +
+        '<div class="price-cell" style="color:var(--red)">' + _foOfferPrice(p.price, sale).toFixed(3) + '</div></div>'
+      : '<span class="price-cell">' + p.price.toFixed(3) + '</span>';
+    var saleCell = '<div style="display:flex;align-items:center;gap:5px" onclick="event.stopPropagation()">' +
+      '<input type="number" min="0" max="95" placeholder="—" value="' + (sale > 0 ? sale : '') + '" ' +
+        'style="width:54px;padding:6px 7px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;text-align:center;font-family:inherit" ' +
+        'onchange="foSetSale(' + p.id + ',this.value)" />' +
+      '<span style="font-size:11px;color:var(--gray)">%</span>' +
+      (sale > 0 ? '<button onclick="foSetSale(' + p.id + ',0)" title="Clear sale" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:12px;padding:2px"><i class="fa fa-times"></i></button>' : '') +
+    '</div>';
     return '<tr class="' + (ck ? 'fo-row-selected' : '') + '" onclick="foToggle(this,' + p.id + ')" style="cursor:pointer">' +
       '<td class="chk-col"><input type="checkbox" style="pointer-events:none"' + (ck ? ' checked' : '') + ' /></td>' +
       '<td><div style="display:flex;align-items:center;gap:11px">' +
@@ -353,31 +373,44 @@ function _foRenderList(q) {
         '<div><div class="prod-name">' + encodeHtml(p.name) + '</div><div class="prod-sku">' + getProductSku(p.id) + '</div></div>' +
       '</div></td>' +
       '<td>' + encodeHtml(brand) + '</td>' +
-      '<td class="price-cell">' + p.price.toFixed(3) + '</td>' +
-      '<td style="max-width:360px;color:var(--gray);font-size:12px;font-weight:500">' + (p.desc ? encodeHtml(p.desc) : '') + '</td>' +
+      '<td>' + priceCell + '</td>' +
+      '<td>' + saleCell + '</td>' +
+      '<td style="max-width:320px;color:var(--gray);font-size:12px;font-weight:500">' + (p.desc ? encodeHtml(p.desc) : '') + '</td>' +
     '</tr>';
   }).join('');
-  document.getElementById('foTblBody').innerHTML = rows || '<tr><td colspan="5" style="color:#aaa;padding:20px;text-align:center">No products match this search.</td></tr>';
+  document.getElementById('foTblBody').innerHTML = rows || '<tr><td colspan="6" style="color:#aaa;padding:20px;text-align:center">No products match this search.</td></tr>';
 }
 function foFilter() { _foRenderList(document.getElementById('foSearch').value); }
 function foToggle(row, id) {
-  var idx = _foIds.indexOf(id);
+  var idx = _foItems.findIndex(function(x) { return x.id === id; });
   if (idx === -1) {
-    if (_foIds.length >= FO_MAX_PRODUCTS) { showToast('Maximum ' + FO_MAX_PRODUCTS + ' products allowed'); return; }
-    _foIds.push(id);
+    if (_foItems.length >= FO_MAX_PRODUCTS) { showToast('Maximum ' + FO_MAX_PRODUCTS + ' products allowed'); return; }
+    _foItems.push({ id: id, sale: 0 });
   } else {
-    _foIds.splice(idx, 1);
+    _foItems.splice(idx, 1);
   }
-  var checked = _foIds.includes(id);
-  row.classList.toggle('fo-row-selected', checked);
-  row.querySelector('input[type="checkbox"]').checked = checked;
   _foUpdateCount();
+  _foRenderList(document.getElementById('foSearch').value);
+}
+// Setting a sale % on a product that isn't featured yet features it first —
+// a sale price only means anything if it's actually shown in the strip.
+function foSetSale(id, rawVal) {
+  var pct = Math.max(0, Math.min(95, parseInt(rawVal, 10) || 0));
+  var item = _foFind(id);
+  if (!item) {
+    if (_foItems.length >= FO_MAX_PRODUCTS) { showToast('Maximum ' + FO_MAX_PRODUCTS + ' products allowed'); _foRenderList(document.getElementById('foSearch').value); return; }
+    item = { id: id, sale: 0 };
+    _foItems.push(item);
+  }
+  item.sale = pct;
+  _foUpdateCount();
+  _foRenderList(document.getElementById('foSearch').value);
 }
 async function saveFeaturedOffers() {
   var r = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
-    body: JSON.stringify([{ key: 'featured_offers', value: JSON.stringify(_foIds) }])
+    body: JSON.stringify([{ key: 'featured_offers', value: JSON.stringify(_foItems) }])
   });
   if (r.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
   showToast('Featured products saved!');
