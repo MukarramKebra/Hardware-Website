@@ -16,7 +16,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607122300';
+    v = /^[0-9]+$/.test(v) ? v : '202607130900';
     ['01-layout','02-inventory-table','03-sections','04-responsive','05-modals-forms'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -83,6 +83,9 @@
     </button>
     <button class="tab-btn" id="tabBanners" onclick="switchTab('banners')">
       <i class="fa fa-images"></i> Banners
+    </button>
+    <button class="tab-btn" id="tabFeatured" onclick="switchTab('featured')">
+      <i class="fa fa-star"></i> Featured
     </button>
     <button class="tab-btn" id="tabSeo" onclick="switchTab('seo')">
       <i class="fa fa-search-plus"></i> SEO
@@ -358,22 +361,6 @@
 
   <!-- SIDE BANNERS SECTION -->
   <div id="bannersSection" class="main" style="display:none">
-
-    <!-- FEATURED PRODUCTS (homepage scrolling strip) -->
-    <div style="margin-bottom:32px;padding-bottom:28px;border-bottom:1px solid var(--border)">
-      <div class="table-top" style="margin-bottom:6px">
-        <h2><i class="fa fa-star" style="color:var(--orange);margin-right:8px"></i>Featured Products (Homepage Strip)</h2>
-      </div>
-      <p style="font-size:12px;color:var(--gray);margin:0 0 14px;max-width:640px">
-        Controls the scrolling product strip at the top of the homepage. Pick up to 50 products —
-        only these show there, in the order you pick them. Leave empty to hide the strip entirely.
-      </p>
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <button class="add-prod-btn" onclick="openFeaturedOffers()"><i class="fa fa-edit"></i> Manage Featured Products</button>
-        <span id="foSummary" style="font-size:13px;color:var(--gray);font-weight:700"></span>
-      </div>
-    </div>
-
     <div class="table-top" style="margin-bottom:12px">
       <h2><i class="fa fa-images" style="color:var(--orange);margin-right:8px"></i>Side Banners</h2>
     </div>
@@ -390,6 +377,32 @@
       </label>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px" id="bannerEditGrid"></div>
+  </div>
+
+  <!-- FEATURED PRODUCTS SECTION (homepage scrolling strip) -->
+  <div id="featuredSection" class="main" style="display:none">
+    <div class="table-top">
+      <h2><i class="fa fa-star" style="color:var(--orange);margin-right:8px"></i>Featured Products (Homepage Strip)</h2>
+      <div class="ctrl-right">
+        <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="foSearch" placeholder="Search products, SKU or brand..." oninput="foFilter()" autocomplete="off" /></div>
+        <span id="foCount" style="font-size:13px;color:var(--gray);font-weight:800;white-space:nowrap"></span>
+        <button class="save-btn" onclick="saveFeaturedOffers()"><i class="fa fa-check"></i> Save Featured Products</button>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--gray);margin:-6px 0 16px;max-width:720px">
+      Click a row to feature it in the homepage's scrolling strip (up to 50) — the order you click them in is the
+      order they appear on the site. Leave none selected to hide the strip entirely.
+    </p>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="chk-col"></th><th>Product</th><th>Brand</th><th>Price KWD</th><th>Description</th>
+          </tr>
+        </thead>
+        <tbody id="foTblBody"></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- SEO SECTION -->
@@ -905,22 +918,6 @@
   </div>
 </div>
 
-<!-- FEATURED PRODUCTS MODAL (opened from Banners tab "Manage Featured Products") -->
-<div class="mc-overlay" id="featOfferOverlay" onclick="if(event.target===this)closeFeaturedOffers()">
-  <div class="mc-modal" style="max-width:680px;width:94%">
-    <div class="mc-header">
-      <h3><i class="fa fa-star"></i> Featured Products <span id="foCount" style="font-weight:600;font-size:12px;color:var(--gray);margin-left:8px"></span></h3>
-      <button onclick="closeFeaturedOffers()"><i class="fa fa-times"></i></button>
-    </div>
-    <div class="mc-body">
-      <p class="mc-note">Tick up to 50 products to feature in the homepage's scrolling strip. The order you tick them in is the order they appear on the site.</p>
-      <input type="text" id="foSearch" placeholder="Search products, SKU or brand…" oninput="foFilter()" autocomplete="off" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:10px;outline:none" />
-      <div class="mc-cats-list" id="foList" style="max-height:440px;overflow-y:auto"></div>
-      <button class="mc-save-btn" onclick="saveFeaturedOffers()"><i class="fa fa-check"></i>&nbsp; Save Featured Products</button>
-    </div>
-  </div>
-</div>
-
 <!-- SUPER ADMIN PANEL (legacy standalone — kept for fallback) -->
 <div id="superAdminPanel" style="display:none!important">
   <div class="su-bar">
@@ -966,7 +963,7 @@
 (function() {
   var v = '';
   try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-  v = /^[0-9]+$/.test(v) ? v : '202607122300';
+  v = /^[0-9]+$/.test(v) ? v : '202607130900';
   ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo'].forEach(function(f) {
     var s = document.createElement('script');
     s.src = 'admin/js/' + f + '.js?v=' + v;

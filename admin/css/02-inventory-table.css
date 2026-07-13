@@ -62,6 +62,8 @@
     tbody tr:last-child{border-bottom:none;}
     tbody tr:hover{background:#fafafa;}
     tbody td{padding:11px 14px;font-size:13px;vertical-align:middle;}
+    tr.fo-row-selected{background:rgba(255,98,0,.07);}
+    tr.fo-row-selected:hover{background:rgba(255,98,0,.11);}
     .prod-img{width:42px;height:42px;border-radius:7px;object-fit:cover;border:1px solid var(--border);}
     .prod-name{font-weight:700;color:var(--dark);font-size:13px;}
     .prod-sku{font-size:10px;color:var(--gray);}

@@ -310,25 +310,17 @@ async function saveCatProducts() {
 }
 
 // ── FEATURED PRODUCTS (homepage offers strip) ────────────────────────────────
+// Its own full-width tab (not a modal) so it reads like the Inventory table —
+// thumbnail, name, SKU, brand, price, description — just without Inventory's
+// stock/bulk-action buttons, which don't apply to picking homepage products.
 // Admin picks up to FO_MAX_PRODUCTS real products to show in the scrolling
-// strip at the top of the homepage (js/02-catalog-render.js initOffersTicker),
-// which used to show 8 hardcoded category tiles instead of real products.
+// strip at the top of the homepage (js/02-catalog-render.js initOffersTicker).
 // Stored in expert_settings key 'featured_offers' as a JSON array of product
 // ids — array order is also the display order on the storefront.
 var FO_MAX_PRODUCTS = 50;
 var _foIds = []; // ordered array of currently-picked product ids (pending save)
 
-async function loadFeaturedOffersSummary() {
-  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_HDRS });
-  var ids = [];
-  if (!res.error && Array.isArray(res.data) && res.data[0] && res.data[0].value) {
-    try { ids = JSON.parse(res.data[0].value) || []; } catch(e) {}
-  }
-  var el = document.getElementById('foSummary');
-  if (el) el.textContent = ids.length ? (ids.length + ' product' + (ids.length === 1 ? '' : 's') + ' featured on homepage') : 'None picked yet — the homepage strip is hidden';
-}
-
-async function openFeaturedOffers() {
+async function renderFeaturedTab() {
   var res = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_HDRS });
   _foIds = [];
   if (!res.error && Array.isArray(res.data) && res.data[0] && res.data[0].value) {
@@ -337,11 +329,6 @@ async function openFeaturedOffers() {
   document.getElementById('foSearch').value = '';
   _foRenderList('');
   _foUpdateCount();
-  document.getElementById('featOfferOverlay').classList.add('open');
-  setTimeout(function(){ document.getElementById('foSearch').focus(); }, 100);
-}
-function closeFeaturedOffers() {
-  document.getElementById('featOfferOverlay').classList.remove('open');
 }
 function _foUpdateCount() {
   var el = document.getElementById('foCount');
@@ -359,17 +346,18 @@ function _foRenderList(q) {
     var rawPh = photos[p.id];
     var thumb = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : (p.img || NO_IMG);
     var brand = (typeof getBrand === 'function' ? getBrand(p.id) : '') || '';
-    return '<div class="mc-cat-row' + (ck ? ' mc-selected' : '') + '" onclick="foToggle(this,' + p.id + ')" style="align-items:flex-start">' +
-      '<input type="checkbox" style="margin-top:4px"' + (ck ? ' checked' : '') + ' />' +
-      '<img class="prod-img" src="' + thumb + '" alt="" onerror="this.onerror=null;this.src=NO_IMG" style="flex-shrink:0" />' +
-      '<span class="mc-lbl" style="display:flex;flex-direction:column;gap:2px;font-weight:400">' +
-        '<span style="font-weight:800;font-size:13px;color:var(--dark)">' + encodeHtml(p.name) + '</span>' +
-        '<span style="font-size:11px;color:#999;font-weight:600">' + getProductSku(p.id) + (brand ? ' · ' + encodeHtml(brand) : '') + ' · ' + p.price.toFixed(3) + ' KWD</span>' +
-        (p.desc ? '<span style="font-size:11px;color:#888;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:420px">' + encodeHtml(p.desc) + '</span>' : '') +
-      '</span>' +
-    '</div>';
+    return '<tr class="' + (ck ? 'fo-row-selected' : '') + '" onclick="foToggle(this,' + p.id + ')" style="cursor:pointer">' +
+      '<td class="chk-col"><input type="checkbox" style="pointer-events:none"' + (ck ? ' checked' : '') + ' /></td>' +
+      '<td><div style="display:flex;align-items:center;gap:11px">' +
+        '<img class="prod-img" src="' + thumb + '" alt="" onerror="this.onerror=null;this.src=NO_IMG" />' +
+        '<div><div class="prod-name">' + encodeHtml(p.name) + '</div><div class="prod-sku">' + getProductSku(p.id) + '</div></div>' +
+      '</div></td>' +
+      '<td>' + encodeHtml(brand) + '</td>' +
+      '<td class="price-cell">' + p.price.toFixed(3) + '</td>' +
+      '<td style="max-width:360px;color:var(--gray);font-size:12px;font-weight:500">' + (p.desc ? encodeHtml(p.desc) : '') + '</td>' +
+    '</tr>';
   }).join('');
-  document.getElementById('foList').innerHTML = rows || '<p style="color:#aaa;font-size:12px;padding:8px 2px">No products match this search.</p>';
+  document.getElementById('foTblBody').innerHTML = rows || '<tr><td colspan="5" style="color:#aaa;padding:20px;text-align:center">No products match this search.</td></tr>';
 }
 function foFilter() { _foRenderList(document.getElementById('foSearch').value); }
 function foToggle(row, id) {
@@ -380,8 +368,9 @@ function foToggle(row, id) {
   } else {
     _foIds.splice(idx, 1);
   }
-  row.classList.toggle('mc-selected', _foIds.includes(id));
-  row.querySelector('input[type="checkbox"]').checked = _foIds.includes(id);
+  var checked = _foIds.includes(id);
+  row.classList.toggle('fo-row-selected', checked);
+  row.querySelector('input[type="checkbox"]').checked = checked;
   _foUpdateCount();
 }
 async function saveFeaturedOffers() {
@@ -391,8 +380,6 @@ async function saveFeaturedOffers() {
     body: JSON.stringify([{ key: 'featured_offers', value: JSON.stringify(_foIds) }])
   });
   if (r.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
-  closeFeaturedOffers();
-  await loadFeaturedOffersSummary();
   showToast('Featured products saved!');
 }
 

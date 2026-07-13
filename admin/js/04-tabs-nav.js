@@ -11,6 +11,7 @@ function switchTab(tab) {
   document.getElementById('reportsSection').style.display    = tab==='reports'    ? 'block' : 'none';
   document.getElementById('categoriesSection').style.display = tab==='categories' ? 'block' : 'none';
   document.getElementById('bannersSection').style.display    = tab==='banners'    ? 'block' : 'none';
+  document.getElementById('featuredSection').style.display   = tab==='featured'   ? 'block' : 'none';
   document.getElementById('seoSection').style.display        = tab==='seo'        ? 'block' : 'none';
   document.getElementById('ownerSection').style.display      = tab==='owner'      ? 'block' : 'none';
   document.getElementById('tabInventory').classList.toggle('active',   tab==='inventory');
@@ -20,6 +21,7 @@ function switchTab(tab) {
   document.getElementById('tabReports').classList.toggle('active',     tab==='reports');
   document.getElementById('tabCategories').classList.toggle('active',  tab==='categories');
   document.getElementById('tabBanners').classList.toggle('active',     tab==='banners');
+  document.getElementById('tabFeatured').classList.toggle('active',    tab==='featured');
   document.getElementById('tabSeo').classList.toggle('active',         tab==='seo');
   document.getElementById('tabOwner').classList.toggle('active',       tab==='owner');
   if (tab==='analytics')   renderAnalytics();
@@ -27,7 +29,8 @@ function switchTab(tab) {
   if (tab==='orders')    { loadOrders(false); }
   if (tab==='reports')   { renderReports(); renderOrdersReport(); _autoWriteReports(); }
   if (tab==='categories')  renderCatEditor();
-  if (tab==='banners')   { loadBanners(); loadFeaturedOffersSummary(); }
+  if (tab==='banners')     loadBanners();
+  if (tab==='featured')    renderFeaturedTab();
   if (tab==='seo')       { loadSEOSettings(); renderSEOProducts(); }
   if (tab==='owner')       renderSuperAdmin();
 }
