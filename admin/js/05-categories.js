@@ -394,12 +394,14 @@ function _foRenderList(q) {
     '</tr>';
   }).join('');
   document.getElementById('foTblBody').innerHTML = rows || '<tr><td colspan="6" style="color:#aaa;padding:20px;text-align:center">No products match this search.</td></tr>';
+  var nSel = list.filter(function(p) { return !!_foFind(p.id); }).length;
   var saChk = document.getElementById('foSelectAll');
   if (saChk) {
-    var nSel = list.filter(function(p) { return !!_foFind(p.id); }).length;
     saChk.checked = list.length > 0 && nSel === list.length;
     saChk.indeterminate = nSel > 0 && nSel < list.length;
   }
+  var bulkCount = document.getElementById('foBulkCount');
+  if (bulkCount) bulkCount.textContent = nSel + ' selected here';
 }
 function foFilter() { _foRenderList(document.getElementById('foSearch').value); }
 
@@ -428,6 +430,29 @@ function foToggleSelectAll(checked) {
 // leaves it correctly indeterminate if the 50-cap stopped some from being added.
 function foSelectAllVisible() {
   foToggleSelectAll(true);
+}
+
+// ── BULK SALE (applies to whatever the search/category/brand filters + your
+// selection currently show — search for a group, Select All, then set one
+// Sale % for all of them here instead of typing it into every row) ───────────
+function foApplyBulkSale() {
+  var pct = Math.max(0, Math.min(95, parseInt(document.getElementById('foBulkSale').value, 10) || 0));
+  var q = document.getElementById('foSearch').value;
+  var visibleIds = new Set(_foFilteredList(q).map(function(p) { return p.id; }));
+  var count = 0;
+  _foItems.forEach(function(item) { if (visibleIds.has(item.id)) { item.sale = pct; count++; } });
+  if (!count) { showToast('No selected products match the current search/filters'); return; }
+  _foRenderList(q);
+  showToast('Applied ' + pct + '% sale to ' + count + ' product' + (count === 1 ? '' : 's'));
+}
+function foClearBulkSale() {
+  var q = document.getElementById('foSearch').value;
+  var visibleIds = new Set(_foFilteredList(q).map(function(p) { return p.id; }));
+  var count = 0;
+  _foItems.forEach(function(item) { if (visibleIds.has(item.id) && item.sale > 0) { item.sale = 0; count++; } });
+  document.getElementById('foBulkSale').value = '';
+  _foRenderList(q);
+  showToast(count ? ('Cleared sale from ' + count + ' product' + (count === 1 ? '' : 's')) : 'Nothing to clear');
 }
 
 // ── CATEGORY + BRAND FILTER DROPDOWNS (Featured tab) ──────────────────────────

@@ -16,7 +16,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607131100';
+    v = /^[0-9]+$/.test(v) ? v : '202607131200';
     ['01-layout','02-inventory-table','03-sections','04-responsive','05-modals-forms'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -412,6 +412,16 @@
       once (capped at 50). Set a Sale % on any row to show a discounted offer price there (regular price crossed
       out, offer price shown first). Leave none selected to hide the strip entirely.
     </p>
+
+    <!-- BULK SALE BAR — search/filter for a group, Select All, then set one
+         Sale % for all of them here instead of typing it into every row. -->
+    <div class="bulk-bar show" id="foBulkBar">
+      <span class="bulk-sel-count" id="foBulkCount">0 selected here</span>
+      <input type="number" id="foBulkSale" min="0" max="95" placeholder="Sale %" style="width:70px;padding:6px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;font-size:12px;text-align:center;font-family:inherit" />
+      <button class="bulk-btn" onclick="foApplyBulkSale()"><i class="fa fa-tag"></i> Apply Sale to Selected</button>
+      <button class="bulk-btn" onclick="foClearBulkSale()"><i class="fa fa-times"></i> Clear Sale from Selected</button>
+    </div>
+
     <div class="tbl-wrap">
       <table>
         <thead>
@@ -983,7 +993,7 @@
 (function() {
   var v = '';
   try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-  v = /^[0-9]+$/.test(v) ? v : '202607131100';
+  v = /^[0-9]+$/.test(v) ? v : '202607131200';
   ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo'].forEach(function(f) {
     var s = document.createElement('script');
     s.src = 'admin/js/' + f + '.js?v=' + v;
