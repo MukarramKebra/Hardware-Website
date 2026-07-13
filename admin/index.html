@@ -16,7 +16,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607131000';
+    v = /^[0-9]+$/.test(v) ? v : '202607131100';
     ['01-layout','02-inventory-table','03-sections','04-responsive','05-modals-forms'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -385,20 +385,39 @@
       <h2><i class="fa fa-star" style="color:var(--orange);margin-right:8px"></i>Featured Products (Homepage Strip)</h2>
       <div class="ctrl-right">
         <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="foSearch" placeholder="Search products, SKU or brand..." oninput="foFilter()" autocomplete="off" /></div>
+        <div class="filter-combo" id="foCatCombo">
+          <button class="fc-btn" type="button" onclick="foFcToggle('cat')"><span id="foCatComboLabel">All Categories</span> <i class="fa fa-chevron-down fc-caret"></i></button>
+          <div class="fc-panel" id="foCatComboPanel">
+            <input type="text" class="fc-search" id="foCatComboSearch" placeholder="Search categories…" oninput="foFcFilterList('cat')" autocomplete="off" />
+            <div class="fc-list" id="foCatComboList"></div>
+          </div>
+          <input type="hidden" id="foCatFilter" value="all" />
+        </div>
+        <div class="filter-combo" id="foBrandCombo">
+          <button class="fc-btn" type="button" onclick="foFcToggle('brand')"><span id="foBrandComboLabel">All Brands</span> <i class="fa fa-chevron-down fc-caret"></i></button>
+          <div class="fc-panel" id="foBrandComboPanel">
+            <input type="text" class="fc-search" id="foBrandComboSearch" placeholder="Search brands…" oninput="foFcFilterList('brand')" autocomplete="off" />
+            <div class="fc-list" id="foBrandComboList"></div>
+          </div>
+          <input type="hidden" id="foBrandFilter" value="all" />
+        </div>
+        <button class="ur-btn" onclick="foSelectAllVisible()"><i class="fa fa-check-square"></i> Select All</button>
         <span id="foCount" style="font-size:13px;color:var(--gray);font-weight:800;white-space:nowrap"></span>
         <button class="save-btn" onclick="saveFeaturedOffers()"><i class="fa fa-check"></i> Save Featured Products</button>
       </div>
     </div>
     <p style="font-size:12px;color:var(--gray);margin:-6px 0 16px;max-width:720px">
       Click a row to feature it in the homepage's scrolling strip (up to 50) — the order you click them in is the
-      order they appear on the site. Set a Sale % on any row to show a discounted offer price there (regular
-      price crossed out, offer price shown first). Leave none selected to hide the strip entirely.
+      order they appear on the site. Filter by category/brand and use Select All to feature a whole group at
+      once (capped at 50). Set a Sale % on any row to show a discounted offer price there (regular price crossed
+      out, offer price shown first). Leave none selected to hide the strip entirely.
     </p>
     <div class="tbl-wrap">
       <table>
         <thead>
           <tr>
-            <th class="chk-col"></th><th>Product</th><th>Brand</th><th>Price KWD</th><th>Sale %</th><th>Description</th>
+            <th class="chk-col"><input type="checkbox" id="foSelectAll" title="Select all (filtered)" onchange="foToggleSelectAll(this.checked)" /></th>
+            <th>Product</th><th>Brand</th><th>Price KWD</th><th>Sale %</th><th>Description</th>
           </tr>
         </thead>
         <tbody id="foTblBody"></tbody>
@@ -964,7 +983,7 @@
 (function() {
   var v = '';
   try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-  v = /^[0-9]+$/.test(v) ? v : '202607131000';
+  v = /^[0-9]+$/.test(v) ? v : '202607131100';
   ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo'].forEach(function(f) {
     var s = document.createElement('script');
     s.src = 'admin/js/' + f + '.js?v=' + v;

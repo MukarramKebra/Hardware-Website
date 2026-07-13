@@ -334,6 +334,10 @@ async function renderFeaturedTab() {
   // Older saves stored plain product ids (no sale support yet) — migrate those in-memory.
   _foItems = raw.map(function(x) { return (typeof x === 'number') ? { id: x, sale: 0 } : { id: x.id, sale: x.sale || 0 }; });
   document.getElementById('foSearch').value = '';
+  document.getElementById('foCatFilter').value = 'all';
+  document.getElementById('foBrandFilter').value = 'all';
+  document.getElementById('foCatComboLabel').textContent = 'All Categories';
+  document.getElementById('foBrandComboLabel').textContent = 'All Brands';
   _foRenderList('');
   _foUpdateCount();
 }
@@ -341,14 +345,25 @@ function _foUpdateCount() {
   var el = document.getElementById('foCount');
   if (el) el.textContent = _foItems.length + ' / ' + FO_MAX_PRODUCTS + ' selected';
 }
-function _foRenderList(q) {
+// Products currently matching the search box + category/brand filters —
+// shared by rendering, Select All, and the header checkbox's tri-state sync.
+function _foFilteredList(q) {
   q = (q || '').toLowerCase();
-  var photos = JSON.parse(localStorage.getItem('jain_photos') || '{}');
-  var rows = getAllAdminProducts().filter(function(p) {
-    return !q || p.name.toLowerCase().includes(q) ||
+  var catF   = (document.getElementById('foCatFilter')   || { value: 'all' }).value;
+  var brandF = (document.getElementById('foBrandFilter') || { value: 'all' }).value;
+  return getAllAdminProducts().filter(function(p) {
+    var matchesQ = !q || p.name.toLowerCase().includes(q) ||
       getProductSku(p.id).toLowerCase().includes(q) ||
       (typeof getBrand === 'function' && getBrand(p.id).toLowerCase().includes(q));
-  }).map(function(p) {
+    var matchesCat   = catF === 'all'   || p.cat === catF;
+    var matchesBrand = brandF === 'all' || getBrand(p.id) === brandF;
+    return matchesQ && matchesCat && matchesBrand;
+  });
+}
+function _foRenderList(q) {
+  var photos = JSON.parse(localStorage.getItem('jain_photos') || '{}');
+  var list = _foFilteredList(q);
+  var rows = list.map(function(p) {
     var item = _foFind(p.id);
     var ck = !!item;
     var sale = item ? item.sale : 0;
@@ -379,8 +394,100 @@ function _foRenderList(q) {
     '</tr>';
   }).join('');
   document.getElementById('foTblBody').innerHTML = rows || '<tr><td colspan="6" style="color:#aaa;padding:20px;text-align:center">No products match this search.</td></tr>';
+  var saChk = document.getElementById('foSelectAll');
+  if (saChk) {
+    var nSel = list.filter(function(p) { return !!_foFind(p.id); }).length;
+    saChk.checked = list.length > 0 && nSel === list.length;
+    saChk.indeterminate = nSel > 0 && nSel < list.length;
+  }
 }
 function foFilter() { _foRenderList(document.getElementById('foSearch').value); }
+
+// ── SELECT ALL (respects the search + category/brand filters and the 50 cap) ─
+function foToggleSelectAll(checked) {
+  var q = document.getElementById('foSearch').value;
+  var list = _foFilteredList(q);
+  if (checked) {
+    var room = FO_MAX_PRODUCTS - _foItems.length;
+    var toAdd = list.filter(function(p) { return !_foFind(p.id); });
+    if (toAdd.length > room) {
+      toAdd.slice(0, Math.max(0, room)).forEach(function(p) { _foItems.push({ id: p.id, sale: 0 }); });
+      showToast('Added ' + Math.max(0, room) + ' — hit the ' + FO_MAX_PRODUCTS + '-product cap');
+    } else {
+      toAdd.forEach(function(p) { _foItems.push({ id: p.id, sale: 0 }); });
+    }
+  } else {
+    var ids = new Set(list.map(function(p) { return p.id; }));
+    _foItems = _foItems.filter(function(x) { return !ids.has(x.id); });
+  }
+  _foUpdateCount();
+  _foRenderList(q);
+}
+// Toolbar "Select All" button — same as ticking the header checkbox. Doesn't
+// force the checkbox to checked afterward — _foRenderList's own sync already
+// leaves it correctly indeterminate if the 50-cap stopped some from being added.
+function foSelectAllVisible() {
+  foToggleSelectAll(true);
+}
+
+// ── CATEGORY + BRAND FILTER DROPDOWNS (Featured tab) ──────────────────────────
+// Parallel to Inventory's fcToggle/fcRenderList/fcPick (js/10-csv-import.js)
+// but scoped to this tab's own combo ids so the two tabs' filters don't clash;
+// fcCloseAll() there is generic (any open .fc-panel) so it still closes these.
+var _foFcOptions = { cat: [], brand: [] };
+var _foFcVisible = { cat: [], brand: [] };
+function _foFcIds(kind) {
+  var cap = kind === 'cat' ? 'Cat' : 'Brand';
+  return { combo: 'fo' + cap + 'Combo', panel: 'fo' + cap + 'ComboPanel', search: 'fo' + cap + 'ComboSearch', list: 'fo' + cap + 'ComboList', label: 'fo' + cap + 'ComboLabel', hidden: kind === 'cat' ? 'foCatFilter' : 'foBrandFilter' };
+}
+function _foFcRebuild(kind) {
+  if (kind === 'cat') {
+    _foFcOptions.cat = [{ value: 'all', label: 'All Categories' }].concat(
+      getAllCats().map(function(c) { return { value: c.slug, label: c.label }; }));
+  } else {
+    var brands = {};
+    getAllAdminProducts().forEach(function(p) { var b = getBrand(p.id); if (b) brands[b] = true; });
+    _foFcOptions.brand = [{ value: 'all', label: 'All Brands' }].concat(
+      Object.keys(brands).sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); })
+        .map(function(b) { return { value: b, label: b }; }));
+  }
+}
+function foFcToggle(kind) {
+  var ids = _foFcIds(kind);
+  var panel = document.getElementById(ids.panel);
+  var wasOpen = panel.classList.contains('open');
+  fcCloseAll();
+  if (wasOpen) return;
+  _foFcRebuild(kind);
+  document.getElementById(ids.search).value = '';
+  foFcRenderList(kind, '');
+  panel.classList.add('open');
+  setTimeout(function() { document.getElementById(ids.search).focus(); }, 60);
+}
+function foFcRenderList(kind, q) {
+  q = (q || '').toLowerCase();
+  var ids = _foFcIds(kind);
+  var cur = document.getElementById(ids.hidden).value;
+  _foFcVisible[kind] = _foFcOptions[kind].filter(function(o) { return !q || o.label.toLowerCase().includes(q); });
+  document.getElementById(ids.list).innerHTML = _foFcVisible[kind].length
+    ? _foFcVisible[kind].map(function(o, i) {
+        return '<div class="fc-opt' + (o.value === cur ? ' sel' : '') + '" onclick="foFcPick(\'' + kind + '\',' + i + ')">' +
+          encodeHtml(o.label) + (o.value === cur ? ' <i class="fa fa-check"></i>' : '') + '</div>';
+      }).join('')
+    : '<div class="fc-empty">No matches</div>';
+}
+function foFcFilterList(kind) { foFcRenderList(kind, document.getElementById(_foFcIds(kind).search).value); }
+function foFcPick(kind, i) {
+  var o = _foFcVisible[kind][i];
+  if (o) foFcSet(kind, o.value, o.label);
+}
+function foFcSet(kind, value, label) {
+  var ids = _foFcIds(kind);
+  document.getElementById(ids.hidden).value = value;
+  document.getElementById(ids.label).textContent = value === 'all' ? (kind === 'cat' ? 'All Categories' : 'All Brands') : (label || value);
+  fcCloseAll();
+  foFilter();
+}
 function foToggle(row, id) {
   var idx = _foItems.findIndex(function(x) { return x.id === id; });
   if (idx === -1) {
