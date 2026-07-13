@@ -16,7 +16,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607131500';
+    v = /^[0-9]+$/.test(v) ? v : '202607131600';
     ['01-layout','02-inventory-table','03-sections','04-responsive','05-modals-forms'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -401,7 +401,7 @@
           </div>
           <input type="hidden" id="foBrandFilter" value="all" />
         </div>
-        <button class="ur-btn" onclick="foSelectAllVisible()"><i class="fa fa-check-square"></i> Select All</button>
+        <button class="ur-btn" id="foSelectAllBtn" onclick="foSelectAllVisible()"><i class="fa fa-check-square"></i> Select All</button>
         <span id="foCount" style="font-size:13px;color:var(--gray);font-weight:800;white-space:nowrap"></span>
         <button class="save-btn" onclick="saveFeaturedOffers()"><i class="fa fa-check"></i> Save Featured Products</button>
       </div>
@@ -409,8 +409,9 @@
     <p style="font-size:12px;color:var(--gray);margin:-6px 0 16px;max-width:720px">
       Click a row to feature it in the homepage's scrolling strip — the order you click them in is the
       order they appear on the site. Filter by category/brand and use Select All to feature a whole group at
-      once. Set a Sale % on any row to show a discounted offer price there (regular price crossed
-      out, offer price shown first). Leave none selected to hide the strip entirely.
+      once — click it again to unfeature that same group. Set a Sale % on any row to show a discounted offer
+      price there (regular price crossed out, offer price shown first). Leave none selected to hide the strip
+      entirely.
     </p>
 
     <!-- BULK SALE BAR — search/filter for a group, Select All, then set one
@@ -426,7 +427,7 @@
       <table>
         <thead>
           <tr>
-            <th class="chk-col"><input type="checkbox" id="foSelectAll" title="Select all (filtered) — select-only, click rows to unfeature" onchange="foToggleSelectAll()" /></th>
+            <th class="chk-col"><input type="checkbox" id="foSelectAll" title="Select/unselect all (filtered)" onchange="foToggleSelectAll()" /></th>
             <th>Product</th><th>Brand</th><th>Price KWD</th><th>Sale %</th><th>Description</th>
           </tr>
         </thead>
@@ -993,7 +994,7 @@
 (function() {
   var v = '';
   try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-  v = /^[0-9]+$/.test(v) ? v : '202607131500';
+  v = /^[0-9]+$/.test(v) ? v : '202607131600';
   ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo'].forEach(function(f) {
     var s = document.createElement('script');
     s.src = 'admin/js/' + f + '.js?v=' + v;

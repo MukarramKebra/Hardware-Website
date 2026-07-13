@@ -394,29 +394,38 @@ function _foRenderList(q) {
   }).join('');
   document.getElementById('foTblBody').innerHTML = rows || '<tr><td colspan="6" style="color:#aaa;padding:20px;text-align:center">No products match this search.</td></tr>';
   var nSel = list.filter(function(p) { return !!_foFind(p.id); }).length;
+  var allSelected = list.length > 0 && nSel === list.length;
   var saChk = document.getElementById('foSelectAll');
   if (saChk) {
-    saChk.checked = list.length > 0 && nSel === list.length;
+    saChk.checked = allSelected;
     saChk.indeterminate = nSel > 0 && nSel < list.length;
   }
+  var saBtn = document.getElementById('foSelectAllBtn');
+  if (saBtn) saBtn.innerHTML = '<i class="fa fa-check-square"></i> ' + (allSelected ? 'Unselect All' : 'Select All');
   var bulkCount = document.getElementById('foBulkCount');
   if (bulkCount) bulkCount.textContent = nSel + ' selected here';
 }
 function foFilter() { _foRenderList(document.getElementById('foSearch').value); }
 
-// ── SELECT ALL (respects the search + category/brand filters; no cap) ────────
-// Select-only, on purpose — it always adds whatever's currently shown and
-// never removes already-featured products, even clicking it again once
-// everything shown is already selected. To unfeature something, click its
-// row (or that group's rows) directly.
+// ── SELECT ALL / UNSELECT ALL (respects the search + category/brand filters;
+// no cap) — a real toggle: if everything currently shown is already
+// featured, this removes all of them; otherwise it features whatever's
+// missing. The header checkbox and toolbar button (label flips between
+// "Select All" / "Unselect All") both read this same all-selected state.
 function foToggleSelectAll() {
   var q = document.getElementById('foSearch').value;
   var list = _foFilteredList(q);
-  list.filter(function(p) { return !_foFind(p.id); }).forEach(function(p) { _foItems.push({ id: p.id, sale: 0 }); });
+  var allSelected = list.length > 0 && list.every(function(p) { return !!_foFind(p.id); });
+  if (allSelected) {
+    var ids = new Set(list.map(function(p) { return p.id; }));
+    _foItems = _foItems.filter(function(x) { return !ids.has(x.id); });
+  } else {
+    list.filter(function(p) { return !_foFind(p.id); }).forEach(function(p) { _foItems.push({ id: p.id, sale: 0 }); });
+  }
   _foUpdateCount();
   _foRenderList(q);
 }
-// Toolbar "Select All" button — same as ticking the header checkbox.
+// Toolbar button — same as ticking the header checkbox.
 function foSelectAllVisible() {
   foToggleSelectAll();
 }
