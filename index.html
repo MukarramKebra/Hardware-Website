@@ -7,17 +7,28 @@
   <meta name="description" content="Expert Hardware for Wholesale and Retail Trade — Kuwait City hardware store selling hand tools, power tools, welding machines, fasteners, safety gear, adhesives and more from DCK, TOLSEN, Dremel, INGCO, Stanley, Total, HARDEN, DCA, Makita and other trusted brands. Same-day delivery in Kuwait City." />
   <meta name="keywords" content="hardware store Kuwait, hand tools Kuwait, power tools Kuwait, DCK tools Kuwait, TOLSEN Kuwait, welding machine Kuwait, safety equipment Kuwait, fasteners Kuwait, wholesale hardware Kuwait, Expert Hardware Kuwait" />
   <link rel="canonical" href="https://mukarramkebra.github.io/Hardware-Website/" />
+  <!-- Same URL serves both languages (client-side toggle, no separate en/ar
+       paths) — a self-referencing hreflang cluster is the correct way to tell
+       Google that, rather than omitting it entirely. -->
+  <link rel="alternate" hreflang="en" href="https://mukarramkebra.github.io/Hardware-Website/" />
+  <link rel="alternate" hreflang="ar" href="https://mukarramkebra.github.io/Hardware-Website/" />
+  <link rel="alternate" hreflang="x-default" href="https://mukarramkebra.github.io/Hardware-Website/" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Expert Hardware" />
   <meta property="og:title" content="Expert Hardware Kuwait | Hand &amp; Power Tools, Welding, Fasteners &amp; Safety Gear" />
   <meta property="og:description" content="Wholesale and retail hardware store in Kuwait City — hand tools, power tools, welding machines, fasteners, safety gear and more from DCK, TOLSEN, Dremel, INGCO, Stanley and other trusted brands. Same-day delivery in Kuwait City." />
   <meta property="og:url" content="https://mukarramkebra.github.io/Hardware-Website/" />
   <meta property="og:image" content="https://mukarramkebra.github.io/Hardware-Website/logo.png" />
+  <meta property="og:image:width" content="800" />
+  <meta property="og:image:height" content="353" />
+  <meta property="og:image:alt" content="Expert Hardware Kuwait logo" />
   <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="ar_KW" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Expert Hardware Kuwait" />
   <meta name="twitter:description" content="Hand tools, power tools, welding machines, fasteners and safety gear — wholesale and retail in Kuwait City." />
   <meta name="twitter:image" content="https://mukarramkebra.github.io/Hardware-Website/logo.png" />
+  <meta name="twitter:image:alt" content="Expert Hardware Kuwait logo" />
   <meta name="geo.region" content="KW" />
   <meta name="geo.placename" content="Kuwait City" />
   <link rel="icon" type="image/png" href="favicon.png" />
@@ -50,6 +61,22 @@
     "sameAs": ["https://wa.me/96597656372"]
   }
   </script>
+  <!-- Enables a sitelinks search box in Google results. The URL template is
+       genuinely functional — js/06-features.js reads ?q= on load and runs
+       the exact same search a visitor would type into the header box. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Expert Hardware",
+    "url": "https://mukarramkebra.github.io/Hardware-Website/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://mukarramkebra.github.io/Hardware-Website/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
   <script>
   // Version comes from localStorage (kept in sync with Supabase's
   // expert_settings.asset_version by checkAssetVersion() in
@@ -62,7 +89,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607131000';
+    v = /^[0-9]+$/.test(v) ? v : '202607131400';
     ['01-base','02-sections','03-cart-features-contact','04-footer','05-responsive','06-lang-rtl','07-modals','08-account-auth','09-widgets'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -933,7 +960,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607131000';
+    v = /^[0-9]+$/.test(v) ? v : '202607131400';
     ['01-config-data','02-catalog-render','03-product-cart-checkout','04-i18n-order','05-accounts','06-features'].forEach(function(f) {
       var s = document.createElement('script');
       s.src = 'js/' + f + '.js?v=' + v;

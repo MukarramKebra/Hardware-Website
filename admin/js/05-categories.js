@@ -313,13 +313,12 @@ async function saveCatProducts() {
 // Its own full-width tab (not a modal) so it reads like the Inventory table —
 // thumbnail, name, SKU, brand, price, description — just without Inventory's
 // stock/bulk-action buttons, which don't apply to picking homepage products.
-// Admin picks up to FO_MAX_PRODUCTS real products, each optionally with a
+// Admin picks any number of real products (no cap), each optionally with a
 // Sale % that discounts its price only in the homepage strip (the product's
 // real price everywhere else — cart, checkout, its own page — is untouched).
 // Stored in expert_settings key 'featured_offers' as a JSON array of
 // { id, sale } objects — array order is also the display order on the
 // storefront, and 'sale' is the % off (0/absent = no sale).
-var FO_MAX_PRODUCTS = 50;
 var _foItems = []; // ordered array of { id, sale } (pending save)
 
 function _foFind(id) { return _foItems.find(function(x) { return x.id === id; }); }
@@ -343,7 +342,7 @@ async function renderFeaturedTab() {
 }
 function _foUpdateCount() {
   var el = document.getElementById('foCount');
-  if (el) el.textContent = _foItems.length + ' / ' + FO_MAX_PRODUCTS + ' selected';
+  if (el) el.textContent = _foItems.length + ' selected';
 }
 // Products currently matching the search box + category/brand filters —
 // shared by rendering, Select All, and the header checkbox's tri-state sync.
@@ -405,19 +404,12 @@ function _foRenderList(q) {
 }
 function foFilter() { _foRenderList(document.getElementById('foSearch').value); }
 
-// ── SELECT ALL (respects the search + category/brand filters and the 50 cap) ─
+// ── SELECT ALL (respects the search + category/brand filters; no cap) ────────
 function foToggleSelectAll(checked) {
   var q = document.getElementById('foSearch').value;
   var list = _foFilteredList(q);
   if (checked) {
-    var room = FO_MAX_PRODUCTS - _foItems.length;
-    var toAdd = list.filter(function(p) { return !_foFind(p.id); });
-    if (toAdd.length > room) {
-      toAdd.slice(0, Math.max(0, room)).forEach(function(p) { _foItems.push({ id: p.id, sale: 0 }); });
-      showToast('Added ' + Math.max(0, room) + ' — hit the ' + FO_MAX_PRODUCTS + '-product cap');
-    } else {
-      toAdd.forEach(function(p) { _foItems.push({ id: p.id, sale: 0 }); });
-    }
+    list.filter(function(p) { return !_foFind(p.id); }).forEach(function(p) { _foItems.push({ id: p.id, sale: 0 }); });
   } else {
     var ids = new Set(list.map(function(p) { return p.id; }));
     _foItems = _foItems.filter(function(x) { return !ids.has(x.id); });
@@ -425,9 +417,7 @@ function foToggleSelectAll(checked) {
   _foUpdateCount();
   _foRenderList(q);
 }
-// Toolbar "Select All" button — same as ticking the header checkbox. Doesn't
-// force the checkbox to checked afterward — _foRenderList's own sync already
-// leaves it correctly indeterminate if the 50-cap stopped some from being added.
+// Toolbar "Select All" button — same as ticking the header checkbox.
 function foSelectAllVisible() {
   foToggleSelectAll(true);
 }
@@ -516,7 +506,6 @@ function foFcSet(kind, value, label) {
 function foToggle(row, id) {
   var idx = _foItems.findIndex(function(x) { return x.id === id; });
   if (idx === -1) {
-    if (_foItems.length >= FO_MAX_PRODUCTS) { showToast('Maximum ' + FO_MAX_PRODUCTS + ' products allowed'); return; }
     _foItems.push({ id: id, sale: 0 });
   } else {
     _foItems.splice(idx, 1);
@@ -530,7 +519,6 @@ function foSetSale(id, rawVal) {
   var pct = Math.max(0, Math.min(95, parseInt(rawVal, 10) || 0));
   var item = _foFind(id);
   if (!item) {
-    if (_foItems.length >= FO_MAX_PRODUCTS) { showToast('Maximum ' + FO_MAX_PRODUCTS + ' products allowed'); _foRenderList(document.getElementById('foSearch').value); return; }
     item = { id: id, sale: 0 };
     _foItems.push(item);
   }

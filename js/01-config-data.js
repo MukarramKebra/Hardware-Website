@@ -137,7 +137,7 @@ async function loadSBData() {
   // second pass, which is what Google's Merchant Listings report was flagging.
   try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
 
-  const [s, c, h, b, sk, bm, mc, pk, hp, ql, ph, vr, fo] = await Promise.all([
+  const [s, c, h, b, sk, bm, mc, pk, hp, ql, ph, vr, fo, rv] = await Promise.all([
     sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',                         { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_products?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H }),
@@ -150,7 +150,8 @@ async function loadSBData() {
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',                        { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_variants&select=value', { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_H })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_H }),
+    sbFetch(SB_URL + '/rest/v1/expert_reviews?select=product_id,rating',   { headers: SB_H })
   ]);
   if (!vr.error && Array.isArray(vr.data) && vr.data[0] && vr.data[0].value) {
     try { window._sbVariants = JSON.parse(vr.data[0].value) || {}; } catch(e) {}
@@ -161,6 +162,21 @@ async function loadSBData() {
       // Older saves stored plain product ids (no sale support yet) — migrate.
       window._sbFeaturedOffers = rawFo.map(function(x) { return (typeof x === 'number') ? { id: x, sale: 0 } : { id: x.id, sale: x.sale || 0 }; });
     } catch(e) {}
+  }
+  // Bulk review stats (avg + count per product) for the Product schema's
+  // aggregateRating — fetched once here instead of per-product like
+  // getAvgRating() in js/06-features.js, which is fine for the review-modal's
+  // single lookup but would be one request per product for the whole catalog.
+  window._sbReviewStats = {};
+  if (Array.isArray(rv.data)) {
+    var sums = {};
+    rv.data.forEach(function(r) {
+      var s = sums[r.product_id] || (sums[r.product_id] = { total: 0, count: 0 });
+      s.total += r.rating; s.count++;
+    });
+    Object.keys(sums).forEach(function(id) {
+      window._sbReviewStats[id] = { avg: sums[id].total / sums[id].count, count: sums[id].count };
+    });
   }
   if (Array.isArray(ph.data)) {
     ph.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });

@@ -429,8 +429,24 @@ function openWAChat() {
   }, 500);
 })();
 
+// Backs the WebSite/SearchAction schema in index.html's <head> — a visitor
+// arriving from a search engine's sitelinks search box (?q=...) lands here
+// with the same search already applied, instead of an unfiltered homepage.
+(function _applySearchQueryParam() {
+  try {
+    var q = new URLSearchParams(window.location.search).get('q');
+    if (q) {
+      var input = document.getElementById('searchInput');
+      if (input) input.value = q;
+    }
+  } catch(e) {}
+})();
+
 // Render products immediately from hardcoded array (instant display), then
 // load live stock/photos/hidden status from Supabase and re-render. This runs
 // here (last script to load) so every helper renderProducts() needs is defined.
 renderProducts();
 loadSBData();
+if (new URLSearchParams(window.location.search).get('q')) {
+  setTimeout(scrollToProducts, 300);
+}

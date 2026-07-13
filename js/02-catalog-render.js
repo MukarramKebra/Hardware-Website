@@ -99,7 +99,7 @@ function scrollToProducts() {
 // ── OFFERS CAROUSEL ───────────────────────────────────────────────────────
 // Moving row of real featured products (admin-picked, see admin's Featured
 // tab — expert_settings key 'featured_offers', a JSON array of
-// { id, sale } capped at 50, in display order; 'sale' is an optional % off
+// { id, sale } (no limit) in display order; 'sale' is an optional % off
 // shown only in this strip — the product's real price elsewhere is
 // untouched). Called from loadSBData() once product/photo data is
 // available; hides the whole section if the admin hasn't picked anything.
@@ -496,12 +496,18 @@ function applySearchSuggestion(q) {
 function _injectProductSchema() {
   const products = getAllProducts();
   if (!products.length) return;
+  // Offer prices are always current (fetched live from Supabase), so a
+  // far-future validity date is the standard convention for a perpetual
+  // catalog rather than a real expiry — set once per page load.
+  const priceValidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const reviewStats = window._sbReviewStats || {};
   const itemList = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     'itemListElement': products.map(function(p, i) {
       const photo = (_sbPhotos[p.id] && (_sbPhotos[p.id].startsWith('http') || _sbPhotos[p.id].startsWith('data:'))) ? _sbPhotos[p.id] : p.img;
       const liveStatus = getLiveStock(p.id) || p.stock;
+      const rs = reviewStats[p.id];
       return {
         '@type': 'ListItem',
         'position': i + 1,
@@ -517,10 +523,19 @@ function _injectProductSchema() {
           'category': p.category,
           'keywords': _sbProductKeywords[p.id] || undefined,
           'image': (photo && photo.startsWith('http')) ? photo : undefined,
+          // Real customer ratings only — omitted entirely when a product has
+          // no reviews yet, never a fabricated/default rating.
+          'aggregateRating': (rs && rs.count > 0) ? {
+            '@type': 'AggregateRating',
+            'ratingValue': Math.round(rs.avg * 10) / 10,
+            'reviewCount': rs.count
+          } : undefined,
           'offers': {
             '@type': 'Offer',
             'priceCurrency': 'KWD',
             'price': p.price,
+            'priceValidUntil': priceValidUntil,
+            'itemCondition': 'https://schema.org/NewCondition',
             'availability': liveStatus === 'out-of-stock' ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'
           }
         }
