@@ -46,8 +46,13 @@ function redo() {
   renderTable(); renderStats(); _syncUrBtns();
   showToast('Redone â†ª');
 }
+// Tab-aware: Ctrl+Z/Ctrl+Y drives whichever tab's own undo/redo stack is
+// visible (stock here, or the Featured tab's picks/sales — see foUndo/foRedo
+// in admin/js/05-categories.js) so pressing it doesn't fire both at once.
 document.addEventListener('keydown', function(e) {
-  if ((e.ctrlKey||e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
-  if ((e.ctrlKey||e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) { e.preventDefault(); redo(); }
+  var featuredSection = document.getElementById('featuredSection');
+  var onFeatured = featuredSection && featuredSection.style.display !== 'none';
+  if ((e.ctrlKey||e.metaKey) && e.key === 'z') { e.preventDefault(); onFeatured ? foUndo() : undo(); }
+  if ((e.ctrlKey||e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) { e.preventDefault(); onFeatured ? foRedo() : redo(); }
 });
 

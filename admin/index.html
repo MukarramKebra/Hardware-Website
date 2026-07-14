@@ -16,7 +16,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607131600';
+    v = /^[0-9]+$/.test(v) ? v : '202607150900';
     ['01-layout','02-inventory-table','03-sections','04-responsive','05-modals-forms'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -402,6 +402,10 @@
           <input type="hidden" id="foBrandFilter" value="all" />
         </div>
         <button class="ur-btn" id="foSelectAllBtn" onclick="foSelectAllVisible()"><i class="fa fa-check-square"></i> Select All</button>
+        <div class="ur-group">
+          <button class="ur-btn" id="foUndoBtn" onclick="foUndo()" disabled title="Undo (Ctrl+Z)"><i class="fa fa-undo"></i> Undo</button>
+          <button class="ur-btn" id="foRedoBtn" onclick="foRedo()" disabled title="Redo (Ctrl+Y)"><i class="fa fa-redo"></i> Redo</button>
+        </div>
         <span id="foCount" style="font-size:13px;color:var(--gray);font-weight:800;white-space:nowrap"></span>
         <button class="save-btn" onclick="saveFeaturedOffers()"><i class="fa fa-check"></i> Save Featured Products</button>
       </div>
@@ -994,7 +998,7 @@
 (function() {
   var v = '';
   try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-  v = /^[0-9]+$/.test(v) ? v : '202607131600';
+  v = /^[0-9]+$/.test(v) ? v : '202607150900';
   ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo'].forEach(function(f) {
     var s = document.createElement('script');
     s.src = 'admin/js/' + f + '.js?v=' + v;

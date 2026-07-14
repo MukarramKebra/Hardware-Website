@@ -324,6 +324,44 @@ var _foItems = []; // ordered array of { id, sale } (pending save)
 function _foFind(id) { return _foItems.find(function(x) { return x.id === id; }); }
 function _foOfferPrice(price, sale) { return sale > 0 ? price * (1 - sale / 100) : price; }
 
+// ── UNDO / REDO ──────────────────────────────────────────────────────────────
+// Mirrors Inventory's stock undo/redo (js/02-helpers.js): a snapshot of
+// _foItems is pushed before every mutation (toggle, sale, select-all, bulk
+// sale), so Ctrl+Z / Ctrl+Y or the toolbar buttons step back/forward through
+// picks and prices without touching the live save until you hit Save.
+var _foUndoStack = [];
+var _foRedoStack = [];
+function _foPushUndo() {
+  _foUndoStack.push(JSON.stringify(_foItems));
+  if (_foUndoStack.length > 50) _foUndoStack.shift();
+  _foRedoStack = [];
+  _foSyncUrBtns();
+}
+function _foSyncUrBtns() {
+  var u = document.getElementById('foUndoBtn');
+  var r = document.getElementById('foRedoBtn');
+  if (u) u.disabled = _foUndoStack.length === 0;
+  if (r) r.disabled = _foRedoStack.length === 0;
+}
+function foUndo() {
+  if (!_foUndoStack.length) return;
+  _foRedoStack.push(JSON.stringify(_foItems));
+  _foItems = JSON.parse(_foUndoStack.pop());
+  _foSyncUrBtns();
+  _foUpdateCount();
+  _foRenderList(document.getElementById('foSearch').value);
+  showToast('Undone ↩');
+}
+function foRedo() {
+  if (!_foRedoStack.length) return;
+  _foUndoStack.push(JSON.stringify(_foItems));
+  _foItems = JSON.parse(_foRedoStack.pop());
+  _foSyncUrBtns();
+  _foUpdateCount();
+  _foRenderList(document.getElementById('foSearch').value);
+  showToast('Redone ↪');
+}
+
 async function renderFeaturedTab() {
   var res = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_HDRS });
   var raw = [];
@@ -332,6 +370,10 @@ async function renderFeaturedTab() {
   }
   // Older saves stored plain product ids (no sale support yet) — migrate those in-memory.
   _foItems = raw.map(function(x) { return (typeof x === 'number') ? { id: x, sale: 0 } : { id: x.id, sale: x.sale || 0 }; });
+  // Undo history doesn't survive a fresh reload from the source of truth.
+  _foUndoStack = [];
+  _foRedoStack = [];
+  _foSyncUrBtns();
   document.getElementById('foSearch').value = '';
   document.getElementById('foCatFilter').value = 'all';
   document.getElementById('foBrandFilter').value = 'all';
@@ -415,7 +457,9 @@ function foFilter() { _foRenderList(document.getElementById('foSearch').value); 
 function foToggleSelectAll() {
   var q = document.getElementById('foSearch').value;
   var list = _foFilteredList(q);
-  var allSelected = list.length > 0 && list.every(function(p) { return !!_foFind(p.id); });
+  if (!list.length) return;
+  var allSelected = list.every(function(p) { return !!_foFind(p.id); });
+  _foPushUndo();
   if (allSelected) {
     var ids = new Set(list.map(function(p) { return p.id; }));
     _foItems = _foItems.filter(function(x) { return !ids.has(x.id); });
@@ -437,20 +481,24 @@ function foApplyBulkSale() {
   var pct = Math.max(0, Math.min(95, parseInt(document.getElementById('foBulkSale').value, 10) || 0));
   var q = document.getElementById('foSearch').value;
   var visibleIds = new Set(_foFilteredList(q).map(function(p) { return p.id; }));
-  var count = 0;
-  _foItems.forEach(function(item) { if (visibleIds.has(item.id)) { item.sale = pct; count++; } });
-  if (!count) { showToast('No selected products match the current search/filters'); return; }
+  var matches = _foItems.filter(function(item) { return visibleIds.has(item.id); });
+  if (!matches.length) { showToast('No selected products match the current search/filters'); return; }
+  _foPushUndo();
+  matches.forEach(function(item) { item.sale = pct; });
   _foRenderList(q);
-  showToast('Applied ' + pct + '% sale to ' + count + ' product' + (count === 1 ? '' : 's'));
+  showToast('Applied ' + pct + '% sale to ' + matches.length + ' product' + (matches.length === 1 ? '' : 's'));
 }
 function foClearBulkSale() {
   var q = document.getElementById('foSearch').value;
   var visibleIds = new Set(_foFilteredList(q).map(function(p) { return p.id; }));
-  var count = 0;
-  _foItems.forEach(function(item) { if (visibleIds.has(item.id) && item.sale > 0) { item.sale = 0; count++; } });
+  var matches = _foItems.filter(function(item) { return visibleIds.has(item.id) && item.sale > 0; });
+  if (matches.length) {
+    _foPushUndo();
+    matches.forEach(function(item) { item.sale = 0; });
+  }
   document.getElementById('foBulkSale').value = '';
   _foRenderList(q);
-  showToast(count ? ('Cleared sale from ' + count + ' product' + (count === 1 ? '' : 's')) : 'Nothing to clear');
+  showToast(matches.length ? ('Cleared sale from ' + matches.length + ' product' + (matches.length === 1 ? '' : 's')) : 'Nothing to clear');
 }
 
 // ── CATEGORY + BRAND FILTER DROPDOWNS (Featured tab) ──────────────────────────
@@ -512,6 +560,7 @@ function foFcSet(kind, value, label) {
   foFilter();
 }
 function foToggle(row, id) {
+  _foPushUndo();
   var idx = _foItems.findIndex(function(x) { return x.id === id; });
   if (idx === -1) {
     _foItems.push({ id: id, sale: 0 });
@@ -524,6 +573,7 @@ function foToggle(row, id) {
 // Setting a sale % on a product that isn't featured yet features it first —
 // a sale price only means anything if it's actually shown in the strip.
 function foSetSale(id, rawVal) {
+  _foPushUndo();
   var pct = Math.max(0, Math.min(95, parseInt(rawVal, 10) || 0));
   var item = _foFind(id);
   if (!item) {
