@@ -115,6 +115,13 @@ function initOffersTicker() {
   }).filter(Boolean);
   if (!offers.length) { section.style.display = 'none'; return; }
   section.style.display = '';
+  // Products with an active sale show first — Array.sort is stable, so
+  // otherwise ties keep the admin's original picked order within each group.
+  offers.sort((a, b) => {
+    const aSale = a.sale > 0 && a.p.price > 0 && !window._sbPriceHidden[a.p.id];
+    const bSale = b.sale > 0 && b.p.price > 0 && !window._sbPriceHidden[b.p.id];
+    return (bSale ? 1 : 0) - (aSale ? 1 : 0);
+  });
   const customPhotos = _sbPhotos || {};
   const cards = offers.map(({ p, sale }) => {
     const raw   = customPhotos[p.id];
