@@ -562,18 +562,31 @@ function _injectProductSchema() {
 // Card-level size/pack picker — mirrors the product popup's own
 // _pmCurrentPrice/pmVariantChange, but scoped to one grid card instead of
 // the modal, so a shopper can pick an option without leaving the grid.
-function _cardVariantPrice(p, idx) {
+function _cardRawPrice(p, idx) {
   const opts = getVariants(p.id);
   if (!opts.length) return p.price;
   const v = opts[idx || 0] || opts[0];
   return (v.price > 0) ? v.price : p.price;
+}
+function _cardVariantPrice(p, idx) {
+  return applySale(_cardRawPrice(p, idx), p.id);
+}
+// Shared by the card's initial render and cardVariantChange so both show the
+// exact same "was/now" markup when a Featured Sale % is active.
+function _priceHtml(rawPrice, id) {
+  const sale = getFeaturedSale(id);
+  if (sale > 0 && rawPrice > 0 && !window._sbPriceHidden[id]) {
+    const now = rawPrice * (1 - sale / 100);
+    return '<span class="prod-price-now">' + now.toFixed(3) + '</span> <span class="prod-price-was">' + rawPrice.toFixed(3) + '</span> <small>KWD</small>';
+  }
+  return rawPrice.toFixed(3) + ' <small>KWD</small>';
 }
 function cardVariantChange(id, sel) {
   const p = getAllProducts().find(x => x.id === id);
   if (!p) return;
   const idx = parseInt(sel.value, 10) || 0;
   const priceEl = document.getElementById('cardPrice' + id);
-  if (priceEl) priceEl.innerHTML = _cardVariantPrice(p, idx).toFixed(3) + ' <small>KWD</small>';
+  if (priceEl) priceEl.innerHTML = _priceHtml(_cardRawPrice(p, idx), id);
   const skuEl = document.getElementById('cardSku' + id);
   if (skuEl) skuEl.textContent = _variantSku(getVariants(id)[idx], id);
 }
@@ -647,10 +660,12 @@ function renderProducts() {
     // Out of Stock ribbon/dimming for them.
     const priceHidden = !!window._sbPriceHidden[p.id];
     const showOut = isOut && !priceHidden;
+    const cardSale = getFeaturedSale(p.id);
+    const hasCardSale = cardSale > 0 && p.price > 0 && !priceHidden;
     return `
       <div class="product-card ${showOut ? 'card-out' : ''}" onclick="openProduct(${p.id})">
         <div class="product-img-wrap">
-          ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
+          ${hasCardSale ? `<span class="product-badge product-badge-sale">-${cardSale}%</span>` : (p.badge ? `<span class="product-badge">${p.badge}</span>` : '')}
           ${showOut ? `<span class="out-badge">${isAr ? 'نفد المخزون' : 'OUT OF STOCK'}</span>` : ''}
           <button class="card-wl-btn ${isWishlisted(p.id)?'wishlisted':''}" onclick="toggleWishlist(${p.id}, event)" title="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}"><i class="fa fa-heart"></i></button>
           ${photo
@@ -671,7 +686,7 @@ function renderProducts() {
           <div class="product-footer">
             ${(p.price > 0 && !window._sbPriceHidden[p.id]) ? `
             <div>
-              <div class="product-price" id="cardPrice${p.id}">${_cardVariantPrice(p).toFixed(3)} <small>KWD</small></div>
+              <div class="product-price" id="cardPrice${p.id}">${_priceHtml(_cardRawPrice(p), p.id)}</div>
               <div class="stock-badge ${stockClass}">${stockLabel}</div>
             </div>
             ${isOut

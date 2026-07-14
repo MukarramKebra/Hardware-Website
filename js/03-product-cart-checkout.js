@@ -12,6 +12,16 @@ function _pmCurrentPrice(p) {
   const v = opts[_pmVariantIdx] || opts[0];
   return (v.price > 0) ? v.price : p.price;
 }
+// "Was/now" markup when a Featured Sale % is active — same classes as the
+// grid card (_priceHtml in js/02-catalog-render.js) for a consistent look.
+function _pmPriceHtml(rawPrice, id) {
+  const sale = getFeaturedSale(id);
+  if (sale > 0 && rawPrice > 0 && !window._sbPriceHidden[id]) {
+    const now = rawPrice * (1 - sale / 100);
+    return '<span class="prod-price-now">' + now.toFixed(3) + '</span> <span class="prod-price-was">' + rawPrice.toFixed(3) + '</span> <small>KWD</small>';
+  }
+  return rawPrice.toFixed(3) + ' <small>KWD</small>';
+}
 // SKU for a specific option — options without their own SKU sell under the
 // product's own (matches the source catalog, which suffixes the base SKU
 // per option rather than leaving it blank)
@@ -45,7 +55,7 @@ function pmSelectVariant(idx) {
   const p = getAllProducts().find(x => x.id === _pmId);
   if (!p) return;
   const priceEl = document.getElementById('pmPriceDisplay');
-  if (priceEl) priceEl.innerHTML = _pmCurrentPrice(p).toFixed(3) + ' <small>KWD</small>';
+  if (priceEl) priceEl.innerHTML = _pmPriceHtml(_pmCurrentPrice(p), p.id);
   _pmApplyVariantDisplay(p);
   document.querySelectorAll('#pmVariantTiles .pm-variant-tile').forEach(function(t, i) {
     t.classList.toggle('selected', i === idx);
@@ -92,7 +102,7 @@ function openProduct(id) {
       '<span class="prod-modal-sku" id="prodModalSku">' + getProductSku(id) + '</span>' +
       '<p class="pm-desc" id="pmDescDisplay">' + p.desc + '</p>' +
       ((p.price > 0 && !window._sbPriceHidden[p.id]) ? (
-      '<div class="pm-price" id="pmPriceDisplay">' + _pmCurrentPrice(p).toFixed(3) + ' <small>KWD</small></div>' +
+      '<div class="pm-price" id="pmPriceDisplay">' + _pmPriceHtml(_pmCurrentPrice(p), p.id) + '</div>' +
       '<div class="pm-stock-line ' + stockCls + '"><i class="fa ' + stockIcon + '"></i> ' + stockTxt + '</div>' +
       (getVariants(id).length ?
         '<div class="pm-variant-block">' +
@@ -180,7 +190,7 @@ function renderRelatedProducts(currentId, category) {
       return '<div class="rv-card" onclick="openProduct(' + p.id + ')">' +
         '<img src="' + photo + '" alt="' + p.name + '" onerror="imgError(this)" />' +
         '<div class="rv-name">' + p.name + '</div>' +
-        '<div class="rv-price">' + p.price.toFixed(3) + ' KWD</div>' +
+        '<div class="rv-price">' + applySale(p.price, p.id).toFixed(3) + ' KWD</div>' +
       '</div>';
     }).join('') +
     '</div>';
@@ -261,7 +271,7 @@ function pmAddToCart() {
       // Bake the option into the line's name/price/sku so cart, checkout,
       // the WhatsApp message and the saved order all show it with no extra code
       name:  variant ? product.name + ' (' + variant + ')' : product.name,
-      price: _pmCurrentPrice(product),
+      price: applySale(_pmCurrentPrice(product), _pmId),
       sku:   _variantSku(selOpt, _pmId)
     }));
   }
@@ -301,7 +311,8 @@ function addToCart(id, btn) {
   const sel     = opts.length ? document.getElementById('cardVarSel' + id) : null;
   const variant = opts.length ? (opts[sel ? (parseInt(sel.value, 10) || 0) : 0] || opts[0]) : null;
   const vLabel  = variant ? variant.label : null;
-  const price   = variant ? ((variant.price > 0) ? variant.price : product.price) : product.price;
+  const rawPrice = variant ? ((variant.price > 0) ? variant.price : product.price) : product.price;
+  const price   = applySale(rawPrice, id);
 
   const liveQty  = getLiveQty(id);
   // Options share the parent product's stock pool, so stock/limit checks

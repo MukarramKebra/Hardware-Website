@@ -105,6 +105,8 @@
 }
 .pm-price { font-size:30px; font-weight:900; color:var(--dark); margin-bottom:5px; line-height:1; }
 .pm-price small { font-size:13px; font-weight:600; color:#aaa; }
+.pm-price .prod-price-now { color:var(--orange); font-weight:900; }
+.pm-price .prod-price-was { color:#aaa; font-weight:600; text-decoration:line-through; font-size:0.5em; margin-left:8px; }
 .pm-stock-line { font-size:13px; font-weight:600; margin-bottom:18px; display:flex; align-items:center; gap:7px; }
 .pm-stock-line.in-stock { color:var(--green); }
 .pm-stock-line.low-stock { color:var(--yellow); }

@@ -24,7 +24,7 @@ function renderRecentlyViewed() {
     return '<div class="rv-card" onclick="openProduct('+p.id+')">' +
       '<img src="'+photo+'" alt="'+p.name+'" onerror="imgError(this)" />' +
       '<div class="rv-name">'+p.name+'</div>' +
-      '<div class="rv-price">'+p.price.toFixed(3)+' KWD</div>' +
+      '<div class="rv-price">'+applySale(p.price, p.id).toFixed(3)+' KWD</div>' +
     '</div>';
   }).join('');
 }
@@ -83,7 +83,7 @@ function openWishlist() {
         '<img src="'+photo+'" alt="'+p.name+'" onclick="closeWishlist();openProduct('+p.id+')" onerror="imgError(this)" />' +
         '<div class="wl-info" onclick="closeWishlist();openProduct('+p.id+')">' +
           '<div class="wl-name">'+p.name+'</div>' +
-          '<div class="wl-price">'+p.price.toFixed(3)+' KWD</div>' +
+          '<div class="wl-price">'+applySale(p.price, p.id).toFixed(3)+' KWD</div>' +
         '</div>' +
         '<div class="wl-actions">' +
           '<button class="wl-add-btn" onclick="addToCart('+p.id+')"><i class="fa fa-cart-plus"></i> Add to Cart</button>' +

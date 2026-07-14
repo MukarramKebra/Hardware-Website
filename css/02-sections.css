@@ -78,6 +78,7 @@
 .product-card:hover .product-img-wrap img { transform: scale(1.06); }
 .product-img-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 52px; background: var(--light); color: var(--orange); }
 .product-badge { position: absolute; top: 10px; left: 10px; background: var(--orange); color: #fff; font-size: 9px; font-weight: 800; padding: 4px 9px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; z-index: 1; }
+.product-badge-sale { background: var(--red); }
 .product-info { padding: 13px; flex: 1; display: flex; flex-direction: column; }
 .product-cat { font-size: 9px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
 .product-info h3 { font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 4px; line-height: 1.35; }
@@ -89,6 +90,8 @@
 .product-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
 .product-price { font-size: 16px; font-weight: 800; color: var(--dark); }
 .product-price small { font-size: 10px; font-weight: 600; color: var(--gray-400); }
+.product-price .prod-price-now { color: var(--red); font-weight: 900; }
+.product-price .prod-price-was { color: #999; font-weight: 600; text-decoration: line-through; font-size: 0.7em; margin-left: 2px; }
 .btn-add { background: var(--orange); color: #fff; border: none; padding: 8px 13px; border-radius: 5px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 4px; text-transform: uppercase; }
 .btn-add:hover { background: var(--orange-dark); }
 .btn-add.btn-add-loading { background: var(--gray-400); cursor: wait; }

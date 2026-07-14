@@ -126,6 +126,24 @@ function getVariants(id) {
   return Array.isArray(v) ? v : [];
 }
 
+// ── FEATURED SALE % ───────────────────────────────────────────────────────
+// The per-product Sale % set in admin's Featured tab (expert_settings
+// 'featured_offers', { id, sale } entries) is a real, site-wide discount —
+// it applies wherever that product's price is shown or charged (grid card,
+// product page, cart/checkout), not just the homepage strip. p.price itself
+// is never modified; this only affects what's displayed/charged at runtime.
+function getFeaturedSale(id) {
+  var items = window._sbFeaturedOffers;
+  if (!Array.isArray(items)) return 0;
+  var item = items.find(function(x) { return x.id === id; });
+  return (item && item.sale > 0) ? item.sale : 0;
+}
+function applySale(price, id) {
+  if (!(price > 0) || (window._sbPriceHidden || {})[id]) return price;
+  var sale = getFeaturedSale(id);
+  return sale > 0 ? price * (1 - sale / 100) : price;
+}
+
 async function loadSBData() {
   // Photos (expert_photos) used to carry every product's full image as
   // base64 — several MB total, slow enough on Supabase's free tier that it
