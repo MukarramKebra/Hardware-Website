@@ -150,14 +150,15 @@
     /* ── MULTI-SELECT ──────────────────────────────────────────────────── */
     .chk-col{width:38px;text-align:center;}
     .row-chk{width:16px;height:16px;cursor:pointer;accent-color:var(--orange);}
-    .bulk-bar{display:none;align-items:center;gap:10px;background:#d20d17;color:#fff;padding:12px 18px;border-radius:10px;margin-bottom:14px;border-left:4px solid var(--orange);flex-wrap:wrap;}
+    .bulk-bar{display:none;align-items:center;gap:10px;background:#d20d17;color:#fff;padding:12px 18px;border-radius:10px;margin-bottom:14px;border-left:4px solid var(--orange);flex-wrap:wrap;color-scheme:light;}
     .bulk-bar.show{display:flex;}
-    .bulk-sel-count{font-size:13px;font-weight:900;color:#fff;white-space:nowrap;min-width:90px;}
-    .bulk-btn{background:none;border:1px solid rgba(255,255,255,0.22);color:rgba(255,255,255,0.85);padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap;}
-    .bulk-btn:hover{border-color:#fff;color:#fff;}
+    .bulk-bar *{color:#fff;}
+    .bulk-sel-count{font-size:13px;font-weight:900;color:#fff;white-space:nowrap;min-width:90px;background:rgba(0,0,0,0.15);padding:2px 8px;border-radius:5px;}
+    .bulk-btn{background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.5);color:#fff;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap;}
+    .bulk-btn:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,0.26);}
     .bulk-btn.red:hover{border-color:var(--red);color:var(--red);}
     .bulk-btn.green:hover{border-color:var(--green);color:var(--green);}
-    #foBulkSale::placeholder{color:rgba(255,255,255,0.65);}
+    #foBulkSale::placeholder{color:rgba(255,255,255,0.8);}
     .bulk-desel{background:none;border:none;color:rgba(255,255,255,0.35);font-size:12px;cursor:pointer;margin-left:auto;display:flex;align-items:center;gap:5px;}
     .bulk-desel:hover{color:rgba(255,255,255,0.75);}
 
