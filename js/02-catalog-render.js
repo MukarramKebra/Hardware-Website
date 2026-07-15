@@ -212,8 +212,8 @@ function _renderBannerSlides(container, slides) {
   }).join('') +
   // Up arrow sits centred in the letterbox area above the image, down arrow
   // in the area below it (instead of both stacked in a corner)
-  '<button class="banner-nav-btn banner-nav-up" onclick="event.stopPropagation();bannerNext()" title="Next"><i class="fa fa-chevron-up"></i></button>' +
-  '<button class="banner-nav-btn banner-nav-down" onclick="event.stopPropagation();bannerPrevious()" title="Previous"><i class="fa fa-chevron-down"></i></button>';
+  '<button class="banner-nav-btn banner-nav-up" onclick="event.stopPropagation();bannerNext()" title="Next" aria-label="Next banner"><i class="fa fa-chevron-up"></i></button>' +
+  '<button class="banner-nav-btn banner-nav-down" onclick="event.stopPropagation();bannerPrevious()" title="Previous" aria-label="Previous banner"><i class="fa fa-chevron-down"></i></button>';
 }
 
 // Both vertical banners share one index so their slides always change
@@ -667,7 +667,7 @@ function renderProducts() {
         <div class="product-img-wrap">
           ${hasCardSale ? `<span class="product-badge product-badge-sale">-${cardSale}%</span>` : (p.badge ? `<span class="product-badge">${p.badge}</span>` : '')}
           ${showOut ? `<span class="out-badge">${isAr ? 'نفد المخزون' : 'OUT OF STOCK'}</span>` : ''}
-          <button class="card-wl-btn ${isWishlisted(p.id)?'wishlisted':''}" onclick="toggleWishlist(${p.id}, event)" title="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}"><i class="fa fa-heart"></i></button>
+          <button class="card-wl-btn ${isWishlisted(p.id)?'wishlisted':''}" onclick="toggleWishlist(${p.id}, event)" title="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}" aria-label="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}"><i class="fa fa-heart"></i></button>
           ${photo
             ? `<img src="${photo}" data-local="${p.img}" alt="${pName}" loading="lazy" onerror="imgError(this)" />
                <div class="product-img-fallback" style="display:none"><i class="fa fa-tools"></i></div>`

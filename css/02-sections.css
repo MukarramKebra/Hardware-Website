@@ -91,7 +91,7 @@
 .product-price { font-size: 16px; font-weight: 800; color: var(--dark); }
 .product-price small { font-size: 10px; font-weight: 600; color: var(--gray-400); }
 .product-price .prod-price-now { color: var(--red); font-weight: 900; }
-.product-price .prod-price-was { color: #999; font-weight: 600; text-decoration: line-through; font-size: 0.7em; margin-left: 2px; }
+.product-price .prod-price-was { color: #707070; font-weight: 600; text-decoration: line-through; font-size: 0.7em; margin-left: 2px; }
 .btn-add { background: var(--orange); color: #fff; border: none; padding: 8px 13px; border-radius: 5px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 4px; text-transform: uppercase; }
 .btn-add:hover { background: var(--orange-dark); }
 .btn-add.btn-add-loading { background: var(--gray-400); cursor: wait; }

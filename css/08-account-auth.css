@@ -64,7 +64,7 @@
 .auth-ok { background:rgba(34,197,94,.07); border:1.5px solid rgba(34,197,94,.25); color:#16a34a; border-radius:8px; padding:10px 13px; font-size:13px; margin-bottom:14px; display:none; }
 .auth-ok.show { display:block; }
 .auth-forgot-link { background:none; border:none; color:var(--orange); font-size:12px; cursor:pointer; font-family:inherit; display:block; text-align:right; margin:-10px 0 12px; }
-.auth-bottom-note { text-align:center; font-size:12px; color:#999; margin-top:14px; }
+.auth-bottom-note { text-align:center; font-size:12px; color:#707070; margin-top:14px; }
 .auth-bottom-note button { background:none; border:none; color:var(--orange); font-weight:700; cursor:pointer; font-family:inherit; font-size:12px; }
 
 /* ── ACCOUNT MODAL (profile + my orders) ────────────────────────────────── */
@@ -76,10 +76,10 @@
 .acct-user-info { display:flex; align-items:center; gap:12px; min-width:0; }
 .acct-avatar { width:44px; height:44px; background:var(--orange); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:900; color:#fff; flex-shrink:0; }
 .acct-uname { color:#fff; font-size:14px; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.acct-uemail { color:rgba(255,255,255,.4); font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.acct-uemail { color:rgba(255,255,255,.8); font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .acct-signout-btn { background:none; border:1px solid rgba(239,68,68,.45); color:#ef4444; padding:6px 12px; border-radius:7px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; flex-shrink:0; }
 .acct-tabs { display:flex; }
-.acct-tab { flex:1; padding:12px 8px; font-size:13px; font-weight:700; color:rgba(255,255,255,.4); background:none; border:none; cursor:pointer; border-bottom:3px solid transparent; transition:all .2s; font-family:inherit; text-transform:uppercase; letter-spacing:.5px; }
+.acct-tab { flex:1; padding:12px 8px; font-size:13px; font-weight:700; color:rgba(255,255,255,.8); background:none; border:none; cursor:pointer; border-bottom:3px solid transparent; transition:all .2s; font-family:inherit; text-transform:uppercase; letter-spacing:.5px; }
 .acct-tab.active { color:#fff; border-bottom-color:var(--orange); }
 .acct-body { padding:22px; overflow-y:auto; flex:1; }
 .acct-field { margin-bottom:15px; }
@@ -96,8 +96,8 @@
 .myo-card:last-child { margin-bottom:0; }
 .myo-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:8px; flex-wrap:wrap; }
 .myo-meta { display:flex; flex-direction:column; gap:2px; }
-.myo-id { font-size:11px; font-weight:800; color:#999; }
-.myo-date { font-size:11px; color:#bbb; }
+.myo-id { font-size:11px; font-weight:800; color:#707070; }
+.myo-date { font-size:11px; color:#707070; }
 .myo-status { display:inline-block; padding:4px 11px; border-radius:20px; font-size:10px; font-weight:900; text-transform:uppercase; }
 .myo-pending   { background:rgba(245,158,11,.12);  color:#b45309; }
 .myo-confirmed { background:rgba(59,130,246,.12);  color:#1d4ed8; }
@@ -106,12 +106,12 @@
 .myo-items { font-size:12px; color:#555; line-height:1.8; border-top:1px solid #f0f0f0; padding-top:10px; margin-bottom:10px; }
 .myo-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid #f0f0f0; }
 .myo-total { font-size:15px; font-weight:900; color:#4a0000; }
-.myo-addr { font-size:11px; color:#aaa; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.myo-addr { font-size:11px; color:#707070; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .myo-empty { text-align:center; padding:44px 20px; }
 .myo-empty i { font-size:38px; display:block; margin-bottom:12px; color:#ddd; }
-.myo-empty p { font-size:14px; font-weight:700; color:#bbb; margin-bottom:4px; }
-.myo-empty small { font-size:12px; color:#ccc; }
-.myo-loading { text-align:center; padding:32px; color:#aaa; font-size:13px; }
+.myo-empty p { font-size:14px; font-weight:700; color:#707070; margin-bottom:4px; }
+.myo-empty small { font-size:12px; color:#707070; }
+.myo-loading { text-align:center; padding:32px; color:#707070; font-size:13px; }
 
 /* ── POST-ORDER ACCOUNT NUDGE ────────────────────────────────────────────── */
 .order-nudge { background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:10px; padding:14px 16px; margin-top:16px; text-align:center; }

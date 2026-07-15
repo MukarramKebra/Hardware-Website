@@ -2,7 +2,15 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <!-- No maximum-scale/user-scalable=no — those disable pinch-zoom, a real
+       accessibility harm for low-vision users, not just a Lighthouse nit. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- This site is authored as a light-themed page with its own explicit
+       colors. Without this, some browsers' forced/auto dark mode
+       re-interprets those colors on top of what's already there, which is
+       exactly what produced a real contrast bug on the admin panel earlier
+       — declaring the scheme opts this page out of that guesswork too. -->
+  <meta name="color-scheme" content="light" />
   <title>Expert Hardware Kuwait | Hand & Power Tools, DCK, TOLSEN, Dremel, INGCO, Stanley &amp; More</title>
   <meta name="description" content="Expert Hardware for Wholesale and Retail Trade — Kuwait City hardware store selling hand tools, power tools, welding machines, fasteners, safety gear, adhesives and more from DCK, TOLSEN, Dremel, INGCO, Stanley, Total, HARDEN, DCA, Makita and other trusted brands. Same-day delivery in Kuwait City." />
   <meta name="keywords" content="hardware store Kuwait, hand tools Kuwait, power tools Kuwait, DCK tools Kuwait, TOLSEN Kuwait, welding machine Kuwait, safety equipment Kuwait, fasteners Kuwait, wholesale hardware Kuwait, Expert Hardware Kuwait" />
@@ -89,7 +97,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607131800';
+    v = /^[0-9]+$/.test(v) ? v : '202607160900';
     ['01-base','02-sections','03-cart-features-contact','04-footer','05-responsive','06-lang-rtl','07-modals','08-account-auth','09-widgets'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -109,6 +117,13 @@
     <link rel="stylesheet" href="css/08-account-auth.css" />
     <link rel="stylesheet" href="css/09-widgets.css" />
   </noscript>
+  <!-- Opens the connection to these origins early (DNS + TLS), in parallel
+       with everything else, instead of waiting until the stylesheet
+       requests below discover them — shaves real time off the
+       render-blocking critical path for both. -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
@@ -139,7 +154,7 @@
       </nav>
       <div class="header-actions">
         <button class="lang-btn" id="langBtn" onclick="toggleLang()">عربي</button>
-        <button class="hamburger" id="hamburger"><i class="fa fa-bars"></i></button>
+        <button class="hamburger" id="hamburger" aria-label="Open menu"><i class="fa fa-bars"></i></button>
         <button class="btn-account" id="accountBtn" onclick="onAccountBtnClick()">
           <i class="fa fa-user"></i>
           <span class="acct-txt" id="acctBtnLabel">Sign In</span>
@@ -148,6 +163,8 @@
     </div>
   </header>
 
+  <main id="main-content">
+  <h1 class="visually-hidden">Expert Hardware Kuwait — Hand &amp; Power Tools, Welding Machines, Fasteners &amp; Safety Gear</h1>
 
   <!-- OFFERS — moving carousel of offer cards (images fill the frame) -->
   <section id="offers">
@@ -392,7 +409,7 @@
           <img src="logo.png" alt="Expert Hardware" class="modal-logo" onerror="this.style.display='none'" />
           <i class="fa fa-shopping-cart"></i> <span data-i18n="cart_title">Your Cart</span>
         </h3>
-        <button id="closeCart"><i class="fa fa-times"></i></button>
+        <button id="closeCart" aria-label="Close cart"><i class="fa fa-times"></i></button>
       </div>
       <div class="modal-body" id="cartItems">
         <p class="empty-cart" data-i18n="cart_empty">Your cart is empty.</p>
@@ -470,27 +487,27 @@
           </div>
         </div>
         <div class="social-links">
-          <a href="https://wa.me/96597656372" target="_blank"><i class="fab fa-whatsapp"></i></a>
+          <a href="https://wa.me/96597656372" target="_blank" aria-label="Chat with us on WhatsApp"><i class="fab fa-whatsapp"></i></a>
         </div>
       </div>
       <form class="contact-form" id="contactForm">
         <div class="form-row">
           <div class="form-group">
-            <label data-i18n="form_name">Full Name</label>
-            <input type="text" data-i18n-placeholder="form_name_ph" placeholder="Ahmed Al-Mutairi" required />
+            <label data-i18n="form_name" for="contactName">Full Name</label>
+            <input type="text" id="contactName" data-i18n-placeholder="form_name_ph" placeholder="Ahmed Al-Mutairi" required />
           </div>
           <div class="form-group">
-            <label data-i18n="form_phone">Phone / WhatsApp</label>
-            <input type="tel" placeholder="+965 XXXX XXXX" />
+            <label data-i18n="form_phone" for="contactPhone">Phone / WhatsApp</label>
+            <input type="tel" id="contactPhone" placeholder="+965 XXXX XXXX" />
           </div>
         </div>
         <div class="form-group">
-          <label data-i18n="form_email">Email</label>
-          <input type="email" placeholder="ahmed@example.com" required />
+          <label data-i18n="form_email" for="contactEmail">Email</label>
+          <input type="email" id="contactEmail" placeholder="ahmed@example.com" required />
         </div>
         <div class="form-group">
-          <label data-i18n="form_need">What do you need?</label>
-          <select>
+          <label data-i18n="form_need" for="contactNeed">What do you need?</label>
+          <select id="contactNeed">
             <option data-i18n="form_opt1">General Enquiry</option>
             <option data-i18n="form_opt2">Bulk / Trade Order</option>
             <option data-i18n="form_opt3">Product Availability</option>
@@ -536,6 +553,7 @@
       </div>
     </div>
   </section>
+  </main>
 
   <footer>
     <div class="container footer-grid">
@@ -546,17 +564,17 @@
         </div>
         <p data-i18n="footer_desc">Kuwait's trusted supplier of quality hardware, power tools and construction materials since 2024.</p>
         <div class="social-links">
-          <a href="https://wa.me/96597656372" target="_blank"><i class="fab fa-whatsapp"></i></a>
+          <a href="https://wa.me/96597656372" target="_blank" aria-label="Chat with us on WhatsApp"><i class="fab fa-whatsapp"></i></a>
         </div>
       </div>
       <div class="footer-links">
-        <h4 data-i18n="footer_nav">Navigation</h4>
+        <h3 data-i18n="footer_nav">Navigation</h3>
         <a href="#about" data-i18n="nav_about">About Us</a>
         <a href="#products" data-i18n="nav_products">Products</a>
         <a href="#contact" data-i18n="nav_contact">Contact</a>
       </div>
       <div class="footer-links">
-        <h4 data-i18n="footer_cats">Categories</h4>
+        <h3 data-i18n="footer_cats">Categories</h3>
         <a href="#categories" data-i18n="cat_power">Power Tools</a>
         <a href="#categories" data-i18n="cat_hand">Hand Tools</a>
         <a href="#categories" data-i18n="cat_fasteners">Fasteners</a>
@@ -565,7 +583,7 @@
         <a href="#categories" data-i18n="cat_cutting">Cutting Tools</a>
       </div>
       <div class="footer-links">
-        <h4 data-i18n="footer_support">Support</h4>
+        <h3 data-i18n="footer_support">Support</h3>
         <a href="#contact" data-i18n="footer_trade">Trade Accounts</a>
         <a href="#contact" data-i18n="footer_bulk">Bulk Orders</a>
         <a href="#contact" data-i18n="footer_delivery_info">Delivery Info</a>
@@ -617,15 +635,15 @@
           <img src="logo.png" alt="Expert Hardware" class="modal-logo" onerror="this.style.display='none'" />
           <i class="fab fa-whatsapp"></i> <span data-i18n="co_title">Complete Your Order</span>
         </h3>
-        <button class="co-close" id="closeCheckout"><i class="fa fa-times"></i></button>
+        <button class="co-close" id="closeCheckout" aria-label="Close checkout"><i class="fa fa-times"></i></button>
       </div>
       <div class="co-body" id="coBody">
         <div class="co-main">
         <div class="co-section">
           <div class="co-section-title"><i class="fa fa-user"></i> <span data-i18n="co_your_details">Your Details</span></div>
           <div class="co-form-row">
-            <div class="co-field"><label data-i18n="co_full_name">Full Name *</label><input type="text" id="coName" placeholder="Ahmed Al-Mutairi" /></div>
-            <div class="co-field"><label data-i18n="co_wa_num">WhatsApp Number *</label><input type="tel" id="coPhone" placeholder="+965 XXXX XXXX" /></div>
+            <div class="co-field"><label data-i18n="co_full_name" for="coName">Full Name *</label><input type="text" id="coName" placeholder="Ahmed Al-Mutairi" /></div>
+            <div class="co-field"><label data-i18n="co_wa_num" for="coPhone">WhatsApp Number *</label><input type="tel" id="coPhone" placeholder="+965 XXXX XXXX" /></div>
           </div>
         </div>
         <!-- FULFILMENT TOGGLE -->
@@ -649,7 +667,7 @@
         <div class="co-section" id="coDeliverySection">
           <div class="co-section-title"><i class="fa fa-map-marker-alt"></i> <span data-i18n="co_delivery_addr">Delivery Address</span></div>
           <div class="co-field">
-            <label data-i18n="co_area">Area *</label>
+            <label data-i18n="co_area" for="coArea">Area *</label>
             <select id="coArea">
               <option value="">-- Select Area --</option>
               <option>Kuwait City</option><option>Salmiya</option><option>Hawalli</option>
@@ -662,14 +680,14 @@
             </select>
           </div>
           <div class="co-form-row">
-            <div class="co-field"><label data-i18n="co_block">Block</label><input type="text" id="coBlock" placeholder="Block 5" /></div>
-            <div class="co-field"><label data-i18n="co_street">Street</label><input type="text" id="coStreet" placeholder="Street 10" /></div>
+            <div class="co-field"><label data-i18n="co_block" for="coBlock">Block</label><input type="text" id="coBlock" placeholder="Block 5" /></div>
+            <div class="co-field"><label data-i18n="co_street" for="coStreet">Street</label><input type="text" id="coStreet" placeholder="Street 10" /></div>
           </div>
           <div class="co-form-row">
-            <div class="co-field"><label data-i18n="co_house">House / Building</label><input type="text" id="coHouse" placeholder="House 3" /></div>
-            <div class="co-field"><label data-i18n="co_floor">Floor / Apt</label><input type="text" id="coFloor" placeholder="Floor 2, Apt 4" /></div>
+            <div class="co-field"><label data-i18n="co_house" for="coHouse">House / Building</label><input type="text" id="coHouse" placeholder="House 3" /></div>
+            <div class="co-field"><label data-i18n="co_floor" for="coFloor">Floor / Apt</label><input type="text" id="coFloor" placeholder="Floor 2, Apt 4" /></div>
           </div>
-          <div class="co-field"><label data-i18n="co_notes">Notes</label><input type="text" id="coNotes" placeholder="Leave at door, call on arrival..." /></div>
+          <div class="co-field"><label data-i18n="co_notes" for="coNotes">Notes</label><input type="text" id="coNotes" placeholder="Leave at door, call on arrival..." /></div>
         </div>
         </div>
         <div class="co-aside">
@@ -705,7 +723,7 @@
 
   <!-- ── LOGIN WELCOME PROMPT ──────────────────────────────────────────── -->
   <div id="loginPrompt" class="login-prompt" style="display:none">
-    <button class="lp-close" onclick="dismissLoginPrompt()" title="Dismiss"><i class="fa fa-times"></i></button>
+    <button class="lp-close" onclick="dismissLoginPrompt()" title="Dismiss" aria-label="Dismiss"><i class="fa fa-times"></i></button>
     <div class="lp-inner">
       <div class="lp-icon"><i class="fa fa-user-circle"></i></div>
       <div class="lp-text">
@@ -720,7 +738,7 @@
   <div class="auth-overlay" id="authOverlay" onclick="if(event.target===this)closeAuthModal()">
     <div class="auth-modal">
       <div class="auth-head">
-        <button class="auth-close-x" onclick="closeAuthModal()"><i class="fa fa-times"></i></button>
+        <button class="auth-close-x" onclick="closeAuthModal()" aria-label="Close sign in"><i class="fa fa-times"></i></button>
         <div class="auth-logo-row">
           <img src="logo.png" alt="Expert Hardware" onerror="this.style.display='none'" />
           <span style="font-size:0.85em">EXPERT HARDWARE<br>FOR WHOLESALE &amp; RETAIL TRADE</span>
@@ -864,7 +882,7 @@
     <div class="wl-modal">
       <div class="wl-head">
         <h3><i class="fa fa-heart" style="color:var(--orange)"></i> My Wishlist <span id="wishlistBadge" class="wl-count-badge" style="display:none">0</span></h3>
-        <button onclick="closeWishlist()"><i class="fa fa-times"></i></button>
+        <button onclick="closeWishlist()" aria-label="Close wishlist"><i class="fa fa-times"></i></button>
       </div>
       <div class="wl-body" id="wishlistBody"></div>
     </div>
@@ -875,7 +893,7 @@
     <div class="review-modal">
       <div class="review-head">
         <h3><i class="fa fa-star" style="color:#f5c518"></i> Reviews — <span id="reviewProductName"></span></h3>
-        <button onclick="closeReviews()"><i class="fa fa-times"></i></button>
+        <button onclick="closeReviews()" aria-label="Close reviews"><i class="fa fa-times"></i></button>
       </div>
       <div class="review-body">
         <div class="rev-write-section">
@@ -899,7 +917,7 @@
     <div class="bulk-modal">
       <div class="bulk-head">
         <h3><i class="fa fa-clipboard-list" style="color:var(--orange)"></i> Bulk / Trade Quote</h3>
-        <button onclick="closeBulkQuote()"><i class="fa fa-times"></i></button>
+        <button onclick="closeBulkQuote()" aria-label="Close bulk quote"><i class="fa fa-times"></i></button>
       </div>
       <div class="bulk-body">
         <p style="font-size:13px;color:#666;margin-bottom:16px">Select products and quantities — we'll send your quote request directly on WhatsApp.</p>
@@ -919,7 +937,7 @@
     <div class="track-modal">
       <div class="track-head">
         <h3><i class="fa fa-box"></i> My Orders</h3>
-        <button onclick="closeOrderTracker()"><i class="fa fa-times"></i></button>
+        <button onclick="closeOrderTracker()" aria-label="Close order tracker"><i class="fa fa-times"></i></button>
       </div>
       <!-- TABS -->
       <div class="track-tabs">
@@ -960,7 +978,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607131800';
+    v = /^[0-9]+$/.test(v) ? v : '202607160900';
     ['01-config-data','02-catalog-render','03-product-cart-checkout','04-i18n-order','05-accounts','06-features'].forEach(function(f) {
       var s = document.createElement('script');
       s.src = 'js/' + f + '.js?v=' + v;

@@ -1,5 +1,10 @@
 ﻿*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Screen-reader-only content — visually hidden but still announced,
+   e.g. the page's single <h1> (kept off-screen since the header logo
+   already carries the brand visually). */
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
 :root {
   --orange: #c8151b;
   --orange-dark: #991b1b;
@@ -140,5 +145,5 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 .offer-title { font-size: 14px; font-weight: 800; color: var(--dark); line-height: 1.3; }
 .offer-sub { font-size: 11.5px; font-weight: 600; color: #777; }
 .offer-price-now { color: var(--red); font-weight: 900; font-size: 12.5px; }
-.offer-price-was { color: #999; font-weight: 600; text-decoration: line-through; }
+.offer-price-was { color: #707070; font-weight: 600; text-decoration: line-through; }
 

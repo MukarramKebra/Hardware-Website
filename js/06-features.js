@@ -87,7 +87,7 @@ function openWishlist() {
         '</div>' +
         '<div class="wl-actions">' +
           '<button class="wl-add-btn" onclick="addToCart('+p.id+')"><i class="fa fa-cart-plus"></i> Add to Cart</button>' +
-          '<button class="wl-remove-btn" onclick="toggleWishlist('+p.id+', event)"><i class="fa fa-trash"></i></button>' +
+          '<button class="wl-remove-btn" onclick="toggleWishlist('+p.id+', event)" aria-label="Remove from wishlist"><i class="fa fa-trash"></i></button>' +
         '</div>' +
       '</div>';
     }).join('');

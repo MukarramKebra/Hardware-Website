@@ -88,7 +88,7 @@ function openProduct(id) {
   else            { stockIcon = 'fa-check-circle'; stockTxt = 'In Stock' + (liveQty !== null ? ' — ' + liveQty + ' available' : ''); stockCls = 'in-stock'; }
 
   document.getElementById('prodModalBody').innerHTML =
-    '<button class="pm-side-back-btn" onclick="closeProduct()" title="Back to Products"><i class="fa fa-arrow-left"></i></button>' +
+    '<button class="pm-side-back-btn" onclick="closeProduct()" title="Back to Products" aria-label="Back to products"><i class="fa fa-arrow-left"></i></button>' +
     '<div class="pm-img-col">' +
       '<img id="pmMainImg" src="' + (bigImg || '') + '" alt="' + p.name + '" onerror="imgError(this)" style="display:' + (bigImg ? '' : 'none') + '" />' +
       '<div class="pm-img-fallback" id="pmFallback" style="display:' + (bigImg ? 'none' : 'flex') + '"><i class="fa fa-tools"></i></div>' +
@@ -125,9 +125,9 @@ function openProduct(id) {
         '<div class="pm-qty-row">' +
           '<span class="pm-qty-lbl">Quantity</span>' +
           '<div class="pm-qty-ctrl">' +
-            '<button onclick="pmChangeQty(-1)"><i class="fa fa-minus"></i></button>' +
-            '<input type="number" id="pmQtyDisplay" value="' + _pmQty + '" min="' + Math.max(1, limits.min) + '" autocomplete="off" oninput="pmQtyInput(this)" onblur="pmQtyBlur(this)" />' +
-            '<button onclick="pmChangeQty(1)"><i class="fa fa-plus"></i></button>' +
+            '<button onclick="pmChangeQty(-1)" aria-label="Decrease quantity"><i class="fa fa-minus"></i></button>' +
+            '<input type="number" id="pmQtyDisplay" aria-label="Quantity" value="' + _pmQty + '" min="' + Math.max(1, limits.min) + '" autocomplete="off" oninput="pmQtyInput(this)" onblur="pmQtyBlur(this)" />' +
+            '<button onclick="pmChangeQty(1)" aria-label="Increase quantity"><i class="fa fa-plus"></i></button>' +
           '</div>' +
         '</div>'
       : '') +
@@ -388,7 +388,7 @@ function updateCartUI() {
       </div>
       <div class="cart-item-actions">
         <span class="cart-item-price">${(c.price*c.qty).toFixed(3)} KWD</span>
-        <button class="btn-remove" onclick="removeFromCart(${idx})"><i class="fa fa-trash"></i></button>
+        <button class="btn-remove" onclick="removeFromCart(${idx})" aria-label="Remove ${encodeHtml(c.name)} from cart"><i class="fa fa-trash"></i></button>
       </div>
     </div>`;
   }).join('');
