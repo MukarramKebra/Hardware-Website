@@ -151,7 +151,7 @@ Repo: `MukarramKebra/Hardware-Website`, working copy at `C:\Users\mukke\Desktop\
   to be re-imported (would create duplicates).
 - `cat-images/` — the 17 category tile background images.
 
-## 4) Changes made (chronological highlights)
+## 4) Changes made
 - Split originally-monolithic files into the per-topic files listed above.
 - Rebuilt "Shop by Category" as 17 real Expert-Hardware categories with real category images and rotating
   vertical side banners (brand-aware, up/down nav, adaptive sizing, 3s rotation), manageable from admin.
@@ -186,7 +186,7 @@ Repo: `MukarramKebra/Hardware-Website`, working copy at `C:\Users\mukke\Desktop\
 - Ran a Lighthouse-driven accessibility/performance/best-practices pass across the whole storefront (see
   section 2 for the full list).
 
-## 5) Failed attempts / bugs found and fixed
+## 5) Failed attempts
 - **Category images pointed one directory too high** (`../cat-images/...`) — broke because
   `admin/index.html` already has `<base href="../">`. Fixed by removing it.
 - **`expert_photos` column name mismatch** (`url` vs real column `img_url`) — every photo save had been
@@ -244,7 +244,7 @@ Repo: `MukarramKebra/Hardware-Website`, working copy at `C:\Users\mukke\Desktop\
   About section; initially removed the category grid entirely instead of adding banners alongside it.
   Both corrected immediately once clarified.
 
-## 6) Next steps (not yet done / explicitly deferred)
+## 6) Next steps
 - **Featured Products isn't actually curated right now**: live `featured_offers` currently holds all 300
   products (the full catalog), not a hand-picked homepage set — a consequence of Select All being used
   before it became a real toggle (see section 5). The owner was asked and explicitly chose to leave it
