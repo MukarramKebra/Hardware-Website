@@ -261,10 +261,22 @@ Repo: `MukarramKebra/Hardware-Website`, working copy at `C:\Users\mukke\Desktop\
 - **`hasMerchantReturnPolicy`/shipping-cost structured data**: deliberately not added — doing so would mean
   asserting a specific return-window day count or shipping fee that hasn't been confirmed with the owner,
   which risks misrepresenting the store's actual policy rather than being a safe technical SEO tweak.
-- **Security issue flagged but not fixed (owner has not said yes)**: admin passwords are stored in
-  plaintext (hardcoded JS constants and the `expert_admin_accounts` table), and Supabase RLS is fully
-  permissive (`using (true) with check (true)`), meaning anyone with the public anon key could read them.
-  Offered to fix for free; no response yet.
+- **RLS hardening applied (2026-07-18)**: `expert-hardware-rls-hardening.sql` tightened RLS across all
+  `expert_*` tables — see file header for full rationale. Real, verified improvements: `expert_orders`
+  now restricts `authenticated` (real signed-in customers, via the existing Supabase Auth system in
+  `js/05-accounts.js`) to their own rows only (closed an IDOR — previously any signed-in customer could
+  read/edit any order by id); `expert_analytics` no longer allows direct anon `INSERT`/`DELETE` (only the
+  now-`security definer` `increment_expert_analytics` RPC can write); `expert_reviews` and
+  `expert_settings` had their unused `UPDATE`/`DELETE` anon grants removed. All changes verified live via
+  direct REST calls (blocked writes confirmed via before/after row state, not just status codes — a plain
+  204 from Postgres doesn't distinguish "wrote" from "filtered to zero rows").
+  **Still unresolved, by explicit choice**: admin passwords remain stored in plaintext (hardcoded JS
+  constants and the `expert_admin_accounts` table) and are still readable via the public anon key, because
+  the admin panel has no real login/session distinct from any other anon visitor — the storefront and
+  admin panel share the exact same public API key. RLS structurally cannot fix this without also fixing
+  that (i.e. moving admin to real Supabase Auth), which was explicitly declined for now ("dont do supabase
+  auth") to avoid a bigger rework of the login flow and the owner-resets-team-passwords UX. Revisit if the
+  owner is ever open to a real admin auth system — until then this is the accepted residual risk.
 - **Supabase free-tier cold starts**: occasional first-request-after-idle delays (up to ~60s) are a
   platform limitation, not a code bug. Only real fix is upgrading off the free tier — discussed, not
   actioned.
