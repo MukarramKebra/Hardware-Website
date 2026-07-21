@@ -396,9 +396,38 @@ function updateCartUI() {
 function openCart() { document.getElementById('cartModal').classList.add('open'); }
 
 // ── CHECKOUT ──────────────────────────────────────────────────────────────
+// Signed-in customers skip straight to the order form (pre-filled from their
+// saved profile). Guests are asked to choose Sign In or Continue as Guest
+// first — replaces the old post-order "Create Account" nudge, which showed
+// the prompt only after the order was already sent, too late to be useful.
 function openCheckout() {
   if (!cart.length) return;
-  const customPhotos = _sbPhotos;
+  document.getElementById('cartModal').classList.remove('open');
+  document.getElementById('checkoutOverlay').classList.add('open');
+  if (_authUser) {
+    renderCheckoutForm();
+  } else {
+    showCheckoutAuthChoice();
+  }
+}
+
+function showCheckoutAuthChoice() {
+  document.getElementById('coBody').innerHTML = `
+    <div class="co-auth-choice">
+      <p>Sign in to auto-fill your details and track this order, or continue as a guest.</p>
+      <button class="btn btn-primary" onclick="document.getElementById('checkoutOverlay').classList.remove('open');openAuthModal('login')">
+        <i class="fa fa-user"></i> Sign In
+      </button>
+      <button class="btn" onclick="continueCheckoutAsGuest()">Continue as Guest</button>
+    </div>`;
+}
+
+function continueCheckoutAsGuest() {
+  document.getElementById('coBody').innerHTML = origCoBody;
+  renderCheckoutForm();
+}
+
+function renderCheckoutForm() {
   document.getElementById('coItems').innerHTML = cart.map(c => `
     <div class="co-item">
       <div><span class="co-item-name">${c.name}</span><br/><span class="co-item-qty">x${c.qty} unit${c.qty>1?'s':''}</span></div>
@@ -406,8 +435,6 @@ function openCheckout() {
     </div>`).join('');
   const total = cart.reduce((s,c) => s+c.price*c.qty, 0);
   document.getElementById('coTotal').textContent = total.toFixed(3) + ' KWD';
-  document.getElementById('cartModal').classList.remove('open');
-  document.getElementById('checkoutOverlay').classList.add('open');
   // Pre-fill from saved profile if user is logged in
   if (_userProfile) {
     if (_userProfile.name)  document.getElementById('coName').value  = _userProfile.name;
@@ -423,6 +450,12 @@ function openCheckout() {
       }
     }
   }
+  // Assignment (not addEventListener) so this is always exactly one binding —
+  // restoring coBody's innerHTML for a guest swaps in a fresh #coSubmitBtn
+  // node with no listener, while the already-logged-in path reuses the same
+  // node every time; addEventListener would either miss the fresh node or
+  // stack a second listener onto the reused one and double-submit orders.
+  document.getElementById('coSubmitBtn').onclick = handleCheckoutSubmit;
 }
 
 // ── FULFILMENT TOGGLE ─────────────────────────────────────────────────────
@@ -435,7 +468,7 @@ function setFulfilment(mode) {
   document.getElementById('coPickupInfo').style.display = mode === 'pickup' ? '' : 'none';
 }
 
-document.getElementById('coSubmitBtn').addEventListener('click', () => {
+function handleCheckoutSubmit() {
   const name  = document.getElementById('coName').value.trim();
   const phone = document.getElementById('coPhone').value.trim();
   const isPickup = _fulfilment === 'pickup';
@@ -497,21 +530,15 @@ document.getElementById('coSubmitBtn').addEventListener('click', () => {
   cart = [];
   updateCartUI();
   renderProducts();
-  const nudgeHtml = !_authUser ? `
-    <div class="order-nudge">
-      <p><i class="fa fa-info-circle"></i> Create a free account to track this order and view your order history anytime.</p>
-      <button onclick="document.getElementById('checkoutOverlay').classList.remove('open');openAuthModal('signup')">Create Account &rarr;</button>
-    </div>` : '';
   document.getElementById('coBody').innerHTML = `
     <div class="co-success">
       <i class="fab fa-whatsapp"></i>
       <h3>Order Sent!</h3>
       <p>Your order has been sent to Expert Hardware on WhatsApp.<br/>We will confirm and arrange delivery shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
-      ${nudgeHtml}
       <br/>
       <button class="btn btn-primary" onclick="document.getElementById('checkoutOverlay').classList.remove('open');document.getElementById('coBody').innerHTML=origCoBody">Continue Shopping</button>
     </div>`;
-});
+}
 
 // Store original checkout body to reset it
 let origCoBody = '';

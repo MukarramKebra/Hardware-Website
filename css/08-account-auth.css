@@ -114,9 +114,12 @@
 .myo-loading { text-align:center; padding:32px; color:#707070; font-size:13px; }
 
 /* ── POST-ORDER ACCOUNT NUDGE ────────────────────────────────────────────── */
-.order-nudge { background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:10px; padding:14px 16px; margin-top:16px; text-align:center; }
-.order-nudge p { font-size:13px; color:#0369a1; margin-bottom:10px; font-weight:600; line-height:1.5; }
-.order-nudge button { padding:8px 20px; background:var(--orange); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; }
+/* ── CHECKOUT: SIGN IN / GUEST CHOICE ─────────────────────────────────── */
+.co-auth-choice { max-width:380px; margin:40px auto; text-align:center; padding:0 24px; }
+.co-auth-choice p { font-size:14px; color:#888; line-height:1.6; margin-bottom:22px; }
+.co-auth-choice .btn { display:block; width:100%; padding:13px 20px; border-radius:10px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; margin-bottom:12px; border:1.5px solid var(--border); background:#fff; color:var(--dark); }
+.co-auth-choice .btn-primary { background:var(--orange); color:#fff; border-color:var(--orange); }
+.co-auth-choice .btn:hover { opacity:0.9; }
 
 /* ── FLOATING CART FAB (all screens, bottom-left) ───────────────────────── */
 .mob-cart-fab {
