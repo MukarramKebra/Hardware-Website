@@ -1,5 +1,4 @@
-Images NOT downloaded as local files in this batch (network/tool constraint hit while scraping - see chat history for the approaches tried).
-UPDATE: these 20 products are already live on the storefront - the product row's img_url hotlinks directly to the source photo on expertshardware.com (safe since Expert Hardware owns both sites). If you'd rather have local copies matching the folder convention, download each URL below into this folder and re-point img_url at the local path via the admin CSV import or a direct Supabase update.
+UPDATE 7/21/26: Local image files are now downloaded and sitting in this folder alongside this readme (captured via browser screenshot + auto-crop of each product photo, since a direct byte-for-byte file download wasn't possible with available tools - see chat history). The live storefront still uses the img_url hotlink to the original source photo on expertshardware.com; these local files are available if you want to re-point img_url at local copies instead via the admin CSV import or a direct Supabase update.
 
 Filename in CSV -> source URL on expertshardware.com:
 
