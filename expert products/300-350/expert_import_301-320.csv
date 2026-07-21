@@ -1,0 +1,21 @@
+name,category,price,stock,description,badge,brand,image
+DROP IN ANCHOR,fastener,0.36,50,,,Generic,drop-in-anchor.jpg
+SAFETY GLASS BLACK,safety,0.8,50,,,Generic,safety-glass-black.jpg
+"REFLECTIVE TAPE 1""",safety,0.95,50,,,Generic,reflective-tape-1in.jpg
+FIRE BLANKET WHITE,safety,19,50,,,Generic,fire-blanket-white.jpg
+TRANSPARENT RAINCOAT,safety,4.6,50,,,Generic,transparent-raincoat.jpg
+RAIN COAT YELLOW,safety,1,50,,,Generic,rain-coat-yellow.png
+HELMET YELLOW,safety,4.25,50,"Shock resistant V-guard design, HDPE, fitted",,iTrust,helmet-yellow.jpeg
+HELMET BLUE,safety,4.25,50,"Shock resistant V-guard design, HDPE, fitted",,iTrust,helmet-blue.jpeg
+HELMET WHITE,safety,4.25,50,"Shock resistant V-guard design, HDPE, fitted",,iTrust,helmet-white.jpeg
+AGILE VEST ORANGE,safety,0.3,50,,,Agile,agile-vest-orange.png
+AGILE VEST GREEN,safety,0.26,50,,,Agile,agile-vest-green.png
+ITRUST VEST ORANGE,safety,0.19,50,,,iTrust,itrust-vest-orange.png
+ITRUST VEST GREEN,safety,0.19,50,,,iTrust,itrust-vest-green.png
+OCULAR GOGGLES,safety,1.05,50,,,Generic,ocular-goggles.jpg
+FIRSTAR FIRST AID KIT 25P,safety,2.9,50,,,Firstar,firstar-first-aid-kit-25p.jpg
+FIRSTAR FIRST AID KIT 10P,safety,2.25,50,,,Firstar,firstar-first-aid-kit-10p.jpg
+FIRST AID KIT BOX 10P,safety,1.75,50,,,Generic,first-aid-kit-box-10p.jpg
+WEDGE ANCHOR,fastener,1.05,50,,,Generic,wedge-anchor.png
+KDJZ05-13AM 2AHX2,tools,40.0,50,"Brushless 20V cordless combi drill (20VMAX/2.0Ah x2/4.0Ah x2), 13mm chuck, 60N.m max torque, 22+2 torque settings, metal self-locking chuck",Best Seller,DCK,kdjz05-13am-2ahx2.jpg
+"SAFI NAILS 2.5"" x 7 KG",construction,0,50,"Common wire nail, bright polished, packed in bag. NOTE: no public price on source site - verify/enter price manually before import.",Top Pick,iTrust,safi-nails-2.5in-x-7kg.png
