@@ -141,6 +141,13 @@
 /* Always hide the header cart button — FAB is used on all screens */
 .btn-cart { display:none !important; }
 
+/* Bigger cart FAB on desktop — same button, just more prominent where there's
+   room for it (mobile keeps the original compact size). */
+@media (min-width:769px) {
+  .mob-cart-fab { padding:18px 28px; font-size:19px; bottom:28px; left:24px; gap:11px; }
+  .mob-cart-fab span { width:28px; height:28px; font-size:14px; }
+}
+
 /* ── MOBILE NAV EXTRA LINKS (My Orders / Sign In) ───────────────────────── */
 #navMyOrders, #navSignIn { border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; margin-top:4px; }
 #navSignIn { color:var(--orange) !important; }

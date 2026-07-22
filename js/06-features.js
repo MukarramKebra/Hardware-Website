@@ -442,6 +442,17 @@ function openWAChat() {
   } catch(e) {}
 })();
 
+// Header search icon (desktop only, see css/01-base.css) — jumps to the
+// existing product search box instead of duplicating search logic/markup
+// in the header itself. Small delay before focus so it doesn't fight the
+// smooth-scroll animation still in progress.
+function focusProductSearch() {
+  var section = document.getElementById('products');
+  if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  var input = document.getElementById('searchInput');
+  if (input) setTimeout(function() { input.focus(); }, 400);
+}
+
 // Render products immediately from hardcoded array (instant display), then
 // load live stock/photos/hidden status from Supabase and re-render. This runs
 // here (last script to load) so every helper renderProducts() needs is defined.

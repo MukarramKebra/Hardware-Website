@@ -14,6 +14,7 @@
   #nav.open { display: flex; }
   #nav a { color: #fff; font-size: 15px; padding: 4px 0; }
   .hamburger { display: block; }
+  .header-search-btn { display: none; }
   .btn-cart span.cart-label { display: none; }
 
   /* Hero */
