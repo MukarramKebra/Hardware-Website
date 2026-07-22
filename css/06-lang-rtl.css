@@ -29,9 +29,6 @@
 /* Section headers */
 [dir="rtl"] .section-header { text-align: right; }
 
-/* Category nav strip */
-[dir="rtl"] .cat-nav-row { flex-direction: row-reverse; }
-
 /* Contact */
 [dir="rtl"] .contact-info { text-align: right; }
 [dir="rtl"] .contact-item { flex-direction: row-reverse; }
@@ -69,6 +66,5 @@
   [dir="rtl"] .intro-inner { text-align: center; }
   [dir="rtl"] .intro-checks { justify-content: center; }
   [dir="rtl"] .intro-check { flex-direction: row-reverse; }
-  [dir="rtl"] .cat-nav-row { flex-direction: row; }
 }
 

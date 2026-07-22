@@ -72,7 +72,6 @@
   .header-inner { height: 60px; }
   .logo-img { height: 38px; width: auto; }
   #nav { top: 60px; }
-  #cat-nav { top: 60px; }
   .btn-cart { padding: 8px 12px; font-size: 12px; }
 
   /* Hero */
@@ -101,12 +100,6 @@
   .product-price { font-size: 14px; }
   .btn-add { padding: 7px 10px; font-size: 10px; }
   .product-cat { font-size: 8px; }
-
-  /* Category nav */
-  .cn-item { padding: 10px 12px; min-width: 62px; }
-  .cn-icon { width: 32px; height: 32px; }
-  .cn-icon i { font-size: 13px; }
-  .cn-item span { font-size: 8px; }
 
   /* Categories grid */
   .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
