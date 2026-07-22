@@ -73,7 +73,11 @@ async function _refreshSession(refreshToken) {
 
 // ── Auth actions ────────────────────────────────────────────────────────────────
 async function authSignUp(name, email, password) {
-  const res  = await fetch(SB_URL + '/auth/v1/signup', {
+  // Explicit redirect_to so the confirmation email's link points at the live
+  // site regardless of whatever "Site URL" happens to be set in the Supabase
+  // dashboard (it defaulted to localhost, which broke every confirmation link
+  // until this was added — same fix already applied to password reset below).
+  const res  = await fetch(SB_URL + '/auth/v1/signup?redirect_to=' + encodeURIComponent(AUTH_RESET_REDIRECT), {
     method: 'POST',
     headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
@@ -117,13 +121,35 @@ async function authSignOut() {
   updateHeaderForAuth();
 }
 
+// Where Supabase sends the user after they click the reset link.
+// This exact URL must be listed under Supabase → Authentication → URL Configuration
+// → Redirect URLs, otherwise Supabase silently falls back to the Site URL.
+const AUTH_RESET_REDIRECT = 'https://mukarramkebra.github.io/Hardware-Website/';
+
 async function authForgotPassword(email) {
-  const res = await fetch(SB_URL + '/auth/v1/recover', {
-    method: 'POST',
-    headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email })
-  });
-  return res.ok;
+  try {
+    const res = await fetch(
+      SB_URL + '/auth/v1/recover?redirect_to=' + encodeURIComponent(AUTH_RESET_REDIRECT), {
+        method: 'POST',
+        headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+    if (res.ok) return { error: null };
+
+    // Surface the real reason instead of a generic failure.
+    let body = {};
+    try { body = await res.json(); } catch (e) {}
+    const msg = body.msg || body.error_description || body.message || '';
+    console.error('[auth] password recover failed', res.status, body);
+
+    if (res.status === 429 || /rate limit/i.test(msg)) {
+      return { error: 'Too many reset emails requested. Supabase\'s built-in email service is rate limited — please wait an hour and try again, or contact us directly.' };
+    }
+    return { error: msg || ('Could not send reset email (error ' + res.status + ').') };
+  } catch (e) {
+    console.error('[auth] password recover network error', e);
+    return { error: 'Network error — could not reach the server. Please try again.' };
+  }
 }
 
 // ── Profile ────────────────────────────────────────────────────────────────────
@@ -300,12 +326,12 @@ async function doAuthForgot() {
   if (!email) { _showAuthErr('Please enter your email address.'); return; }
   const btn = document.getElementById('authForgotBtn');
   btn.disabled = true; btn.textContent = 'Sending…';
-  const ok = await authForgotPassword(email);
+  const result = await authForgotPassword(email);
   btn.disabled = false; btn.innerHTML = '<i class="fa fa-envelope"></i> Send Reset Link';
-  if (ok) {
-    _showAuthOk('📧 Reset link sent! Check your email inbox (and spam folder).');
+  if (result.error) {
+    _showAuthErr(result.error);
   } else {
-    _showAuthErr('Could not send reset email. Check the address and try again.');
+    _showAuthOk('📧 If that email is registered, a reset link is on its way. Check your inbox (and spam folder).');
   }
 }
 
