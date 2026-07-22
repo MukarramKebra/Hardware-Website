@@ -1,0 +1,53 @@
+name: Generate product SEO pages
+
+# Rebuilds /product/*.html and sitemap.xml from the live Supabase catalog and
+# commits any changes back to main. Runs on every push to main (so a code or
+# template change regenerates immediately) and once daily (so new/edited/removed
+# products in Supabase are reflected without anyone touching the repo).
+#
+# GitHub Pages serves the committed files, so writing the generated pages into
+# the repo is exactly what makes them live — no separate deploy step needed.
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'product/**'
+      - 'sitemap.xml'
+  schedule:
+    - cron: '17 3 * * *'   # daily at 03:17 UTC
+  workflow_dispatch: {}      # allow manual runs from the Actions tab
+
+permissions:
+  contents: write            # needed to commit regenerated files with GITHUB_TOKEN
+
+concurrency:
+  group: generate-seo
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate product pages + sitemap
+        run: node scripts/generate-product-pages.js
+
+      - name: Commit changes if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add product sitemap.xml
+          if git diff --cached --quiet; then
+            echo "No SEO changes to commit."
+          else
+            git commit -m "chore(seo): regenerate product pages + sitemap [skip ci]"
+            git push
+          fi
