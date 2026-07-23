@@ -145,6 +145,13 @@
   .mob-cart-fab span { width:44px; height:44px; font-size:19px; }
 }
 
+/* Mobile: a touch smaller and a softly rounded rectangle instead of the full
+   pill — still a comfortable ~54px tap target. Desktop (>=769px) unchanged. */
+@media (max-width:768px) {
+  .mob-cart-fab { padding:16px 18px; font-size:22px; gap:10px; border-radius:14px; }
+  .mob-cart-fab span { width:30px; height:30px; font-size:15px; }
+}
+
 /* ── MOBILE NAV EXTRA LINKS (My Orders / Sign In) ───────────────────────── */
 #navMyOrders, #navSignIn { border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; margin-top:4px; }
 #navSignIn { color:var(--orange) !important; }
