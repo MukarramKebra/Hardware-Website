@@ -90,6 +90,9 @@
     <button class="tab-btn" id="tabSeo" onclick="switchTab('seo')">
       <i class="fa fa-search-plus"></i> SEO
     </button>
+    <button class="tab-btn" id="tabOffers" onclick="switchTab('offers')">
+      <i class="fa fa-envelope-open-text"></i> Offers
+    </button>
     <button class="tab-btn" id="tabOwner" onclick="switchTab('owner')" style="display:none;margin-left:auto;background:rgba(124,58,237,.12);color:#c4b5fd;border-bottom-color:transparent;">
       <i class="fa fa-crown"></i> Owner Controls
     </button>
@@ -507,6 +510,65 @@
           <input type="file" accept="image/*" id="editBannerFile" style="display:none" />
         </label>
         <button class="newcat-save" onclick="saveEditBanner()"><i class="fa fa-save"></i>&nbsp; Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OFFERS / EMAIL CAMPAIGNS SECTION -->
+  <div id="offersSection" class="main" style="display:none">
+    <div style="max-width:960px;margin:0 auto">
+      <div class="table-top" style="margin-bottom:18px">
+        <h2><i class="fa fa-envelope-open-text" style="color:#d20d17;margin-right:8px"></i>Subscribe Offers — Email Campaigns</h2>
+      </div>
+
+      <!-- Admin send token (kept only in this browser) -->
+      <div style="background:#fff8f0;border:1px solid #f0d9b5;border-radius:10px;padding:14px 16px;margin-bottom:20px">
+        <label style="display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#8a6d3b;margin-bottom:6px">Admin Send Token <span style="font-weight:500;text-transform:none">(required to send — stored only on this device)</span></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="password" id="offAdminToken" placeholder="Paste your ADMIN_SEND_TOKEN" style="flex:1;min-width:220px;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px" />
+          <button class="newcat-save" style="background:#6b7280" onclick="saveOffersToken()"><i class="fa fa-key"></i>&nbsp; Save Token</button>
+        </div>
+      </div>
+
+      <!-- Composer -->
+      <div style="background:#fff;border:1px solid #eee;border-radius:12px;padding:20px;margin-bottom:24px">
+        <div style="font-weight:800;font-size:15px;margin-bottom:14px">Compose Offer</div>
+        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px">Subject</label>
+        <input type="text" id="offSubject" placeholder="🔥 This week's hardware deals" style="width:100%;box-sizing:border-box;padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:14px" />
+
+        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px">Body (HTML allowed — headings, &lt;b&gt;, &lt;a&gt;, images, etc.)</label>
+        <textarea id="offBody" rows="10" placeholder="<h2>Weekend Offer</h2>&#10;<p>20% off all power tools this week only...</p>" style="width:100%;box-sizing:border-box;padding:12px 13px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:ui-monospace,Menlo,monospace;line-height:1.5;resize:vertical;margin-bottom:14px"></textarea>
+
+        <div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+          <label style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;cursor:pointer"><input type="radio" name="offMode" value="now" checked onchange="offToggleMode()" /> Send now</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;cursor:pointer"><input type="radio" name="offMode" value="schedule" onchange="offToggleMode()" /> Schedule</label>
+          <input type="datetime-local" id="offSchedule" style="display:none;padding:9px 11px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px" />
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <input type="email" id="offTestTo" placeholder="you@email.com (test)" style="padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;width:220px" />
+          <button class="newcat-save" style="background:#6b7280" onclick="offSendTest()"><i class="fa fa-vial"></i>&nbsp; Send Test</button>
+          <button class="newcat-save" id="offSendBtn" onclick="offSubmit()"><i class="fa fa-paper-plane"></i>&nbsp; <span id="offSendLabel">Send Now</span></button>
+          <span id="offStatus" style="font-size:13px;font-weight:700"></span>
+        </div>
+      </div>
+
+      <!-- Subscribers + history -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="offGrid">
+        <div style="background:#fff;border:1px solid #eee;border-radius:12px;padding:18px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-weight:800;font-size:14px">Subscribers <span id="offSubCount" style="color:#888;font-weight:600"></span></div>
+            <button class="newcat-save" style="background:#6b7280;padding:7px 12px;font-size:12px" onclick="offLoadSubscribers()"><i class="fa fa-sync"></i>&nbsp; Refresh</button>
+          </div>
+          <div id="offSubList" style="max-height:320px;overflow:auto;font-size:12.5px"></div>
+        </div>
+        <div style="background:#fff;border:1px solid #eee;border-radius:12px;padding:18px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-weight:800;font-size:14px">Send History</div>
+            <button class="newcat-save" style="background:#6b7280;padding:7px 12px;font-size:12px" onclick="offLoadCampaigns()"><i class="fa fa-sync"></i>&nbsp; Refresh</button>
+          </div>
+          <div id="offCampList" style="max-height:320px;overflow:auto;font-size:12.5px"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -999,7 +1061,7 @@
   var v = '';
   try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
   v = /^[0-9]+$/.test(v) ? v : '202607151100';
-  ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo'].forEach(function(f) {
+  ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo','13-offers'].forEach(function(f) {
     var s = document.createElement('script');
     s.src = 'admin/js/' + f + '.js?v=' + v;
     s.async = false;

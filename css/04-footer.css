@@ -10,6 +10,24 @@ footer { background: #d20d17; padding: 64px 0 0; border-top: 1px solid rgba(0,0,
 .footer-links { display: flex; flex-direction: column; }
 .footer-links a { color: rgba(255,255,255,0.82); text-decoration: none; font-size: 13px; margin-bottom: 10px; transition: color 0.2s; }
 .footer-links a:hover { color: #fff; }
+/* ── SUBSCRIBE TO OFFERS BAND ─────────────────────────────────────────── */
+.subscribe-band { border-top: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.06); }
+.subscribe-inner { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 26px 0; flex-wrap: wrap; }
+.subscribe-copy h3 { color: #fff; font-size: 18px; font-weight: 800; margin: 0 0 6px; display: flex; align-items: center; gap: 9px; }
+.subscribe-copy p { color: rgba(255,255,255,0.82); font-size: 13px; margin: 0; max-width: 420px; line-height: 1.6; }
+.subscribe-form { flex: 1; min-width: 280px; max-width: 460px; }
+.subscribe-row { display: flex; gap: 8px; }
+.subscribe-row input { flex: 1; min-width: 0; padding: 12px 14px; border: none; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; }
+.subscribe-row button { flex-shrink: 0; white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; background: #1a1a1a; color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 800; font-family: inherit; cursor: pointer; transition: background 0.2s; }
+.subscribe-row button:hover { background: #000; }
+.subscribe-row button:disabled { opacity: 0.6; cursor: wait; }
+.subscribe-consent { display: flex; align-items: flex-start; gap: 8px; margin-top: 10px; font-size: 11.5px; line-height: 1.5; color: rgba(255,255,255,0.85); cursor: pointer; }
+.subscribe-consent input { width: 15px; height: 15px; margin: 1px 0 0; flex-shrink: 0; accent-color: #1a1a1a; cursor: pointer; }
+.subscribe-consent a { color: #fff; font-weight: 800; text-decoration: underline; }
+.subscribe-msg { font-size: 12.5px; margin-top: 9px; display: none; font-weight: 700; }
+.subscribe-msg.show { display: block; }
+.subscribe-msg.ok { color: #d7ffd9; }
+.subscribe-msg.err { color: #ffe0e0; }
 .footer-location { border-top: 1px solid rgba(255,255,255,0.1); padding: 18px 0; text-align: center; }
 .footer-map-btn { display: inline-flex; align-items: center; gap: 9px; background: #fff; color: #d20d17; padding: 11px 28px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 800; letter-spacing: 0.3px; transition: background 0.2s; }
 .footer-map-btn:hover { background: #f1f1f1; }

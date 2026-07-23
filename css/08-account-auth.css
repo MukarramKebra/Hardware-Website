@@ -52,6 +52,17 @@
 .auth-forgot-link { background:none; border:none; color:var(--orange); font-size:12px; cursor:pointer; font-family:inherit; display:block; text-align:right; margin:-10px 0 12px; }
 .auth-bottom-note { text-align:center; font-size:12px; color:#707070; margin-top:14px; }
 .auth-bottom-note button { background:none; border:none; color:var(--orange); font-weight:700; cursor:pointer; font-family:inherit; font-size:12px; }
+/* Standard Google sign-in button — white surface, grey border, brand "G". */
+.auth-google { width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:12px; background:#fff; color:#3c4043; border:1.5px solid #dadce0; border-radius:10px; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; transition:background .18s,box-shadow .18s; }
+.auth-google:hover { background:#f7f8f8; box-shadow:0 1px 3px rgba(60,64,67,.12); }
+.auth-google svg { flex-shrink:0; }
+.auth-divider { display:flex; align-items:center; text-align:center; color:#9aa0a6; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin:14px 0; }
+.auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:#e2e8f0; }
+.auth-divider span { padding:0 12px; }
+/* Required consent checkbox on the sign-up form. */
+.auth-consent { display:flex; align-items:flex-start; gap:9px; margin:4px 0 14px; font-size:12px; line-height:1.5; color:#555; cursor:pointer; }
+.auth-consent input { width:16px; height:16px; margin:1px 0 0; flex-shrink:0; accent-color:var(--orange); cursor:pointer; }
+.auth-consent a { color:var(--orange); font-weight:700; }
 
 /* ── ACCOUNT MODAL (profile + my orders) ────────────────────────────────── */
 .acct-overlay { position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:9500; display:none; align-items:center; justify-content:center; padding:16px; }

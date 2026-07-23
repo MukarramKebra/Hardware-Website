@@ -13,6 +13,7 @@ function switchTab(tab) {
   document.getElementById('bannersSection').style.display    = tab==='banners'    ? 'block' : 'none';
   document.getElementById('featuredSection').style.display   = tab==='featured'   ? 'block' : 'none';
   document.getElementById('seoSection').style.display        = tab==='seo'        ? 'block' : 'none';
+  document.getElementById('offersSection').style.display     = tab==='offers'     ? 'block' : 'none';
   document.getElementById('ownerSection').style.display      = tab==='owner'      ? 'block' : 'none';
   document.getElementById('tabInventory').classList.toggle('active',   tab==='inventory');
   document.getElementById('tabAnalytics').classList.toggle('active',   tab==='analytics');
@@ -23,6 +24,7 @@ function switchTab(tab) {
   document.getElementById('tabBanners').classList.toggle('active',     tab==='banners');
   document.getElementById('tabFeatured').classList.toggle('active',    tab==='featured');
   document.getElementById('tabSeo').classList.toggle('active',         tab==='seo');
+  document.getElementById('tabOffers').classList.toggle('active',      tab==='offers');
   document.getElementById('tabOwner').classList.toggle('active',       tab==='owner');
   if (tab==='analytics')   renderAnalytics();
   if (tab==='deleted')   { renderDeletedTab(); if (_deletedSubTab==='orders') renderDeletedOrdersTab(); }
@@ -32,6 +34,7 @@ function switchTab(tab) {
   if (tab==='banners')     loadBanners();
   if (tab==='featured')    renderFeaturedTab();
   if (tab==='seo')       { loadSEOSettings(); renderSEOProducts(); }
+  if (tab==='offers')    { if (typeof initOffersTab === 'function') initOffersTab(); }
   if (tab==='owner')       renderSuperAdmin();
 }
 

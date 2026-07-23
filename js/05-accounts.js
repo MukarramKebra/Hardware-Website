@@ -32,9 +32,64 @@ function clearAuthSession() {
   localStorage.removeItem('jain_user_email');
 }
 
+// ── Google OAuth (Supabase GoTrue) ─────────────────────────────────────────────
+// Kicks off the hosted OAuth flow. GoTrue bounces the browser to Google and
+// back to redirect_to with the session in the URL hash (#access_token=…), which
+// _handleOAuthHash() picks up on the next load. No client secret lives here —
+// the Google client ID/secret are configured server-side in Supabase Auth.
+function authGoogleSignIn() {
+  // redirect_to must be an allow-listed URL in Supabase → Auth → URL config.
+  // Strip any existing query/hash so we land cleanly back on the site root.
+  const redirect = window.location.origin + window.location.pathname;
+  const url = SB_URL + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(redirect);
+  window.location.href = url;
+}
+
+// Reads the tokens GoTrue leaves in the URL hash after an OAuth round-trip,
+// turns them into the same session shape the email/password flow stores, then
+// cleans the hash so a refresh doesn't reprocess it. Returns true if handled.
+async function _handleOAuthHash() {
+  const hash = window.location.hash || '';
+  if (hash.indexOf('access_token=') === -1 && hash.indexOf('error=') === -1) return false;
+  const params = new URLSearchParams(hash.replace(/^#/, ''));
+  const cleanHash = () => history.replaceState(null, '', window.location.origin + window.location.pathname + window.location.search);
+
+  if (params.get('error')) {
+    cleanHash();
+    return false;
+  }
+  const access  = params.get('access_token');
+  const refresh = params.get('refresh_token');
+  if (!access) return false;
+
+  try {
+    // Resolve the user's id + email from the freshly issued token.
+    const res = await fetch(SB_URL + '/auth/v1/user', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + access }
+    });
+    if (!res.ok) { cleanHash(); return false; }
+    const user = await res.json();
+    saveAuthSession({ access_token: access, refresh_token: refresh, user: { id: user.id, email: user.email } });
+    // If Google gave us a display name and there's no profile row yet, seed one.
+    const gName = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || '';
+    cleanHash();
+    await loadUserProfile();
+    if (gName && !(_userProfile && _userProfile.name)) { await saveUserProfile(gName, '', ''); await loadUserProfile(); }
+    updateHeaderForAuth();
+    return true;
+  } catch (e) {
+    cleanHash();
+    return false;
+  }
+}
+
 // ── Init auth on page load ─────────────────────────────────────────────────────
 // Tries to restore session from localStorage, refreshes the token silently.
 async function initAuth() {
+  // An OAuth redirect back from Google carries the session in the URL hash —
+  // handle that first so it takes precedence over any stale localStorage session.
+  if (await _handleOAuthHash()) return;
+
   const token  = localStorage.getItem('jain_access_token');
   const refresh = localStorage.getItem('jain_refresh_token');
   const uid    = localStorage.getItem('jain_user_id');
@@ -306,6 +361,8 @@ async function doAuthSignup() {
   _clearAuthMessages();
   if (!email || !pass) { _showAuthErr('Please enter your email and password.'); return; }
   if (pass.length < 6)  { _showAuthErr('Password must be at least 6 characters.'); return; }
+  const consent = document.getElementById('authSignupConsent');
+  if (consent && !consent.checked) { _showAuthErr('Please accept the Terms & Conditions to create an account.'); return; }
   const btn = document.getElementById('authSignupBtn');
   btn.disabled = true; btn.textContent = 'Creating account…';
   const result = await authSignUp(name, email, pass);
