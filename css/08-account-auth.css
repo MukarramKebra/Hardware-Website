@@ -120,29 +120,29 @@
 
 /* ── FLOATING CART FAB (all screens, bottom-left) ───────────────────────── */
 .mob-cart-fab {
-  display:flex; align-items:center; gap:8px;
+  display:flex; align-items:center; gap:10px;
   position:fixed; bottom:22px; left:16px; z-index:8500;
     background:var(--orange); color:#fff; border:none;
-    border-radius:50px; padding:13px 20px;
-    font-size:15px; font-weight:900; font-family:inherit;
+    border-radius:50px; padding:16px 24px;
+    font-size:17px; font-weight:900; font-family:inherit;
     cursor:pointer; box-shadow:0 4px 18px rgba(200,21,27,.45);
     transition:transform .15s, box-shadow .15s;
   }
 .mob-cart-fab:active { transform:scale(0.95); }
 .mob-cart-fab span {
     background:#fff; color:var(--orange);
-    border-radius:50%; width:22px; height:22px;
+    border-radius:50%; width:25px; height:25px;
     display:flex; align-items:center; justify-content:center;
-    font-size:11px; font-weight:900; flex-shrink:0;
+    font-size:12px; font-weight:900; flex-shrink:0;
 }
 /* Always hide the header cart button — FAB is used on all screens */
 .btn-cart { display:none !important; }
 
-/* Bigger cart FAB on desktop — same button, just more prominent where there's
-   room for it (mobile keeps the original compact size). */
+/* Bigger still on desktop — same button, just more prominent where there's
+   room for it. */
 @media (min-width:769px) {
-  .mob-cart-fab { padding:18px 28px; font-size:19px; bottom:28px; left:24px; gap:11px; }
-  .mob-cart-fab span { width:28px; height:28px; font-size:14px; }
+  .mob-cart-fab { padding:22px 32px; font-size:22px; bottom:28px; left:24px; gap:13px; }
+  .mob-cart-fab span { width:32px; height:32px; font-size:15px; }
 }
 
 /* ── MOBILE NAV EXTRA LINKS (My Orders / Sign In) ───────────────────────── */
