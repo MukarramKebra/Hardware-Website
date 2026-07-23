@@ -62,7 +62,9 @@
 .banner-nav-btn:hover { background: var(--orange); transform: translateX(-50%) scale(1.08); }
 
 /* ── PRODUCTS ────────────────────────────────────────────────────────── */
-#products { padding: 88px 0; background: var(--light); }
+/* Top trimmed to match #categories' trimmed bottom (see above) — the two
+   sections sit directly against each other now, no nav strip between them. */
+#products { padding: 24px 0 88px; background: var(--light); }
 .products-controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; margin-bottom: 32px; }
 .search-wrap { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; flex: 1; min-width: 240px; max-width: 340px; transition: border-color 0.2s; box-shadow: var(--shadow); }
 .search-wrap:focus-within { border-color: var(--orange); }

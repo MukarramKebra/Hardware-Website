@@ -97,7 +97,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607221300';
+    v = /^[0-9]+$/.test(v) ? v : '202607221400';
     ['01-base','02-sections','03-cart-features-contact','04-footer','05-responsive','06-lang-rtl','07-modals','08-account-auth','09-widgets'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -952,7 +952,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607221300';
+    v = /^[0-9]+$/.test(v) ? v : '202607221400';
     ['01-config-data','02-catalog-render','03-product-cart-checkout','04-i18n-order','05-accounts','06-features','07-subscribe'].forEach(function(f) {
       var s = document.createElement('script');
       s.src = 'js/' + f + '.js?v=' + v;
