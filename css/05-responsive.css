@@ -38,6 +38,7 @@
 
   /* Sections */
   #about, #categories, #products, #contact, #features { padding: 60px 0; }
+  #categories { padding-bottom: 20px; }
 
   /* Layout */
   .contact-grid { grid-template-columns: 1fr; gap: 36px; }
@@ -88,6 +89,7 @@
 
   /* Sections */
   #about, #categories, #products, #contact { padding: 48px 0; }
+  #categories { padding-bottom: 16px; }
   #features { padding: 40px 0; }
   .section-header { margin-bottom: 32px; }
   .section-header h2 { font-size: 22px; }

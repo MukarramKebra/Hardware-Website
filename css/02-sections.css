@@ -13,7 +13,10 @@
 .about-btns { display: flex; gap: 12px; flex-wrap: wrap; }
 
 /* ── CATEGORIES ──────────────────────────────────────────────────────── */
-#categories { padding: 88px 0; background: var(--light); position: relative; overflow: visible; }
+/* Bottom trimmed down from the standard 88px — with the old sticky category
+   nav strip removed, #categories now sits directly against #products, and
+   matching top/bottom padding on both stacked into a ~176px empty gap. */
+#categories { padding: 88px 0 24px; background: var(--light); position: relative; overflow: visible; }
 .categories-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 .cat-card { background: #1a1a1a; border: none; border-radius: var(--radius); padding: 0; text-align: center; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; background-size: cover; background-position: center; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .cat-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.22) 55%, rgba(0,0,0,0.62) 100%); transition: background 0.25s; z-index: 1; }
