@@ -700,7 +700,9 @@ function renderProducts() {
           <div style="font-size:10px;font-weight:700;color:#aaa;letter-spacing:0.5px;margin-bottom:3px" id="cardSku${p.id}">${_variantSku(getVariants(p.id)[0], p.id)}</div>
           <h3>${pName}</h3>
           <p>${pDesc}</p>
-          <a class="pc-details" href="product/${productSlug(p)}.html" onclick="event.stopPropagation()" style="display:inline-block;font-size:11px;font-weight:700;color:var(--orange);text-decoration:none;margin:2px 0 6px">${isAr ? 'عرض التفاصيل ←' : 'View details →'}</a>
+          <!-- Kept in the DOM (visually hidden, not removed) so Google can still
+               discover/crawl the per-product SEO pages via this internal link. -->
+          <a class="pc-details" href="product/${productSlug(p)}.html" onclick="event.stopPropagation()" style="display:none;font-size:11px;font-weight:700;color:var(--orange);text-decoration:none;margin:2px 0 6px">${isAr ? 'عرض التفاصيل ←' : 'View details →'}</a>
           ${(getVariants(p.id).length && p.price > 0 && !window._sbPriceHidden[p.id]) ? `
           <select class="card-variant-sel" id="cardVarSel${p.id}" onclick="event.stopPropagation()" onchange="event.stopPropagation();cardVariantChange(${p.id},this)">
             ${getVariants(p.id).map((v, i) => `<option value="${i}">${v.label}${(v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : ''}</option>`).join('')}
