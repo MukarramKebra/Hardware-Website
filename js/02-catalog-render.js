@@ -35,9 +35,13 @@ function imgError(el) {
     const src = el.src;
     setTimeout(() => { el.src = ''; el.src = src; }, 4000);
   } else {
-    // Step 3: give up, show placeholder icon
+    // Step 3: give up, show placeholder icon. Also stop the skeleton shimmer
+    // (see css/02-sections.css) — nothing's ever going to load now, and the
+    // opaque fallback icon covers it visually anyway, but no reason to leave
+    // a CSS animation running forever on a card that gave up.
     el.style.display = 'none';
     if (el.nextElementSibling) el.nextElementSibling.style.display = 'flex';
+    if (el.parentElement) el.parentElement.classList.add('img-ready');
   }
 }
 
@@ -157,7 +161,7 @@ function initOffersTicker() {
     <div class="offer-card" onclick="openProduct(${p.id})">
       <div class="offer-card-img">
         ${tag ? `<span class="offer-tag${hasSale ? ' offer-tag-sale' : ''}">${tag}</span>` : ''}
-        <img src="${photo}" alt="${p.name}" loading="lazy" onerror="imgError(this)"/>
+        <img src="${photo}" alt="${p.name}" loading="lazy" onerror="imgError(this)" onload="this.parentElement.classList.add('img-ready')"/>
       </div>
       <div class="offer-card-info">
         <div class="offer-title">${p.name}</div>
@@ -682,12 +686,12 @@ function renderProducts() {
     const hasCardSale = cardSale > 0 && p.price > 0 && !priceHidden;
     return `
       <div class="product-card ${showOut ? 'card-out' : ''}" onclick="openProduct(${p.id})">
-        <div class="product-img-wrap">
+        <div class="product-img-wrap ${photo ? '' : 'img-ready'}">
           ${hasCardSale ? `<span class="product-badge product-badge-sale">-${cardSale}%</span>` : (p.badge ? `<span class="product-badge">${p.badge}</span>` : '')}
           ${showOut ? `<span class="out-badge">${isAr ? 'نفد المخزون' : 'OUT OF STOCK'}</span>` : ''}
           <button class="card-wl-btn ${isWishlisted(p.id)?'wishlisted':''}" onclick="toggleWishlist(${p.id}, event)" title="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}" aria-label="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}"><i class="fa fa-heart"></i></button>
           ${photo
-            ? `<img src="${photo}" data-local="${p.img}" alt="${pName}" loading="lazy" onerror="imgError(this)" />
+            ? `<img src="${photo}" data-local="${p.img}" alt="${pName}" loading="lazy" onerror="imgError(this)" onload="this.parentElement.classList.add('img-ready')" />
                <div class="product-img-fallback" style="display:none"><i class="fa fa-tools"></i></div>`
             : `<div class="product-img-fallback" style="display:flex"><i class="fa fa-tools"></i></div>`}
         </div>
