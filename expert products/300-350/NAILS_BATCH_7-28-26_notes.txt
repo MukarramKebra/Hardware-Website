@@ -1,0 +1,12 @@
+Notes on the 10-product "Nails" category screenshot request (7/28/26):
+
+The user shared a screenshot of 10 product cards from expertshardware.com's Nails category grid and asked to scrape them. Investigation found:
+
+- 8 of the 10 were ALREADY in our Supabase catalog (ids 100201, 100202, 100206, 100212, 100214, 100216, 100234, 100237 - added in an earlier session, present in expert products/201-250/expert_import_201-300.csv), but had NO image (img_url was blank) and only 5 SEO keywords each instead of the standard 50.
+  Action taken: patched img_url on all 8 with hotlinks to their expertshardware.com source photos, and upgraded each to 50 SEO keywords in expert_settings.product_keywords. Local copies of these images already existed in expert products/201-250/ from the earlier session.
+
+- 1 product was genuinely new: "2.5" X 6.5 KG BAG NAIL SAFI" (sku 2.5X11 6.5KG BAG, price 1.9, iTrust, OUT_OF_STOCK on the source site but stocked at qty 100 in our system per the store's normal convention). Assigned id 100321 (next free id after the 301-320 batch). Added to Supabase with image hotlink + 50 SEO keywords. Record kept in expert_import_321.csv, image copied to safi-nails-2.5x6.5kg-bag.png in this folder.
+
+- 1 card ("Test Product", sku "Test Product-1") was a leftover placeholder still published on expertshardware.com's OWN live Nails category - it does not exist in our Supabase catalog and was not added. Flagged to the user; no action taken since it isn't a real product.
+
+All changes are live on the storefront and admin as of this batch.
