@@ -442,16 +442,39 @@ function openWAChat() {
   } catch(e) {}
 })();
 
-// Header search icon (desktop only, see css/01-base.css) — jumps to the
-// existing product search box instead of duplicating search logic/markup
-// in the header itself. Small delay before focus so it doesn't fight the
-// smooth-scroll animation still in progress.
-function focusProductSearch() {
-  var section = document.getElementById('products');
-  if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  var input = document.getElementById('searchInput');
-  if (input) setTimeout(function() { input.focus(); }, 400);
+// Header search icon (desktop only, see css/01-base.css) — reveals an inline
+// input right in the header instead of jumping the page down to the product
+// grid's own search box (the previous scroll-to-and-focus behavior read as
+// the page yanking itself away, flagged directly). Typing here mirrors into
+// the real #searchInput and reuses its existing live-filter listener, so
+// there's one source of truth for the actual search logic, and no scroll
+// happens at all.
+function toggleHeaderSearch(forceOpen) {
+  var wrap = document.getElementById('headerSearchWrap');
+  var open = typeof forceOpen === 'boolean' ? forceOpen : !wrap.classList.contains('open');
+  wrap.classList.toggle('open', open);
+  var input = document.getElementById('headerSearchInput');
+  if (open) {
+    setTimeout(function() { input.focus(); }, 50);
+  } else {
+    input.value = '';
+    onHeaderSearchInput('');
+  }
 }
+
+function onHeaderSearchInput(val) {
+  var real = document.getElementById('searchInput');
+  if (!real) return;
+  real.value = val;
+  renderProducts();
+}
+
+document.addEventListener('click', function(e) {
+  var wrap = document.getElementById('headerSearchWrap');
+  if (wrap && wrap.classList.contains('open') && !wrap.contains(e.target)) {
+    toggleHeaderSearch(false);
+  }
+});
 
 // Render products immediately from hardcoded array (instant display), then
 // load live stock/photos/hidden status from Supabase and re-render. This runs
