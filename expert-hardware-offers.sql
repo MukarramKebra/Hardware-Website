@@ -61,10 +61,11 @@ create policy offer_sub_insert_anon
 -- ═══════════════════════════════════════════════════════════════════════════
 --  4. SCHEDULED SENDS — pg_cron + pg_net
 --  Runs every minute and asks the send-offers Edge Function to process any
---  campaigns whose scheduled_at has passed. Fill in the two placeholders:
---    <PROJECT_REF>        -> qhebhvllkovfbkqrcnmm
+--  campaigns whose scheduled_at has passed. The project ref is filled in below;
+--  you must still substitute ONE placeholder before running:
 --    <ADMIN_SEND_TOKEN>   -> the same random token you set as the Edge Function
---                            secret (see deploy notes). Keep it out of git.
+--                            secret (see deploy notes). Paste it at run time —
+--                            never commit the real token into this file / git.
 --  Enable the extensions first (Dashboard → Database → Extensions, or below).
 -- ═══════════════════════════════════════════════════════════════════════════
 create extension if not exists pg_cron;
@@ -79,7 +80,7 @@ select cron.schedule(
   '* * * * *',   -- every minute; change to '*/5 * * * *' for every 5 min
   $$
   select net.http_post(
-    url     := 'https://<PROJECT_REF>.functions.supabase.co/send-offers',
+    url     := 'https://qhebhvllkovfbkqrcnmm.functions.supabase.co/send-offers',
     headers := jsonb_build_object(
                  'Content-Type',  'application/json',
                  'x-admin-token', '<ADMIN_SEND_TOKEN>'
