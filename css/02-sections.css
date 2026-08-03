@@ -70,6 +70,10 @@
 .search-wrap:focus-within { border-color: var(--orange); }
 .search-wrap i { color: var(--gray-400); }
 .search-wrap input { border: none; outline: none; font-size: 14px; width: 100%; color: var(--dark); background: transparent; font-weight: 500; }
+.sort-wrap { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; box-shadow: var(--shadow); transition: border-color 0.2s; }
+.sort-wrap:focus-within { border-color: var(--orange); }
+.sort-wrap i { color: var(--gray-400); font-size: 13px; }
+.sort-wrap select { border: none; outline: none; font-size: 14px; color: var(--dark); background: transparent; font-weight: 600; font-family: inherit; cursor: pointer; }
 .filter-pills { display: flex; flex-wrap: wrap; gap: 7px; }
 .pill { background: #fff; border: 1px solid var(--border); color: var(--gray-600); padding: 7px 14px; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.18s; text-transform: uppercase; letter-spacing: 0.4px; }
 .pill:hover { border-color: var(--orange); color: var(--orange); }

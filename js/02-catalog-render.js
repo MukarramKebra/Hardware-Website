@@ -613,6 +613,44 @@ function cardVariantChange(id, sel) {
   if (skuEl) skuEl.textContent = _variantSku(getVariants(id)[idx], id);
 }
 
+// ── SORT ─────────────────────────────────────────────────────────────────
+// 'recommended' keeps the existing badge-priority order (see below); every
+// other mode replaces it entirely rather than being layered on top, since
+// "recommended, but ALSO price order" isn't a coherent single sort.
+let currentSort = 'recommended';
+function onSortChange(mode) {
+  currentSort = mode;
+  renderProducts();
+}
+function _sortProducts(list, mode) {
+  if (mode === 'price-asc' || mode === 'price-desc') {
+    list.sort((a, b) => {
+      // Price-hidden ("Ask on WhatsApp") items have no real price to compare
+      // — push them to the end regardless of direction rather than letting
+      // them collapse to 0 and jump to the front of a "low to high" sort.
+      const aHidden = !(a.price > 0) || !!window._sbPriceHidden[a.id];
+      const bHidden = !(b.price > 0) || !!window._sbPriceHidden[b.id];
+      if (aHidden && bHidden) return 0;
+      if (aHidden) return 1;
+      if (bHidden) return -1;
+      const aPrice = applySale(a.price, a.id);
+      const bPrice = applySale(b.price, b.id);
+      return mode === 'price-asc' ? aPrice - bPrice : bPrice - aPrice;
+    });
+  } else if (mode === 'newest') {
+    // No reliable "date added" on the baked-in catalog half of the products,
+    // but ids were assigned in strictly increasing order as products were
+    // added (both the original seed and every later admin/CSV batch), so id
+    // descending is an accurate proxy without needing a real timestamp.
+    list.sort((a, b) => b.id - a.id);
+  } else if (mode === 'name-asc') {
+    list.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (mode === 'name-desc') {
+    list.sort((a, b) => b.name.localeCompare(a.name));
+  }
+  return list;
+}
+
 function renderProducts() {
   const query = document.getElementById('searchInput').value.trim();
   const grid  = document.getElementById('productsGrid');
@@ -638,13 +676,17 @@ function renderProducts() {
     return;
   }
   empty.style.display = 'none';
-  // Best Sellers always first, then other badged items, then the rest
-  const badgeOrder = { 'Best Seller': 0, 'Popular': 1, 'Pro': 2, 'New': 3, 'Sale': 4 };
-  filtered.sort((a, b) => {
-    const aRank = a.badge !== null && a.badge !== undefined ? (badgeOrder[a.badge] !== undefined ? badgeOrder[a.badge] : 5) : 99;
-    const bRank = b.badge !== null && b.badge !== undefined ? (badgeOrder[b.badge] !== undefined ? badgeOrder[b.badge] : 5) : 99;
-    return aRank - bRank;
-  });
+  if (currentSort === 'recommended') {
+    // Best Sellers always first, then other badged items, then the rest
+    const badgeOrder = { 'Best Seller': 0, 'Popular': 1, 'Pro': 2, 'New': 3, 'Sale': 4 };
+    filtered.sort((a, b) => {
+      const aRank = a.badge !== null && a.badge !== undefined ? (badgeOrder[a.badge] !== undefined ? badgeOrder[a.badge] : 5) : 99;
+      const bRank = b.badge !== null && b.badge !== undefined ? (badgeOrder[b.badge] !== undefined ? badgeOrder[b.badge] : 5) : 99;
+      return aRank - bRank;
+    });
+  } else {
+    _sortProducts(filtered, currentSort);
+  }
   // Track search appearances (debounced so only fires when user stops typing)
   if (query && filtered.length) {
     clearTimeout(window._searchTimer);
