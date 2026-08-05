@@ -107,7 +107,6 @@
 
   /* Categories grid */
   .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .cat-icon { width: 44px; height: 44px; }
   .cat-card h3 { font-size: 12px; }
   .cat-card p { display: none; }
 
