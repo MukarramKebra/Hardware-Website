@@ -130,6 +130,37 @@
 </head>
 <body>
 
+  <!-- Full-page splash shown until the page finishes loading, then fades out.
+       Styled inline (not in the css/*.css files) on purpose: those are
+       injected async by the cache-busting loader above, so an external
+       stylesheet wouldn't be ready in time and this would flash unstyled. -->
+  <style>
+    #pagePreloader { position: fixed; inset: 0; z-index: 99999; background: #fef9eb; display: flex; align-items: center; justify-content: center; transition: opacity .35s ease, visibility .35s ease; }
+    #pagePreloader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+    #pagePreloader .preloader-gear { width: 100px; height: 100px; background-image: url('loader-gear.png'); background-repeat: no-repeat; background-size: 176.96px 309.68px; background-position: -56.22px -98.62px; animation: preloader-spin 1.4s linear infinite; }
+    @keyframes preloader-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { #pagePreloader .preloader-gear { animation: none; } }
+    #pagePreloader .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  </style>
+  <div id="pagePreloader" role="status" aria-live="polite">
+    <span class="preloader-gear" aria-hidden="true"></span>
+    <span class="visually-hidden">Loading…</span>
+  </div>
+  <script>
+  (function() {
+    var t0 = Date.now(), MIN_MS = 400, MAX_MS = 6000, done = false;
+    function hide() {
+      if (done) return; done = true;
+      var el = document.getElementById('pagePreloader');
+      if (el) el.classList.add('hide');
+    }
+    window.addEventListener('load', function() {
+      setTimeout(hide, Math.max(0, MIN_MS - (Date.now() - t0)));
+    });
+    setTimeout(hide, MAX_MS);
+  })();
+  </script>
+
   <!-- Shown briefly on category switch, covering the whole viewport, so the
        jump to the filtered products reads as "load, then arrive" instead of
        a jarring instant scroll while the old category's products are still
