@@ -97,7 +97,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202608031400';
+    v = /^[0-9]+$/.test(v) ? v : '202608052330';
     ['01-base','02-sections','03-cart-features-contact','04-footer','05-responsive','06-lang-rtl','07-modals','08-account-auth','09-widgets'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -137,7 +137,7 @@
   <style>
     #pagePreloader { position: fixed; inset: 0; z-index: 99999; background: #fef9eb; display: flex; align-items: center; justify-content: center; transition: opacity .35s ease, visibility .35s ease; }
     #pagePreloader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
-    #pagePreloader .preloader-gear { width: 100px; height: 100px; background-image: url('loader-gear.png'); background-repeat: no-repeat; background-size: 176.96px 309.68px; background-position: -56.22px -98.62px; animation: preloader-spin 1.4s linear infinite; }
+    #pagePreloader .preloader-gear { width: 100px; height: 100px; background-image: url('loader-gear.png'); background-repeat: no-repeat; background-size: 100% 100%; animation: preloader-spin 1.4s linear infinite; }
     @keyframes preloader-spin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { #pagePreloader .preloader-gear { animation: none; } }
     #pagePreloader .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
@@ -998,7 +998,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202608031400';
+    v = /^[0-9]+$/.test(v) ? v : '202608052330';
     ['01-config-data','02-catalog-render','03-product-cart-checkout','04-i18n-order','05-accounts','06-features','07-subscribe'].forEach(function(f) {
       var s = document.createElement('script');
       s.src = 'js/' + f + '.js?v=' + v;

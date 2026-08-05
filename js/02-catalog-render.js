@@ -144,6 +144,15 @@ function initOffersTicker() {
     const bSale = b.sale > 0 && b.p.price > 0 && !window._sbPriceHidden[b.p.id];
     return (bSale ? 1 : 0) - (aSale ? 1 : 0);
   });
+  // Hard cap on how many cards the ticker ever builds. `featured_offers`
+  // currently holds hundreds of products (see admin's Featured tab), and
+  // this strip gets duplicated several times over for the seamless CSS
+  // loop below — without a cap that was rendering 2000+ <img> tags into
+  // the DOM (up to 4x every "featured" product), which is what made the
+  // homepage so slow to load, especially on mobile. 40 is already far more
+  // variety than anyone scrolls a marquee to see.
+  const TICKER_MAX = 40;
+  if (offers.length > TICKER_MAX) offers.length = TICKER_MAX;
   const customPhotos = _sbPhotos || {};
   const cards = offers.map(({ p, sale }) => {
     const raw   = customPhotos[p.id];
