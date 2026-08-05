@@ -148,15 +148,28 @@
   </div>
   <script>
   (function() {
-    var t0 = Date.now(), MIN_MS = 400, MAX_MS = 6000, done = false;
+    // Hides once the DOM is parsed and ready (~100-200ms typically), NOT
+    // once every image on the page has finished downloading — this used to
+    // wait for window's 'load' event, which includes every product image
+    // that happens to sit above the fold, and on a wide desktop monitor
+    // that's a lot more images than on mobile (more columns/rows visible
+    // without scrolling). That made the splash sit on screen for however
+    // long those images took instead of just covering the brief moment
+    // before the page itself is actually ready.
+    var t0 = Date.now(), MIN_MS = 150, MAX_MS = 2500, done = false;
     function hide() {
       if (done) return; done = true;
       var el = document.getElementById('pagePreloader');
       if (el) el.classList.add('hide');
     }
-    window.addEventListener('load', function() {
+    function reveal() {
       setTimeout(hide, Math.max(0, MIN_MS - (Date.now() - t0)));
-    });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', reveal, { once: true });
+    } else {
+      reveal();
+    }
     setTimeout(hide, MAX_MS);
   })();
   </script>
