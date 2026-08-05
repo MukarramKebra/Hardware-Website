@@ -780,3 +780,14 @@ function renderProducts() {
   }).join('');
 }
 
+// renderProducts() rebuilds the whole grid (up to ~800+ cards) via innerHTML,
+// so calling it on every raw keystroke (both the grid's own search box and
+// the header search dropdown do this) made fast typing feel laggy — most
+// noticeable on desktop, where people type quicker than on a phone keyboard.
+// 180ms is short enough to still feel instant once typing pauses.
+var _renderProductsDebounceTimer;
+function debouncedRenderProducts() {
+  clearTimeout(_renderProductsDebounceTimer);
+  _renderProductsDebounceTimer = setTimeout(renderProducts, 180);
+}
+

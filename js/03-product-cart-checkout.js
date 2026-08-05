@@ -562,7 +562,7 @@ document.querySelectorAll('.pill').forEach(pill => {
     renderProducts();
   });
 });
-document.getElementById('searchInput').addEventListener('input', renderProducts);
+document.getElementById('searchInput').addEventListener('input', debouncedRenderProducts);
 document.getElementById('contactForm').addEventListener('submit', e => {
   e.preventDefault();
   document.getElementById('formSuccess').classList.add('show');

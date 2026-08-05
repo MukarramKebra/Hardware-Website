@@ -466,7 +466,7 @@ function onHeaderSearchInput(val) {
   var real = document.getElementById('searchInput');
   if (!real) return;
   real.value = val;
-  renderProducts();
+  debouncedRenderProducts();
 }
 
 document.addEventListener('click', function(e) {
