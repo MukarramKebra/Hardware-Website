@@ -100,13 +100,13 @@ async function initAuth() {
     // Silently refresh token (in background)
     _refreshSession(refresh);
     await loadUserProfile();
-    updateHeaderForAuth();
-  } else {
-    // Show login prompt after 2.5 s, but only if never dismissed
-    if (!localStorage.getItem('jain_lp_dismissed')) {
-      setTimeout(showLoginPrompt, 2500);
-    }
-    updateHeaderForAuth();
+  }
+  updateHeaderForAuth();
+  // Offers nudge is independent of sign-in status (being logged in doesn't
+  // mean subscribed to marketing emails) — shown once, 2.5s in, unless
+  // already dismissed or already subscribed via it.
+  if (!localStorage.getItem('jain_offers_nudge_dismissed')) {
+    setTimeout(showOffersNudge, 2500);
   }
 }
 
@@ -292,16 +292,15 @@ function onAccountBtnClick() {
   else openAuthModal('login');
 }
 
-// ── Login welcome prompt ───────────────────────────────────────────────────────
-function showLoginPrompt() {
-  if (_authUser) return; // already logged in
-  const el = document.getElementById('loginPrompt');
+// ── Offers subscribe nudge ─────────────────────────────────────────────────────
+function showOffersNudge() {
+  const el = document.getElementById('offersNudge');
   if (el) el.style.display = 'block';
 }
-function dismissLoginPrompt() {
-  const el = document.getElementById('loginPrompt');
+function dismissOffersNudge() {
+  const el = document.getElementById('offersNudge');
   if (el) el.style.display = 'none';
-  localStorage.setItem('jain_lp_dismissed', '1');
+  localStorage.setItem('jain_offers_nudge_dismissed', '1');
 }
 
 // ── Auth Modal ─────────────────────────────────────────────────────────────────

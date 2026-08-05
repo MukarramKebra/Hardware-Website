@@ -97,7 +97,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202608052330';
+    v = /^[0-9]+$/.test(v) ? v : '202608061200';
     ['01-base','02-sections','03-cart-features-contact','04-footer','05-responsive','06-lang-rtl','07-modals','08-account-auth','09-widgets'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -588,6 +588,7 @@
         <a href="#contact" data-i18n="footer_delivery_info">Delivery Info</a>
         <a href="#contact" data-i18n="footer_returns">Returns Policy</a>
         <a href="#contact" data-i18n="footer_tech">Technical Help</a>
+        <a href="accessibility.html" data-i18n="footer_accessibility">Accessibility</a>
       </div>
     </div>
     <!-- ── SUBSCRIBE TO OFFERS ─────────────────────────────────────────── -->
@@ -740,15 +741,27 @@
     </div>
   </div>
 
-  <!-- ── LOGIN WELCOME PROMPT ──────────────────────────────────────────── -->
-  <div id="loginPrompt" class="login-prompt" style="display:none">
-    <button class="lp-close" onclick="dismissLoginPrompt()" title="Dismiss" aria-label="Dismiss"><i class="fa fa-times"></i></button>
+  <!-- ── SUBSCRIBE-TO-OFFERS PROMPT ──────────────────────────────────────
+       Replaces the old auto sign-in nudge — that popped the sign-in flow
+       unprompted, which read as intrusive. This offers the same welcome
+       moment for something with a lower ask (an email, not an account) and
+       a clearer payoff (real deals), and never opens the sign-in modal. -->
+  <div id="offersNudge" class="login-prompt" style="display:none">
+    <button class="lp-close" onclick="dismissOffersNudge()" title="Dismiss" aria-label="Dismiss"><i class="fa fa-times"></i></button>
     <div class="lp-inner">
-      <div class="lp-icon"><i class="fa fa-user-circle"></i></div>
+      <div class="lp-icon"><i class="fa fa-envelope-open-text"></i></div>
       <div class="lp-text">
-        <strong>Track Your Orders</strong>
-        <span>Sign in to view order status, save your address and manage your account.</span>
-        <button class="lp-btn" onclick="dismissLoginPrompt();openAuthModal('login')">Sign In / Create Account</button>
+        <strong>Get Our Best Offers</strong>
+        <span>Deals, new arrivals and trade discounts straight to your inbox.</span>
+        <form class="lp-sub-form" onsubmit="doNudgeSubscribe(event)">
+          <input type="email" id="nudgeSubEmail" placeholder="you@email.com" autocomplete="email" aria-label="Email address" required />
+          <label class="lp-sub-consent">
+            <input type="checkbox" id="nudgeSubConsent" />
+            <span>I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms</a> &amp; marketing consent.</span>
+          </label>
+          <button type="submit" class="lp-btn" id="nudgeSubBtn">Subscribe</button>
+          <div class="subscribe-msg" id="nudgeSubMsg"></div>
+        </form>
       </div>
     </div>
   </div>
@@ -1011,7 +1024,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202608052330';
+    v = /^[0-9]+$/.test(v) ? v : '202608061200';
     ['01-config-data','02-catalog-render','03-product-cart-checkout','04-i18n-order','05-accounts','06-features','07-subscribe'].forEach(function(f) {
       var s = document.createElement('script');
       s.src = 'js/' + f + '.js?v=' + v;
