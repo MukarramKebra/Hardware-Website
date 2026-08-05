@@ -11,275 +11,256 @@ Admin panel: `https://mukarramkebra.github.io/Hardware-Website/admin/`
 Repo: `MukarramKebra/Hardware-Website`, working copy at `C:\Users\mukke\Desktop\Hardware-Website new`
 (a second clone without "new" exists and should be kept in sync via `git reset --hard origin/main`).
 
+**Important operational note**: multiple Claude Code sessions (and a GitHub Action, see section 2) are
+routinely working on this exact repo at the same time, sometimes concurrently with this one. `git status`/
+`git fetch` before every push, expect divergence, and verify byte-for-byte identical content before
+discarding any "conflicting" untracked file rather than assuming — this has been the actual cause of every
+merge conflict hit so far, not real disagreements.
+
 ## 2) Current state
-- **300 products** in the database. First 200: 196 real + purchasable, 4 non-sellable "service"
-  placeholders (Abrasive Sanding, Cleaning/Polishing, Cutting/Sawing, Grinding/Sharpening) kept visible
-  but price-hidden with an "Ask Price on WhatsApp" button instead of Add to Cart. Products 201–300 add
-  Nails/Wires (34), Tapes (26), Fasteners (27), gloves under Safety (12), and welding electrodes (1).
-  All scraped from `expertshardware.com` (the owner's own existing catalog) via their public GraphQL API;
-  each has a real name, price (KWD), category (17-category taxonomy), a verified brand (TOLSEN, Dremel,
-  INGCO, Stanley, Total, HARDEN, DCA, Makita, Milwaukee, Makute, FIXTEC, KDS, Genius, Edon, iTrust,
-  Suretape, EPS, CENMET, Agile, or Generic for genuinely unbranded commodity items — verified by visually
-  inspecting each product photo), a real SKU, a hand-written SEO description, and SEO keyword phrases.
-- **Featured Products (homepage scrolling strip)**: what used to be 8 hardcoded category tiles is now a
-  real, admin-curated product showcase. Admin's own **Featured** tab (full-width table, not a modal —
-  reads like Inventory: thumbnail, name, SKU, brand, price, description) lets the owner tick any number of
-  products (no cap) to feature, with category/brand filters, a Select All/Unselect All toggle (button
-  label and header checkbox both flip to show which action a click performs next — it's a real toggle,
-  not select-only), a bulk Sale % bar (search/filter a group → Select All → apply one % to all of them at
-  once), and its own Undo/Redo (Ctrl+Z/Ctrl+Y, tab-aware so it doesn't fire Inventory's stock undo at the
-  same time). Order picked = display order on the storefront, except products with an active sale sort
-  first (stable sort, so ties keep pick order). Stored in `expert_settings` key `featured_offers` as a
-  JSON array of `{ id, sale }` (older saves were a plain id array — migrated in-memory on load).
-  **Current live data**: the owner accidentally featured the entire 300-product catalog via Select All
-  before it was a proper toggle, and chose to leave it that way rather than re-curate — see section 6.
-- **Sale % is a real, site-wide discount**, not just a strip decoration: `getFeaturedSale()`/`applySale()`
-  (`js/01-config-data.js`) are the single source of truth, used by the offers strip, the main product grid
-  card, the product detail modal, Add to Cart (both the card and modal paths — the cart line is charged the
-  discounted price), wishlist, recently viewed, and "Customers Also Bought". Regular price shows struck
-  through with the discounted price first wherever there's room; a red `-X%` badge replaces the product's
-  own badge on the grid card when a sale is active.
-- **Size/pack options ("variants")**: any product can carry a list of options (e.g. 2" vs 3" nails, a
-  tarpaulin's 24 different sizes), each with its own optional price/SKU/image/description — anything left
-  blank falls back to the product's own. Storefront shows options as a dropdown directly on the product
-  card (price updates live, sale-aware) and as clickable image tiles in the product popup (replacing a
-  plain `<select>`); whichever option is picked becomes its own cart line, sharing the parent product's
-  stock pool and qty limits. Admin edits options per product (Inventory row → Options) with **drag-and-drop
-  reordering** (grab a handle, drop it where you want — replaced the old up/down chevron buttons), an
-  Upload-from-Computer button per option's image field, and duplicates the parent's own image/description
-  into new option rows as a starting point. Stored in `expert_settings` key `product_variants`.
-- Product images live as files in the repo (`expert products/1-50/` … `251-300/`, named by SKU) and are
-  referenced from Supabase's `expert_photos` table by **URL**, not inline base64. Photos are fetched in
-  the *same* batched request as the rest of product data (not a separate delayed fetch — that split only
-  mattered when photos carried base64 blobs; now they're lightweight URL strings, ~25KB total).
-- Admin panel tabs: Inventory, Analytics, Deleted, Orders, Reports, Categories, Banners, **Featured**, SEO,
-  and Owner Controls (ultimate15 only). Three built-in accounts (`expert`/admin, `expert15`/manager,
-  `ultimate15`/owner) plus a Team Accounts system for restricted logins with per-tab view/edit permissions.
-- **SEO**: site-wide meta title/description/keywords editable in admin (SEO tab), which also lists every
-  product (thumbnail, category, description preview with a "Missing" flag, keyword count, Edit button).
-  Full JSON-LD structured data: `HardwareStore`, a `WebSite`/`SearchAction` (Google sitelinks search box —
-  backed by real `?q=` handling in `js/06-features.js`, not decorative markup), and a dynamic Product
-  `ItemList` that now also carries real `aggregateRating` (bulk-fetched from `expert_reviews`, omitted
-  entirely — never fabricated — when a product has no reviews yet), `priceValidUntil`, and `itemCondition`.
-  "Generic"-branded products omit the `brand` field entirely rather than literally telling Google the
-  brand is "Generic". `hreflang` (en/ar/x-default) reflects the site's real bilingual toggle. robots.txt +
-  sitemap.xml in place; Google Search Console verified.
-- **Accessibility**: a Lighthouse audit (81/62/96/100 desktop, 66/62/96/100 mobile) drove a pass that
-  raised the Accessibility score from 62 — added the page's one missing `<h1>` and a `<main>` landmark,
-  fixed a heading-order skip (footer nav went straight from h2 to h4), removed the
-  `maximum-scale`/`user-scalable=no` viewport flags that disabled pinch-zoom, added `aria-label` to every
-  icon-only button/link, associated every form `<label>` with its control via `for`/`id`, and raised
-  several low-contrast grays (~2–3:1) to a passing ~4.6:1. Also added `preconnect` hints for the external
-  font/icon CDNs and a `color-scheme:light` meta tag (storefront only — see section 5) so forced/auto dark
-  mode in some browsers stops re-inverting the site's own already-dark colors.
-- **Storefront search** offers "Did you mean...?" suggestions when a query returns nothing — compares each
-  typed word (edit distance) against every real word in product names/brands/categories/keywords, only
-  surfacing a suggestion that actually returns results. Works in Arabic too.
-- **Cache-busting is two-layered**: each JS/CSS file's `?v=` version comes from `localStorage`, falling
-  back to a baked-in timestamp constant for a visitor's very first-ever load; a background check compares
-  that local version against `expert_settings.asset_version` in Supabase and auto-reloads once if they
-  differ. Admin's **Flush Cache** button (Owner Controls) bumps that shared Supabase value, which forces
-  *every* visitor onto fresh files on their next page check. The loader itself uses DOM
-  `createElement`/`appendChild`, not `document.write` (see section 5 — document.write silently breaks
-  under ad-blockers). **Remaining manual step**: still bump the baked-in fallback timestamp constant in
-  both HTML files on any push that changes JS/CSS/HTML — now done automatically as part of the standing
-  commit/push/flush workflow for this project (see section 6).
-- All site "settings" that aren't simple product columns (SKUs, brands, multi-category assignments,
-  ignored stock alerts, per-product keywords/variants/featured-sale, hidden-price flags, qty limits,
-  banner list, site-disabled flag, SEO text, asset version) live in the generic `expert_settings`
-  key/value table in Supabase — nothing requires manual SQL; every feature reads/writes it via the REST
-  API directly.
+- **721 products** live in `expert_products` (verified via a live count query, not the stale "300" figure
+  from earlier in the project). Products keep arriving in batches (300–350, 350–400, ..., up to 500–550
+  seen so far) from ongoing scraping work, each with a real name, price (KWD), category, verified brand,
+  SKU, and images. All product ids are sequential in `expert_products` (identity column, `start with
+  100000`) — see the id-sequence fix below.
+- **Featured Products (homepage scrolling strip)**: admin-curated via its own **Featured** tab (thumbnail,
+  name, SKU, brand, price, description; category/brand filters; a real Select All ⇄ Unselect All toggle;
+  bulk Sale % apply/clear; its own tab-aware Undo/Redo). Stored in `expert_settings.featured_offers` as
+  `{ id, sale }[]`. **Still not actually curated**: it holds the whole catalog from an early accidental
+  Select All, and the owner chose to leave it that way rather than re-curate — unchanged since last check.
+- **Sale % is a real, site-wide discount** via `getFeaturedSale()`/`applySale()` (`js/01-config-data.js`),
+  applied everywhere a price is shown or charged (grid card, product modal, cart, wishlist, recently
+  viewed), including at add-to-cart time so the charged price matches what was displayed.
+- **Size/pack options ("variants")**: any product can carry priced/imaged sub-options; storefront shows
+  them as a card dropdown and product-popup image tiles; admin edits them with drag-and-drop reordering.
+- **Sort dropdown** on the product grid: Recommended (default — existing badge-priority order, unchanged),
+  Price Low→High / High→Low (sale-aware, price-hidden items pushed to the end), Newest (id descending —
+  ids were assigned in strictly increasing order across every batch, so this is an accurate proxy without
+  a real timestamp field), Name A→Z / Z→A.
+- **Header search** (desktop) is an inline expanding dropdown anchored under the search icon — typing
+  mirrors into the real `#searchInput` and reuses its existing live-filter listener. Replaced an earlier
+  version that scrolled the whole page down to the product grid's own search box, which read as
+  disorienting and was corrected on direct feedback.
+- **Skeleton shimmer** on product/offer-strip images while they load — pure CSS gradient animation, zero
+  added network requests or JS libraries; fades to the real photo via a class the `<img>`'s own `onload`
+  adds. Handles "no photo at all" and "image ultimately failed" so the shimmer never runs forever.
+- **Cart FAB and WhatsApp chat FAB** are now a matched pair — same circle size at each breakpoint (mobile:
+  60px tall circles; desktop: matched padding/icon size), cart's count badge moved to an absolute overlay
+  on the circle's corner instead of an inline flex child (so it doesn't stretch the circle into an oval).
+  WhatsApp moved from `bottom:82px;right:14px` to `bottom:18px;right:10px` on mobile — it was floating
+  well above the actual corner before.
+- **The "View details →" product-card link is visually hidden** (`display:none`) but deliberately still in
+  the DOM — it's a real crawlable link to the per-product SEO pages (see below), not decorative; removing
+  it outright would cut off an easy path for Google to discover those pages.
+- Checkout: guests get a **Sign In / Continue as Guest choice** immediately when opening checkout, instead
+  of the old post-order "Create free account" nudge (which showed up only after the order was already
+  sent, too late to matter). Signed-in customers skip straight to the pre-filled form.
+- **Email**: signup/password-reset emails now send via **Resend custom SMTP** (`smtp.resend.com`, sender
+  `muk@expertshardware.com`, domain verified) instead of Supabase's low-volume, unreliable-for-production
+  default sender. Also fixed: `authSignUp()` wasn't passing `redirect_to`, so every confirmation link
+  pointed at `localhost` instead of the live site — no customer could actually complete signup confirmation
+  until this was fixed.
+- **RLS hardened** (`expert-hardware-rls-hardening.sql`, applied 2026-07-18): closed a real IDOR on
+  `expert_orders` (a signed-in customer could previously read/edit *any* order by id, not just their own —
+  now scoped via `auth.uid() = user_id` for the `authenticated` role), removed unused anon
+  `INSERT`/`DELETE` on `expert_analytics` (only the now-`security definer` `increment_expert_analytics` RPC
+  writes) and unused `UPDATE`/`DELETE` on `expert_reviews`/`expert_settings`. **Structural limit, not
+  fixed**: the admin panel and every public visitor still share the exact same public anon API key (no
+  real admin login), so RLS cannot restrict admin-only writes on `expert_products`/`expert_stock`/etc.
+  without a real admin auth system — explicitly declined for now ("dont do supabase auth"). Admin passwords
+  remain plaintext and technically anon-key-readable. Accepted residual risk, unchanged from before.
+- **`expert_products.id` identity-sequence desync fixed** (`expert-hardware-fix-id-sequence.sql`) — the
+  sequence backing the id column had fallen behind because earlier batches were inserted with explicit ids
+  rather than letting it auto-generate, so the admin CSV importer was silently failing on new rows
+  (23505 unique violation). One `setval()` run in the Supabase SQL Editor fixed it permanently; verified
+  live (`setval` returned `100320`, matching the last manually-assigned id at the time).
+- **Google Sign-In was added** (by concurrent work, not this session) — `authGoogleSignIn()` in
+  `js/05-accounts.js`, redirects through Supabase's `/auth/v1/authorize?provider=google`. **Not fully
+  usable by real customers yet**: the Google Cloud OAuth app is still in **Testing** publishing status
+  (unverified), which caps sign-in to ~100 manually-allowlisted test accounts and shows the raw Supabase
+  domain (`qhebhvllkovfbkqrcnmm.supabase.co`) instead of "Expert Hardware" branding on the initial "Choose
+  an account" screen — confirmed via a live web search that this is standard Google behavior for
+  unverified apps, not a config bug. App name/support email/logo/authorized domains are already correctly
+  set in Google Cloud Branding. Blocked on: publishing to Production, and a separate "home page URL is not
+  registered to you" branding-verification error despite Search Console showing the URL-prefix property
+  verified under the same account — root cause not yet found (see section 5/6).
+- **Per-product SEO pages**: `scripts/generate-product-pages.js` + a GitHub Action
+  (`.github/workflows/generate-seo.yml`, `chore(seo): regenerate product pages + sitemap [skip ci]`)
+  auto-generates a static `product/<slug>-<id>.html` page per product and regenerates `sitemap.xml`,
+  committing straight back to `main`. This is the actual source of most of the git-divergence noise in
+  section 1 — it runs independently of any Claude Code session. 521 generated pages as of the last check.
+- **Email campaign system was added** (concurrent work): `admin/js/13-offers.js` (Offers admin tab —
+  compose/send/status), `supabase/functions/send-offers/index.ts` (Resend-backed sender, RFC-8058
+  one-click unsubscribe headers), `supabase/functions/unsubscribe/index.ts`, schema in
+  `expert-hardware-offers.sql` (`offer_campaigns`, `offer_subscribers`), storefront opt-in widget in
+  `js/07-subscribe.js`. Not deeply exercised/verified by this session — flagged for whoever picks this up
+  next to sanity-check before relying on it.
+- **T&C / Privacy**: `terms.html` (Terms + Privacy + marketing-consent in one document, not separate
+  pages) now has a `#privacy` anchor on its "Privacy and your data" section, added so Google's OAuth
+  consent-screen setup had a real privacy-policy URL to point at.
+- **A code-only knowledge graph exists** at `graphify-out/` (via `/graphify`), scoped to the 28 real
+  source files (`js/`, `admin/js/`, `supabase/functions/`, root SQL/config, `scripts/`) — deliberately
+  excludes the 500+ generated product pages and all images/CSVs, which would've dominated a full-corpus
+  graph with repetitive template content instead of real architecture. `graph.html` to explore visually,
+  `GRAPH_REPORT.md` for the audit trail. Purely informational, no code changes from running it.
+- Everything else from before is unchanged: admin panel tabs (Inventory, Analytics, Deleted, Orders,
+  Reports, Categories, Banners, Featured, SEO, Owner Controls), three built-in accounts + Team Accounts,
+  site-wide SEO meta/JSON-LD, Lighthouse accessibility pass, "Did you mean...?" search suggestions,
+  two-layered cache-busting (see section 6 for the standing workflow), and the generic `expert_settings`
+  key/value store for all non-column site settings.
 
 ## 3) Active files
 **Storefront (root):**
-- `index.html` — main page markup (header, `<main>` landmark, `<h1>` (visually hidden), categories grid,
-  offers strip, products, cart, checkout, footer, SEO meta tags + JSON-LD incl. `WebSite`/`SearchAction`,
-  hreflang, `color-scheme` meta, preconnect hints, category-switch loading overlay, dynamic CSS/JS loader)
-- `js/01-config-data.js` — Supabase config, `loadSBData()` (main data fetch incl. photos, variants,
-  featured_offers, bulk review stats), SKU/brand/keyword/price-hidden/qty-limit/variant maps,
-  `getFeaturedSale()`/`applySale()` (shared sale-price helpers used everywhere), `checkAssetVersion()`,
-  site-disabled check
-- `js/02-catalog-render.js` — category/offer rendering, product card rendering (incl. card-level variant
-  dropdown, `_priceHtml()`/`_cardRawPrice()` for sale was/now display), banners, search matching +
-  `_didYouMean()` suggestions, `_injectProductSchema()` (JSON-LD incl. aggregateRating/priceValidUntil),
-  `initOffersTicker()` (admin-curated featured strip, sale-first sort), `_switchCategoryWithLoading()`,
-  multi-category helper
-- `js/03-product-cart-checkout.js` — product detail modal (incl. visual variant tile picker via
-  `pmSelectVariant`/`_pmApplyVariantDisplay`, `_pmPriceHtml()` for sale was/now display, side-margin back
-  button beside the image), cart (variant- and sale-aware lines — `applySale()` at add-to-cart time so
-  charged price matches displayed price), checkout, qty limit enforcement
-- `js/04-i18n-order.js`, `js/05-accounts.js`, `js/06-features.js` — translations/RTL, customer accounts,
-  wishlist/reviews/WhatsApp share/recently-viewed (sale-aware prices), `?q=` search-param handling (backs
-  the SearchAction schema) + final bootstrap calls (`renderProducts(); loadSBData();`)
-- `css/01-base.css` … `css/09-widgets.css` — styles, split by topic; incl. `.visually-hidden` utility,
-  offer/product sale price + badge classes
-- `robots.txt`, `sitemap.xml` — SEO crawl config
+- `index.html` — main page markup, header (incl. inline search dropdown), SEO meta/JSON-LD, dynamic
+  CSS/JS loader with the cache-busting fallback timestamp
+- `js/01-config-data.js` — Supabase config, `loadSBData()`, `getFeaturedSale()`/`applySale()`,
+  `checkAssetVersion()`
+- `js/02-catalog-render.js` — category/offer rendering, product card rendering, search matching + sort
+  (`currentSort`/`onSortChange`/`_sortProducts`), skeleton-shimmer `onload`/`onerror` wiring
+- `js/03-product-cart-checkout.js` — product detail modal, cart, checkout incl. the Sign In/Guest choice
+  (`toggleHeaderSearch` lives in 06, not here — see below)
+- `js/04-i18n-order.js` — translations/RTL, order submission to Supabase
+- `js/05-accounts.js` — customer accounts, `authSignUp`/`authSignIn`/`authGoogleSignIn`, password reset
+- `js/06-features.js` — wishlist/reviews/WhatsApp share/recently-viewed, `?q=` search-param handling,
+  header search dropdown (`toggleHeaderSearch`/`onHeaderSearchInput`), final bootstrap calls
+- `js/07-subscribe.js` — newsletter/offers opt-in widget
+- `css/01-base.css` … `css/09-widgets.css` — styles by topic; header search dropdown, cart/chat FAB, and
+  skeleton-shimmer rules live in `01-base.css`, `08-account-auth.css`, and `02-sections.css` respectively
+- `robots.txt`, `sitemap.xml` — SEO crawl config; `sitemap.xml` is now auto-regenerated by the GitHub
+  Action, don't hand-edit it
+- `terms.html` — Terms + Privacy + marketing consent, one document (`#privacy` anchor added)
+- `product/*.html` — **auto-generated**, one per product, via `scripts/generate-product-pages.js` +
+  the `generate-seo` GitHub Action. Don't hand-edit; regenerates on every relevant push.
 
 **Admin (`admin/`):**
-- `admin/index.html` — all admin markup + every modal (Add Product, CSV import, Photo, Stats, SEO, Qty
-  Limits, Options/variants, Category Products, Team Account, Edit Banner) + the **Featured** tab section
-  (search, category/brand filter dropdowns, Select All, Undo/Redo, bulk Sale % bar, full-width table).
-  Has `<base href="../">` so all relative asset paths resolve to the repo root, not `admin/`.
-- `admin/js/01-core-data.js` — Supabase config (duplicated from storefront), `DEFAULT_CATS`,
-  `getAllAdminProducts()`, `loadFromSupabase()` (Promise.all fetch incl. variants)
-- `admin/js/02-helpers.js` — stock undo/redo; the global Ctrl+Z/Ctrl+Y handler is now tab-aware, dispatching
-  to Inventory's stock undo or the Featured tab's own undo depending on which is visible
-- `admin/js/03-auth.js` — login, team-account permission enforcement, `flushCache()` (global flush),
-  `toggleSiteDisabled()`
-- `admin/js/05-categories.js` — category background image editor, banner management, **and the whole
-  Featured Products tab**: `renderFeaturedTab()`, `foToggle`/`foSetSale`/`foToggleSelectAll`
-  (real toggle)/`foApplyBulkSale`/`foClearBulkSale`, its own undo/redo stack (`_foPushUndo`/`foUndo`/
-  `foRedo`), category/brand filter dropdowns (`foFcToggle` etc., parallel to Inventory's own so they don't
-  collide), `saveFeaturedOffers()`
-- `admin/js/07-orders.js` — Orders tab, Inventory table rendering (row actions), stats/alerts, ignore-alert,
-  price-hide toggle
-- `admin/js/08-inventory.js` — SKU helpers, Add Product, qty-limit modal, **Options editor**
-  (`openVariants`/`addVariantRow`/`saveVariants`) with **drag-and-drop reordering** (`_vrWireDrag` — grab a
-  handle, drop it above/below another row; replaced the old `moveVariantRow` up/down-arrow approach),
-  per-option image/description/SKU, Upload-from-Computer, safe read-fresh-merge-write save
-- `admin/js/10-csv-import.js` — CSV/Excel bulk import (custom CSV parser handling quoted names with
-  commas/quotes)
-- `admin/js/11-multiselect-brand-cat.js` — multi-category picker, photo/crop editor, brand-menu bulk
-  actions (`_bulkConfirmIfLarge` guards +50/+5000 stock once a selection exceeds 5 products)
-- `admin/js/12-seo.js` — site-wide SEO settings + per-product SEO editor + `renderSEOProducts()`
-  (searchable product list in the SEO tab)
+- `admin/index.html` — all admin markup + modals, incl. the Featured tab and Offers tab
+- `admin/js/01-core-data.js` — Supabase config, `getAllAdminProducts()`, `loadFromSupabase()`
+- `admin/js/02-helpers.js` — stock undo/redo, tab-aware Ctrl+Z/Ctrl+Y dispatch
+- `admin/js/03-auth.js` — login (client-side only, no real Supabase Auth — see RLS note in section 2),
+  team-account permission enforcement, `flushCache()`, `toggleSiteDisabled()`
+- `admin/js/04-tabs-nav.js` — tab switching
+- `admin/js/05-categories.js` — category backgrounds, banner management, the whole Featured tab
+- `admin/js/06-reports.js` — Excel export (inventory/sales workbooks), file-handle persistence
+- `admin/js/07-orders.js` — Orders tab, Inventory table rendering, stats/alerts
+- `admin/js/08-inventory.js` — SKU helpers, Add Product, Options/variants editor
+- `admin/js/09-deleted.js` — Deleted Products/Orders tab, CSV-based bulk restore
+- `admin/js/10-csv-import.js` — CSV/Excel bulk import
+- `admin/js/11-multiselect-brand-cat.js` — multi-category picker, photo/crop editor, brand-menu bulk actions
+- `admin/js/12-seo.js` — site-wide + per-product SEO editor
+- `admin/js/13-offers.js` — Offers/email-campaign admin tab
+
+**Backend:**
+- `supabase/functions/send-offers/index.ts` — Resend-backed campaign sender, one-click unsubscribe headers
+- `supabase/functions/unsubscribe/index.ts` — unsubscribe landing/handler
+- `expert-hardware-supabase.sql` — full schema for a fresh Supabase project. Only needed from scratch.
+- `expert-hardware-offers.sql` — `offer_campaigns`/`offer_subscribers` schema
+- `expert-hardware-rls-hardening.sql` — RLS tightening migration (see section 2), run once already
+- `expert-hardware-fix-id-sequence.sql` — one-time identity-sequence fix, run once already
 
 **Data/reference:**
-- `expert-hardware-supabase.sql` — full schema for a fresh Supabase project (all `expert_*` tables +
-  RLS policies). Only needed if the project is ever recreated from scratch.
-- `expert products/*/expert_import_*.csv` — record-keeping copies of what was imported; **not** meant
-  to be re-imported (would create duplicates).
-- `cat-images/` — the 17 category tile background images.
+- `expert products/*/expert_import_*.csv` — record-keeping copies of imports; not meant to be re-imported
+- `cat-images/` — category tile background images
+- `.github/workflows/generate-seo.yml` — the auto product-page/sitemap regeneration Action
+- `scripts/generate-product-pages.js` — the generator the Action runs
+- `graphify-out/` — code-architecture knowledge graph (see section 2), informational, not site output
 
 ## 4) Changes made
-- Split originally-monolithic files into the per-topic files listed above.
-- Rebuilt "Shop by Category" as 17 real Expert-Hardware categories with real category images and rotating
-  vertical side banners (brand-aware, up/down nav, adaptive sizing, 3s rotation), manageable from admin.
-- Migrated Supabase project (new URL/key); built a full team-account permission system.
-- Scraped and imported products in three batches: 1–100, 101–200 (96 real + 4 service placeholders), then
-  201–300 (nails/wires, tapes, fasteners, gloves, welding electrodes), with images, verified brands, SKUs,
-  hand-written SEO copy, and — for 201–300 — real per-product size/pack options where the source had them.
-- Built full SEO: site meta tags + JSON-LD, per-product descriptions/keywords, admin UI for all of it,
-  later extended with a full product list inside the SEO tab itself.
-- Added category/brand filters and a "Products" manager per category; multi-category support synced to
-  Supabase (was localStorage-only, invisible to visitors).
-- Added Hide Price / Show Price toggle and per-product min/max order quantity limits.
-- Built the **size/pack options ("variants") feature** end to end: data model, storefront card dropdown,
-  storefront product-popup visual tile picker, admin editor with per-option image/description/SKU,
-  variant-aware cart lines and order/WhatsApp text.
-- Rebuilt cache-busting into a real global flush: asset version lives in Supabase, every page background-
-  checks it and self-updates; Flush Cache bumps it for everyone instead of just the admin's own browser.
-- Added "Did you mean...?" search suggestions and hid the "Generic" brand from Google's structured data.
-- Reworked the product detail modal layout (SKU next to the name, Back to Products button aligned with
-  the image, then a second back button beside the image itself) and added a brief loading flash on
-  category switches instead of a visible instant scroll.
-- Decluttered the Inventory table's action buttons and widened the admin layout so they stop clipping off
-  wide-monitor screens; added a confirmation prompt to bulk stock actions once a selection is large.
-- **Turned the homepage offers strip from 8 hardcoded category tiles into a real, admin-curated Featured
-  Products system**: its own admin tab (search, category/brand filters, Select All/Unselect All toggle,
-  bulk Sale % apply/clear, Undo/Redo), no product-count cap, and a per-product **Sale %** that's a genuine
-  site-wide discount applied everywhere a price is shown or charged, with sale items sorting first in the
-  strip.
-- Converted the product Options/variants reorder control from up/down arrows to drag-and-drop.
-- Expanded SEO: hreflang, a real `WebSite`/`SearchAction` schema backed by working `?q=` search-param
-  handling, and richer Product schema (aggregateRating from real reviews, priceValidUntil, itemCondition).
-- Ran a Lighthouse-driven accessibility/performance/best-practices pass across the whole storefront (see
-  section 2 for the full list).
+*(Earlier history — category/banner rebuild, Supabase migration, product batches 1–300, full SEO/JSON-LD
+build, size/pack variants, cache-busting rebuild, Featured Products system, Lighthouse accessibility pass —
+unchanged, see git history for full detail. This session's changes:)*
+- Hardened Supabase RLS across `expert_*` tables (closed a real order-IDOR, removed unused write grants on
+  analytics/reviews/settings) — `expert-hardware-rls-hardening.sql`.
+- Fixed the `expert_products.id` identity-sequence desync that was silently breaking CSV import on new
+  rows — `expert-hardware-fix-id-sequence.sql`.
+- Replaced the post-order "Create Account" nudge with a Sign In / Continue as Guest choice shown
+  immediately when checkout opens.
+- Fixed signup confirmation emails linking to `localhost` instead of the live site (missing `redirect_to`).
+- Set up Resend custom SMTP for auth emails, replacing Supabase's unreliable default sender.
+- Added a desktop header search icon, later reworked into an inline expanding dropdown (see section 5 for
+  why the first version was replaced).
+- Added a sort dropdown to the product grid (Recommended default, Price asc/desc, Newest, Name asc/desc).
+- Added a CSS-only skeleton shimmer to product/offer card images while they load.
+- Hid the "View details" product-card link visually while keeping it in the DOM for SEO crawlability.
+- Enlarged, then reshaped, the cart FAB to match the WhatsApp chat FAB's size/circle shape at every
+  breakpoint; repositioned WhatsApp into its actual corner.
+- Closed the ~176px empty gap left in the categories/products section after another session removed the
+  sticky category-icon nav strip, by trimming `#categories`'s bottom padding and `#products`'s top padding
+  (they'd previously matched, so removing what sat between them doubled the visible gap).
+- Added an Instagram `sameAs` entity link to the `HardwareStore` JSON-LD, for Google's brand-identity
+  signals.
+- Added a `#privacy` anchor to `terms.html`'s Privacy section, for the Google OAuth consent-screen setup.
+- Resolved two real git merge conflicts from concurrent product-batch work landing mid-session — both were
+  identical-content ("both added") conflicts, verified byte-for-byte before resolving.
+- Built a code-only knowledge graph (`/graphify`) scoped to the 28 real source files.
 
 ## 5) Failed attempts
-- **Category images pointed one directory too high** (`../cat-images/...`) — broke because
-  `admin/index.html` already has `<base href="../">`. Fixed by removing it.
-- **`expert_photos` column name mismatch** (`url` vs real column `img_url`) — every photo save had been
-  silently failing (HTTP 400) since the table was created. Fixed all 6 read/write sites.
-- **Base64 images duplicated into `expert_products.img_url`** as a side effect of the bug above, bloating
-  a single fetch to 3.2MB / 46–71s on Supabase's free tier. Fixed by migrating to lightweight
-  `expert_photos` URL rows.
-- **Removing the 60 demo products broke three things** still reading the now-empty hardcoded `PRODUCTS`
-  array (stat cards, Analytics, per-product Stats modal). All three now read `getAllAdminProducts()`.
-- **Random stock-photo fallback (`picsum.photos`)** made missing images look like wrong products.
-  Replaced with a neutral tools icon everywhere.
-- **CSV import parser broke on product names containing `"`** (e.g. `6" pliers`), silently dropping those
-  rows. Rewrote the parser to handle quoted CSV fields properly.
-- **`document.write` cache-busting loader silently broke styling** for visitors with ad-block/privacy
-  extensions (Chrome interventions and several extensions neuter `document.write` entirely) — the whole
-  site rendered as raw unstyled HTML for affected visitors, caught live on the admin panel. Fixed by
-  switching the loader to `createElement`/`appendChild` DOM APIs, with `<noscript>` stylesheet fallbacks.
-- **`saveVariants()` overwrote the entire `product_variants` blob from whatever was in the browser's
-  memory**, not the live database — a stale in-memory copy could silently erase *other* products' options
-  on save. This actually happened: one product lost 3 of its 4 options, another was overwritten with test
-  data during verification. Reconstructed both where possible, and fixed the function to re-fetch fresh
-  from Supabase and merge in only the one product being edited, immediately before every save.
-- **Admin inventory action buttons were getting clipped** off wide-monitor screens — the layout was
-  capped at 1400px and the table wrapper used `overflow:hidden`, silently hiding the rightmost buttons
-  (Hide Price / Delete) instead of scrolling to them. Widened the cap and switched to `overflow-x:auto`.
-- **Mobile product-modal layout broke** (Back button collapsed into a vertical one-letter-per-line
-  sliver) because `.pm-info-col`'s `grid-column:2` wasn't reset in the mobile media query. Fixed by
-  resetting `grid-column:1` on mobile.
-- **Bulk "+50/+5000 Stock" had no confirmation**, unlike Clear Stock and Delete — combined with the brand
-  menu's "select all" (which can silently select 70+ products), one click could mass-restock an entire
-  brand with zero warning. Added a confirmation once a selection exceeds 5 products.
-- **GitHub Pages deployment lag/stuck builds** happened repeatedly across sessions — fixed each time with
-  an empty trigger commit. The Supabase-driven asset-version flush prevents the *symptom* (stale files
-  after a real deploy) from mattering as much, but a stuck build itself is outside anyone's control.
-- **Select All silently featured the entire 300-product catalog** when clicked with no category/brand/
-  search filter narrowing it down first — this is exactly what happened live on the real site (see
-  section 6). Went through two behavior iterations per direct feedback: first made it select-only (never
-  removes anything, to prevent accidental mass-unfeature), then — per updated instruction — reverted to a
-  real toggle: Select All ⇄ Unselect All, with the toolbar button's label and the header checkbox both
-  flipping to show which action a click will perform next.
-- **Sale % was only ever shown in the homepage offers strip**, not the main product grid, product page,
-  cart, wishlist, or recently-viewed — a real gap flagged directly ("sales aren't getting updated here").
-  Fixed by extracting shared `getFeaturedSale()`/`applySale()` helpers in `js/01-config-data.js` and
-  applying them everywhere a price is displayed or charged, including at add-to-cart time so the charged
-  price always matches what was shown.
-- **Invisible text on the admin's red bulk-action bar** — `.bulk-sel-count`/`.bulk-btn` used `var(--orange)`
-  on a `#d20d17` background (two near-identical reds). Fixed with explicit white text. Separately diagnosed
-  a related but distinct bug class: some browsers' forced/auto dark mode re-inverts a page's *own* already-
-  dark colors when it hasn't declared a `color-scheme`, muddying contrast further. Added
-  `color-scheme:light` to the admin panel to fix this — then reverted that specific admin change at
-  explicit request ("reset everything, that was a mistake"). The same `color-scheme:light` fix was later
-  re-added, correctly this time, to the **storefront** (`index.html`) during the Lighthouse pass, since
-  it's a distinct, requested fix on a different page, not a re-application of the reverted one.
-- **User corrections on approach** (kept for context): initially misread "remove the banner/hero" as the
-  About section; initially removed the category grid entirely instead of adding banners alongside it.
-  Both corrected immediately once clarified.
+*(Earlier history retained — see prior version of this file / git log for the full pre-session list:
+category image path bug, `expert_photos` column mismatch, base64 image bloat, demo-product removal
+breaking three admin views, random stock-photo fallback, CSV parser breaking on quoted names,
+`document.write` cache-busting breaking under ad-blockers, `saveVariants()` overwriting other products'
+options, clipped inventory buttons, mobile product-modal layout break, unconfirmed bulk stock actions,
+GitHub Pages deployment lag, Select All behavior iterations, sale % gap outside the offers strip, invisible
+bulk-bar text + forced-dark-mode contrast. This session adds:)*
+- **Header search icon originally just scrolled the page down to the product grid's own search box and
+  focused it** — flagged directly as disorienting ("not take me above to the search bar"). Replaced with
+  an inline dropdown anchored in the header itself; typing mirrors into the real search input with zero
+  page scroll.
+- **Cart button sizing went through several iterations** (bigger → bigger again → narrower-but-taller →
+  finally a true circle matching WhatsApp's exact size) before landing on the final design — each round
+  was a direct, specific correction ("nope it's not same size," "make it 4x bigger" tempered to avoid
+  mobile overflow, then "same circle type just like whatsapp").
+- **Repeated `.git/index.lock` contention** from GitHub Desktop and/or other concurrent sessions touching
+  this same working directory at the same time as this one. Resolved each time by confirming no live
+  `git.exe` process was actually holding the lock (checked age + 0-byte size) before removing it — never
+  force-removed a lock without that check.
+- **Two real "both added" merge conflicts** on product-batch CSV files, from the `generate-seo` GitHub
+  Action / another session pushing the same product batch independently. Verified line-for-line identical
+  content on both sides before resolving (not a real disagreement to adjudicate).
+- **Google OAuth "Choose an account" screen still shows the raw Supabase domain instead of "Expert
+  Hardware"** despite branding (App name, logo, support email) being correctly set — traced via a live web
+  search to Google's standard behavior for apps still in unverified **Testing** publishing status, not a
+  config bug. Real fix is publishing to Production (see section 6).
+- **`sitemap.xml` showed "Couldn't fetch" in Search Console** despite the file being valid XML, reachable
+  (200 OK), correctly typed, robots.txt-correct, and fetchable even under Googlebot's own user-agent string
+  (tested directly). Concluded to be a Google-side processing-timing issue, not a real technical problem —
+  confirmed via the separate URL Inspection tool that (correctly) doesn't apply to sitemap files at all
+  (that mistake is noted so it isn't repeated: URL Inspection checks page-indexing status, not sitemap
+  fetchability, they're different Google systems).
+- **Google Cloud OAuth Branding verification says "the website of your home page URL is not registered to
+  you"** even though Search Console shows that exact URL-prefix property verified under the same Google
+  account — root cause not found yet (property-type mismatch suspected: URL-prefix vs. Domain property
+  scoping, since `robots.txt Report`/`Crawl Stats` are confirmed unavailable for this property type,
+  though that's a separate, expected limitation, not proven to be the same cause). Open item.
 
 ## 6) Next steps
-- **Featured Products isn't actually curated right now**: live `featured_offers` currently holds all 300
-  products (the full catalog), not a hand-picked homepage set — a consequence of Select All being used
-  before it became a real toggle (see section 5). The owner was asked and explicitly chose to leave it
-  this way for now rather than re-curate. Revisit if/when a smaller, hand-picked set is wanted.
-- **Products 301+**: not yet scraped; no explicit ask yet for a further batch.
-- **Google Search Console "Missing field image" validation**: the root cause (photos loading in a second,
-  delayed pass) is fixed and every product now has a complete image in its structured data from the first
-  render — but Google needs to *recrawl* before this shows as fixed in Search Console. Once it does,
-  re-run "Validate Fix" on that issue.
-- **Lighthouse performance items not attempted**: reducing unused CSS/JS, long-term cache-control headers,
-  and JS/CSS minification are the remaining line items from the audit, but they're hard to do safely on
-  GitHub Pages without introducing a build step, which this site intentionally doesn't have (plain
-  HTML/CSS/JS, no bundler). Re-run Lighthouse to confirm the Accessibility score improvement landed.
-- **`hasMerchantReturnPolicy`/shipping-cost structured data**: deliberately not added — doing so would mean
-  asserting a specific return-window day count or shipping fee that hasn't been confirmed with the owner,
-  which risks misrepresenting the store's actual policy rather than being a safe technical SEO tweak.
-- **RLS hardening applied (2026-07-18)**: `expert-hardware-rls-hardening.sql` tightened RLS across all
-  `expert_*` tables — see file header for full rationale. Real, verified improvements: `expert_orders`
-  now restricts `authenticated` (real signed-in customers, via the existing Supabase Auth system in
-  `js/05-accounts.js`) to their own rows only (closed an IDOR — previously any signed-in customer could
-  read/edit any order by id); `expert_analytics` no longer allows direct anon `INSERT`/`DELETE` (only the
-  now-`security definer` `increment_expert_analytics` RPC can write); `expert_reviews` and
-  `expert_settings` had their unused `UPDATE`/`DELETE` anon grants removed. All changes verified live via
-  direct REST calls (blocked writes confirmed via before/after row state, not just status codes — a plain
-  204 from Postgres doesn't distinguish "wrote" from "filtered to zero rows").
-  **Still unresolved, by explicit choice**: admin passwords remain stored in plaintext (hardcoded JS
-  constants and the `expert_admin_accounts` table) and are still readable via the public anon key, because
-  the admin panel has no real login/session distinct from any other anon visitor — the storefront and
-  admin panel share the exact same public API key. RLS structurally cannot fix this without also fixing
-  that (i.e. moving admin to real Supabase Auth), which was explicitly declined for now ("dont do supabase
-  auth") to avoid a bigger rework of the login flow and the owner-resets-team-passwords UX. Revisit if the
-  owner is ever open to a real admin auth system — until then this is the accepted residual risk.
-- **Supabase free-tier cold starts**: occasional first-request-after-idle delays (up to ~60s) are a
-  platform limitation, not a code bug. Only real fix is upgrading off the free tier — discussed, not
-  actioned.
-- **Ongoing discipline**: bump the baked-in `?v=` fallback timestamp constant in `index.html` and
-  `admin/index.html`, commit, push, and flush the Supabase cache on every change — this is now a standing,
-  pre-authorized workflow for this project (no need to ask before doing it each time).
+- **Google OAuth app is still in Testing publishing status** — real customers cannot use "Sign in with
+  Google" at all right now (capped at ~100 manually-allowlisted test accounts). Needs publishing to
+  Production via Google Auth Platform → Audience. Since only basic (non-sensitive) scopes are requested,
+  this likely doesn't need Google's full manual review, but hasn't been done yet.
+- **Google Cloud Branding verification blocker** ("home page URL not registered to you") is still
+  unresolved — worth a fresh look with Google's current docs/support before assuming it's the property-type
+  mismatch theory above.
+- **`sitemap.xml` "Couldn't fetch" status** — recheck the Sitemaps page (not URL Inspection) after it's had
+  a day or two; if it's still failing with no other error after that, that would be genuinely unusual and
+  worth escalating, but there was no actionable fix found as of this session.
+- **Featured Products still isn't actually curated** (holds the full catalog) — unchanged, owner's explicit
+  choice to leave as-is for now.
+- **Admin auth is still plaintext/anon-key-shared** — unchanged, accepted residual risk since a real fix
+  needs Supabase Auth for admin, which was explicitly declined this round.
+- **Email campaign system (admin/js/13-offers.js + the two edge functions) hasn't been deeply exercised**
+  by this session — worth a real test send before relying on it for actual customer communication.
+- **Products keep arriving in batches from ongoing scraping/import work** (300+ new products added just
+  during this session) — expect the live count in section 2 to already be stale by the time this is read;
+  re-verify with a live count query rather than trusting the written number.
+- **Concurrent work on this repo is the norm, not the exception** — the `generate-seo` GitHub Action alone
+  pushes commits independently of any Claude Code session. Always `git fetch` before pushing, and verify
+  file content (not just filenames) before treating anything as a real conflict.
+- **Lighthouse performance items** (unused CSS/JS reduction, cache-control headers, minification) — still
+  not attempted, still hard to do safely without introducing a build step this site intentionally doesn't
+  have.
+- **`hasMerchantReturnPolicy`/shipping-cost structured data** — still deliberately not added, would mean
+  asserting unconfirmed policy details.
+- **Standing workflow, still in effect**: bump the baked-in `?v=` fallback timestamp in `index.html` (only
+  one occurrence is load-bearing now — confirm both instances if `admin/index.html` also loads CSS/JS via
+  the same versioned pattern), commit, push, and flush the Supabase cache on every change that touches
+  JS/CSS/HTML — pre-authorized, no need to ask before doing it each time.
