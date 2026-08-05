@@ -100,13 +100,16 @@ async function initAuth() {
     // Silently refresh token (in background)
     _refreshSession(refresh);
     await loadUserProfile();
-  }
-  updateHeaderForAuth();
-  // Offers nudge is independent of sign-in status (being logged in doesn't
-  // mean subscribed to marketing emails) — shown once, 2.5s in, unless
-  // already dismissed or already subscribed via it.
-  if (!localStorage.getItem('jain_offers_nudge_dismissed')) {
-    setTimeout(showOffersNudge, 2500);
+    updateHeaderForAuth();
+  } else {
+    // Full-screen welcome modal (Sign In / Create Account, with the benefits
+    // list) — shown once, 2.5s in, unless already dismissed. Closing it any
+    // way (X, backdrop click, or completing sign-in) marks it seen so it
+    // never auto-pops again in this browser.
+    if (!localStorage.getItem('jain_welcome_modal_dismissed')) {
+      setTimeout(function() { openAuthModal('login'); }, 2500);
+    }
+    updateHeaderForAuth();
   }
 }
 
@@ -312,6 +315,7 @@ function openAuthModal(tab) {
 function closeAuthModal() {
   document.getElementById('authOverlay').classList.remove('open');
   _clearAuthMessages();
+  localStorage.setItem('jain_welcome_modal_dismissed', '1');
 }
 function switchAuthTab(tab) {
   document.getElementById('authLoginForm').style.display  = tab === 'login'  ? '' : 'none';
@@ -322,6 +326,8 @@ function switchAuthTab(tab) {
   // Show/hide tab buttons (hide them on forgot screen)
   document.getElementById('authTabLogin').style.display  = tab === 'forgot' ? 'none' : '';
   document.getElementById('authTabSignup').style.display = tab === 'forgot' ? 'none' : '';
+  var benefits = document.getElementById('authBenefits');
+  if (benefits) benefits.style.display = tab === 'forgot' ? 'none' : '';
   _clearAuthMessages();
 }
 function _clearAuthMessages() {

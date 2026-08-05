@@ -45,6 +45,9 @@
 .auth-tab { flex:1; padding:12px 8px; font-size:13px; font-weight:800; color:rgba(255,255,255,.4); background:none; border:none; cursor:pointer; border-bottom:3px solid transparent; transition:all .2s; font-family:inherit; text-transform:uppercase; letter-spacing:.5px; }
 .auth-tab.active { color:#fff; border-bottom-color:var(--orange); }
 .auth-body { padding:24px 22px 22px; }
+.auth-benefits { list-style:none; margin:0 0 20px; padding:14px 16px; background:#fff7ed; border-radius:10px; display:flex; flex-direction:column; gap:9px; }
+.auth-benefits li { display:flex; align-items:flex-start; gap:8px; font-size:12.5px; font-weight:700; color:#4a0000; line-height:1.4; }
+.auth-benefits .fa-check-circle { color:var(--orange); font-size:14px; margin-top:1px; flex-shrink:0; }
 .auth-field { margin-bottom:15px; }
 .auth-field label { display:block; font-size:11px; font-weight:800; color:#666; text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; }
 .auth-field input { width:100%; padding:12px 14px; border:1.5px solid #e2e8f0; border-radius:9px; font-size:14px; font-family:inherit; outline:none; transition:border-color .2s; box-sizing:border-box; }
