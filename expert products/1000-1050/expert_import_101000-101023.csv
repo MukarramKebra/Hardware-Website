@@ -1,0 +1,25 @@
+id,sku,name,category,price,brand,stock,image
+101000,PRS-43220,ROLLER SLEEVES OIL 4″,paint-tool,0.4,Generic,100,1000-1050/roller-sleeves-oil-4.jpg
+101001,PRS-45021,ROLLER SLEEVES EMUL 4″,paint-tool,0.45,Generic,100,1000-1050/roller-sleeves-emul-4.jpg
+101002,PRO-45242,RADIATOR ROLLER OIL 4″,paint-tool,1.65,Generic,100,1000-1050/radiator-roller-oil-4.jpg
+101003,PEM-47522,RADIATOR ROLLER EMUL. 4″,paint-tool,1.65,Generic,100,1000-1050/radiator-roller-emul-4.jpg
+101004,POR-4352,RAINBOW OIL 4″ RETAIL,paint-tool,1.8,Rainbow,100,1000-1050/rainbow-oil-4-retail.jpg
+101005,POL-66532,RAINBOW OIL 6″,paint-tool,2.5,Rainbow,100,1000-1050/rainbow-oil-6.jpg
+101006,POL-92532,RAINBOW OIL 9″,paint-tool,2.7,Rainbow,100,1000-1050/rainbow-oil-9.jpg
+101007,PER-48323,EMULSION RAINBOW 4″,paint-tool,1.75,Rainbow,100,1000-1050/emulsion-rainbow-4.jpg
+101008,PER-69325,EMULSION RAINBOW 6″,paint-tool,2.95,Rainbow,100,1000-1050/emulsion-rainbow-6.jpg
+101009,PES-96325,EMULSION ITRUST  9″,paint-tool,3.5,Itrust,100,1000-1050/emulsion-itrust-9.jpg
+101010,POL-10552,EMULSION DEER 10″,paint-tool,3.2,Deer,100,1000-1050/emulsion-deer-10.jpg
+101011,693CLD-CYLNDR NLY,RETAIL-CYLINDER 693 CLD ONLY,door-handle,12,Generic,100,1000-1050/retail-cylinder-693-cld-only.jpg
+101012,693 LD,LOCK 693 LD,door-handle,1.05,Generic,100,1000-1050/lock-693-ld.jpg
+101013,693 SS,LOCK 693 SS,door-handle,0.72,Generic,100,1000-1050/lock-693-ss.jpg
+101014,693CLD LK BDY,RETAIL-LOCK 693 CLD,door-handle,2.1,Generic,100,1000-1050/retail-lock-693-cld.jpg
+101015,L CORNER,L CORNER,hardware,1.25,Generic,100,1000-1050/l-corner.jpg
+101016,CHF,CHISEL GRIP FLAT,gardening,4.2,Generic,100,1000-1050/chisel-grip-flat.jpg
+101017,CHP,CHISEL GRIP POINT,gardening,4.05,Generic,100,1000-1050/chisel-grip-point.jpg
+101018,SRD-84236,GO-THRU SCR DRVR 8″,hand-tools,3.25,Generic,100,1000-1050/go-thru-scr-drvr-8.jpg
+101019,SCD-6322,SCREWDRIVER PHILLIPS 6″,hand-tools,2.1,Generic,100,1000-1050/screwdriver-phillips-6.jpg
+101020,SCP-65232,SCREWDRIVER SLOTTED 6″,hand-tools,2.1,Generic,100,1000-1050/screwdriver-slotted-6.jpg
+101021,SCL-532022,SILICONE GUN,hand-tools,3.75,Generic,100,1000-1050/silicone-gun.jpg
+101022,ADJUSTABLE SPANNER,ADJUSTABLE SPANNER,hand-tools,4.8,Generic,100,1000-1050/adjustable-spanner.jpg
+101023,BLACK WRENCH,BLACK WRENCH,hand-tools,0.7,Generic,100,1000-1050/black-wrench.jpg
