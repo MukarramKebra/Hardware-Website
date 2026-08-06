@@ -365,7 +365,8 @@ async function doAuthSignup() {
   const pass  = document.getElementById('authSignupPass').value;
   _clearAuthMessages();
   if (!email || !pass) { _showAuthErr('Please enter your email and password.'); return; }
-  if (pass.length < 6)  { _showAuthErr('Password must be at least 6 characters.'); return; }
+  if (pass.length < 8) { _showAuthErr('Password must be at least 8 characters.'); return; }
+  if (!/[a-zA-Z]/.test(pass) || !/[0-9]/.test(pass)) { _showAuthErr('Password must include both letters and numbers.'); return; }
   const consent = document.getElementById('authSignupConsent');
   if (consent && !consent.checked) { _showAuthErr('Please accept the Terms & Conditions to create an account.'); return; }
   const btn = document.getElementById('authSignupBtn');

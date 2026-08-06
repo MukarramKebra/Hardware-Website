@@ -2,10 +2,7 @@
 // doLogin()    — runs when the login form is submitted
 // showAdmin()  — hides login screen, shows the main admin panel
 // logout()     — clears the session and returns to login screen
-// Populate forgot-password overlay with current credentials
-var _fpu = document.getElementById('fpUser'); if (_fpu) _fpu.textContent = ADMIN_USER;
-var _fpp = document.getElementById('fpPass'); if (_fpp) _fpp.textContent = ADMIN_PASS;
-// Also ensure owner-only rows are visible by default (will be hidden if bahar15 logs in)
+// Ensure owner-only rows are visible by default (will be hidden if bahar15 logs in)
 document.querySelectorAll('.owner-only-row').forEach(function(el){ el.style.display = ''; });
 
 async function doLogin(e) {
