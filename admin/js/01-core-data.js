@@ -75,19 +75,19 @@ const DEFAULT_CATS = [
   { slug:'plumbing-fitting', label:'Fittings' },
   { slug:'sanitary',         label:'Sanitary Ware' },
   { slug:'filter',           label:'Filters' },
-  // Admin-only category for non-purchasable/placeholder entries (e.g. items
-  // scraped from a source catalog that aren't real products). Never appears
-  // on the storefront — index.html's category grid/nav/pills don't reference
-  // it — but it's a normal filterable category here, and products in it are
-  // excluded from the low/out-of-stock alerts (see renderStats).
+    // Admin-only category for non-purchasable/placeholder entries (e.g. items
+    // scraped from a source catalog that aren't real products). Never appears
+    // on the storefront — index.html's category grid/nav/pills don't reference
+    // it — but it's a normal filterable category here, and products in it are
+    // excluded from the low/out-of-stock alerts (see renderStats).
   { slug:'hidden',           label:'Hidden' }
-];
+  ];
 
 // ── SUPABASE FETCH WRAPPER ─────────────────────────────────────────────────────
 // encodeHtml — converts special characters so text is safe to show inside HTML
 //              e.g. prevents product names with < or > from breaking the page
 function encodeHtml(s) {
-  // The straight double quote (") matters most here — product names use it
+    // The straight double quote (") matters most here — product names use it
   // for inch sizes (2" nails) and an unescaped one ends an HTML attribute
   // early, silently truncating the value
   return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/”/g,'&#8221;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -95,14 +95,35 @@ function encodeHtml(s) {
 // sbFetch — the main function used for ALL database calls (get, add, update, delete)
 //           Always returns { data, error } so we can check if it worked
 async function sbFetch(url, options) {
-  try {
-    const res  = await fetch(url, options);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) return { data: null, error: (data && (data.error || data.message)) || ('HTTP ' + res.status) };
-    return { data, error: null };
-  } catch (e) {
-    return { data: null, error: e.message };
-  }
+    try {
+          const res  = await fetch(url, options);
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) return { data: null, error: (data && (data.error || data.message)) || ('HTTP ' + res.status) };
+          return { data, error: null };
+    } catch (e) {
+          return { data: null, error: e.message };
+    }
+}
+
+// Supabase's PostgREST caps any unpaginated "select=*" query at 1000 rows.
+// The catalog just crossed 1000 products, so a plain sbFetch() on
+// expert_products/expert_stock/etc silently truncates — newest rows go
+// missing with no error. Pages through with limit/offset until a page comes
+// back short; same { data, error } shape as sbFetch() so call sites don't change.
+async function sbFetchAll(baseUrl, headers) {
+    const pageSize = 1000;
+    let offset = 0;
+    let all = [];
+    while (true) {
+          const sep = baseUrl.includes('?') ? '&' : '?';
+          const { data, error } = await sbFetch(baseUrl + sep + 'limit=' + pageSize + '&offset=' + offset, { headers });
+          if (error) return { data: null, error };
+          if (!Array.isArray(data)) return { data, error: null };
+          all = all.concat(data);
+          if (data.length < pageSize) break;
+          offset += pageSize;
+    }
+    return { data: all, error: null };
 }
 
 // U  = placeholder image URL (used when a product has no real photo uploaded yet)
@@ -121,95 +142,95 @@ let _hiddenBaseIds     = new Set(); // IDs of base products that have been hidde
 // Supabase auto-increment starts at 1, which conflicts with base product IDs 1-60.
 // This function detects conflicts and re-inserts custom products with safe IDs (1001+).
 async function _fixCustomProductIds() {
-  const BASE_MAX = 60; // all custom products will get IDs > 60
+    const BASE_MAX = 60; // all custom products will get IDs > 60
   const baseNames = new Set(PRODUCTS.map(function(p){ return p.name.toLowerCase().trim(); }));
-  const baseIds   = new Set(PRODUCTS.map(function(p){ return p.id; }));
+    const baseIds   = new Set(PRODUCTS.map(function(p){ return p.id; }));
 
   const conflicts = _customProductRows.filter(function(r){ return r.id <= BASE_MAX; });
-  if (!conflicts.length) return; // nothing to fix
+    if (!conflicts.length) return; // nothing to fix
 
   console.log('[ID Fix] Resolving', conflicts.length, 'conflicting custom product IDs...');
-  showToast('Fixing product IDs…');
+    showToast('Fixing product IDs…');
 
   // Current max safe ID already in use
   // Next safe ID = max of all product IDs + 1 (sequential, no gap-filling)
   var allIds = PRODUCTS.map(function(p){return p.id;})
-    .concat(_customProductRows.map(function(r){return r.id;}));
-  var maxSafeId = allIds.reduce(function(m,id){return Math.max(m,id);}, BASE_MAX);
+      .concat(_customProductRows.map(function(r){return r.id;}));
+    var maxSafeId = allIds.reduce(function(m,id){return Math.max(m,id);}, BASE_MAX);
 
   for (var i = 0; i < conflicts.length; i++) {
-    var p = conflicts[i];
-    var isTrueDupe = baseIds.has(p.id) && baseNames.has((p.name||'').toLowerCase().trim());
+        var p = conflicts[i];
+        var isTrueDupe = baseIds.has(p.id) && baseNames.has((p.name||'').toLowerCase().trim());
 
-    // 1. Delete old entry from Supabase
-    await sbFetch(SB_URL + '/rest/v1/expert_products?id=eq.' + p.id, { method:'DELETE', headers:SB_HDRS });
-    // Also clean up orphaned stock/photos for old ID
-    await sbFetch(SB_URL + '/rest/v1/expert_stock?product_id=eq.' + p.id, { method:'DELETE', headers:SB_HDRS });
+      // 1. Delete old entry from Supabase
+      await sbFetch(SB_URL + '/rest/v1/expert_products?id=eq.' + p.id, { method:'DELETE', headers:SB_HDRS });
+        // Also clean up orphaned stock/photos for old ID
+      await sbFetch(SB_URL + '/rest/v1/expert_stock?product_id=eq.' + p.id, { method:'DELETE', headers:SB_HDRS });
 
-    // Remove from local array
-    var idx = _customProductRows.findIndex(function(r){ return r.id === p.id; });
-    if (idx >= 0) _customProductRows.splice(idx, 1);
+      // Remove from local array
+      var idx = _customProductRows.findIndex(function(r){ return r.id === p.id; });
+        if (idx >= 0) _customProductRows.splice(idx, 1);
 
-    if (isTrueDupe) {
-      console.log('[ID Fix] Deleted true duplicate:', p.name, '(was ID', p.id + ')');
-      continue; // don't re-insert — it's a copy of a base product
-    }
-
-    // 2. Re-insert with a safe ID > 1000
-    maxSafeId += 1;
-    var payload = {
-      id: maxSafeId,
-      name: p.name,
-      category: p.category,
-      price: p.price,
-      description: p.description || '',
-      badge: p.badge || null,
-      img_url: p.img_url || '',
-      hidden: p.hidden || false
-    };
-    var result = await sbFetch(SB_URL + '/rest/v1/expert_products', {
-      method: 'POST',
-      headers: Object.assign({}, SB_HDRS, {'Prefer':'return=representation'}),
-      body: JSON.stringify([payload])
-    });
-    if (result.data && result.data[0]) {
-      _customProductRows.push(result.data[0]);
-      // Migrate stock to new ID
-      var oldQty = stockData[p.id] || 50;
-      stockData[result.data[0].id] = oldQty;
-      await sbFetch(SB_URL + '/rest/v1/expert_stock', {
-        method: 'POST',
-        headers: Object.assign({}, SB_HDRS, {'Prefer':'resolution=merge-duplicates'}),
-        body: JSON.stringify([{ product_id: result.data[0].id, qty: oldQty }])
-      });
-      // Migrate photo to new ID
-      var oldPhoto = null;
-      try { var ph = JSON.parse(localStorage.getItem('jain_photos')||'{}'); oldPhoto = ph[String(p.id)]||null; } catch(_){}
-      if (oldPhoto) {
-        sbFetch(SB_URL + '/rest/v1/expert_photos', {
-          method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
-          body:JSON.stringify([{product_id:result.data[0].id, img_url:oldPhoto}])
-        });
-        // Update localStorage photo key
-        try {
-          var ph2 = JSON.parse(localStorage.getItem('jain_photos')||'{}');
-          ph2[String(result.data[0].id)] = oldPhoto;
-          delete ph2[String(p.id)];
-          localStorage.setItem('jain_photos', JSON.stringify(ph2));
-        } catch(_){}
+      if (isTrueDupe) {
+              console.log('[ID Fix] Deleted true duplicate:', p.name, '(was ID', p.id + ')');
+              continue; // don't re-insert — it's a copy of a base product
       }
-      console.log('[ID Fix] Moved', p.name, 'from ID', p.id, '→', result.data[0].id);
-    } else {
-      console.warn('[ID Fix] Failed to re-insert', p.name, result.error);
-    }
+
+      // 2. Re-insert with a safe ID > 1000
+      maxSafeId += 1;
+        var payload = {
+                id: maxSafeId,
+                name: p.name,
+                category: p.category,
+                price: p.price,
+                description: p.description || '',
+                badge: p.badge || null,
+                img_url: p.img_url || '',
+                hidden: p.hidden || false
+        };
+        var result = await sbFetch(SB_URL + '/rest/v1/expert_products', {
+                method: 'POST',
+                headers: Object.assign({}, SB_HDRS, {'Prefer':'return=representation'}),
+                body: JSON.stringify([payload])
+        });
+        if (result.data && result.data[0]) {
+                _customProductRows.push(result.data[0]);
+                // Migrate stock to new ID
+          var oldQty = stockData[p.id] || 50;
+                stockData[result.data[0].id] = oldQty;
+                await sbFetch(SB_URL + '/rest/v1/expert_stock', {
+                          method: 'POST',
+                          headers: Object.assign({}, SB_HDRS, {'Prefer':'resolution=merge-duplicates'}),
+                          body: JSON.stringify([{ product_id: result.data[0].id, qty: oldQty }])
+                });
+                // Migrate photo to new ID
+          var oldPhoto = null;
+                try { var ph = JSON.parse(localStorage.getItem('jain_photos')||'{}'); oldPhoto = ph[String(p.id)]||null; } catch(_){}
+                if (oldPhoto) {
+                          sbFetch(SB_URL + '/rest/v1/expert_photos', {
+                                      method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'resolution=merge-duplicates'}),
+                                      body:JSON.stringify([{product_id:result.data[0].id, img_url:oldPhoto}])
+                          });
+                          // Update localStorage photo key
+                  try {
+                              var ph2 = JSON.parse(localStorage.getItem('jain_photos')||'{}');
+                              ph2[String(result.data[0].id)] = oldPhoto;
+                              delete ph2[String(p.id)];
+                              localStorage.setItem('jain_photos', JSON.stringify(ph2));
+                  } catch(_){}
+                }
+                console.log('[ID Fix] Moved', p.name, 'from ID', p.id, '→', result.data[0].id);
+        } else {
+                console.warn('[ID Fix] Failed to re-insert', p.name, result.error);
+        }
   }
-  if (conflicts.length) showToast('Products fixed ✓');
-  // NOTE: No second pass — IDs do not need to be sequential. Non-sequential gaps are fine.
+    if (conflicts.length) showToast('Products fixed ✓');
+    // NOTE: No second pass — IDs do not need to be sequential. Non-sequential gaps are fine.
 }
 
 async function loadFromSupabase() {
-  showToast('Loading from cloud…');
-  // Photos (expert_photos) carries every product's full image as base64 —
+    showToast('Loading from cloud…');
+    // Photos (expert_photos) carries every product's full image as base64 —
   // several MB total — and Supabase's free tier can take up to a minute to
   // respond on its first request after being idle-paused. Fetching it inside
   // this same Promise.all meant the ENTIRE inventory table sat blank until
@@ -217,109 +238,109 @@ async function loadFromSupabase() {
   // It's now fetched separately below so the table renders immediately;
   // thumbnails fill in once photos are ready.
   const [s, c, h, cb, sk, bm, mc, ia, pk, hp, ql, vr] = await Promise.all([
-    sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',          { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_products?select=*',       { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',{ headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',    { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value',  { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value', { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.ignored_alerts&select=value', { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_variants&select=value', { headers: SB_HDRS })
-  ]);
-  // Size/pack options per product (shared with the storefront via expert_settings)
+        sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',          SB_HDRS),
+        sbFetchAll(SB_URL + '/rest/v1/expert_products?select=*',       SB_HDRS),
+        sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id',SB_HDRS),
+        sbFetchAll(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        SB_HDRS),
+        sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',    { headers: SB_HDRS }),
+        sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value',  { headers: SB_HDRS }),
+        sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value', { headers: SB_HDRS }),
+        sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.ignored_alerts&select=value', { headers: SB_HDRS }),
+        sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_HDRS }),
+        sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_HDRS }),
+        sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_HDRS }),
+        sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_variants&select=value', { headers: SB_HDRS })
+      ]);
+    // Size/pack options per product (shared with the storefront via expert_settings)
   if (!vr.error && Array.isArray(vr.data) && vr.data[0] && vr.data[0].value) {
-    try { window._sbVariants = JSON.parse(vr.data[0].value) || {}; } catch(e) {}
+        try { window._sbVariants = JSON.parse(vr.data[0].value) || {}; } catch(e) {}
   }
-  // Real SKU labels (shared with the storefront via expert_settings)
+    // Real SKU labels (shared with the storefront via expert_settings)
   if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
-    try {
-      window._sbSkuMap = JSON.parse(sk.data[0].value) || {};
-      localStorage.setItem('jain_sku_map', JSON.stringify(window._sbSkuMap));
-    } catch(e) {}
+        try {
+                window._sbSkuMap = JSON.parse(sk.data[0].value) || {};
+                localStorage.setItem('jain_sku_map', JSON.stringify(window._sbSkuMap));
+        } catch(e) {}
   }
-  // Brand labels (shared with the storefront via expert_settings)
+    // Brand labels (shared with the storefront via expert_settings)
   if (!bm.error && Array.isArray(bm.data) && bm.data[0] && bm.data[0].value) {
-    try { window._sbBrandMap = JSON.parse(bm.data[0].value) || {}; } catch(e) {}
+        try { window._sbBrandMap = JSON.parse(bm.data[0].value) || {}; } catch(e) {}
   }
-  // Extra category assignments (shared with the storefront via expert_settings)
+    // Extra category assignments (shared with the storefront via expert_settings)
   if (!mc.error && Array.isArray(mc.data) && mc.data[0] && mc.data[0].value) {
-    try {
-      window._sbMultiCats = JSON.parse(mc.data[0].value) || {};
-      localStorage.setItem('bahar_multi_cats', JSON.stringify(window._sbMultiCats));
-    } catch(e) {}
+        try {
+                window._sbMultiCats = JSON.parse(mc.data[0].value) || {};
+                localStorage.setItem('bahar_multi_cats', JSON.stringify(window._sbMultiCats));
+        } catch(e) {}
   }
-  // Ignored low/out-of-stock alerts (see ignoreAlert() in 07-orders.js)
+    // Ignored low/out-of-stock alerts (see ignoreAlert() in 07-orders.js)
   if (!ia.error && Array.isArray(ia.data) && ia.data[0] && ia.data[0].value) {
-    try { window._sbIgnoredAlerts = JSON.parse(ia.data[0].value) || {}; } catch(e) {}
+        try { window._sbIgnoredAlerts = JSON.parse(ia.data[0].value) || {}; } catch(e) {}
   }
-  // Per-product SEO keywords (shared with the storefront via expert_settings)
+    // Per-product SEO keywords (shared with the storefront via expert_settings)
   if (!pk.error && Array.isArray(pk.data) && pk.data[0] && pk.data[0].value) {
-    try { window._sbProductKeywords = JSON.parse(pk.data[0].value) || {}; } catch(e) {}
+        try { window._sbProductKeywords = JSON.parse(pk.data[0].value) || {}; } catch(e) {}
   }
-  // Per-product min/max order quantity (see getQtyLimits() in 08-inventory.js)
+    // Per-product min/max order quantity (see getQtyLimits() in 08-inventory.js)
   if (!ql.error && Array.isArray(ql.data) && ql.data[0] && ql.data[0].value) {
-    try { window._sbQtyLimits = JSON.parse(ql.data[0].value) || {}; } catch(e) {}
+        try { window._sbQtyLimits = JSON.parse(ql.data[0].value) || {}; } catch(e) {}
   }
-  // Manually hidden prices (see togglePriceHidden() in 07-orders.js)
+    // Manually hidden prices (see togglePriceHidden() in 07-orders.js)
   if (!hp.error && Array.isArray(hp.data) && hp.data[0] && hp.data[0].value) {
-    try { window._sbPriceHidden = JSON.parse(hp.data[0].value) || {}; } catch(e) {}
+        try { window._sbPriceHidden = JSON.parse(hp.data[0].value) || {}; } catch(e) {}
   }
-  // Category backgrounds
+    // Category backgrounds
   if (!cb.error && Array.isArray(cb.data)) {
-    var catBgs = {};
-    try { catBgs = JSON.parse(localStorage.getItem('jain_cat_bgs') || '{}'); } catch(e) {}
-    cb.data.forEach(function(r) { if (r.slug && r.img_url) catBgs[r.slug] = r.img_url; });
-    localStorage.setItem('jain_cat_bgs', JSON.stringify(catBgs));
+        var catBgs = {};
+        try { catBgs = JSON.parse(localStorage.getItem('jain_cat_bgs') || '{}'); } catch(e) {}
+        cb.data.forEach(function(r) { if (r.slug && r.img_url) catBgs[r.slug] = r.img_url; });
+        localStorage.setItem('jain_cat_bgs', JSON.stringify(catBgs));
   }
 
   // Stock
   if (s.error) {
-    console.warn('Stock load failed:', s.error);
-    showToast('Offline — using local data');
+        console.warn('Stock load failed:', s.error);
+        showToast('Offline — using local data');
   } else if (Array.isArray(s.data)) {
-    s.data.forEach(function(r) { stockData[r.product_id] = r.qty; });
-    localStorage.setItem('jain_stock', JSON.stringify(stockData));
+        s.data.forEach(function(r) { stockData[r.product_id] = r.qty; });
+        localStorage.setItem('jain_stock', JSON.stringify(stockData));
   }
 
   // Custom products
   if (c.error) {
-    console.warn('Products load failed:', c.error);
+        console.warn('Products load failed:', c.error);
   } else if (Array.isArray(c.data)) {
-    _customProductRows = c.data;
-    // Fix any conflicting IDs (Supabase auto-increment starts at 1, conflicts with base IDs 1-60)
-    await _fixCustomProductIds();
-    console.log('Custom products ready:', _customProductRows.length);
+        _customProductRows = c.data;
+        // Fix any conflicting IDs (Supabase auto-increment starts at 1, conflicts with base IDs 1-60)
+      await _fixCustomProductIds();
+        console.log('Custom products ready:', _customProductRows.length);
   }
 
   // Hidden base products
   if (h.error) {
-    console.warn('Hidden list load failed:', h.error);
+        console.warn('Hidden list load failed:', h.error);
   } else if (Array.isArray(h.data)) {
-    _hiddenBaseIds = new Set(h.data.map(function(r) { return r.product_id; }));
+        _hiddenBaseIds = new Set(h.data.map(function(r) { return r.product_id; }));
   }
 
   if (!s.error) showToast('Loaded from cloud ☁️');
 
   try {
-    refreshCategorySelects(); renderStats(); renderTable();
+        refreshCategorySelects(); renderStats(); renderTable();
   } catch(err) {
-    console.error('Admin render error:', err);
-    document.getElementById('tblBody').innerHTML = '<tr><td colspan="8" style="color:red;padding:20px;font-weight:700;font-size:13px">&#9888; RENDER ERROR: ' + err.message + '</td></tr>';
+        console.error('Admin render error:', err);
+        document.getElementById('tblBody').innerHTML = '<tr><td colspan="8" style="color:red;padding:20px;font-weight:700;font-size:13px">&#9888; RENDER ERROR: ' + err.message + '</td></tr>';
   }
 
   // Photos load separately and re-render once ready (see comment above) —
   // the table above already shows real names/prices/stock immediately.
-  sbFetch(SB_URL + '/rest/v1/expert_photos?select=*', { headers: SB_HDRS }).then(function(p) {
-    if (Array.isArray(p.data)) {
-      const ph = JSON.parse(localStorage.getItem('jain_photos') || '{}');
-      p.data.forEach(function(r) { ph[r.product_id] = r.img_url; });
-      localStorage.setItem('jain_photos', JSON.stringify(ph));
-      renderTable();
-    }
+  sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=*', SB_HDRS).then(function(p) {
+        if (Array.isArray(p.data)) {
+                const ph = JSON.parse(localStorage.getItem('jain_photos') || '{}');
+                p.data.forEach(function(r) { ph[r.product_id] = r.img_url; });
+                localStorage.setItem('jain_photos', JSON.stringify(ph));
+                renderTable();
+        }
   });
 
   checkAssetVersion();
@@ -331,45 +352,44 @@ async function loadFromSupabase() {
 // (expert_asset_v, same origin as the storefront), so bumping it from
 // Flush Cache refreshes the admin panel's own JS/CSS too.
 function checkAssetVersion() {
-  sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.asset_version&select=value', { headers: SB_HDRS }).then(function(r) {
-    if (r.error || !r.data || !r.data[0] || !r.data[0].value) return;
-    var serverV = r.data[0].value;
-    var localV  = localStorage.getItem('expert_asset_v');
-    if (!localV) { localStorage.setItem('expert_asset_v', serverV); return; }
-    if (serverV !== localV) {
-      localStorage.setItem('expert_asset_v', serverV);
-      window.location.reload();
-    }
-  });
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.asset_version&select=value', { headers: SB_HDRS }).then(function(r) {
+          if (r.error || !r.data || !r.data[0] || !r.data[0].value) return;
+          var serverV = r.data[0].value;
+          var localV  = localStorage.getItem('expert_asset_v');
+          if (!localV) { localStorage.setItem('expert_asset_v', serverV); return; }
+          if (serverV !== localV) {
+                  localStorage.setItem('expert_asset_v', serverV);
+                  window.location.reload();
+          }
+    });
 }
 
 // Old built-in category slugs -> the Expert Hardware category set
 // (keeps the base catalogue filterable after the category change)
 var _OLD_CAT_MAP = {
-  'power-tools':'tools', 'fasteners':'fastener', 'measuring':'hand-tools',
-  'cutting':'hand-tools', 'accessories':'hardware', 'storage':'hardware'
+    'power-tools':'tools', 'fasteners':'fastener', 'measuring':'hand-tools',
+    'cutting':'hand-tools', 'accessories':'hardware', 'storage':'hardware'
 };
 function normalizeAdminCat(c) { return _OLD_CAT_MAP[c] || c; }
 
 // Merged list of all products (base + custom)
 function getAllAdminProducts() {
-  var deletedIds = new Set(getDeletedProducts().map(function(d){return d.id;}));
-  var baseIds    = new Set(PRODUCTS.map(function(p){return p.id;}));  // IDs 1-60 are authoritative
+    var deletedIds = new Set(getDeletedProducts().map(function(d){return d.id;}));
+    var baseIds    = new Set(PRODUCTS.map(function(p){return p.id;}));  // IDs 1-60 are authoritative
   const base = PRODUCTS
-    .filter(function(p){ return !deletedIds.has(p.id); })
+      .filter(function(p){ return !deletedIds.has(p.id); })
+      .map(function(p) {
+              return { id:p.id, name:p.name, cat:normalizeAdminCat(p.cat), price:p.price, img:p.img, desc:p.desc||'', isBase:true, hidden:_hiddenBaseIds.has(p.id) };
+      });
+    const custom = _customProductRows
+      .filter(function(p){ return !deletedIds.has(p.id) && !baseIds.has(p.id); }) // skip Supabase dupes of base IDs
     .map(function(p) {
-      return { id:p.id, name:p.name, cat:normalizeAdminCat(p.cat), price:p.price, img:p.img, desc:p.desc||'', isBase:true, hidden:_hiddenBaseIds.has(p.id) };
+            return { id:p.id, name:p.name, cat:normalizeAdminCat(p.category), price:parseFloat(p.price), img:p.img_url||'', desc:p.description||'', isBase:false, hidden:p.hidden||false };
     });
-  const custom = _customProductRows
-    .filter(function(p){ return !deletedIds.has(p.id) && !baseIds.has(p.id); }) // skip Supabase dupes of base IDs
-    .map(function(p) {
-      return { id:p.id, name:p.name, cat:normalizeAdminCat(p.category), price:parseFloat(p.price), img:p.img_url||'', desc:p.description||'', isBase:false, hidden:p.hidden||false };
-    });
-  return [...base, ...custom].sort(function(a,b){return a.id-b.id;});
+    return [...base, ...custom].sort(function(a,b){return a.id-b.id;});
 }
 
 const PRODUCTS = [];
 
 // Brand for each built-in product (random); overridable per-product in the admin table
 const BASE_BRANDS = {};
-
