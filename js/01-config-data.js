@@ -7,7 +7,7 @@ const UL  = (id) => `Bahar-Products/SKU-${String(id).padStart(4,'0')}.jpg`;  // 
 (async function checkSiteStatus() {
   try {
     const SB_URL_CHK = 'https://qhebhvllkovfbkqrcnmm.supabase.co';
-    const SB_KEY_CHK = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5Gb1pXSm9kbXhzYTI5MlptSnJjWEpqYm0xdElpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpZd05UZ3dNVGtzSW1WNGNDSTZNakE1TVRZek5EQXhPWDAuQVFsNVdBQjFfbWEzemNya1c0TkZLazZvQ0tCVWxUdGhENjh1amNTbG5hcw==');
+    const SB_KEY_CHK = atob('c2JfcHVibGlzaGFibGVfakN3cnAteTE2VFdWblg4QWszcjFtd19laEtBU2lwZA==');
     const res = await fetch(SB_URL_CHK + '/rest/v1/expert_settings?key=eq.site_disabled&select=value', {
       headers: { 'apikey': SB_KEY_CHK, 'Authorization': 'Bearer ' + SB_KEY_CHK }
     });
@@ -42,7 +42,7 @@ const UL  = (id) => `Bahar-Products/SKU-${String(id).padStart(4,'0')}.jpg`;  // 
 (async function applySEOSettings() {
   try {
     const SB_URL_CHK = 'https://qhebhvllkovfbkqrcnmm.supabase.co';
-    const SB_KEY_CHK = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5Gb1pXSm9kbXhzYTI5MlptSnJjWEpqYm0xdElpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpZd05UZ3dNVGtzSW1WNGNDSTZNakE1TVRZek5EQXhPWDAuQVFsNVdBQjFfbWEzemNya1c0TkZLazZvQ0tCVWxUdGhENjh1amNTbG5hcw==');
+    const SB_KEY_CHK = atob('c2JfcHVibGlzaGFibGVfakN3cnAteTE2VFdWblg4QWszcjFtd19laEtBU2lwZA==');
     const res = await fetch(SB_URL_CHK + '/rest/v1/expert_settings?key=eq.seo_settings&select=value', {
       headers: { 'apikey': SB_KEY_CHK, 'Authorization': 'Bearer ' + SB_KEY_CHK }
     });
@@ -90,7 +90,7 @@ function getProductSku(id) {
 
 // ── SUPABASE CONFIG ───────────────────────────────────────────────────────
 const SB_URL = 'https://qhebhvllkovfbkqrcnmm.supabase.co';
-const SB_KEY = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5Gb1pXSm9kbXhzYTI5MlptSnJjWEpqYm0xdElpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpZd05UZ3dNVGtzSW1WNGNDSTZNakE1TVRZek5EQXhPWDAuQVFsNVdBQjFfbWEzemNya1c0TkZLazZvQ0tCVWxUdGhENjh1amNTbG5hcw==');
+const SB_KEY = atob('c2JfcHVibGlzaGFibGVfakN3cnAteTE2VFdWblg4QWszcjFtd19laEtBU2lwZA==');
 const SB_H   = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 
 // ── SUPABASE FETCH WRAPPER ────────────────────────────────────────────────
@@ -104,6 +104,28 @@ async function sbFetch(url, options) {
   } catch (e) {
     return { data: null, error: e.message };
   }
+}
+
+// Supabase's PostgREST caps any unpaginated "select=*" query at 1000 rows by
+// default. The catalog just crossed 1000 products, so a plain sbFetch() on
+// expert_products/expert_stock/etc silently truncates — newest rows go
+// missing from the live site with no error. sbFetchAll() pages through with
+// limit/offset until a page comes back short, and returns the same
+// { data, error } shape as sbFetch() so every existing call site keeps working.
+async function sbFetchAll(baseUrl, headers) {
+  const pageSize = 1000;
+  let offset = 0;
+  let all = [];
+  while (true) {
+    const sep = baseUrl.includes('?') ? '&' : '?';
+    const { data, error } = await sbFetch(baseUrl + sep + 'limit=' + pageSize + '&offset=' + offset, { headers });
+    if (error) return { data: null, error };
+    if (!Array.isArray(data)) return { data, error: null };
+    all = all.concat(data);
+    if (data.length < pageSize) break;
+    offset += pageSize;
+  }
+  return { data: all, error: null };
 }
 
 // Live data loaded from Supabase (falls back to localStorage if offline)
@@ -156,20 +178,20 @@ async function loadSBData() {
   try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
 
   const [s, c, h, b, sk, bm, mc, pk, hp, ql, ph, vr, fo, rv] = await Promise.all([
-    sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',                         { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_products?select=*',                        { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',               { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc',          { headers: SB_H }),
+    sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',                         SB_H),
+    sbFetchAll(SB_URL + '/rest/v1/expert_products?select=*',                        SB_H),
+    sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id',               SB_H),
+    sbFetchAll(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc',          SB_H),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',   { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value', { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value',{ headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_photos?select=*',                        { headers: SB_H }),
+    sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=*',                        SB_H),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_variants&select=value', { headers: SB_H }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_reviews?select=product_id,rating',   { headers: SB_H })
+    sbFetchAll(SB_URL + '/rest/v1/expert_reviews?select=product_id,rating',   SB_H)
   ]);
   if (!vr.error && Array.isArray(vr.data) && vr.data[0] && vr.data[0].value) {
     try { window._sbVariants = JSON.parse(vr.data[0].value) || {}; } catch(e) {}

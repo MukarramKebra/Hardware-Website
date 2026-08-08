@@ -53,7 +53,7 @@ const MANAGER_PASS  = 'Kuw963258';   // Manager password
 // SB_KEY  = the access key (like a password to talk to the database — read-only for public)
 // SB_HDRS = the headers sent with every database request (authentication)
 const SB_URL  = 'https://qhebhvllkovfbkqrcnmm.supabase.co';
-const SB_KEY  = atob('ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnBjM01pT2lKemRYQmhZbUZ6WlNJc0luSmxaaUk2SW5Gb1pXSm9kbXhzYTI5MlptSnJjWEpqYm0xdElpd2ljbTlzWlNJNkltRnViMjRpTENKcFlYUWlPakUzTnpZd05UZ3dNVGtzSW1WNGNDSTZNakE1TVRZek5EQXhPWDAuQVFsNVdBQjFfbWEzemNya1c0TkZLazZvQ0tCVWxUdGhENjh1amNTbG5hcw==');
+const SB_KEY  = atob('c2JfcHVibGlzaGFibGVfakN3cnAteTE2VFdWblg4QWszcjFtd19laEtBU2lwZA==');
 const SB_HDRS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
 
 // Default categories shown in the admin category filter dropdown
@@ -103,6 +103,27 @@ async function sbFetch(url, options) {
   } catch (e) {
     return { data: null, error: e.message };
   }
+}
+
+// Supabase's PostgREST caps any unpaginated "select=*" query at 1000 rows.
+// The catalog just crossed 1000 products, so a plain sbFetch() on
+// expert_products/expert_stock/etc silently truncates — newest rows go
+// missing with no error. Pages through with limit/offset until a page comes
+// back short; same { data, error } shape as sbFetch() so call sites don't change.
+async function sbFetchAll(baseUrl, headers) {
+  const pageSize = 1000;
+  let offset = 0;
+  let all = [];
+  while (true) {
+    const sep = baseUrl.includes('?') ? '&' : '?';
+    const { data, error } = await sbFetch(baseUrl + sep + 'limit=' + pageSize + '&offset=' + offset, { headers });
+    if (error) return { data: null, error };
+    if (!Array.isArray(data)) return { data, error: null };
+    all = all.concat(data);
+    if (data.length < pageSize) break;
+    offset += pageSize;
+  }
+  return { data: all, error: null };
 }
 
 // U  = placeholder image URL (used when a product has no real photo uploaded yet)
@@ -217,10 +238,10 @@ async function loadFromSupabase() {
   // It's now fetched separately below so the table renders immediately;
   // thumbnails fill in once photos are ready.
   const [s, c, h, cb, sk, bm, mc, ia, pk, hp, ql, vr] = await Promise.all([
-    sbFetch(SB_URL + '/rest/v1/expert_stock?select=*',          { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_products?select=*',       { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_hidden?select=product_id',{ headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        { headers: SB_HDRS }),
+    sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',          SB_HDRS),
+    sbFetchAll(SB_URL + '/rest/v1/expert_products?select=*',       SB_HDRS),
+    sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id',SB_HDRS),
+    sbFetchAll(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        SB_HDRS),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',    { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value',  { headers: SB_HDRS }),
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value', { headers: SB_HDRS }),
@@ -313,7 +334,7 @@ async function loadFromSupabase() {
 
   // Photos load separately and re-render once ready (see comment above) —
   // the table above already shows real names/prices/stock immediately.
-  sbFetch(SB_URL + '/rest/v1/expert_photos?select=*', { headers: SB_HDRS }).then(function(p) {
+  sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=*', SB_HDRS).then(function(p) {
     if (Array.isArray(p.data)) {
       const ph = JSON.parse(localStorage.getItem('jain_photos') || '{}');
       p.data.forEach(function(r) { ph[r.product_id] = r.img_url; });
