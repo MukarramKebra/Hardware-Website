@@ -2,7 +2,14 @@
 //  Edge Function: unsubscribe  (Deno / TypeScript)
 //  Public, no-auth endpoint linked from every marketing email. Given a valid
 //  ?token=<unsubscribe_token>, it flips the subscriber to unsubscribed=true
-//  (using the service role) and returns a friendly HTML confirmation page.
+//  (using the service role) then redirects to a static confirmation page.
+//
+//  Originally returned the confirmation HTML directly from this function —
+//  changed because Supabase Edge Functions silently rewrite any text/html
+//  response on a GET request to text/plain (documented platform behavior),
+//  so the "confirmation page" was actually showing raw HTML source to every
+//  customer who clicked unsubscribe. A 3xx redirect isn't HTML content, so
+//  it isn't affected — the real page now lives on the static site.
 //
 //  Deploy WITHOUT JWT verification so email clients can open it directly:
 //      supabase functions deploy unsubscribe --no-verify-jwt
@@ -14,21 +21,8 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const SITE_BASE = "https://mukarramkebra.github.io/Hardware-Website/";
 
-function page(title: string, message: string) {
-  return new Response(
-    `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1">
-     <title>${title} — Expert Hardware</title></head>
-     <body style="margin:0;font-family:system-ui,Arial,sans-serif;background:#f6f7f9;color:#1f2937">
-       <div style="max-width:520px;margin:60px auto;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:32px;text-align:center">
-         <div style="color:#d20d17;font-weight:800;font-size:20px;letter-spacing:.5px;margin-bottom:14px">EXPERT HARDWARE</div>
-         <h1 style="font-size:22px;margin:0 0 10px">${title}</h1>
-         <p style="font-size:15px;line-height:1.7;color:#374151;margin:0 0 22px">${message}</p>
-         <a href="${SITE_BASE}" style="display:inline-block;background:#d20d17;color:#fff;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:10px">Back to store</a>
-       </div>
-     </body></html>`,
-    { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } },
-  );
+function redirect(status: string) {
+  return Response.redirect(`${SITE_BASE}unsubscribed.html?status=${status}`, 302);
 }
 
 async function unsubscribe(token: string): Promise<boolean> {
@@ -53,15 +47,11 @@ async function unsubscribe(token: string): Promise<boolean> {
 Deno.serve(async (req) => {
   const url = new URL(req.url);
   const token = url.searchParams.get("token") || "";
-  if (!token || token === "preview") {
-    return page("Invalid link", "This unsubscribe link is missing or invalid. If you keep receiving emails, contact muk@expertshardware.com.");
-  }
+  if (!token || token === "preview") return redirect("invalid");
   try {
     const ok = await unsubscribe(token);
-    return ok
-      ? page("You're unsubscribed", "You will no longer receive marketing emails from Expert Hardware. Sorry to see you go — you can subscribe again anytime from our website.")
-      : page("Link not recognised", "We couldn't find a matching subscription. You may already be unsubscribed. Questions? Email muk@expertshardware.com.");
+    return redirect(ok ? "ok" : "notfound");
   } catch (_) {
-    return page("Something went wrong", "We couldn't process your request right now. Please try again later or email muk@expertshardware.com.");
+    return redirect("invalid");
   }
 });

@@ -240,6 +240,8 @@ async function saveOrderToSupabase(order) {
     // Still save to localStorage as a fallback
   } else {
     console.log('[JainHardware] Order saved OK:', result.data);
+    var newOrderId = result.data && result.data[0] && result.data[0].id;
+    if (newOrderId) notifyOrderByEmail(newOrderId);
   }
   // If guest → also store in localStorage so they can see it in My Orders
   if (!_authUser) {
@@ -255,6 +257,18 @@ async function saveOrderToSupabase(order) {
     };
     saveGuestOrder(guestOrder);
   }
+}
+
+// Fire-and-forget: emails muk@expertshardware.com an invoice-formatted
+// summary of the order with a "View & Print Invoice" link. Runs server-side
+// (supabase/functions/notify-order) so it works the same for every order
+// regardless of who placed it; failures here must never block checkout.
+function notifyOrderByEmail(orderId) {
+  fetch(SB_URL + '/functions/v1/notify-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ order_id: orderId })
+  }).catch(function(e) { console.error('[JainHardware] Order email notify failed:', e); });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

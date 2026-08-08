@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Invoice | Expert Hardware Kuwait</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <style>
+    :root { --orange:#c8151b; }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f6f7f9;color:#1f2937}
+    .wrap{max-width:640px;margin:0 auto;padding:24px 20px 60px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:28px}
+    .msg{text-align:center;padding:60px 20px;color:#374151}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{padding:8px}
+    @media print {
+      .no-print{display:none !important}
+      .card{border:none !important;padding:0 !important}
+      body{background:#fff !important}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap"><div class="card" id="content"><div class="msg">Loading invoice…</div></div></div>
+  <script>
+  var SB_URL = 'https://qhebhvllkovfbkqrcnmm.supabase.co';
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function money(n) {
+    return (Number(n) || 0).toFixed(3) + ' KWD';
+  }
+
+  var params = new URLSearchParams(window.location.search);
+  var id = params.get('id');
+  var el = document.getElementById('content');
+
+  if (!id) {
+    el.innerHTML = '<div class="msg">Missing order id.</div>';
+  } else {
+    fetch(SB_URL + '/functions/v1/order-invoice?id=' + encodeURIComponent(id))
+      .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+      .then(function(res) {
+        if (!res.ok) {
+          el.innerHTML = '<div class="msg">' + esc(res.data.error || 'Could not load this invoice.') + '</div>';
+          return;
+        }
+        render(res.data);
+      })
+      .catch(function() {
+        el.innerHTML = '<div class="msg">Couldn\'t load this invoice right now. Please try again later.</div>';
+      });
+  }
+
+  function render(o) {
+    var items = o.items || [];
+    var rowsHtml = items.map(function(it) {
+      return '<tr>' +
+        '<td style="border-bottom:1px solid #eee">' + esc(it.name) + '</td>' +
+        '<td style="border-bottom:1px solid #eee;color:#888;font-size:12px">' + esc(it.sku || '') + '</td>' +
+        '<td style="border-bottom:1px solid #eee;text-align:center">' + esc(it.qty) + '</td>' +
+        '<td style="border-bottom:1px solid #eee;text-align:right">' + money(it.price) + '</td>' +
+        '<td style="border-bottom:1px solid #eee;text-align:right;font-weight:700">' + money((Number(it.price) || 0) * (Number(it.qty) || 0)) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    var created = o.created_at ? new Date(o.created_at) : new Date();
+    var shortId = String(o.id).slice(0, 8).toUpperCase();
+    document.title = 'Invoice #' + shortId + ' — Expert Hardware';
+
+    el.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px">' +
+        '<div>' +
+          '<div style="color:var(--orange);font-weight:900;font-size:20px;letter-spacing:.5px">EXPERT HARDWARE</div>' +
+          '<div style="color:#888;font-size:12px">Wholesale &amp; Retail Trade, Kuwait City</div>' +
+        '</div>' +
+        '<div style="text-align:right">' +
+          '<div style="font-size:22px;font-weight:800;color:#111827">INVOICE</div>' +
+          '<div style="color:#888;font-size:12px">Order #' + esc(shortId) + '</div>' +
+          '<div style="color:#888;font-size:12px">' + esc(created.toLocaleString()) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:24px;font-size:14px">' +
+        '<div style="flex:1;min-width:220px">' +
+          '<div style="font-size:11px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Bill To</div>' +
+          '<div style="font-weight:700">' + esc(o.customer_name) + '</div>' +
+          '<div>' + esc(o.customer_phone) + '</div>' +
+          (o.customer_email ? '<div>' + esc(o.customer_email) + '</div>' : '') +
+          '<div>' + (o.address === 'PICK UP' ? 'Store Pick Up' : esc(o.address)) + '</div>' +
+        '</div>' +
+        '<div style="flex:1;min-width:160px">' +
+          '<div style="font-size:11px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Status</div>' +
+          '<div style="text-transform:capitalize">' + esc(o.status) + '</div>' +
+          (o.notes ? '<div style="font-size:11px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px">Notes</div><div>' + esc(o.notes) + '</div>' : '') +
+        '</div>' +
+      '</div>' +
+      '<table>' +
+        '<thead><tr style="border-bottom:2px solid #111827">' +
+          '<th style="text-align:left">Item</th><th style="text-align:left">SKU</th>' +
+          '<th style="text-align:center">Qty</th><th style="text-align:right">Price</th><th style="text-align:right">Total</th>' +
+        '</tr></thead>' +
+        '<tbody>' + rowsHtml + '</tbody>' +
+      '</table>' +
+      '<div style="display:flex;justify-content:flex-end;margin-top:16px">' +
+        '<div style="font-size:17px;font-weight:900;color:var(--orange)">Total: ' + money(o.total) + '</div>' +
+      '</div>' +
+      '<div class="no-print" style="margin-top:28px;text-align:center">' +
+        '<button onclick="window.print()" style="background:var(--orange);color:#fff;border:none;padding:12px 28px;border-radius:9px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit">🖨️ Print Invoice</button>' +
+      '</div>';
+  }
+  </script>
+</body>
+</html>
