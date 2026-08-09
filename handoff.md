@@ -310,9 +310,18 @@ Branding-verification blockers, `sitemap.xml` "Couldn't fetch" in Search Console
   tools currently connected, and it's platform config, not a database row). No code change is needed once
   it's toggled — `authSignUp()` already branches correctly on whether Supabase returns an access token
   immediately.
-- **Genuine missing product options found during the real-site sweep, not yet implemented**: DROP IN ANCHOR
-  (id 100301), WEDGE ANCHOR (100318), STAPLE PIN READER (100499), RAIN COAT YELLOW (100306) all show
-  multiple size options on `expertshardware.com` that aren't configured in `product_variants` here.
+- **Genuine missing product options from the real-site sweep — now implemented (2026-08-09).** DROP IN
+  ANCHOR (100301), WEDGE ANCHOR (100318), STAPLE PIN READER (100499), and RAIN COAT YELLOW (100306) all
+  now have their real size/pack options (labels, per-option prices, SKUs, sourced from a live sweep of each
+  product page on `expertshardware.com`, including switching the option dropdown there to read each
+  option's own price/SKU) written into `expert_settings.product_variants`. While wiring this up, found and
+  fixed a real, pre-existing bug: the size/pack selector was gated behind the same branch that hides price
+  ("Ask Price on WhatsApp"), so it was **never reachable on any price-hidden product** — including all 18
+  products that already had options configured before this fix, since every one of them turned out to also
+  be in `hidden_prices`. Moved the variant tiles (product modal, `js/03-product-cart-checkout.js`) and
+  dropdown (grid card, `js/02-catalog-render.js`) out of that branch so they render regardless of price
+  visibility, and threaded the selected option through to `askPriceOnWhatsApp()` (`js/06-features.js`, now
+  takes an optional variant index) so the WhatsApp message names the specific size the customer picked.
 - **The ~158-item blanket 20% sale badge in `featured_offers` (pre-existing, not from this session) was
   never cross-checked against the real site** — only the one specific "Wall chaser" case was verified and
   fixed. If sale-accuracy matters going forward, that whole set needs the same real-site verification
