@@ -754,9 +754,9 @@ function renderProducts() {
           <!-- Kept in the DOM (visually hidden, not removed) so Google can still
                discover/crawl the per-product SEO pages via this internal link. -->
           <a class="pc-details" href="product/${productSlug(p)}.html" onclick="event.stopPropagation()" style="display:none;font-size:11px;font-weight:700;color:var(--orange);text-decoration:none;margin:2px 0 6px">${isAr ? 'عرض التفاصيل ←' : 'View details →'}</a>
-          ${(getVariants(p.id).length && p.price > 0 && !window._sbPriceHidden[p.id]) ? `
+          ${(getVariants(p.id).length) ? `
           <select class="card-variant-sel" id="cardVarSel${p.id}" onclick="event.stopPropagation()" onchange="event.stopPropagation();cardVariantChange(${p.id},this)">
-            ${getVariants(p.id).map((v, i) => `<option value="${i}">${v.label}${(v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : ''}</option>`).join('')}
+            ${getVariants(p.id).map((v, i) => `<option value="${i}">${v.label}${(!priceHidden && v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : ''}</option>`).join('')}
           </select>
           ` : ''}
           <div class="product-footer">
@@ -772,7 +772,7 @@ function renderProducts() {
             <div>
               <div class="product-price" style="font-size:12px;color:var(--gray-600)">${isAr ? 'السعر عند الطلب' : 'Price on request'}</div>
             </div>
-            <button class="btn-add" style="background:#25D366" onclick="event.stopPropagation();askPriceOnWhatsApp(${p.id})"><i class="fab fa-whatsapp"></i> ${isAr ? 'اسأل عن السعر' : 'Ask Price'}</button>
+            <button class="btn-add" style="background:#25D366" onclick="event.stopPropagation();askPriceOnWhatsApp(${p.id}, (document.getElementById('cardVarSel${p.id}')||{}).value)"><i class="fab fa-whatsapp"></i> ${isAr ? 'اسأل عن السعر' : 'Ask Price'}</button>
             `}
           </div>
         </div>

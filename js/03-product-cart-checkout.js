@@ -101,9 +101,6 @@ function openProduct(id) {
       '<h2 class="pm-name">' + p.name + '</h2>' +
       '<span class="prod-modal-sku" id="prodModalSku">' + getProductSku(id) + '</span>' +
       '<p class="pm-desc" id="pmDescDisplay">' + p.desc + '</p>' +
-      ((p.price > 0 && !window._sbPriceHidden[p.id]) ? (
-      '<div class="pm-price" id="pmPriceDisplay">' + _pmPriceHtml(_pmCurrentPrice(p), p.id) + '</div>' +
-      '<div class="pm-stock-line ' + stockCls + '"><i class="fa ' + stockIcon + '"></i> ' + stockTxt + '</div>' +
       (getVariants(id).length ?
         '<div class="pm-variant-block">' +
           '<span class="pm-qty-lbl">Size / Pack</span>' +
@@ -115,12 +112,15 @@ function openProduct(id) {
                 (thumb
                   ? '<img src="' + thumb + '" alt="' + safeLabel + '" onerror="this.parentNode.classList.add(\'pm-variant-tile-broken\')" />'
                   : '<div class="pm-variant-tile-noimg"><i class="fa fa-tools"></i></div>') +
-                '<span>' + v.label + ((v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : '') + '</span>' +
+                '<span>' + v.label + ((!window._sbPriceHidden[p.id] && v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : '') + '</span>' +
               '</div>';
             }).join('') +
           '</div>' +
         '</div>'
       : '') +
+      ((p.price > 0 && !window._sbPriceHidden[p.id]) ? (
+      '<div class="pm-price" id="pmPriceDisplay">' + _pmPriceHtml(_pmCurrentPrice(p), p.id) + '</div>' +
+      '<div class="pm-stock-line ' + stockCls + '"><i class="fa ' + stockIcon + '"></i> ' + stockTxt + '</div>' +
       (!isOut ?
         '<div class="pm-qty-row">' +
           '<span class="pm-qty-lbl">Quantity</span>' +
@@ -137,7 +137,7 @@ function openProduct(id) {
       '</button>'
       ) : (
       '<div class="pm-price" style="font-size:15px;color:var(--gray-600)">Price on request</div>' +
-      '<button class="pm-add-btn" id="pmAddBtn" style="background:#25D366" onclick="askPriceOnWhatsApp(' + id + ')">' +
+      '<button class="pm-add-btn" id="pmAddBtn" style="background:#25D366" onclick="askPriceOnWhatsApp(' + id + ', _pmVariantIdx)">' +
         '<i class="fab fa-whatsapp"></i> Ask Price on WhatsApp' +
       '</button>'
       )) +
