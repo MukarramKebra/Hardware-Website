@@ -1,0 +1,51 @@
+id,sku,name,category,price,brand,stock,image
+101350,TR-30324,SINGLE HOLE GREEN,sanitary,2.45,Generic,100,1350-1400/single-hole-green.jpg
+101351,CPP-122 COPPER,122 COPPER,door-handle,0.7,Generic,100,1350-1400/122-copper.jpg
+101352,39 GLOSS BLACK,GLOSS BLACK 39,spray-adhesive,2.15,Generic,100,1350-1400/gloss-black-39.jpg
+101353,FCP-36021,CORE RED,filter,4.95,Generic,100,1350-1400/core-red.jpg
+101354,AL-30327,ROUND WASH BASIN,sanitary,2.65,Generic,100,1350-1400/round-wash-basin.jpg
+101355,SLG-104 SILVER GOLD,104 SILVER GOLD,door-handle,0.69,Generic,100,1350-1400/104-silver-gold.jpg
+101356,131 RED SUZUKI,RED SUZUKI 131,spray-adhesive,2.3,Generic,100,1350-1400/red-suzuki-131.jpg
+101357,FRT-11310A,"CORE MESH 10""",filter,3.9,Generic,100,1350-1400/core-mesh-10.jpg
+101358,AL-30326,ROUND WALL SINK,sanitary,2.5,Generic,100,1350-1400/round-wall-sink.jpg
+101359,SGG-108 SILVER GOLD,108 SILVER GOLD,door-handle,0.69,Generic,100,1350-1400/108-silver-gold.jpg
+101360,DBS-22302,DOUBLE SIDE TAPE 1,tape,0.2,Generic,100,1350-1400/double-side-tape-1.jpg
+101361,37 GREEN,GREEN 37,spray-adhesive,2.3,Generic,100,1350-1400/green-37.jpg
+101362,FCR-1210A,CORE CARBON,filter,3.8,Generic,100,1350-1400/core-carbon.jpg
+101363,AL-30325,ROUND SHOWER,sanitary,3.45,Generic,100,1350-1400/round-shower.jpg
+101364,SLR-175 SILVER,175 SILVER,door-handle,0.8,Generic,100,1350-1400/175-silver.jpg
+101365,21 BLUE,BLUE 21,spray-adhesive,2.3,Generic,100,1350-1400/blue-21.jpg
+101366,FBJ-63C220,CORE JUMBO CARBON,filter,11.25,Generic,100,1350-1400/core-jumbo-carbon.jpg
+101367,AL-30328,ROUND SINGLE HOLE,sanitary,2.39,Generic,100,1350-1400/round-single-hole.jpg
+101368,TR30321,SHOWER GREEN,sanitary,4.25,Generic,100,1350-1400/shower-green.jpg
+101369,BGD-122 BLACK GOLD,122 BLACK GOLD,door-handle,0.69,Generic,100,1350-1400/122-black-gold.jpg
+101370,1007 MATT WHITE,MATT WHITE 1007,spray-adhesive,2.15,Generic,100,1350-1400/matt-white-1007.jpg
+101371,FJB-9320E,CORE FILTER FYLENE,filter,8.1,Generic,100,1350-1400/core-filter-fylene.jpg
+101372,STH-20818,SHATTAF HEAD SILVER,sanitary,5.244,Generic,100,1350-1400/shattaf-head-silver.jpg
+101373,SHW-98651,SHOWER KING FLOWRAIN,sanitary,4.55,Generic,100,1350-1400/shower-king-flowrain.jpg
+101374,GRO-21024,ORANGE WASH BASIN,sanitary,2.6,Generic,100,1350-1400/orange-wash-basin.jpg
+101375,GGD-122 GOLD,122 GOLD,door-handle,0.69,Generic,100,1350-1400/122-gold.jpg
+101376,STAPLE PIN READER 8 MM,STAPLE PIN READER 8 MM,fastener,0.27,Generic,100,1350-1400/staple-pin-reader-8-mm.jpg
+101377,STAPLE PIN 9040,STAPLE PIN 9040,fastener,1.55,Generic,100,1350-1400/staple-pin-9040.jpg
+101378,STAPLE PIN 9030,STAPLE PIN 9030,fastener,0.95,Generic,100,1350-1400/staple-pin-9030.jpg
+101379,04 MATT BLACK,MATT BLACK 04,spray-adhesive,2.15,Generic,100,1350-1400/matt-black-04.jpg
+101380,GRO-21023,ORANGE WALL SINK,sanitary,2.5,Generic,100,1350-1400/orange-wall-sink.jpg
+101381,SLV-10702  SILIVER,107 SILVER,door-handle,0.69,Generic,100,1350-1400/107-silver.jpg
+101382,29 MISSION BROWN,MISSION BROWN 29,spray-adhesive,2.3,Generic,100,1350-1400/mission-brown-29.jpg
+101383,GRO-21022,ORANGE SHOWER,sanitary,3.25,Generic,100,1350-1400/orange-shower.jpg
+101384,SGL-107 GOLD,107 GOLD,door-handle,0.7,Generic,100,1350-1400/107-gold.jpg
+101385,190 LACQUER/CLEAR,LACQUER/CLEAR 190,spray-adhesive,2.3,Generic,100,1350-1400/lacquer-clear-190.jpg
+101386,GRO-21025,ORANGE SINGLE HOLE,sanitary,2.2,Generic,100,1350-1400/orange-single-hole.jpg
+101387,SGL-142 GOLD,142 GOLD,door-handle,0.69,Generic,100,1350-1400/142-gold.jpg
+101388,35 GOLD,GOLD 35,spray-adhesive,2.45,Generic,100,1350-1400/gold-35.jpg
+101389,FTR-65258,ONE KNOB TRIANGLE,sanitary,1.6,Generic,100,1350-1400/one-knob-triangle.jpg
+101390,GDL-104 GOLD,104 GOLD,door-handle,0.69,Generic,100,1350-1400/104-gold.jpg
+101391,14 ORANGE,ORANGE 14,spray-adhesive,2.15,Generic,100,1350-1400/orange-14.jpg
+101392,"PR008 25X3/4""",PPR MALE ADAPTOR 3/4″ ERA,plumbing-fitting,0.495,Era,100,1350-1400/ppr-male-adaptor-3-4-era.jpg
+101393,SHW-31022,WATER SOFTENER SHORT,sanitary,0.18,Generic,100,1350-1400/water-softener-short.jpg
+101394,FJW-20325,FAUCET WHITE,sanitary,2.65,Generic,100,1350-1400/faucet-white.jpg
+101395,PRE03 25 x 1/2,ERA PPR FEMALE ELBOW BRASS,plumbing-fitting,0.34,Era,100,1350-1400/era-ppr-female-elbow-brass.jpg
+101396,GLD-108 GOLD,108 GOLD,door-handle,0.69,Generic,100,1350-1400/108-gold.jpg
+101397,12 PURPLE,PURPLE 12A,spray-adhesive,2.15,Generic,100,1350-1400/purple-12a.jpg
+101398,SHW-31023,WATER SOFTENER LONG,sanitary,0.208,Generic,100,1350-1400/water-softener-long.jpg
+101399,FJB-36250,FAUCET BLACK,sanitary,3.2,Generic,100,1350-1400/faucet-black.jpg
