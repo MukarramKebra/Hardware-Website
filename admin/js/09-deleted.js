@@ -130,7 +130,11 @@ async function deleteOrder(id) {
   saveDeletedOrders(del);
   logAction('delete_order', { id:order.id, customer_name:order.customer_name });
   // Remove from Supabase
-  var res = await sbFetch(SB_URL + '/rest/v1/expert_orders?id=eq.' + id, { method: 'DELETE', headers: SB_HDRS });
+  var res = await sbFetch(SB_URL + '/rest/v1/rpc/admin_delete_order', {
+    method: 'POST',
+    headers: SB_HDRS,
+    body: JSON.stringify({ p_token: ADMIN_ORDER_TOKEN, p_id: id })
+  });
   if (res.error) { showToast('Delete failed: ' + res.error); return; }
   // Remove from local list and re-render
   _allOrders = _allOrders.filter(function(o){ return o.id !== id; });
@@ -157,7 +161,7 @@ async function restoreOrder(id) {
   };
   var res = await sbFetch(SB_URL + '/rest/v1/expert_orders', {
     method: 'POST',
-    headers: Object.assign({}, SB_HDRS, {'Prefer':'return=representation'}),
+    headers: Object.assign({}, SB_HDRS, {'Prefer':'return=minimal'}),
     body: JSON.stringify([payload])
   });
   if (res.error) { showToast('Restore failed: ' + res.error); return; }

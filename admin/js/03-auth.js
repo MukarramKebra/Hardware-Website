@@ -452,7 +452,7 @@ async function undoSingleAction(entry) {
       var order = list.find(function(x) { return x.id === d.id; });
       if (!order) return true;
       var payload = { customer_name:order.customer_name, customer_phone:order.customer_phone, address:order.address, notes:order.notes||'', items:order.items, total:parseFloat(order.total||0), status:order.status||'pending' };
-      var r = await sbFetch(SB_URL+'/rest/v1/expert_orders', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}), body:JSON.stringify([payload]) });
+      var r = await sbFetch(SB_URL+'/rest/v1/expert_orders', { method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=minimal'}), body:JSON.stringify([payload]) });
       if (r.error) return false;
       saveDeletedOrders(list.filter(function(x) { return x.id !== d.id; }));
       return true;
@@ -463,7 +463,7 @@ async function undoSingleAction(entry) {
       return !r.error;
     }
     if (entry.action === 'status_change') {
-      var r = await sbFetch(SB_URL+'/rest/v1/expert_orders?id=eq.'+d.id, { method:'PATCH', headers:Object.assign({},SB_HDRS,{'Prefer':'return=minimal'}), body:JSON.stringify({status:d.oldStatus}) });
+      var r = await sbFetch(SB_URL+'/rest/v1/rpc/admin_update_order_status', { method:'POST', headers:SB_HDRS, body:JSON.stringify({ p_token: ADMIN_ORDER_TOKEN, p_id: d.id, p_status: d.oldStatus }) });
       if (!r.error && _allOrders) { var o = _allOrders.find(function(x){return x.id===d.id;}); if (o) o.status = d.oldStatus; }
       return !r.error;
     }

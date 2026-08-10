@@ -55,6 +55,12 @@ const MANAGER_PASS  = 'Kuw963258';   // Manager password
 const SB_URL  = 'https://qhebhvllkovfbkqrcnmm.supabase.co';
 const SB_KEY  = atob('c2JfcHVibGlzaGFibGVfakN3cnAteTE2VFdWblg4QWszcjFtd19laEtBU2lwZA==');
 const SB_HDRS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+// Not a real credential — a shared token the three admin_* order RPCs check
+// for, so bulk order listing/status-change/delete aren't reachable by
+// anyone who just has the public SB_KEY (same as everyone browsing the
+// site). Same class of protection as the admin login itself: it stops
+// automated scanners hitting the raw REST API, not someone reading this file.
+const ADMIN_ORDER_TOKEN = 'be251bcef02d21d2d3a2c976d4a749c25c21a47005839292';
 
 // Default categories shown in the admin category filter dropdown
 const DEFAULT_CATS = [

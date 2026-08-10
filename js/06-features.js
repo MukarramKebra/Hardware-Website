@@ -319,7 +319,11 @@ async function findCancelOrders() {
   errEl.textContent = '';
   resultsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/expert_orders?customer_phone=eq.'+encodeURIComponent(phone)+'&order=created_at.desc', { headers: SB_H });
+    var res = await sbFetch(SB_URL + '/rest/v1/rpc/get_orders_by_phone', {
+      method: 'POST',
+      headers: Object.assign({}, SB_H, { 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ p_phone: phone })
+    });
     if (res.error || !res.data || !res.data.length) {
       resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No orders found for this number.</p></div>';
       return;
@@ -361,12 +365,12 @@ async function cancelOrder(orderId, btn) {
   if (!confirm('Are you sure you want to cancel this order?')) return;
   btn.disabled = true;
   btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Cancelling...';
-  var res = await sbFetch(SB_URL + '/rest/v1/expert_orders?id=eq.'+orderId, {
-    method: 'PATCH',
-    headers: Object.assign({}, SB_H, { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
-    body: JSON.stringify({ status: 'cancelled' })
+  var res = await sbFetch(SB_URL + '/rest/v1/rpc/cancel_order', {
+    method: 'POST',
+    headers: Object.assign({}, SB_H, { 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ p_id: orderId })
   });
-  if (res.error) {
+  if (res.error || res.data !== true) {
     btn.disabled = false;
     btn.innerHTML = '<i class="fa fa-times-circle"></i> Cancel This Order';
     showToast('Could not cancel. Please try again.');
@@ -383,7 +387,11 @@ async function trackOrder() {
   errEl.textContent = '';
   resultsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/expert_orders?customer_phone=eq.'+encodeURIComponent(phone)+'&order=created_at.desc', { headers: SB_H });
+    var res = await sbFetch(SB_URL + '/rest/v1/rpc/get_orders_by_phone', {
+      method: 'POST',
+      headers: Object.assign({}, SB_H, { 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ p_phone: phone })
+    });
     if (res.error || !res.data || !res.data.length) {
       resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No orders found for this number.<br><small>Make sure you enter the number used during checkout.</small></p></div>';
       return;

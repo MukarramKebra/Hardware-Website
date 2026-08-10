@@ -216,7 +216,15 @@ function toggleLang() {
 // Saves the order and links it to the logged-in user (or null for guests).
 // Guest orders are also stored in localStorage so they can be viewed in "My Orders".
 async function saveOrderToSupabase(order) {
+  // Generated client-side (rather than relying on the DB's default and
+  // reading it back via Prefer: return=representation) because that Prefer
+  // header requires SELECT-level RLS access to the just-inserted row —
+  // access the anon role intentionally no longer has, now that
+  // expert_orders isn't bulk-readable. Knowing the id up front avoids
+  // needing that read entirely.
+  const newOrderId = crypto.randomUUID();
   const payload = [{
+    id:             newOrderId,
     customer_name:  order.name,
     customer_phone: order.phone,
     address:        order.address,
@@ -231,7 +239,7 @@ async function saveOrderToSupabase(order) {
     method: 'POST',
     headers: Object.assign({}, SB_H, {
       'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
+      'Prefer': 'return=minimal'
     }),
     body: JSON.stringify(payload)
   });
@@ -239,14 +247,13 @@ async function saveOrderToSupabase(order) {
     console.error('[JainHardware] Order save FAILED:', result.error);
     // Still save to localStorage as a fallback
   } else {
-    console.log('[JainHardware] Order saved OK:', result.data);
-    var newOrderId = result.data && result.data[0] && result.data[0].id;
-    if (newOrderId) notifyOrderByEmail(newOrderId);
+    console.log('[JainHardware] Order saved OK');
+    notifyOrderByEmail(newOrderId);
   }
   // If guest → also store in localStorage so they can see it in My Orders
   if (!_authUser) {
     const guestOrder = {
-      id: (result.data && result.data[0] && result.data[0].id) || ('guest-' + Date.now()),
+      id: result.error ? ('guest-' + Date.now()) : newOrderId,
       customer_name:  order.name,
       customer_phone: order.phone,
       address:        order.address,
