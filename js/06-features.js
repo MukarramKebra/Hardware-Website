@@ -119,7 +119,7 @@ function askPriceOnWhatsApp(id, variantIdx) {
   var p = getAllProducts().find(function(x){ return x.id === id; });
   if (!p) return;
   var opts = getVariants(id);
-  var v = (variantIdx !== undefined && variantIdx !== null && variantIdx !== '' && opts.length) ? opts[parseInt(variantIdx, 10) || 0] : null;
+  var v = (variantIdx !== undefined && variantIdx !== null && variantIdx !== '' && opts.length) ? (opts[parseInt(variantIdx, 10) || 0] || opts[0]) : null;
   // getProductSku()/_variantSku() already return a "SKU-xxxx" / "SKU: xxxx"
   // formatted string, so it's inserted directly rather than wrapped in
   // another "(SKU: ...)" label, which used to print "SKU: SKU: ..." twice.

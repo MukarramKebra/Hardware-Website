@@ -112,13 +112,13 @@ function openProduct(id) {
                 (thumb
                   ? '<img src="' + thumb + '" alt="' + safeLabel + '" onerror="this.parentNode.classList.add(\'pm-variant-tile-broken\')" />'
                   : '<div class="pm-variant-tile-noimg"><i class="fa fa-tools"></i></div>') +
-                '<span>' + v.label + ((p.price > 0 && !window._sbPriceHidden[p.id] && v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : '') + '</span>' +
+                '<span>' + v.label + ((hasVisiblePrice(p) && v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : '') + '</span>' +
               '</div>';
             }).join('') +
           '</div>' +
         '</div>'
       : '') +
-      ((p.price > 0 && !window._sbPriceHidden[p.id]) ? (
+      (hasVisiblePrice(p) ? (
       '<div class="pm-price" id="pmPriceDisplay">' + _pmPriceHtml(_pmCurrentPrice(p), p.id) + '</div>' +
       '<div class="pm-stock-line ' + stockCls + '"><i class="fa ' + stockIcon + '"></i> ' + stockTxt + '</div>' +
       (!isOut ?

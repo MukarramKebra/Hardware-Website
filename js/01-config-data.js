@@ -147,6 +147,13 @@ function getVariants(id) {
     var v = (window._sbVariants || {})[id];
     return Array.isArray(v) ? v : [];
 }
+// Single source of truth for "does this product show a real price / Add to
+// Cart UI, or Price on request / Ask Price on WhatsApp" — both the grid card
+// and the product modal branch on this exact condition, plus reuse it to
+// decide whether a variant option's own price suffix is safe to show.
+function hasVisiblePrice(p) {
+    return p.price > 0 && !window._sbPriceHidden[p.id];
+}
 
 // ── FEATURED SALE % ───────────────────────────────────────────────────────
 // The per-product Sale % set in admin's Featured tab (expert_settings
