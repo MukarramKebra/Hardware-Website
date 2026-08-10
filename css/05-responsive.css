@@ -14,7 +14,17 @@
   #nav.open { display: flex; }
   #nav a { color: #fff; font-size: 15px; padding: 4px 0; }
   .hamburger { display: block; }
-  .header-search-wrap { display: none; }
+  /* Search icon stays visible in the fixed header (was display:none — no
+     search entry point existed on mobile short of scrolling all the way
+     down to the grid's own search box). The dropdown itself switches from
+     a 260px box anchored to the button (fine on desktop) to a fixed,
+     full-width bar under the header, since the button isn't near the
+     screen edge here and a narrow floating box would cramp on a phone. */
+  .header-search-input {
+    position: fixed; top: 68px; left: 12px; right: 12px;
+    width: auto !important; max-width: none;
+    box-sizing: border-box; font-size: 15px;
+  }
   .btn-cart span.cart-label { display: none; }
 
   /* Hero */
@@ -74,6 +84,7 @@
   .header-inner { height: 60px; }
   .logo-img { height: 38px; width: auto; }
   #nav { top: 60px; }
+  .header-search-input { top: 60px; }
   .btn-cart { padding: 8px 12px; font-size: 12px; }
 
   /* Hero */
