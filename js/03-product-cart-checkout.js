@@ -112,7 +112,7 @@ function openProduct(id) {
                 (thumb
                   ? '<img src="' + thumb + '" alt="' + safeLabel + '" onerror="this.parentNode.classList.add(\'pm-variant-tile-broken\')" />'
                   : '<div class="pm-variant-tile-noimg"><i class="fa fa-tools"></i></div>') +
-                '<span>' + v.label + ((!window._sbPriceHidden[p.id] && v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : '') + '</span>' +
+                '<span>' + v.label + ((p.price > 0 && !window._sbPriceHidden[p.id] && v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : '') + '</span>' +
               '</div>';
             }).join('') +
           '</div>' +

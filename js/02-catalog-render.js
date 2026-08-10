@@ -756,7 +756,7 @@ function renderProducts() {
           <a class="pc-details" href="product/${productSlug(p)}.html" onclick="event.stopPropagation()" style="display:none;font-size:11px;font-weight:700;color:var(--orange);text-decoration:none;margin:2px 0 6px">${isAr ? 'عرض التفاصيل ←' : 'View details →'}</a>
           ${(getVariants(p.id).length) ? `
           <select class="card-variant-sel" id="cardVarSel${p.id}" onclick="event.stopPropagation()" onchange="event.stopPropagation();cardVariantChange(${p.id},this)">
-            ${getVariants(p.id).map((v, i) => `<option value="${i}">${v.label}${(!priceHidden && v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : ''}</option>`).join('')}
+            ${getVariants(p.id).map((v, i) => `<option value="${i}">${v.label}${(p.price > 0 && !priceHidden && v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : ''}</option>`).join('')}
           </select>
           ` : ''}
           <div class="product-footer">
