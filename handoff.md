@@ -307,22 +307,45 @@ Branding-verification blockers, `sitemap.xml` "Couldn't fetch" in Search Console
   `expert_admin_accounts` itself, or on any other table) is explicitly still fine to propose and implement —
   that's closing a leak, not building an authorization system. If a future audit re-flags "no admin auth,"
   note it and move on without re-litigating it.
-- **Fresh RLS audit run 2026-08-10** (via the `supabase-audit-rls` skill) re-confirmed the admin-related
-  gaps above are still live (`expert_admin_accounts` — anon can read both accounts' plaintext
-  `test`/`test123`, `2`/`123` credentials directly, and INSERT/UPDATE/DELETE anon-wide) and **found one new,
-  more severe issue not caught by the earlier manual audit**: `expert_orders` has an `expert_orders_anon_all`
-  policy (`role: anon`, `cmd: ALL`, `qual: true`) layered *alongside* the correctly-scoped
-  `auth.uid() = user_id` policies for authenticated users — since Postgres OR's permissive policies
-  together, the anon-wide one alone grants any unauthenticated request full read/write/delete on **every**
-  customer's order (name, phone, address, total, status), not just the phone-number-filtered view the
-  Track/Cancel Order UI presents. Live-confirmed via an unfiltered anon REST call. `expert_products`,
-  `expert_stock`, `expert_settings`, `expert_hidden`, `expert_photos`, `expert_banners`, `expert_cat_bgs`,
-  `expert_analytics` all still have anon write access too (policy-confirmed, not live-tested to avoid
-  touching production data). `expert_customers`, `offer_subscribers`, `offer_campaigns`, `expert_reviews`
-  are correctly scoped — no action needed there. None of these fixes require building admin authorization
-  (see rule above) — they're independent RLS policy tightenings, safe to do any time. Full audit evidence
-  (including the live PoC responses) was deliberately kept out of this repo — see whichever session ran the
-  audit for the local evidence path, since it shouldn't be pushed to the remote.
+- **Fresh RLS audit run 2026-08-10** (via the `supabase-audit-rls` skill) re-confirmed `expert_admin_accounts`
+  is still fully anon-readable/writable (plaintext `test`/`test123`, `2`/`123` credentials) — **not yet
+  fixed, still open** (this specific table wasn't touched this session; the rule above says tightening it is
+  in-bounds whenever someone picks it up). `expert_products`, `expert_stock`, `expert_settings`,
+  `expert_hidden`, `expert_photos`, `expert_banners`, `expert_cat_bgs`, `expert_analytics` also still have
+  anon write access (policy-confirmed, not live-tested to avoid touching production data) — also not yet
+  fixed. `expert_customers`, `offer_subscribers`, `offer_campaigns`, `expert_reviews` are correctly scoped —
+  no action needed there. Full audit evidence (including live PoC responses) was deliberately kept out of
+  this repo, in the scratchpad of whichever session ran the audit — not pushed to the remote.
+- **`expert_orders` anon exposure — fixed 2026-08-10.** The audit above found a new, more severe issue: an
+  `expert_orders_anon_all` policy (`role: anon`, `cmd: ALL`, `qual: true`) layered *alongside* the
+  correctly-scoped `auth.uid() = user_id` policies for authenticated users — since Postgres OR's permissive
+  policies together, the anon-wide one alone granted any unauthenticated request full read/write/delete on
+  every customer's order (name, phone, address, total, status), not just the phone-filtered view the
+  Track/Cancel Order UI shows. Live-confirmed via an unfiltered anon REST call, then fixed the same session:
+  - Table policy is now anon-INSERT-only (guest checkout, admin restore-from-deleted). No anon SELECT or
+    DELETE at all anymore.
+  - Guest phone lookup (Track Order) now goes through `get_orders_by_phone(p_phone)`, a SECURITY DEFINER RPC
+    that filters server-side instead of trusting the client to include a phone filter.
+  - Guest self-cancel now goes through `cancel_order(p_id)`, a SECURITY DEFINER RPC (status/1-hour-age
+    gated) instead of a table UPDATE policy — discovered mid-fix that Postgres RLS requires a row to be
+    SELECT-visible before UPDATE/DELETE can target it at all, so a bare UPDATE-only policy with no
+    accompanying SELECT policy silently matched zero rows; the RPC sidesteps that since SECURITY DEFINER
+    bypasses the caller's RLS entirely.
+  - Admin's list-all/change-status/delete-order operations (`admin/js/07-orders.js`, `09-deleted.js`,
+    `03-auth.js`'s undo) now go through `admin_list_orders`/`admin_update_order_status`/`admin_delete_order`
+    RPCs, gated by a shared static token (`ADMIN_ORDER_TOKEN` in `admin/js/01-core-data.js`) — **not** a
+    login/session (the no-real-admin-auth rule above still holds), just a password-like gate against
+    automated scanners hitting the raw Supabase REST API directly. Someone who reads the admin JS can still
+    extract the token, same as they can already read the hardcoded admin login — this closes the "random bot
+    finds the open table" case specifically, not a targeted attacker.
+  - Also fixed two things this broke along the way: `Prefer: return=representation` on the order INSERT
+    (checkout in `js/04-i18n-order.js`, admin restore in `09-deleted.js`/`03-auth.js`) needs the same
+    SELECT-level RLS access to hand the new row back — checkout now generates the order id client-side
+    (`crypto.randomUUID()`) and uses `return=minimal` instead; the two admin insert paths just switched to
+    `return=minimal` since neither used the returned row anyway.
+  - Full live end-to-end verification (checkout insert, self-cancel, phone lookup, admin list/update/delete,
+    wrong-token rejection) done against throwaway test rows, cleaned up afterward — the one real order in the
+    table was never touched.
 - **Supabase Auth "Confirm email" needs to be turned off in the dashboard** (Authentication → Sign In / Up →
   Email) so customer signup doesn't require a manual email-confirmation click — the owner asked for this,
   but no available tool can change Supabase Auth provider settings (not exposed via the Management API
