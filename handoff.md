@@ -297,13 +297,32 @@ Branding-verification blockers, `sitemap.xml` "Couldn't fetch" in Search Console
   one-time fix — it's now a standing maintenance task. The "confirmed real price" name list (~32 items) was
   derived from a full sweep of `expertshardware.com` and isn't saved anywhere in the repo; whoever picks
   this up next should either keep it from this session's history or re-derive it.
-- **Admin panel has no real server-side authorization** (RLS wide open to `anon` on
-  `expert_products`/`expert_stock`/`expert_settings`/`expert_admin_accounts`; login is client-side only).
-  Explicitly deferred again this round ("not for admin only for users"). Two real paths forward when it's
-  time to fix it: proper Supabase Auth for the admin panel (biggest but most correct fix), or route all
-  admin writes through a secret-gated Edge Function (reusing the `notify-order`/`send-offers` pattern) with
-  RLS locked down to deny direct anon writes. Either way, the two disposable-looking team accounts
-  (`test`/`test123`, `2`/`123`) are worth deleting regardless of which path is taken.
+- **Admin panel will NOT get a real authentication/authorization system — this is a permanent decision, not
+  a deferral.** The owner has declined this every time it's come up (most recently, explicitly, on
+  2026-08-10: "never actually update the admin like that, I don't want real life authorization"). Do not
+  propose or implement Supabase Auth for the admin panel, a secret-gated Edge Function routing admin writes,
+  or any other server-side auth enforcement for it — the login stays a client-side-only UI gate,
+  indefinitely. **Scope of this rule, confirmed 2026-08-10**: it covers auth/authorization systems only.
+  Plain RLS data-exposure tightening (e.g. blocking anon SELECT/INSERT/UPDATE/DELETE on
+  `expert_admin_accounts` itself, or on any other table) is explicitly still fine to propose and implement —
+  that's closing a leak, not building an authorization system. If a future audit re-flags "no admin auth,"
+  note it and move on without re-litigating it.
+- **Fresh RLS audit run 2026-08-10** (via the `supabase-audit-rls` skill) re-confirmed the admin-related
+  gaps above are still live (`expert_admin_accounts` — anon can read both accounts' plaintext
+  `test`/`test123`, `2`/`123` credentials directly, and INSERT/UPDATE/DELETE anon-wide) and **found one new,
+  more severe issue not caught by the earlier manual audit**: `expert_orders` has an `expert_orders_anon_all`
+  policy (`role: anon`, `cmd: ALL`, `qual: true`) layered *alongside* the correctly-scoped
+  `auth.uid() = user_id` policies for authenticated users — since Postgres OR's permissive policies
+  together, the anon-wide one alone grants any unauthenticated request full read/write/delete on **every**
+  customer's order (name, phone, address, total, status), not just the phone-number-filtered view the
+  Track/Cancel Order UI presents. Live-confirmed via an unfiltered anon REST call. `expert_products`,
+  `expert_stock`, `expert_settings`, `expert_hidden`, `expert_photos`, `expert_banners`, `expert_cat_bgs`,
+  `expert_analytics` all still have anon write access too (policy-confirmed, not live-tested to avoid
+  touching production data). `expert_customers`, `offer_subscribers`, `offer_campaigns`, `expert_reviews`
+  are correctly scoped — no action needed there. None of these fixes require building admin authorization
+  (see rule above) — they're independent RLS policy tightenings, safe to do any time. Full audit evidence
+  (including the live PoC responses) was deliberately kept out of this repo — see whichever session ran the
+  audit for the local evidence path, since it shouldn't be pushed to the remote.
 - **Supabase Auth "Confirm email" needs to be turned off in the dashboard** (Authentication → Sign In / Up →
   Email) so customer signup doesn't require a manual email-confirmation click — the owner asked for this,
   but no available tool can change Supabase Auth provider settings (not exposed via the Management API
