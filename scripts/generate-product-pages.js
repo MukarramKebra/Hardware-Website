@@ -69,7 +69,8 @@ async function loadData() {
       skuMap: fx.skuMap || {},
       brandMap: fx.brandMap || {},
       keywords: fx.keywords || {},
-      hiddenPrices: fx.hiddenPrices || {}
+      hiddenPrices: fx.hiddenPrices || {},
+      variantMap: fx.variantMap || {}
     };
   }
   const { SB_URL, SB_KEY } = readSupabaseConfig();
@@ -79,7 +80,7 @@ async function loadData() {
     sbGet(SB_URL, SB_KEY, 'expert_hidden?select=product_id'),
     sbGet(SB_URL, SB_KEY, 'expert_stock?select=product_id,qty'),
     sbGet(SB_URL, SB_KEY, 'expert_reviews?select=product_id,rating'),
-    sbGet(SB_URL, SB_KEY, 'expert_settings?key=in.(sku_map,brand_map,product_keywords,hidden_prices)&select=key,value')
+    sbGet(SB_URL, SB_KEY, 'expert_settings?key=in.(sku_map,brand_map,product_keywords,hidden_prices,product_variants)&select=key,value')
   ]);
   const settingVal = (k) => {
     const row = settings.find((s) => s.key === k);
@@ -91,7 +92,8 @@ async function loadData() {
     skuMap: settingVal('sku_map'),
     brandMap: settingVal('brand_map'),
     keywords: settingVal('product_keywords'),
-    hiddenPrices: settingVal('hidden_prices')
+    hiddenPrices: settingVal('hidden_prices'),
+    variantMap: settingVal('product_variants')
   };
 }
 
@@ -188,6 +190,17 @@ function renderPage(p) {
     ? `<p class="p-avail ${inStock ? 'in' : 'out'}">${inStock ? '✔ In stock' : '✖ Out of stock'}</p>`
     : '';
   const imgHtml = `<img class="p-img" src="${esc(ogImage)}" alt="${esc(p.name)}" width="480" height="480" />`;
+  // Mirrors the storefront's variant price gating (js/02-catalog-render.js
+  // cardVariantChange / the select options): only show a per-option price
+  // when prices aren't hidden and the option's price actually differs.
+  const variantsHtml = (p.variants && p.variants.length)
+    ? `<div class="p-variants">
+        <p class="p-variants-label">Available options:</p>
+        <ul class="p-variants-list">
+          ${p.variants.map((v) => `<li>${esc(v.label)}${(priceShown && v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : ''}</li>`).join('')}
+        </ul>
+      </div>`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -234,6 +247,10 @@ function renderPage(p) {
     .p-price.p-ask{font-size:18px;color:#6b7280}
     .p-avail{font-size:14px;font-weight:700;margin:0 0 16px}
     .p-avail.in{color:#16a34a}.p-avail.out{color:#dc2626}
+    .p-variants{margin:0 0 16px}
+    .p-variants-label{font-size:13px;font-weight:700;color:#374151;margin:0 0 6px}
+    .p-variants-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+    .p-variants-list li{font-size:13px;color:#374151;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:6px 12px}
     .p-desc{font-size:15px;line-height:1.7;color:#374151;margin:0 0 22px;white-space:pre-line}
     .p-btn{display:inline-block;background:#c8151b;color:#fff;text-decoration:none;font-weight:700;padding:13px 22px;border-radius:10px;font-size:15px}
     .p-back{display:inline-block;margin-left:14px;color:#6b7280;text-decoration:none;font-size:14px}
@@ -255,6 +272,7 @@ function renderPage(p) {
         <p class="p-sku">${esc(p.sku)}</p>
         ${priceHtml}
         ${availHtml}
+        ${variantsHtml}
         ${p.desc ? `<div class="p-desc">${esc(p.desc)}</div>` : ''}
         <a class="p-btn" href="../?q=${encodeURIComponent(p.name)}">View in store &amp; order &rarr;</a>
         <a class="p-back" href="../">&larr; Back to all products</a>
@@ -330,6 +348,7 @@ async function main() {
       image: rawImg,
       sku: skuLabel(id, data.skuMap),
       keywords: data.keywords[String(id)] || '',
+      variants: Array.isArray(data.variantMap[String(id)]) ? data.variantMap[String(id)] : [],
       availability: (qty !== null && qty <= 0) ? 'out-of-stock' : 'in-stock',
       reviewAvg: rv ? rv.total / rv.count : 0,
       reviewCount: rv ? rv.count : 0
