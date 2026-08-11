@@ -86,7 +86,15 @@ const DEFAULT_CATS = [
     // on the storefront — index.html's category grid/nav/pills don't reference
     // it — but it's a normal filterable category here, and products in it are
     // excluded from the low/out-of-stock alerts (see renderStats).
-  { slug:'hidden',           label:'Hidden' }
+  { slug:'hidden',           label:'Hidden' },
+    // Products that don't match anything in expertshardware.com's current live
+    // catalog (checked by name + image, 2026-08-11) — either an early
+    // supplier-catalog seed import that predates real scraping, or a fuzzy
+    // name match that turned out to be a different spec/size on the real site.
+    // Same admin-only treatment as 'hidden' above: no storefront pill, but
+    // filterable here and searchable on the storefront (category text is part
+    // of the search haystack — see matchesSearch in 02-catalog-render.js).
+  { slug:'cant-find-products', label:"Can't Find Products" }
   ];
 
 // ── SUPABASE FETCH WRAPPER ─────────────────────────────────────────────────────

@@ -206,11 +206,12 @@ function renderStats() {
   const total  = allProducts.length;
   const units  = allProducts.reduce(function(s,p) { return s+(stockData[p.id]||0); }, 0);
   const value  = allProducts.reduce(function(s,p) { return s+p.price*(stockData[p.id]||0); }, 0);
-  // Products in the "Hidden" category (non-purchasable placeholder entries)
-  // and price-on-request items (price 0 — services like sharpening/cutting
-  // where price varies per job) never had real stock to begin with —
-  // counting them as low/out-of-stock alerts is misleading noise.
-  const alertable = allProducts.filter(function(p) { return p.cat !== 'hidden' && p.price > 0; });
+  // Products in the "Hidden" or "Can't Find Products" categories
+  // (non-purchasable placeholder entries) and price-on-request items
+  // (price 0 — services like sharpening/cutting where price varies per job)
+  // never had real stock to begin with — counting them as low/out-of-stock
+  // alerts is misleading noise.
+  const alertable = allProducts.filter(function(p) { return p.cat !== 'hidden' && p.cat !== 'cant-find-products' && p.price > 0; });
   const low    = alertable.filter(function(p) { return (stockData[p.id]||0) > 0 && (stockData[p.id]||0) <= 10; }).length;
   const out    = alertable.filter(function(p) { return (stockData[p.id]||0) === 0; }).length;
   document.getElementById('statsGrid').innerHTML =
