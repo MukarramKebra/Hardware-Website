@@ -359,16 +359,23 @@ function subcatLabel(slug) {
 }
 
 function selectSubFilter(sub) {
-  activeSubFilter = sub;
-  renderSubFilters();
+  // Clicking the already-active tile deselects it (back to "all" within
+  // this category) — there's no separate "All" tile in the grid itself.
+  activeSubFilter = (activeSubFilter === sub) ? 'all' : sub;
   renderProducts();
   scrollToProducts();
 }
 
-// renderSubFilters — builds the secondary pill row for whichever subcategories
-// exist within the active main category. Fully data-driven off
+// renderSubFilters — builds the subcategory picker (image tile per
+// subcategory, like expertshardware.com's own "Nails / Tarpaulin & Meshes /
+// Wires & Electrodes / Safety Gloves" grid) for whichever subcategories exist
+// within the active main category. Fully data-driven off
 // expert_products.subcategory, so tagging more products/categories later
 // (see admin) makes the row appear automatically, no UI code changes needed.
+// Each tile's photo is a real product from that subcategory — the first one
+// that actually has a photo uploaded — not a stock/generic image; a tile
+// falls back to the same neutral tools icon the product grid uses when none
+// of its products have a photo yet.
 function renderSubFilters() {
   const container = document.getElementById('subFilterPills');
   if (!container) return;
@@ -377,25 +384,40 @@ function renderSubFilters() {
     container.innerHTML = '';
     return;
   }
-  const subs = Array.from(new Set(
-    getAllProducts()
-      .filter(p => p.category === activeFilter && p.subcategory)
-      .map(p => p.subcategory)
-  )).sort();
+  const inCat = getAllProducts().filter(p => p.category === activeFilter && p.subcategory);
+  const subs = Array.from(new Set(inCat.map(p => p.subcategory))).sort();
   if (!subs.length) {
     container.classList.remove('show');
     container.innerHTML = '';
     return;
   }
+  const customPhotos = _sbPhotos;
+  function tilePhoto(sub) {
+    const withPhoto = inCat.find(function(p) {
+      if (p.subcategory !== sub) return false;
+      const rawCustom = customPhotos[p.id];
+      const photo = (rawCustom && (rawCustom.startsWith('http') || rawCustom.startsWith('data:'))) ? rawCustom : p.img;
+      return !!photo;
+    });
+    if (!withPhoto) return null;
+    const rawCustom = customPhotos[withPhoto.id];
+    return (rawCustom && (rawCustom.startsWith('http') || rawCustom.startsWith('data:'))) ? rawCustom : withPhoto.img;
+  }
   container.classList.add('show');
   container.innerHTML =
-    '<button class="sub-pill' + (activeSubFilter === 'all' ? ' active' : '') + '" onclick="selectSubFilter(\'all\')">' +
-      (_lang === 'ar' ? 'الكل' : 'All') +
-    '</button>' +
+    '<div class="subcat-label"><i class="fa fa-chevron-down"></i>' + (_lang === 'ar' ? 'الفئة' : 'Category') + '</div>' +
+    '<div class="subcat-tiles">' +
     subs.map(function(s) {
-      return '<button class="sub-pill' + (activeSubFilter === s ? ' active' : '') + '" onclick="selectSubFilter(\'' + s + '\')">' +
-        subcatLabel(s) + '</button>';
-    }).join('');
+      const photo = tilePhoto(s);
+      const img = photo
+        ? '<img src="' + photo + '" alt="' + subcatLabel(s) + '" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" /><i class="fa fa-tools" style="display:none"></i>'
+        : '<i class="fa fa-tools"></i>';
+      return '<button class="subcat-tile' + (activeSubFilter === s ? ' active' : '') + '" onclick="selectSubFilter(\'' + s + '\')">' +
+        '<div class="subcat-tile-img">' + img + '</div>' +
+        '<div class="subcat-tile-label">' + subcatLabel(s) + '</div>' +
+      '</button>';
+    }).join('') +
+    '</div>';
 }
 
 // Covers the screen with a brief loading flash BEFORE touching the grid or
