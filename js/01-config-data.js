@@ -184,24 +184,39 @@ async function loadSBData() {
   // second pass, which is what Google's Merchant Listings report was flagging.
   try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
 
-  const [s, c, h, b, sk, bm, mc, pk, hp, ql, ph, vr, fo, rv] = await Promise.all([
-    sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',                         SB_H),
-    sbFetchAll(SB_URL + '/rest/v1/expert_products?select=*',                        SB_H),
-    sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id',               SB_H),
-    sbFetchAll(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc',          SB_H),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',   { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value', { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value',{ headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_H }),
-    sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=*',                        SB_H),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_variants&select=value', { headers: SB_H }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_H }),
-    sbFetchAll(SB_URL + '/rest/v1/expert_reviews?select=product_id,rating',   SB_H)
-  ]);
-  if (!vr.error && Array.isArray(vr.data) && vr.data[0] && vr.data[0].value) {
-    try { window._sbVariants = JSON.parse(vr.data[0].value) || {}; } catch(e) {}
+  // Fire every request in parallel, but only BLOCK on the four the offers
+  // ticker actually needs (products, photos, hidden_prices, featured_offers)
+  // before rendering it. The ticker sits directly under the header, above
+  // the fold, so it used to sit blank until all fourteen requests came
+  // back — including expert_stock/expert_reviews, which paginate past
+  // PostgREST's 1000-row cap and are the slowest things in this batch, and
+  // which the ticker never reads (no stock badge, no review count on those
+  // cards). Everything else still waits for the full set, same as before.
+  const productsP = sbFetchAll(SB_URL + '/rest/v1/expert_products?select=*', SB_H);
+  const photosP   = sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=*',   SB_H);
+  const hiddenPriceP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_H });
+  const featuredP    = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_H });
+
+  const stockP   = sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',           SB_H);
+  const hiddenP  = sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id', SB_H);
+  const bannersP = sbFetchAll(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc', SB_H);
+  const skuP      = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',   { headers: SB_H });
+  const brandP    = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value', { headers: SB_H });
+  const multiCatP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value',{ headers: SB_H });
+  const keywordsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_H });
+  const qtyLimitP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_H });
+  const variantsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_variants&select=value', { headers: SB_H });
+  const reviewsP  = sbFetchAll(SB_URL + '/rest/v1/expert_reviews?select=product_id,rating', SB_H);
+
+  const [c, ph, hp, fo] = await Promise.all([productsP, photosP, hiddenPriceP, featuredP]);
+
+  if (Array.isArray(c.data) && c.data.length > 0) _customProds = c.data.filter(r => !r.hidden);
+  if (Array.isArray(ph.data)) {
+        ph.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });
+        localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos));
+  }
+  if (!hp.error && Array.isArray(hp.data) && hp.data[0] && hp.data[0].value) {
+        try { window._sbPriceHidden = JSON.parse(hp.data[0].value) || {}; } catch(e) {}
   }
   if (!fo.error && Array.isArray(fo.data) && fo.data[0] && fo.data[0].value) {
     try {
@@ -209,6 +224,14 @@ async function loadSBData() {
       // Older saves stored plain product ids (no sale support yet) — migrate.
       window._sbFeaturedOffers = rawFo.map(function(x) { return (typeof x === 'number') ? { id: x, sale: 0 } : { id: x.id, sale: x.sale || 0 }; });
     } catch(e) {}
+  }
+  if (typeof initOffersTicker === 'function') initOffersTicker();
+
+  const [s, h, b, sk, bm, mc, pk, ql, vr, rv] = await Promise.all([
+    stockP, hiddenP, bannersP, skuP, brandP, multiCatP, keywordsP, qtyLimitP, variantsP, reviewsP
+  ]);
+  if (!vr.error && Array.isArray(vr.data) && vr.data[0] && vr.data[0].value) {
+    try { window._sbVariants = JSON.parse(vr.data[0].value) || {}; } catch(e) {}
   }
   // Bulk review stats (avg + count per product) for the Product schema's
   // aggregateRating — fetched once here instead of per-product like
@@ -225,10 +248,6 @@ async function loadSBData() {
                   window._sbReviewStats[id] = { avg: sums[id].total / sums[id].count, count: sums[id].count };
           });
     }
-    if (Array.isArray(ph.data)) {
-          ph.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });
-          localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos));
-    }
     if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
           try { _sbSkuMap = JSON.parse(sk.data[0].value) || {}; } catch(e) {}
     }
@@ -237,9 +256,6 @@ async function loadSBData() {
     }
     if (!mc.error && Array.isArray(mc.data) && mc.data[0] && mc.data[0].value) {
           try { window._sbMultiCats = JSON.parse(mc.data[0].value) || {}; } catch(e) {}
-    }
-    if (!hp.error && Array.isArray(hp.data) && hp.data[0] && hp.data[0].value) {
-          try { window._sbPriceHidden = JSON.parse(hp.data[0].value) || {}; } catch(e) {}
     }
     if (!pk.error && Array.isArray(pk.data) && pk.data[0] && pk.data[0].value) {
           try { _sbProductKeywords = JSON.parse(pk.data[0].value) || {}; } catch(e) {}
@@ -252,7 +268,6 @@ async function loadSBData() {
           try { _sbStock  = JSON.parse(localStorage.getItem('jain_stock')  || '{}'); } catch(_) {}
     } else {
           if (Array.isArray(s.data)) s.data.forEach(r => { _sbStock[r.product_id]  = r.qty; });
-          if (Array.isArray(c.data) && c.data.length > 0) _customProds = c.data.filter(r => !r.hidden);
           if (Array.isArray(h.data)) {
                   var hidSet = new Set(h.data.map(r => r.product_id));
                   // Safety: if more than 55 of the 60 base products are "hidden", ignore — likely stale data
@@ -261,7 +276,6 @@ async function loadSBData() {
           if (Array.isArray(b.data) && b.data.length > 0) _sbBanners = b.data;
     }
     renderProducts();
-    if (typeof initOffersTicker === 'function') initOffersTicker();
     if (typeof initSideBanners === 'function') initSideBanners();
     if (typeof _injectProductSchema === 'function') _injectProductSchema();
 
