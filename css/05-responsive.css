@@ -62,7 +62,7 @@
   .filter-pills { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none; }
   .filter-pills::-webkit-scrollbar { display: none; }
   .pill { flex-shrink: 0; }
-  .subcat-tiles { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .subcat-tiles { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
   /* Categories */
