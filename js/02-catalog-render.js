@@ -385,7 +385,13 @@ function renderSubFilters() {
     return;
   }
   const inCat = getAllProducts().filter(p => p.category === activeFilter && p.subcategory);
-  const subs = Array.from(new Set(inCat.map(p => p.subcategory))).sort();
+  // Require at least 3 products before a subcategory earns its own tile —
+  // a handful of odd stragglers tagged into the "wrong" main category
+  // (this catalog was assembled from several import batches, not one
+  // consistent taxonomy) would otherwise show up as near-empty tiles.
+  const counts = {};
+  inCat.forEach(function(p) { counts[p.subcategory] = (counts[p.subcategory] || 0) + 1; });
+  const subs = Object.keys(counts).filter(function(s) { return counts[s] >= 3; }).sort();
   if (!subs.length) {
     container.classList.remove('show');
     container.innerHTML = '';

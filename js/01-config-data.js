@@ -358,13 +358,101 @@ var _SUBCAT_LABELS = {
     'nails':     'Nails',
     'tarp-mesh': 'Tarpaulin & Mesh',
     'wire':      'Wires & Electrodes',
-    'gloves':    'Gloves'
+    'gloves':    'Gloves',
+
+    'hammer':       'Hammers',
+    'measuring':    'Measuring Tools',
+    'masonry':      'Masonry Tools',
+    'hand-tool':    'Hand Tools',
+    'woodworking':  'Woodworking',
+
+    'zinc-handles':       'Zinc Handles',
+    'iron-handles':       'Iron Handles',
+    'aluminium-fittings': 'Aluminium Door Fittings',
+    'door-fittings':      'Door Fittings',
+    'pull-handles':       'Pull Handles',
+    'hinges':             'Hinges',
+    'cabinet-knobs':      'Cabinet Knobs',
+    'rosette-handles':    'Rosette Handles',
+    'drawer-slide':       'Drawer Slides',
+    'shelf-support':      'Shelf Support',
+    'cabinet-fittings':   'Cabinet Fittings',
+    'lock':               'Locks',
+
+    'faucets': 'Faucets',
+    'pump':    'Pumps',
+    'valves':  'Valves',
+    'showers': 'Showers',
+    'fixtures': 'Fixtures',
+
+    'ppr':                  'PPR Pipes & Fittings',
+    'pvc':                  'PVC Pipes & Fittings',
+    'upvc':                 'UPVC Pipes & Fittings',
+    'cpvc':                 'CPVC Pipes & Fittings',
+    'chrome-tube-fittings': 'Chrome Tube & Fittings',
+
+    'corded-tools':               'Corded Tools',
+    'cordless-tools':             'Cordless Tools',
+    'grinding-sanding-polishing': 'Grinding, Sanding & Polishing',
+    'power-tools-accessories':    'Power Tool Accessories',
+    'welding-machine-tools':      'Welding Machines & Tools',
+    'drilling-fastening':         'Drilling & Fastening',
+    'air-compressors':            'Air Compressors',
+
+    'oil-filter':   'Oil Filters',
+    'water-filter': 'Water Filters',
+
+    'floor-cleaning': 'Floor Cleaning'
 };
 var _AR_SUBCATS = {
     'nails':     'مسامير',
     'tarp-mesh': 'مشمع وشبك',
     'wire':      'أسلاك وأقطاب',
-    'gloves':    'قفازات'
+    'gloves':    'قفازات',
+
+    'hammer':      'مطارق',
+    'measuring':   'أدوات القياس',
+    'masonry':     'أدوات البناء',
+    'hand-tool':   'عدد يدوية',
+    'woodworking': 'أدوات النجارة',
+
+    'zinc-handles':       'مقابض زنك',
+    'iron-handles':       'مقابض حديد',
+    'aluminium-fittings': 'تجهيزات أبواب ألمنيوم',
+    'door-fittings':      'تجهيزات الأبواب',
+    'pull-handles':       'مقابض سحب',
+    'hinges':             'مفصلات',
+    'cabinet-knobs':      'مقابض خزائن',
+    'rosette-handles':    'مقابض دائرية',
+    'drawer-slide':       'سكك أدراج',
+    'shelf-support':      'حوامل رفوف',
+    'cabinet-fittings':   'تجهيزات خزائن',
+    'lock':               'أقفال',
+
+    'faucets':  'حنفيات',
+    'pump':     'مضخات',
+    'valves':   'صمامات',
+    'showers':  'دشات',
+    'fixtures': 'تجهيزات صحية',
+
+    'ppr':                  'مواسير PPR',
+    'pvc':                  'مواسير PVC',
+    'upvc':                 'مواسير UPVC',
+    'cpvc':                 'مواسير CPVC',
+    'chrome-tube-fittings': 'مواسير وتجهيزات كروم',
+
+    'corded-tools':               'عدد كهربائية سلكية',
+    'cordless-tools':             'عدد كهربائية لاسلكية',
+    'grinding-sanding-polishing': 'أدوات جلخ وصنفرة وتلميع',
+    'power-tools-accessories':    'ملحقات العدد الكهربائية',
+    'welding-machine-tools':      'ماكينات ومعدات لحام',
+    'drilling-fastening':         'أدوات حفر وتثبيت',
+    'air-compressors':            'ضواغط هواء',
+
+    'oil-filter':   'فلاتر زيت',
+    'water-filter': 'فلاتر مياه',
+
+    'floor-cleaning': 'تنظيف الأرضيات'
 };
 
 // ── ARABIC PRODUCT TRANSLATIONS ───────────────────────────────────────────
