@@ -62,6 +62,9 @@
   .filter-pills { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none; }
   .filter-pills::-webkit-scrollbar { display: none; }
   .pill { flex-shrink: 0; }
+  .sub-filter-pills { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none; }
+  .sub-filter-pills::-webkit-scrollbar { display: none; }
+  .sub-pill { flex-shrink: 0; }
   .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
   /* Categories */

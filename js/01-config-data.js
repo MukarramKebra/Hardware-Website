@@ -331,6 +331,10 @@ function getAllProducts() {
         id:       p.id,
         name:     p.name,
         category: normalizeCategory(p.category),
+        // Finer-grained grouping within a category (e.g. "nails" inside
+        // Nails/Wires), matched against expertshardware.com's own
+        // subcategories. Optional — most products don't have one yet.
+        subcategory: p.subcategory || '',
         price:    parseFloat(p.price),
         // No random stock-photo fallback (picsum) — if a product has no image
         // yet (e.g. photos still loading from Supabase), the card shows the
@@ -345,6 +349,17 @@ function getAllProducts() {
 }
 
 const PRODUCTS = [];
+
+// Subcategory display labels — matched against expertshardware.com's own
+// subcategory names (e.g. Nails/Wires > Nails). Slugs not listed here just
+// render title-cased from the slug (see subcatLabel() in 02-catalog-render.js),
+// so a new subcategory works immediately even before a label is added.
+var _SUBCAT_LABELS = {
+    'nails': 'Nails'
+};
+var _AR_SUBCATS = {
+    'nails': 'مسامير'
+};
 
 // ── ARABIC PRODUCT TRANSLATIONS ───────────────────────────────────────────
 var _AR_PRODUCTS = {};
@@ -372,3 +387,4 @@ var _AR_CATS = {
 
 let cart = [];
 let activeFilter = 'all';
+let activeSubFilter = 'all';

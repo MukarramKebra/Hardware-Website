@@ -74,6 +74,16 @@
 .pill:hover { border-color: var(--orange); color: var(--orange); }
 .pill.active { background: var(--orange); border-color: var(--orange); color: #fff; }
 
+/* Subcategory row — appears under the main filter pills only when the
+   active category has subcategories tagged (expert_products.subcategory).
+   Smaller/quieter than .pill so the hierarchy (category > subcategory)
+   reads at a glance. Empty + hidden when a category has no subcategories yet. */
+.sub-filter-pills { display: none; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.sub-filter-pills.show { display: flex; }
+.sub-pill { background: transparent; border: 1px solid var(--border); color: var(--gray-600); padding: 5px 11px; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.18s; }
+.sub-pill:hover { border-color: var(--orange); color: var(--orange); }
+.sub-pill.active { background: var(--dark); border-color: var(--dark); color: #fff; }
+
 .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
 .product-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: all 0.2s; display: flex; flex-direction: column; cursor: pointer; }
 .product-card:hover { border-color: var(--orange); transform: translateY(-3px); box-shadow: var(--shadow-lg); }

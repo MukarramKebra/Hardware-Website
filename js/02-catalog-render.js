@@ -335,6 +335,7 @@ initSideBanners();
 
 function jumpCat(cat) {
   activeFilter = cat;
+  activeSubFilter = 'all';
   syncCatNav(cat);
   document.getElementById('searchInput').value = '';
   _switchCategoryWithLoading();
@@ -342,9 +343,59 @@ function jumpCat(cat) {
 
 function filterProducts(category) {
   activeFilter = category;
+  activeSubFilter = 'all';
   syncCatNav(category);
   document.getElementById('searchInput').value = '';
   _switchCategoryWithLoading();
+}
+
+// subcatLabel — display name for a subcategory slug. Falls back to a
+// title-cased version of the slug so a new subcategory shows up sensibly
+// in the UI even before someone adds it to _SUBCAT_LABELS/_AR_SUBCATS.
+function subcatLabel(slug) {
+  var map = (_lang === 'ar') ? _AR_SUBCATS : _SUBCAT_LABELS;
+  if (map[slug]) return map[slug];
+  return slug.replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+}
+
+function selectSubFilter(sub) {
+  activeSubFilter = sub;
+  renderSubFilters();
+  renderProducts();
+  scrollToProducts();
+}
+
+// renderSubFilters — builds the secondary pill row for whichever subcategories
+// exist within the active main category. Fully data-driven off
+// expert_products.subcategory, so tagging more products/categories later
+// (see admin) makes the row appear automatically, no UI code changes needed.
+function renderSubFilters() {
+  const container = document.getElementById('subFilterPills');
+  if (!container) return;
+  if (activeFilter === 'all') {
+    container.classList.remove('show');
+    container.innerHTML = '';
+    return;
+  }
+  const subs = Array.from(new Set(
+    getAllProducts()
+      .filter(p => p.category === activeFilter && p.subcategory)
+      .map(p => p.subcategory)
+  )).sort();
+  if (!subs.length) {
+    container.classList.remove('show');
+    container.innerHTML = '';
+    return;
+  }
+  container.classList.add('show');
+  container.innerHTML =
+    '<button class="sub-pill' + (activeSubFilter === 'all' ? ' active' : '') + '" onclick="selectSubFilter(\'all\')">' +
+      (_lang === 'ar' ? 'الكل' : 'All') +
+    '</button>' +
+    subs.map(function(s) {
+      return '<button class="sub-pill' + (activeSubFilter === s ? ' active' : '') + '" onclick="selectSubFilter(\'' + s + '\')">' +
+        subcatLabel(s) + '</button>';
+    }).join('');
 }
 
 // Covers the screen with a brief loading flash BEFORE touching the grid or
@@ -445,6 +496,7 @@ function matchesSearch(query, p) {
   const haystack = normalizeQ(p.name) + ' ' +
                    normalizeQ(p.desc || '') + ' ' +
                    normalizeQ(p.category || '') + ' ' +
+                   normalizeQ(p.subcategory || '') + ' ' +
                    normalizeQ(p.brand || '') + ' ' +
                    normalizeQ(_sbProductKeywords[p.id] || '') + ' ' +
                    (ARABIC_NAMES[p.id] || '');
@@ -664,10 +716,12 @@ function renderProducts() {
   const query = document.getElementById('searchInput').value.trim();
   const grid  = document.getElementById('productsGrid');
   const empty = document.getElementById('productsEmpty');
+  renderSubFilters();
   const filtered = getAllProducts().filter(p => {
     const matchCat    = activeFilter === 'all' || p.category === activeFilter || getMultiCats(p.id).includes(activeFilter);
+    const matchSub     = activeSubFilter === 'all' || p.subcategory === activeSubFilter;
     const matchSearch = matchesSearch(query, p);
-    return matchCat && matchSearch;
+    return matchCat && matchSub && matchSearch;
   });
   if (!filtered.length) {
     grid.innerHTML = '';
