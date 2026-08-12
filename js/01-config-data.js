@@ -355,10 +355,16 @@ const PRODUCTS = [];
 // render title-cased from the slug (see subcatLabel() in 02-catalog-render.js),
 // so a new subcategory works immediately even before a label is added.
 var _SUBCAT_LABELS = {
-    'nails': 'Nails'
+    'nails':     'Nails',
+    'tarp-mesh': 'Tarpaulin & Mesh',
+    'wire':      'Wires & Electrodes',
+    'gloves':    'Gloves'
 };
 var _AR_SUBCATS = {
-    'nails': 'مسامير'
+    'nails':     'مسامير',
+    'tarp-mesh': 'مشمع وشبك',
+    'wire':      'أسلاك وأقطاب',
+    'gloves':    'قفازات'
 };
 
 // ── ARABIC PRODUCT TRANSLATIONS ───────────────────────────────────────────
