@@ -292,6 +292,7 @@ function pmAddToCart() {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     closeProduct();
+    closeSearchOverlay();
     document.getElementById('cartModal').classList.remove('open');
     document.getElementById('checkoutOverlay').classList.remove('open');
   }
@@ -562,7 +563,13 @@ document.querySelectorAll('.pill').forEach(pill => {
     renderProducts();
   });
 });
-document.getElementById('searchInput').addEventListener('input', debouncedRenderProducts);
+// The always-visible product search box also drives the full-screen,
+// closest-match-first results overlay (see js/02-catalog-render.js) — the
+// header's own collapsible search stays as a simple inline grid filter.
+document.getElementById('searchInput').addEventListener('input', function(e) {
+  debouncedRenderProducts();
+  debouncedSearchOverlay(e.target.value);
+});
 document.getElementById('contactForm').addEventListener('submit', e => {
   e.preventDefault();
   document.getElementById('formSuccess').classList.add('show');

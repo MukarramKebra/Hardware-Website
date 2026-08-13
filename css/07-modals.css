@@ -52,6 +52,34 @@
 .co-success h3 { font-size:22px; font-weight:800; color:var(--dark); margin-bottom:8px; }
 .co-success p { color:#888; font-size:14px; line-height:1.6; }
 
+/* ── LIVE SEARCH RESULTS (full-screen, closest-match-first) ─────────────── */
+.search-overlay { position:fixed; inset:0; background:rgba(45,0,0,0.55); z-index:9700; display:none; align-items:flex-start; justify-content:center; padding:80px 16px 24px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.search-overlay.open { display:flex; }
+.search-overlay-panel { background:#fff; border-radius:14px; width:100%; max-width:1000px; box-shadow:var(--shadow-lg); display:flex; flex-direction:column; max-height:calc(100vh - 104px); }
+.search-overlay-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.search-overlay-summary { font-size:13px; font-weight:700; color:var(--dark); }
+.search-overlay-close { background:var(--light2); border:none; width:32px; height:32px; border-radius:8px; font-size:15px; color:var(--dark); cursor:pointer; flex-shrink:0; }
+.search-overlay-close:hover { background:var(--gray-200); }
+.search-overlay-body { overflow-y:auto; padding:18px 20px; }
+.search-overlay-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; }
+.search-overlay-card { cursor:pointer; border:1px solid var(--border); border-radius:10px; padding:10px; text-align:left; background:#fff; transition:box-shadow 0.15s, border-color 0.15s, transform 0.15s; }
+.search-overlay-card:hover { border-color:var(--orange); box-shadow:var(--shadow); transform:translateY(-2px); }
+.search-overlay-card .so-img-wrap { position:relative; width:100%; aspect-ratio:1; border-radius:8px; overflow:hidden; background:var(--light); margin-bottom:8px; display:flex; align-items:center; justify-content:center; }
+.search-overlay-card .so-img-wrap img { width:100%; height:100%; object-fit:contain; }
+.search-overlay-card .so-img-fallback { display:none; align-items:center; justify-content:center; width:100%; height:100%; color:var(--gray-400); font-size:24px; }
+.search-overlay-card .so-cat { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--gray-400); margin-bottom:3px; }
+.search-overlay-card .so-name { font-size:12.5px; font-weight:700; color:var(--dark); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:5px; min-height:34px; }
+.search-overlay-card .so-price { font-size:12.5px; font-weight:800; color:var(--orange); }
+.search-overlay-empty { text-align:center; padding:50px 16px; color:var(--gray-400); }
+.search-overlay-empty i { font-size:36px; margin-bottom:12px; display:block; opacity:0.5; }
+.search-overlay-more { flex-shrink:0; margin:0 20px 20px; padding:13px; border:none; border-radius:9px; background:var(--orange); color:#fff; font-size:14px; font-weight:800; cursor:pointer; }
+.search-overlay-more:hover { background:var(--orange-dark); }
+@media (max-width:600px) {
+  .search-overlay { padding:64px 10px 10px; }
+  .search-overlay-panel { max-height:calc(100vh - 74px); }
+  .search-overlay-grid { grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; }
+}
+
 /* ── PRODUCT DETAIL MODAL ─────────────────────────────────────────────── */
 .prod-overlay { position:fixed; inset:0; background:var(--light); z-index:2500; display:none; overflow-y:auto; -webkit-overflow-scrolling:touch; }
 .prod-overlay.open { display:block; }
