@@ -81,6 +81,7 @@ const DEFAULT_CATS = [
   { slug:'plumbing-fitting', label:'Fittings' },
   { slug:'sanitary',         label:'Sanitary Ware' },
   { slug:'filter',           label:'Filters' },
+  { slug:'marhaba',          label:'Marhaba' },
     // Admin-only category for non-purchasable/placeholder entries (e.g. items
     // scraped from a source catalog that aren't real products). Never appears
     // on the storefront — index.html's category grid/nav/pills don't reference

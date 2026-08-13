@@ -490,7 +490,8 @@ var _AR_CATS = {
     'household':        'أدوات التنظيف',
     'plumbing-fitting': 'تمديدات السباكة',
     'sanitary':         'أدوات صحية',
-    'filter':           'فلاتر'
+    'filter':           'فلاتر',
+    'marhaba':          'مرحبا'
 };
 
 let cart = [];
