@@ -276,27 +276,38 @@ function card(icon, cls, label, val, sub) {
 }
 
 // â”€â”€ TABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Category name/label is part of the search haystack too — searching a
+// category like "marhaba" previously found nothing because only
+// name/brand/SKU were checked, not the product's category assignment(s).
+function _adminProductMatchesQuery(p, q) {
+  if (!q) return true;
+  var matchesCat = getProductCatSlugs(p).some(function(slug) {
+    var match = getAllCats().find(function(c){ return c.slug === slug; });
+    var label = match ? match.label : slug.replace(/-/g,' ');
+    return slug.toLowerCase().includes(q) || label.toLowerCase().includes(q);
+  });
+  return p.name.toLowerCase().includes(q) || getBrand(p.id).toLowerCase().includes(q) || getProductSku(p.id).toLowerCase().includes(q) || matchesCat;
+}
+function _filterAdminInventory(q) {
+  const cat = document.getElementById('catFilter').value;
+  const brandF = (document.getElementById('brandFilter') || { value:'all' }).value;
+  return getAllAdminProducts().filter(function(p) {
+    return (cat==='all'||p.cat===cat) && (brandF==='all'||getBrand(p.id)===brandF) && _adminProductMatchesQuery(p, q);
+  });
+}
 function renderTable() {
   const photos   = JSON.parse(localStorage.getItem('jain_photos')||'{}');
   const views    = JSON.parse(localStorage.getItem('bahar_views')||'{}');
   const searches = JSON.parse(localStorage.getItem('bahar_searches')||'{}');
   const q   = document.getElementById('adminSearch').value.toLowerCase();
-  const cat = document.getElementById('catFilter').value;
-  const brandF = (document.getElementById('brandFilter') || { value:'all' }).value;
-  const list = getAllAdminProducts().filter(function(p) {
-    // Category name/label is part of the search haystack too — searching a
-    // category like "marhaba" previously found nothing because only
-    // name/brand/SKU were checked, not the product's category assignment(s).
-    // Skipped when there's no query — renderTable() reruns this filter after
-    // every single admin edit, so it's not worth the per-row cost otherwise.
-    var matchesCat = !!q && getProductCatSlugs(p).some(function(slug) {
-      var match = getAllCats().find(function(c){ return c.slug === slug; });
-      var label = match ? match.label : slug.replace(/-/g,' ');
-      return slug.toLowerCase().includes(q) || label.toLowerCase().includes(q);
-    });
-    return (cat==='all'||p.cat===cat) && (brandF==='all'||getBrand(p.id)===brandF) &&
-      (!q||p.name.toLowerCase().includes(q)||getBrand(p.id).toLowerCase().includes(q)||getProductSku(p.id).toLowerCase().includes(q)||matchesCat);
-  });
+  let list = _filterAdminInventory(q);
+  // Typo tolerance: if the literal search+filters found nothing, try the
+  // closest real spelling from the catalog before giving up on it entirely.
+  let correctedFrom = null;
+  if (!list.length && q) {
+    const suggestion = _adminDidYouMean(q, function(corrected) { return _filterAdminInventory(corrected).length > 0; });
+    if (suggestion) { list = _filterAdminInventory(suggestion); correctedFrom = suggestion; }
+  }
   const rows = list.map(function(p) {
     const qty    = stockData[p.id]||0;
     const cls    = qty===0?'out':qty<=10?'low':'';
@@ -360,7 +371,11 @@ function renderTable() {
       '</div></td>' +
     '</tr>';
   }).join('');
-  document.getElementById('tblBody').innerHTML = rows;
+  const correctionRow = correctedFrom
+    ? '<tr class="search-correction-row"><td colspan="10"><i class="fa fa-info-circle"></i> Showing results for "'+encodeHtml(correctedFrom)+'" instead of "'+encodeHtml(q)+'"</td></tr>'
+    : '';
+  document.getElementById('tblBody').innerHTML = correctionRow + (rows ||
+    (q ? '<tr><td colspan="10" style="padding:24px;text-align:center;color:var(--gray)">No products match your search.</td></tr>' : ''));
   const tv = list.reduce(function(s,p){ return s+p.price*(stockData[p.id]||0); },0);
   const tu = list.reduce(function(s,p){ return s+(stockData[p.id]||0); },0);
   document.getElementById('tblFoot').innerHTML =

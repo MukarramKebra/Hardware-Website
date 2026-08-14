@@ -93,16 +93,27 @@ async function saveProductSEO() {
 // Every product with just its description/keyword status and an Edit button —
 // so all SEO editing happens in this tab without hunting through Inventory's
 // row menus. Reuses openProductSEO(), the same editor the Inventory tab uses.
+function _seoFilteredList(q) {
+  return getAllAdminProducts().filter(function(p) {
+    return !q || p.name.toLowerCase().indexOf(q) !== -1 || getProductSku(p.id).toLowerCase().indexOf(q) !== -1;
+  });
+}
 function renderSEOProducts() {
   var body = document.getElementById('seoProdBody');
   if (!body) return;
   var q = (document.getElementById('seoProdSearch').value || '').toLowerCase().trim();
   var photos = {};
   try { photos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(e) {}
-  var list = getAllAdminProducts().filter(function(p) {
-    return !q || p.name.toLowerCase().indexOf(q) !== -1 || getProductSku(p.id).toLowerCase().indexOf(q) !== -1;
-  });
-  body.innerHTML = list.map(function(p) {
+  var list = _seoFilteredList(q);
+  // Typo tolerance: try the closest real spelling before giving up.
+  var correctedFrom = null;
+  if (!list.length && q) {
+    var suggestion = _adminDidYouMean(q, function(corrected) { return _seoFilteredList(corrected).length > 0; });
+    if (suggestion) { list = _seoFilteredList(suggestion); correctedFrom = suggestion; }
+  }
+  body.innerHTML = (correctedFrom
+    ? '<tr class="search-correction-row"><td colspan="6"><i class="fa fa-info-circle"></i> Showing results for "'+encodeHtml(correctedFrom)+'" instead of "'+encodeHtml(q)+'"</td></tr>'
+    : '') + list.map(function(p) {
     var desc = p.desc || '';
     var kw   = (window._sbProductKeywords || {})[p.id] || '';
     var ph   = photos[p.id];

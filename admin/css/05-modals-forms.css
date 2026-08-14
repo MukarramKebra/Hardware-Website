@@ -158,8 +158,8 @@
     .bulk-btn.red:hover{border-color:var(--red);color:var(--red);}
     .bulk-btn.green:hover{border-color:var(--green);color:var(--green);}
     #foBulkSale::placeholder{color:rgba(255,255,255,0.65);}
-    .bulk-desel{background:none;border:none;color:rgba(255,255,255,0.35);font-size:12px;cursor:pointer;margin-left:auto;display:flex;align-items:center;gap:5px;}
-    .bulk-desel:hover{color:rgba(255,255,255,0.75);}
+    .bulk-desel{background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.5);color:#fff;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;margin-left:auto;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all .15s;}
+    .bulk-desel:hover{background:rgba(255,255,255,0.26);border-color:#fff;}
 
     /* ── MULTI-CATEGORY PICKER ─────────────────────────────────────────── */
     .mc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:700;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}

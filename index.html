@@ -381,6 +381,10 @@
         </div>
         <div class="sub-filter-pills" id="subFilterPills"></div>
       </div>
+      <!-- Shown when the typed search found nothing but a nearby spelling did
+           (see _didYouMean/renderProducts in js/02-catalog-render.js) — the
+           grid below is already showing the corrected results, not a dead end. -->
+      <div class="search-correction-notice" id="searchCorrectionNotice" style="display:none"></div>
       <div class="products-grid" id="productsGrid"></div>
       <div class="products-empty" id="productsEmpty" style="display:none">
         <i class="fa fa-box-open"></i>

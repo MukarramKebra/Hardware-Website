@@ -136,6 +136,9 @@
 .low-stock { color: var(--yellow); }
 .products-empty { text-align: center; padding: 80px 0; color: var(--gray-400); }
 .products-empty i { font-size: 56px; margin-bottom: 14px; display: block; }
+.search-correction-notice { display: flex; align-items: center; gap: 8px; background: var(--light2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; font-size: 13px; color: var(--dark); }
+.search-correction-notice i { color: var(--orange); }
+.search-correction-notice strong { color: var(--orange); }
 .products-loading { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; padding: 100px 0; }
 .products-loading i { font-size: 40px; color: var(--orange); }
 

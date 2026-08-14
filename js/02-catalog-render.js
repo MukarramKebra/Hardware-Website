@@ -740,23 +740,49 @@ function _sortProducts(list, mode) {
   return list;
 }
 
-function renderProducts() {
-  const query = document.getElementById('searchInput').value.trim();
-  const grid  = document.getElementById('productsGrid');
-  const empty = document.getElementById('productsEmpty');
-  renderSubFilters();
-  const filtered = getAllProducts().filter(p => {
+function _filterProductsBy(query) {
+  return getAllProducts().filter(p => {
     const matchCat    = activeFilter === 'all' || p.category === activeFilter || getMultiCats(p.id).includes(activeFilter);
     const matchSub     = activeSubFilter === 'all' || p.subcategory === activeSubFilter;
     const matchSearch = matchesSearch(query, p);
     return matchCat && matchSub && matchSearch;
   });
+}
+
+function renderProducts() {
+  const query = document.getElementById('searchInput').value.trim();
+  const grid  = document.getElementById('productsGrid');
+  const empty = document.getElementById('productsEmpty');
+  const correctionNotice = document.getElementById('searchCorrectionNotice');
+  renderSubFilters();
+
+  let filtered = _filterProductsBy(query);
+  // Typo tolerance: an exact-spelling miss doesn't have to be a dead end —
+  // if a nearby real spelling finds something (within whatever category
+  // filter is active), just show that instead of an empty grid.
+  let suggestion = null, correctedFrom = null;
+  if (!filtered.length && query) {
+    suggestion = _didYouMean(query);
+    if (suggestion) {
+      const correctedResults = _filterProductsBy(suggestion);
+      if (correctedResults.length) { filtered = correctedResults; correctedFrom = suggestion; }
+    }
+  }
+  const isArU = _lang === 'ar';
+  if (correctionNotice) {
+    if (correctedFrom) {
+      correctionNotice.style.display = 'flex';
+      correctionNotice.innerHTML = '<i class="fa fa-info-circle"></i> ' + (isArU
+        ? 'عرض النتائج لـ <strong>"' + correctedFrom.replace(/</g, '&lt;') + '"</strong> بدلاً من "' + query.replace(/</g, '&lt;') + '"'
+        : 'Showing results for <strong>"' + correctedFrom.replace(/</g, '&lt;') + '"</strong> instead of "' + query.replace(/</g, '&lt;') + '"');
+    } else {
+      correctionNotice.style.display = 'none';
+      correctionNotice.innerHTML = '';
+    }
+  }
   if (!filtered.length) {
     grid.innerHTML = '';
     empty.style.display = 'block';
-    // Offer the closest real spelling when the search itself found nothing
-    var suggestion = query ? _didYouMean(query) : null;
-    var isArU = _lang === 'ar';
     empty.innerHTML = '<i class="fa fa-box-open"></i>' +
       '<p data-i18n="no_results">' + (isArU ? 'لا توجد منتجات مطابقة. جرّب بحثاً آخر.' : 'No products found. Try a different search.') + '</p>' +
       (suggestion
@@ -908,10 +934,25 @@ function updateSearchOverlay(query) {
   const q = (query || '').trim();
   if (!q) { closeSearchOverlay(); return; }
 
-  const results = _rankSearchResults(q);
+  let results = _rankSearchResults(q);
   const isAr = _lang === 'ar';
-  document.getElementById('searchOverlaySummary').textContent =
-    results.length + ' ' + (isAr ? 'نتيجة لـ' : (results.length === 1 ? 'result for' : 'results for')) + ' "' + q + '"';
+  // Typo tolerance: try the closest real spelling before giving up.
+  let correctedFrom = null;
+  if (!results.length) {
+    const suggestion = _didYouMean(q);
+    if (suggestion) {
+      const correctedResults = _rankSearchResults(suggestion);
+      if (correctedResults.length) { results = correctedResults; correctedFrom = suggestion; }
+    }
+  }
+  const summaryEl = document.getElementById('searchOverlaySummary');
+  if (correctedFrom) {
+    summaryEl.innerHTML = results.length + ' ' + (isAr ? 'نتيجة لـ' : (results.length === 1 ? 'result for' : 'results for')) +
+      ' <strong style="color:var(--orange)">"' + correctedFrom.replace(/</g, '&lt;') + '"</strong> ' +
+      (isAr ? 'بدلاً من' : 'instead of') + ' "' + q.replace(/</g, '&lt;') + '"';
+  } else {
+    summaryEl.textContent = results.length + ' ' + (isAr ? 'نتيجة لـ' : (results.length === 1 ? 'result for' : 'results for')) + ' "' + q + '"';
+  }
 
   const grid    = document.getElementById('searchOverlayGrid');
   const emptyEl = document.getElementById('searchOverlayEmpty');
