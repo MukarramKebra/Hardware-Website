@@ -326,6 +326,10 @@
           <h3>Filters</h3>
           <p>Water & Air Filters</p>
         </div>
+        <div class="cat-card" data-cat="marhaba"          onclick="filterProducts('marhaba')"          style="background-image:url('cat-images/marhaba.jpg')">
+          <h3>Marhaba</h3>
+          <p>Generators & Voltage Regulators</p>
+        </div>
         <div class="cat-card" data-cat="all"              onclick="filterProducts('all')"              style="background-image:url('Bahar-Products/SKU-0015.jpg')">
           <h3>All Products</h3>
           <p>Browse our full catalog</p>
@@ -373,6 +377,7 @@
           <button class="pill" data-filter="plumbing-fitting">Fittings</button>
           <button class="pill" data-filter="sanitary">Sanitary</button>
           <button class="pill" data-filter="filter">Filters</button>
+          <button class="pill" data-filter="marhaba">Marhaba</button>
         </div>
         <div class="sub-filter-pills" id="subFilterPills"></div>
       </div>
@@ -703,6 +708,30 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── LIVE SEARCH RESULTS (full-screen) ──────────────────────────────
+       Opens over the whole viewport while typing in the always-visible
+       product search box, ranked closest-match-first (exact name match,
+       then starts-with, then contains, then everything else matchesSearch
+       found via description/category/brand/keywords). Distinct from the
+       small header search dropdown, which still just filters the grid
+       below it. -->
+  <div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearchOverlay()">
+    <div class="search-overlay-panel">
+      <div class="search-overlay-head">
+        <span class="search-overlay-summary" id="searchOverlaySummary"></span>
+        <button class="search-overlay-close" onclick="closeSearchOverlay()" aria-label="Close search results"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="search-overlay-body" id="searchOverlayBody">
+        <div class="search-overlay-grid" id="searchOverlayGrid"></div>
+        <div class="search-overlay-empty" id="searchOverlayEmpty" style="display:none">
+          <i class="fa fa-box-open"></i>
+          <p id="searchOverlayEmptyText">No products found.</p>
+        </div>
+      </div>
+      <button class="search-overlay-more" id="searchOverlayMore" onclick="viewAllSearchResults()" style="display:none"></button>
     </div>
   </div>
 

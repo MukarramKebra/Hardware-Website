@@ -873,3 +873,100 @@ function debouncedRenderProducts() {
   _renderProductsDebounceTimer = setTimeout(renderProducts, 180);
 }
 
+// ── LIVE SEARCH RESULTS OVERLAY ─────────────────────────────────────────
+// Ranks closest-match-first: exact name match, then name starts with the
+// query, then name contains it, then everything else matchesSearch() found
+// via description/category/subcategory/brand/keywords/Arabic name. The main
+// grid below (renderProducts) keeps whatever the current sort mode is —
+// this overlay is purely for "what's the best match for what I just typed".
+function _rankSearchResults(query) {
+  const normQ = normalizeQ(query);
+  return getAllProducts()
+    .filter(p => matchesSearch(query, p))
+    .map(p => {
+      const name = normalizeQ(p.name);
+      let score;
+      if (name === normQ) score = 0;
+      else if (name.indexOf(normQ) === 0) score = 1;
+      else if (name.indexOf(normQ) !== -1) score = 2;
+      else score = 3;
+      return { p, score };
+    })
+    .sort((a, b) => a.score - b.score)
+    .map(x => x.p);
+}
+
+var _searchOverlayDebounceTimer;
+function debouncedSearchOverlay(query) {
+  clearTimeout(_searchOverlayDebounceTimer);
+  _searchOverlayDebounceTimer = setTimeout(function() { updateSearchOverlay(query); }, 180);
+}
+
+function updateSearchOverlay(query) {
+  const overlay = document.getElementById('searchOverlay');
+  if (!overlay) return;
+  const q = (query || '').trim();
+  if (!q) { closeSearchOverlay(); return; }
+
+  const results = _rankSearchResults(q);
+  const isAr = _lang === 'ar';
+  document.getElementById('searchOverlaySummary').textContent =
+    results.length + ' ' + (isAr ? 'نتيجة لـ' : (results.length === 1 ? 'result for' : 'results for')) + ' "' + q + '"';
+
+  const grid    = document.getElementById('searchOverlayGrid');
+  const emptyEl = document.getElementById('searchOverlayEmpty');
+  const moreBtn = document.getElementById('searchOverlayMore');
+  const SHOWN   = 24;
+  const top     = results.slice(0, SHOWN);
+  const customPhotos = _sbPhotos || {};
+
+  if (!top.length) {
+    grid.innerHTML = '';
+    emptyEl.style.display = 'block';
+    document.getElementById('searchOverlayEmptyText').textContent =
+      isAr ? 'لا توجد منتجات مطابقة.' : 'No products found. Try a different search.';
+    moreBtn.style.display = 'none';
+  } else {
+    emptyEl.style.display = 'none';
+    grid.innerHTML = top.map(function(p) {
+      const raw   = customPhotos[p.id];
+      const photo = (raw && (raw.startsWith('http') || raw.startsWith('data:'))) ? raw : p.img;
+      const priceHtml = hasVisiblePrice(p)
+        ? applySale(p.price, p.id).toFixed(3) + ' KWD'
+        : (isAr ? 'السعر عند الطلب' : 'Price on request');
+      const pCat = isAr ? (_AR_CATS[p.category] || p.category.replace('-', ' ')) : p.category.replace('-', ' ');
+      return '<div class="search-overlay-card" onclick="selectSearchOverlayResult(' + p.id + ')">' +
+        '<div class="so-img-wrap">' +
+          (photo ? '<img src="' + photo + '" alt="' + p.name + '" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" />' : '') +
+          '<div class="so-img-fallback" style="display:' + (photo ? 'none' : 'flex') + '"><i class="fa fa-tools"></i></div>' +
+        '</div>' +
+        '<div class="so-cat">' + pCat + '</div>' +
+        '<div class="so-name">' + p.name + '</div>' +
+        '<div class="so-price">' + priceHtml + '</div>' +
+      '</div>';
+    }).join('');
+    moreBtn.style.display = results.length > SHOWN ? 'block' : 'none';
+    moreBtn.textContent = isAr ? 'عرض جميع ' + results.length + ' نتيجة' : 'View all ' + results.length + ' results';
+  }
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function selectSearchOverlayResult(id) {
+  closeSearchOverlay();
+  openProduct(id);
+}
+
+function viewAllSearchResults() {
+  closeSearchOverlay();
+  const grid = document.getElementById('productsGrid');
+  if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeSearchOverlay() {
+  const overlay = document.getElementById('searchOverlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+

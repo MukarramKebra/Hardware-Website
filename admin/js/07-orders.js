@@ -280,8 +280,18 @@ function renderTable() {
   const cat = document.getElementById('catFilter').value;
   const brandF = (document.getElementById('brandFilter') || { value:'all' }).value;
   const list = getAllAdminProducts().filter(function(p) {
+    // Category name/label is part of the search haystack too — searching a
+    // category like "marhaba" previously found nothing because only
+    // name/brand/SKU were checked, not the product's category assignment(s).
+    // Skipped when there's no query — renderTable() reruns this filter after
+    // every single admin edit, so it's not worth the per-row cost otherwise.
+    var matchesCat = !!q && getProductCatSlugs(p).some(function(slug) {
+      var match = getAllCats().find(function(c){ return c.slug === slug; });
+      var label = match ? match.label : slug.replace(/-/g,' ');
+      return slug.toLowerCase().includes(q) || label.toLowerCase().includes(q);
+    });
     return (cat==='all'||p.cat===cat) && (brandF==='all'||getBrand(p.id)===brandF) &&
-      (!q||p.name.toLowerCase().includes(q)||getBrand(p.id).toLowerCase().includes(q)||getProductSku(p.id).toLowerCase().includes(q));
+      (!q||p.name.toLowerCase().includes(q)||getBrand(p.id).toLowerCase().includes(q)||getProductSku(p.id).toLowerCase().includes(q)||matchesCat);
   });
   const rows = list.map(function(p) {
     const qty    = stockData[p.id]||0;

@@ -184,55 +184,52 @@ async function loadSBData() {
   // second pass, which is what Google's Merchant Listings report was flagging.
   try { _sbPhotos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(_) {}
 
-  // Fire every request in parallel, but only BLOCK on the four the offers
-  // ticker actually needs (products, photos, hidden_prices, featured_offers)
-  // before rendering it. The ticker sits directly under the header, above
-  // the fold, so it used to sit blank until all fourteen requests came
-  // back — including expert_stock/expert_reviews, which paginate past
-  // PostgREST's 1000-row cap and are the slowest things in this batch, and
-  // which the ticker never reads (no stock badge, no review count on those
-  // cards). Everything else still waits for the full set, same as before.
+  // All the per-key settings rows (hidden_prices, featured_offers, sku_map,
+  // brand_map, multi_cats, product_keywords, qty_limits, product_variants)
+  // used to be EIGHT separate requests — each a full round trip to Supabase
+  // (700ms-1.7s measured), and the browser's ~6-connection cap per origin
+  // meant most of them queued behind each other instead of truly running in
+  // parallel. One key=in.(...) request returns all of them in a single trip.
   const productsP = sbFetchAll(SB_URL + '/rest/v1/expert_products?select=*', SB_H);
   const photosP   = sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=*',   SB_H);
-  const hiddenPriceP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_H });
-  const featuredP    = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_H });
+  const settingsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(hidden_prices,featured_offers,sku_map,brand_map,multi_cats,product_keywords,qty_limits,product_variants)&select=key,value', { headers: SB_H });
 
   const stockP   = sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',           SB_H);
   const hiddenP  = sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id', SB_H);
   const bannersP = sbFetchAll(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc', SB_H);
-  const skuP      = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',   { headers: SB_H });
-  const brandP    = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value', { headers: SB_H });
-  const multiCatP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value',{ headers: SB_H });
-  const keywordsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_H });
-  const qtyLimitP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_H });
-  const variantsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_variants&select=value', { headers: SB_H });
   const reviewsP  = sbFetchAll(SB_URL + '/rest/v1/expert_reviews?select=product_id,rating', SB_H);
 
-  const [c, ph, hp, fo] = await Promise.all([productsP, photosP, hiddenPriceP, featuredP]);
+  const [c, ph, st] = await Promise.all([productsP, photosP, settingsP]);
 
   if (Array.isArray(c.data) && c.data.length > 0) _customProds = c.data.filter(r => !r.hidden);
   if (Array.isArray(ph.data)) {
         ph.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });
         localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos));
   }
-  if (!hp.error && Array.isArray(hp.data) && hp.data[0] && hp.data[0].value) {
-        try { window._sbPriceHidden = JSON.parse(hp.data[0].value) || {}; } catch(e) {}
+  const _settingsByKey = {};
+  if (!st.error && Array.isArray(st.data)) {
+    st.data.forEach(function(row) { _settingsByKey[row.key] = row.value; });
   }
-  if (!fo.error && Array.isArray(fo.data) && fo.data[0] && fo.data[0].value) {
-    try {
-      var rawFo = JSON.parse(fo.data[0].value) || [];
-      // Older saves stored plain product ids (no sale support yet) — migrate.
-      window._sbFeaturedOffers = rawFo.map(function(x) { return (typeof x === 'number') ? { id: x, sale: 0 } : { id: x.id, sale: x.sale || 0 }; });
-    } catch(e) {}
+  function _settingJSON(key, fallback) {
+    var raw = _settingsByKey[key];
+    if (!raw) return fallback;
+    try { return JSON.parse(raw) || fallback; } catch(e) { return fallback; }
   }
+  window._sbPriceHidden = _settingJSON('hidden_prices', {});
+  // Older saves stored plain product ids (no sale support yet) — migrate.
+  window._sbFeaturedOffers = _settingJSON('featured_offers', []).map(function(x) {
+    return (typeof x === 'number') ? { id: x, sale: 0 } : { id: x.id, sale: x.sale || 0 };
+  });
   if (typeof initOffersTicker === 'function') initOffersTicker();
 
-  const [s, h, b, sk, bm, mc, pk, ql, vr, rv] = await Promise.all([
-    stockP, hiddenP, bannersP, skuP, brandP, multiCatP, keywordsP, qtyLimitP, variantsP, reviewsP
-  ]);
-  if (!vr.error && Array.isArray(vr.data) && vr.data[0] && vr.data[0].value) {
-    try { window._sbVariants = JSON.parse(vr.data[0].value) || {}; } catch(e) {}
-  }
+  _sbSkuMap = _settingJSON('sku_map', {});
+  _sbBrandMap = _settingJSON('brand_map', {});
+  window._sbMultiCats = _settingJSON('multi_cats', {});
+  _sbProductKeywords = _settingJSON('product_keywords', {});
+  window._sbQtyLimits = _settingJSON('qty_limits', {});
+  window._sbVariants = _settingJSON('product_variants', {});
+
+  const [s, h, b, rv] = await Promise.all([stockP, hiddenP, bannersP, reviewsP]);
   // Bulk review stats (avg + count per product) for the Product schema's
   // aggregateRating — fetched once here instead of per-product like
   // getAvgRating() in js/06-features.js, which is fine for the review-modal's
@@ -247,21 +244,6 @@ async function loadSBData() {
           Object.keys(sums).forEach(function(id) {
                   window._sbReviewStats[id] = { avg: sums[id].total / sums[id].count, count: sums[id].count };
           });
-    }
-    if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
-          try { _sbSkuMap = JSON.parse(sk.data[0].value) || {}; } catch(e) {}
-    }
-    if (!bm.error && Array.isArray(bm.data) && bm.data[0] && bm.data[0].value) {
-          try { _sbBrandMap = JSON.parse(bm.data[0].value) || {}; } catch(e) {}
-    }
-    if (!mc.error && Array.isArray(mc.data) && mc.data[0] && mc.data[0].value) {
-          try { window._sbMultiCats = JSON.parse(mc.data[0].value) || {}; } catch(e) {}
-    }
-    if (!pk.error && Array.isArray(pk.data) && pk.data[0] && pk.data[0].value) {
-          try { _sbProductKeywords = JSON.parse(pk.data[0].value) || {}; } catch(e) {}
-    }
-    if (!ql.error && Array.isArray(ql.data) && ql.data[0] && ql.data[0].value) {
-          try { window._sbQtyLimits = JSON.parse(ql.data[0].value) || {}; } catch(e) {}
     }
     if (s.error) {
           console.warn('Supabase offline — using localStorage fallback');
@@ -490,7 +472,8 @@ var _AR_CATS = {
     'household':        'أدوات التنظيف',
     'plumbing-fitting': 'تمديدات السباكة',
     'sanitary':         'أدوات صحية',
-    'filter':           'فلاتر'
+    'filter':           'فلاتر',
+    'marhaba':          'مرحبا'
 };
 
 let cart = [];
