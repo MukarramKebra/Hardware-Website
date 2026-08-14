@@ -325,9 +325,18 @@ function showToast(msg) {
 function getCustomCats() {
   return JSON.parse(localStorage.getItem('bahar_categories') || '[]');
 }
+// getAllCats() is called per category-slug per product row while rendering
+// the inventory/SEO tables (up to several thousand calls for a full 1577-row
+// render) — caching it turns each of those into a plain array-reference
+// return instead of a localStorage read + JSON.parse + array spread every
+// single time. Invalidated only where the custom category list can actually
+// change: saveNewCat() and deleteCustomCat() below.
+var _allCatsCache = null;
 function getAllCats() {
-  return [...DEFAULT_CATS, ...getCustomCats()];
+  if (!_allCatsCache) _allCatsCache = [...DEFAULT_CATS, ...getCustomCats()];
+  return _allCatsCache;
 }
+function _invalidateCatsCache() { _allCatsCache = null; }
 function slugify(str) {
   return str.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
@@ -439,6 +448,7 @@ function saveNewCat() {
   const custom = getCustomCats();
   custom.push({ slug, label: name });
   localStorage.setItem('bahar_categories', JSON.stringify(custom));
+  _invalidateCatsCache();
   document.getElementById('newCatInput').value = '';
   document.getElementById('newCatSlug').textContent = 'â€”';
   renderCatChips();
@@ -449,6 +459,7 @@ function deleteCustomCat(slug) {
   if (!confirm('Delete this category? Products using it won\'t be affected.')) return;
   const custom = getCustomCats().filter(c => c.slug !== slug);
   localStorage.setItem('bahar_categories', JSON.stringify(custom));
+  _invalidateCatsCache();
   renderCatChips();
   refreshCategorySelects();
   showToast('Category deleted');

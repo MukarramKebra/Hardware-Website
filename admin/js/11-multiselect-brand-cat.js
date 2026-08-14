@@ -9,14 +9,20 @@
 // bulkAddStock()     — adds 50 units to all selected products
 var _selectedIds = new Set();
 
+// Selects/deselects whatever rows are ACTUALLY on screen right now, read
+// straight off the checkboxes' own data-id — not a second, separately
+// recomputed filter. That duplicate filter only checked name/brand (no
+// category, no brand-filter dropdown, no typo-correction fallback), so a
+// search that only matched via category — or one the smart-search fuzzy
+// match had corrected — silently selected nothing: the boxes still looked
+// checked (this loop ticks them regardless), but _selectedIds stayed empty,
+// so the bulk-action bar never showed.
 function toggleSelectAll(checked) {
-  var q = document.getElementById('adminSearch').value.toLowerCase();
-  var cat = document.getElementById('catFilter').value;
-  var list = getAllAdminProducts().filter(function(p){
-    return (cat==='all'||p.cat===cat) && (!q||p.name.toLowerCase().includes(q)||getBrand(p.id).toLowerCase().includes(q));
+  document.querySelectorAll('.row-chk').forEach(function(c){
+    c.checked = checked;
+    var id = parseInt(c.getAttribute('data-id'), 10);
+    if (!isNaN(id)) { checked ? _selectedIds.add(id) : _selectedIds.delete(id); }
   });
-  list.forEach(function(p){ checked ? _selectedIds.add(p.id) : _selectedIds.delete(p.id); });
-  document.querySelectorAll('.row-chk').forEach(function(c){ c.checked = checked; });
   _syncBulkBar();
 }
 // "Select All" button in the toolbar — same as ticking the header checkbox.

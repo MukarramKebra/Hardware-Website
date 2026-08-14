@@ -7,10 +7,18 @@
 // Real SKUs live in Supabase (expert_settings key 'sku_map', loaded by
 // loadFromSupabase into window._sbSkuMap) so the storefront shows them to
 // every visitor. localStorage keeps a copy as an offline fallback.
+// Cached lazily — most products have no sku_map override, so without this
+// every one of them re-parsed the whole jain_sku_map string on every call
+// (called at least once per row per render; ~1200 of the catalog's 1577
+// products fall into this fallback path).
+var _jainSkuMapCache = null;
 function getProductSku(id) {
   var val = (window._sbSkuMap || {})[String(id)];
   if (val === undefined) {
-    try { val = JSON.parse(localStorage.getItem('jain_sku_map') || '{}')[String(id)]; } catch(e) {}
+    if (_jainSkuMapCache === null) {
+      try { _jainSkuMapCache = JSON.parse(localStorage.getItem('jain_sku_map') || '{}'); } catch(e) { _jainSkuMapCache = {}; }
+    }
+    val = _jainSkuMapCache[String(id)];
   }
   if (val === undefined || val === null || val === '') return 'SKU-' + String(id).padStart(4, '0');
   return /^\d{1,4}$/.test(String(val)) ? 'SKU-' + String(val).padStart(4, '0') : 'SKU: ' + val;
