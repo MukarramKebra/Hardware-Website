@@ -121,3 +121,10 @@ function renderSEOProducts() {
     '</tr>';
   }).join('') || '<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--gray)">No products match your search.</td></tr>';
 }
+// Same lag as the inventory search — renderSEOProducts rebuilds the whole
+// filtered product list on every keystroke, so debounce it too.
+var _seoProdSearchDebounceTimer;
+function debouncedRenderSEOProducts() {
+  clearTimeout(_seoProdSearchDebounceTimer);
+  _seoProdSearchDebounceTimer = setTimeout(renderSEOProducts, 180);
+}

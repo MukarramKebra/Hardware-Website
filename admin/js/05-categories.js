@@ -426,7 +426,7 @@ function _foRenderList(q) {
     return '<tr class="' + (ck ? 'fo-row-selected' : '') + '" onclick="foToggle(this,' + p.id + ')" style="cursor:pointer">' +
       '<td class="chk-col"><input type="checkbox" style="pointer-events:none"' + (ck ? ' checked' : '') + ' /></td>' +
       '<td><div style="display:flex;align-items:center;gap:11px">' +
-        '<img class="prod-img" src="' + thumb + '" alt="" onerror="this.onerror=null;this.src=NO_IMG" />' +
+        '<img class="prod-img" src="' + thumb + '" alt="" loading="lazy" onerror="this.onerror=null;this.src=NO_IMG" />' +
         '<div><div class="prod-name">' + encodeHtml(p.name) + '</div><div class="prod-sku">' + getProductSku(p.id) + '</div></div>' +
       '</div></td>' +
       '<td>' + encodeHtml(brand) + '</td>' +
@@ -449,6 +449,13 @@ function _foRenderList(q) {
   if (bulkCount) bulkCount.textContent = nSel + ' selected here';
 }
 function foFilter() { _foRenderList(document.getElementById('foSearch').value); }
+// Same lag as the inventory search — _foRenderList rebuilds the whole
+// filtered product list on every keystroke, so debounce it too.
+var _foFilterDebounceTimer;
+function debouncedFoFilter() {
+  clearTimeout(_foFilterDebounceTimer);
+  _foFilterDebounceTimer = setTimeout(foFilter, 180);
+}
 
 // ── SELECT ALL / UNSELECT ALL (respects the search + category/brand filters;
 // no cap) — a real toggle: if everything currently shown is already

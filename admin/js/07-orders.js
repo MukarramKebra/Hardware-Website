@@ -320,7 +320,7 @@ function renderTable() {
       '<td class="chk-col"><input type="checkbox" class="row-chk" data-id="'+p.id+'" '+(isChk?'checked':'')+' onchange="toggleRowSelect('+p.id+',this.checked)" /></td>' +
       '<td style="color:#aaa;font-size:11px;font-weight:700">#'+p.id+'</td>' +
       '<td><div style="display:flex;align-items:center;gap:11px">' +
-        '<img class="prod-img" id="thumb'+p.id+'" src="'+thumb+'" alt="'+p.name+'" onerror="this.style.opacity=0.3" />' +
+        '<img class="prod-img" id="thumb'+p.id+'" src="'+thumb+'" alt="'+p.name+'" loading="lazy" onerror="this.style.opacity=0.3" />' +
         '<div><input class="name-input" id="ni'+p.id+'" value="'+encodeHtml((_prodOverrides[p.id]||{}).name||p.name)+'" oninput="onNameEdit('+p.id+')" title="Click to edit name" />' +
         '<div class="prod-sku" style="display:flex;gap:8px;margin-top:2px">' +
           '<span>'+getProductSku(p.id)+'</span>' +
@@ -370,6 +370,15 @@ function renderTable() {
     sa.checked = nChecked === allChks.length;
     sa.indeterminate = nChecked > 0 && nChecked < allChks.length;
   }
+}
+// renderTable() rebuilds the whole inventory table (up to 1500+ rows) via
+// innerHTML, so calling it on every raw keystroke in the search box made
+// typing feel laggy. 180ms is short enough to still feel instant once
+// typing pauses — same debounce the storefront's own search box uses.
+var _renderTableDebounceTimer;
+function debouncedRenderTable() {
+  clearTimeout(_renderTableDebounceTimer);
+  _renderTableDebounceTimer = setTimeout(renderTable, 180);
 }
 function onStock(id) {
   const el = document.getElementById('si'+id);

@@ -112,7 +112,7 @@
       <div class="ctrl-right">
         <button class="add-prod-btn" onclick="openAddProduct()"><i class="fa fa-plus"></i> Add Product</button>
         <button class="csv-btn" onclick="openCSV()"><i class="fa fa-file-csv"></i> Import CSV/Excel</button>
-        <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="adminSearch" placeholder="Search products..." oninput="renderTable()" /></div>
+        <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="adminSearch" placeholder="Search products..." oninput="debouncedRenderTable()" /></div>
         <div class="filter-combo" id="catCombo">
           <button class="fc-btn" type="button" onclick="fcToggle('cat')"><span id="catComboLabel">All Categories</span> <i class="fa fa-chevron-down fc-caret"></i></button>
           <div class="fc-panel" id="catComboPanel">
@@ -387,7 +387,7 @@
     <div class="table-top">
       <h2><i class="fa fa-star" style="color:var(--orange);margin-right:8px"></i>Featured Products (Homepage Strip)</h2>
       <div class="ctrl-right">
-        <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="foSearch" placeholder="Search products, SKU or brand..." oninput="foFilter()" autocomplete="off" /></div>
+        <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="foSearch" placeholder="Search products, SKU or brand..." oninput="debouncedFoFilter()" autocomplete="off" /></div>
         <div class="filter-combo" id="foCatCombo">
           <button class="fc-btn" type="button" onclick="foFcToggle('cat')"><span id="foCatComboLabel">All Categories</span> <i class="fa fa-chevron-down fc-caret"></i></button>
           <div class="fc-panel" id="foCatComboPanel">
@@ -478,7 +478,7 @@
     <div class="table-top" style="margin:34px 0 12px">
       <h2><i class="fa fa-edit" style="color:var(--orange);margin-right:8px"></i>Product Descriptions &amp; Keywords</h2>
       <div class="ctrl-right">
-        <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="seoProdSearch" placeholder="Search products..." oninput="renderSEOProducts()" /></div>
+        <div class="search-bar"><i class="fa fa-search" style="color:#aaa"></i><input type="text" id="seoProdSearch" placeholder="Search products..." oninput="debouncedRenderSEOProducts()" /></div>
       </div>
     </div>
     <p style="font-size:12px;color:var(--gray);margin:0 0 14px;max-width:640px">

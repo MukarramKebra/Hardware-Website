@@ -65,9 +65,15 @@
     .logout-btn{background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;}
     .logout-btn:hover{border-color:var(--red);color:var(--red);}
 
-    /* TAB BAR */
-    .tab-bar{background:#d20d17;padding:0 28px;display:flex;gap:0;border-bottom:1px solid var(--steel);position:sticky;top:64px;z-index:99;}
-    .tab-btn{padding:14px 22px;font-size:13px;font-weight:700;color:#fff;background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:0.5px;}
+    /* TAB BAR — scrolls within itself instead of overflowing the whole page.
+       With Owner Controls showing, the row is wider than a lot of laptop
+       screens (anything under ~1370px, not just phones); without this it
+       was the *page* that grew wider than the viewport, so anything below
+       (e.g. the bulk-action bar after Select All) rendered off to the side
+       of whatever horizontal scroll position the page happened to be at. */
+    .tab-bar{background:#d20d17;padding:0 28px;display:flex;gap:0;border-bottom:1px solid var(--steel);position:sticky;top:64px;z-index:99;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    .tab-bar::-webkit-scrollbar{display:none;}
+    .tab-btn{padding:14px 22px;font-size:13px;font-weight:700;color:#fff;background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;flex-shrink:0;}
     .tab-btn:hover{color:#fff;}
     .tab-btn.active{color:#fff;border-bottom-color:#fff;}
 
