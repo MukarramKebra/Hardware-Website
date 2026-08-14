@@ -252,58 +252,45 @@ async function loadFromSupabase() {
   // that one slow call finished (the "need to click Reload twice" symptom).
   // It's now fetched separately below so the table renders immediately;
   // thumbnails fill in once photos are ready.
-  const [s, c, h, cb, sk, bm, mc, ia, pk, hp, ql, vr] = await Promise.all([
+  // The 8 per-key settings rows (sku_map, brand_map, multi_cats,
+  // ignored_alerts, product_keywords, hidden_prices, qty_limits,
+  // product_variants) used to be 8 separate requests — each 400ms-1.4s on
+  // its own and serialized behind the browser's ~6-connection-per-origin
+  // cap. One key=in.(...) request returns all of them in a single trip.
+  const [s, c, h, cb, st] = await Promise.all([
     sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',          SB_HDRS),
     sbFetchAll(SB_URL + '/rest/v1/expert_products?select=*',       SB_HDRS),
     sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id',SB_HDRS),
     sbFetchAll(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        SB_HDRS),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.sku_map&select=value',    { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.brand_map&select=value',  { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.multi_cats&select=value', { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.ignored_alerts&select=value', { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.hidden_prices&select=value', { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.qty_limits&select=value', { headers: SB_HDRS }),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_variants&select=value', { headers: SB_HDRS })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(sku_map,brand_map,multi_cats,ignored_alerts,product_keywords,hidden_prices,qty_limits,product_variants)&select=key,value', { headers: SB_HDRS })
   ]);
+  const _settingsByKey = {};
+  if (!st.error && Array.isArray(st.data)) {
+    st.data.forEach(function(row) { _settingsByKey[row.key] = row.value; });
+  }
+  function _settingJSON(key, fallback) {
+    var raw = _settingsByKey[key];
+    if (!raw) return fallback;
+    try { return JSON.parse(raw) || fallback; } catch(e) { return fallback; }
+  }
   // Size/pack options per product (shared with the storefront via expert_settings)
-  if (!vr.error && Array.isArray(vr.data) && vr.data[0] && vr.data[0].value) {
-        try { window._sbVariants = JSON.parse(vr.data[0].value) || {}; } catch(e) {}
-  }
+  window._sbVariants = _settingJSON('product_variants', {});
     // Real SKU labels (shared with the storefront via expert_settings)
-  if (!sk.error && Array.isArray(sk.data) && sk.data[0] && sk.data[0].value) {
-        try {
-                window._sbSkuMap = JSON.parse(sk.data[0].value) || {};
-                localStorage.setItem('jain_sku_map', JSON.stringify(window._sbSkuMap));
-        } catch(e) {}
-  }
+  window._sbSkuMap = _settingJSON('sku_map', {});
+  localStorage.setItem('jain_sku_map', JSON.stringify(window._sbSkuMap));
     // Brand labels (shared with the storefront via expert_settings)
-  if (!bm.error && Array.isArray(bm.data) && bm.data[0] && bm.data[0].value) {
-        try { window._sbBrandMap = JSON.parse(bm.data[0].value) || {}; } catch(e) {}
-  }
+  window._sbBrandMap = _settingJSON('brand_map', {});
     // Extra category assignments (shared with the storefront via expert_settings)
-  if (!mc.error && Array.isArray(mc.data) && mc.data[0] && mc.data[0].value) {
-        try {
-                window._sbMultiCats = JSON.parse(mc.data[0].value) || {};
-                localStorage.setItem('bahar_multi_cats', JSON.stringify(window._sbMultiCats));
-        } catch(e) {}
-  }
+  window._sbMultiCats = _settingJSON('multi_cats', {});
+  localStorage.setItem('bahar_multi_cats', JSON.stringify(window._sbMultiCats));
     // Ignored low/out-of-stock alerts (see ignoreAlert() in 07-orders.js)
-  if (!ia.error && Array.isArray(ia.data) && ia.data[0] && ia.data[0].value) {
-        try { window._sbIgnoredAlerts = JSON.parse(ia.data[0].value) || {}; } catch(e) {}
-  }
+  window._sbIgnoredAlerts = _settingJSON('ignored_alerts', {});
     // Per-product SEO keywords (shared with the storefront via expert_settings)
-  if (!pk.error && Array.isArray(pk.data) && pk.data[0] && pk.data[0].value) {
-        try { window._sbProductKeywords = JSON.parse(pk.data[0].value) || {}; } catch(e) {}
-  }
+  window._sbProductKeywords = _settingJSON('product_keywords', {});
     // Per-product min/max order quantity (see getQtyLimits() in 08-inventory.js)
-  if (!ql.error && Array.isArray(ql.data) && ql.data[0] && ql.data[0].value) {
-        try { window._sbQtyLimits = JSON.parse(ql.data[0].value) || {}; } catch(e) {}
-  }
+  window._sbQtyLimits = _settingJSON('qty_limits', {});
     // Manually hidden prices (see togglePriceHidden() in 07-orders.js)
-  if (!hp.error && Array.isArray(hp.data) && hp.data[0] && hp.data[0].value) {
-        try { window._sbPriceHidden = JSON.parse(hp.data[0].value) || {}; } catch(e) {}
-  }
+  window._sbPriceHidden = _settingJSON('hidden_prices', {});
     // Category backgrounds
   if (!cb.error && Array.isArray(cb.data)) {
         var catBgs = {};
