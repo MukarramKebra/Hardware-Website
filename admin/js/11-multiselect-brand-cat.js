@@ -72,7 +72,7 @@ async function bulkHide() {
     }
   }
   showToast(_selectedIds.size+' products hidden');
-  clearSelection(); renderTable();
+  clearSelection(); renderTable(); renderStats();
 }
 
 async function bulkShow() {
@@ -90,7 +90,7 @@ async function bulkShow() {
     }
   }
   showToast(_selectedIds.size+' products now visible');
-  clearSelection(); renderTable();
+  clearSelection(); renderTable(); renderStats();
 }
 
 function bulkClearStock() {

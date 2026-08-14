@@ -204,6 +204,10 @@ function renderStats() {
   // 0 no matter how many actual products existed.
   const allProducts = getAllAdminProducts();
   const total  = allProducts.length;
+  // "Active" = not hidden from the storefront — distinct from total so this
+  // number actually moves when you hide/show a product (it used to just
+  // repeat `total`, so hiding something never changed anything here).
+  const active = allProducts.filter(function(p) { return !p.hidden; }).length;
   const units  = allProducts.reduce(function(s,p) { return s+(stockData[p.id]||0); }, 0);
   const value  = allProducts.reduce(function(s,p) { return s+p.price*(stockData[p.id]||0); }, 0);
   // Products in the "Hidden" or "Can't Find Products" categories
@@ -215,7 +219,7 @@ function renderStats() {
   const low    = alertable.filter(function(p) { return (stockData[p.id]||0) > 0 && (stockData[p.id]||0) <= 10; }).length;
   const out    = alertable.filter(function(p) { return (stockData[p.id]||0) === 0; }).length;
   document.getElementById('statsGrid').innerHTML =
-    card('fa-boxes','ic-orange','Total Products', total, total + ' active products') +
+    card('fa-boxes','ic-orange','Total Products', total, active + ' active products') +
     card('fa-layer-group','ic-blue','Total Units', units.toLocaleString(), 'In stock') +
     card('fa-coins','ic-green','Inventory Value', value.toFixed(2)+' KWD', 'Total stock value') +
     card('fa-exclamation-triangle','ic-red','Alerts', low+out, low+' low &nbsp;|&nbsp; '+out+' out');
@@ -664,5 +668,6 @@ async function toggleVisibility(id, isBase) {
   const isNowHidden = isBase ? _hiddenBaseIds.has(id) : !!(_customProductRows.find(function(p){return p.id===id;})?.hidden);
   showToast(isNowHidden ? 'Product hidden from store' : 'Product now visible');
   renderTable();
+  renderStats();
 }
 
