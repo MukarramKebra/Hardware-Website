@@ -149,7 +149,11 @@ function initOffersTicker() {
   const all   = getAllProducts();
   const offers = items.map(item => {
     const p = all.find(x => x.id === item.id);
-    return p ? { p, sale: item.sale || 0 } : null;
+    // Can't Find Products is unverified/unconfirmed catalog data — never
+    // belongs in the homepage strip even if it's still sitting in a saved
+    // featured_offers list from before this category existed (the admin
+    // picker itself excludes it now too, see _foFilteredList).
+    return (p && p.category !== 'cant-find-products') ? { p, sale: item.sale || 0 } : null;
   }).filter(Boolean);
   if (!offers.length) { section.style.display = 'none'; return; }
   section.style.display = '';

@@ -39,11 +39,18 @@ function renderHiddenCats() {
   var list = document.getElementById('hiddenCatsList');
   if (!list) return;
   var products = getAllAdminProducts();
-  list.innerHTML = HIDDEN_CATS.map(function(c) {
-    var count = products.filter(function(p) { return p.cat === c.slug; }).length;
+  // "All" comes first and resets the table back to every product — a quick
+  // way back out after filtering into Marhaba or Can't Find Products from
+  // this panel, without hunting for the main Category dropdown's All option.
+  var chips = [{ slug: 'all', label: 'All', count: products.length }].concat(
+    HIDDEN_CATS.map(function(c) {
+      return { slug: c.slug, label: c.label, count: products.filter(function(p) { return p.cat === c.slug; }).length };
+    })
+  );
+  list.innerHTML = chips.map(function(c) {
     return '<div class="hidden-cat-chip" onclick="fcSet(\'cat\',\'' + c.slug + '\',\'' + c.label.replace(/'/g, "\\'") + '\')">' +
       '<span class="hc-name">' + encodeHtml(c.label) + '</span>' +
-      '<span class="hc-count">' + count + '</span>' +
+      '<span class="hc-count">' + c.count + '</span>' +
     '</div>';
   }).join('');
 }
@@ -516,6 +523,11 @@ function _foFilteredList(q) {
   var catF   = (document.getElementById('foCatFilter')   || { value: 'all' }).value;
   var brandF = (document.getElementById('foBrandFilter') || { value: 'all' }).value;
   return getAllAdminProducts().filter(function(p) {
+    // Can't Find Products is unverified/unconfirmed catalog data (see the
+    // catalog-audit category) — it should never be pickable for the
+    // homepage offers strip, and excluding it here means Select All can't
+    // pull it in either, since that operates on this same filtered list.
+    if (p.cat === 'cant-find-products') return false;
     var matchesQ = !q || p.name.toLowerCase().includes(q) ||
       getProductSku(p.id).toLowerCase().includes(q) ||
       (typeof getBrand === 'function' && getBrand(p.id).toLowerCase().includes(q));
