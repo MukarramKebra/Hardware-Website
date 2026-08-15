@@ -389,6 +389,7 @@ function renderTable() {
     sa.checked = nChecked === allChks.length;
     sa.indeterminate = nChecked > 0 && nChecked < allChks.length;
   }
+  if (typeof renderHiddenCats === 'function') renderHiddenCats();
 }
 // renderTable() rebuilds the whole inventory table (up to 1500+ rows) via
 // innerHTML, so calling it on every raw keystroke in the search box made

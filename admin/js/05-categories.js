@@ -25,21 +25,143 @@ var CAT_DEFS = [
   { slug:'all',              label:'All Products',    icon:'fa-th-large',     default:'Bahar-Products/SKU-0015.jpg' }
 ];
 
+// ── HIDDEN CATEGORIES (Inventory tab) ─────────────────────────────────────
+// Admin-only categories with no storefront pill/tile (see DEFAULT_CATS in
+// 01-core-data.js). Fixed list + fixed order rather than derived from
+// getAllCats() — this is specifically the "hidden from customers" set, not
+// every category, and "Can't Find Products" always sorts last per how it's
+// used (it's the catch-all for unverified imports, checked last).
+var HIDDEN_CATS = [
+  { slug: 'marhaba',             label: 'Marhaba' },
+  { slug: 'cant-find-products',  label: "Can't Find Products" }
+];
+function renderHiddenCats() {
+  var list = document.getElementById('hiddenCatsList');
+  if (!list) return;
+  var products = getAllAdminProducts();
+  list.innerHTML = HIDDEN_CATS.map(function(c) {
+    var count = products.filter(function(p) { return p.cat === c.slug; }).length;
+    return '<div class="hidden-cat-chip" onclick="fcSet(\'cat\',\'' + c.slug + '\',\'' + c.label.replace(/'/g, "\\'") + '\')">' +
+      '<span class="hc-name">' + encodeHtml(c.label) + '</span>' +
+      '<span class="hc-count">' + count + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+// Custom order + renamed labels persist the same way category background
+// images already did here (localStorage cache + Supabase expert_settings,
+// so every admin session/device sees the same layout, not just the one
+// that dragged the tiles). Labels are also picked up by the storefront
+// (see applyCatLabelOverrides() in js/02-catalog-render.js) so a rename
+// here actually changes what customers see, not just this admin grid.
+function _catOrderKey() { return 'jain_cat_order'; }
+function _catLabelsKey() { return 'jain_cat_labels'; }
+function getCatOrder() {
+  try { return JSON.parse(localStorage.getItem(_catOrderKey()) || '[]'); } catch(e) { return []; }
+}
+function getCatLabels() {
+  try { return JSON.parse(localStorage.getItem(_catLabelsKey()) || '{}'); } catch(e) { return {}; }
+}
+function _orderedCatDefs() {
+  var order = getCatOrder();
+  var labels = getCatLabels();
+  var bySlug = {};
+  CAT_DEFS.forEach(function(c) { bySlug[c.slug] = c; });
+  var ordered = order.map(function(slug) { return bySlug[slug]; }).filter(Boolean);
+  CAT_DEFS.forEach(function(c) { if (order.indexOf(c.slug) === -1) ordered.push(c); });
+  return ordered.map(function(c) {
+    return Object.assign({}, c, { label: labels[c.slug] || c.label });
+  });
+}
+async function saveCatOrder(slugs) {
+  localStorage.setItem(_catOrderKey(), JSON.stringify(slugs));
+  await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'cat_order', value: JSON.stringify(slugs) }])
+  });
+}
+async function saveCatLabel(slug, label) {
+  var labels = getCatLabels();
+  if (label) labels[slug] = label; else delete labels[slug];
+  localStorage.setItem(_catLabelsKey(), JSON.stringify(labels));
+  await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'cat_labels', value: JSON.stringify(labels) }])
+  });
+}
+async function loadCatLayout() {
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(cat_order,cat_labels)&select=key,value', { headers: SB_HDRS });
+  if (!res.error && Array.isArray(res.data)) {
+    res.data.forEach(function(row) {
+      if (row.key === 'cat_order')  { try { localStorage.setItem(_catOrderKey(), row.value); } catch(e) {} }
+      if (row.key === 'cat_labels') { try { localStorage.setItem(_catLabelsKey(), row.value); } catch(e) {} }
+    });
+  }
+  renderCatEditor();
+}
+
+var _catDragSlug = null;
+function catDragStart(e, slug) {
+  _catDragSlug = slug;
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.classList.add('cat-dragging');
+}
+function catDragEnd(e) {
+  e.currentTarget.classList.remove('cat-dragging');
+  _catDragSlug = null;
+}
+function catDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('cat-drag-over');
+}
+function catDragLeave(e) {
+  e.currentTarget.classList.remove('cat-drag-over');
+}
+function catDrop(e, targetSlug) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('cat-drag-over');
+  if (!_catDragSlug || _catDragSlug === targetSlug) return;
+  var slugs = _orderedCatDefs().map(function(c) { return c.slug; });
+  var from = slugs.indexOf(_catDragSlug);
+  var to   = slugs.indexOf(targetSlug);
+  if (from === -1 || to === -1) return;
+  slugs.splice(from, 1);
+  slugs.splice(to, 0, _catDragSlug);
+  saveCatOrder(slugs);
+  renderCatEditor();
+}
+
+function catRenameCommit(slug, el) {
+  var val = el.textContent.replace(/\s+/g, ' ').trim();
+  var def = CAT_DEFS.find(function(c) { return c.slug === slug; });
+  if (!val) { el.textContent = (getCatLabels()[slug] || (def ? def.label : slug)); return; }
+  saveCatLabel(slug, val === (def ? def.label : slug) ? null : val);
+}
+function catRenameKeydown(e) {
+  if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
+}
+
 function renderCatEditor() {
   var bgs = {};
   try { bgs = JSON.parse(localStorage.getItem('jain_cat_bgs') || '{}'); } catch(e) {}
   var grid = document.getElementById('catEditGrid');
   if (!grid) return;
-  grid.innerHTML = CAT_DEFS.map(function(cat) {
+  grid.innerHTML = _orderedCatDefs().map(function(cat) {
     var img = bgs[cat.slug] || cat.default;
-    return '<div style="background:#fff;border:1px solid #e2e4e8;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.07)">' +
-      '<div style="height:150px;background:url(\'' + img + '\') center/cover no-repeat;position:relative">' +
-        '<div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center">' +
-          '<i class="fa ' + cat.icon + '" style="color:#fff;font-size:32px"></i>' +
-        '</div>' +
-      '</div>' +
+    return '<div class="cat-edit-card" draggable="true" ' +
+        'ondragstart="catDragStart(event,\'' + cat.slug + '\')" ondragend="catDragEnd(event)" ' +
+        'ondragover="catDragOver(event)" ondragleave="catDragLeave(event)" ondrop="catDrop(event,\'' + cat.slug + '\')" ' +
+        'style="background:#fff;border:1px solid #e2e4e8;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.07)">' +
+      '<div class="cat-edit-drag-handle" title="Drag to reorder"><i class="fa fa-grip-lines"></i></div>' +
+      '<div style="height:150px;background:url(\'' + img + '\') center/cover no-repeat"></div>' +
       '<div style="padding:12px 14px">' +
-        '<div style="font-weight:800;font-size:13px;color:#1c1c1c;margin-bottom:10px">' + cat.label + '</div>' +
+        '<div class="cat-edit-name" contenteditable="true" spellcheck="false" ' +
+          'onblur="catRenameCommit(\'' + cat.slug + '\',this)" onkeydown="catRenameKeydown(event)" ' +
+          'style="font-weight:800;font-size:13px;color:#1c1c1c;margin-bottom:10px;padding:3px 5px;border-radius:5px;outline:none" ' +
+          'title="Click to rename">' + encodeHtml(cat.label) + '</div>' +
         '<label style="display:block;background:var(--orange);color:#fff;text-align:center;padding:8px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700">' +
           '<i class="fa fa-image"></i> Change Image' +
           '<input type="file" accept="image/*" style="display:none" onchange="saveCatBg(\'' + cat.slug + '\',this)" />' +

@@ -139,6 +139,15 @@
       </div>
     </div>
 
+    <!-- HIDDEN CATEGORIES — admin-only categories with no storefront nav entry
+         (see admin/js/01-core-data.js DEFAULT_CATS comments). Listed here so
+         they're easy to find/filter into without hunting through the full
+         category dropdown. "Can't Find Products" always sorts last. -->
+    <div class="hidden-cats-panel" id="hiddenCatsPanel">
+      <div class="hidden-cats-title"><i class="fa fa-eye-slash"></i> Hidden Categories <span class="hidden-cats-hint">admin-only — no storefront nav entry</span></div>
+      <div class="hidden-cats-list" id="hiddenCatsList"></div>
+    </div>
+
     <!-- BULK ACTION BAR -->
     <div class="bulk-bar" id="bulkBar">
       <span class="bulk-sel-count" id="bulkCount">0 selected</span>

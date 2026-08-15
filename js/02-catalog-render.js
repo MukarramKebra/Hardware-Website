@@ -97,6 +97,22 @@ function productSlug(p) {
   return (seoSlugify(p.name) || 'product') + '-' + p.id;
 }
 
+// ── CATEGORY RENAMES (from admin's category editor) ────────────────────────
+// Patches the static category pill/tile text already in the page instead of
+// generating that markup from JS — the labels only change when an admin
+// actually renames something, so a page-load patch is simpler than making
+// the whole category nav data-driven for a rename that may never happen.
+function applyCatLabelOverrides(labels) {
+  if (!labels) return;
+  Object.keys(labels).forEach(function(slug) {
+    var label = labels[slug];
+    var pill = document.querySelector('.pill[data-filter="' + slug + '"]');
+    if (pill) pill.textContent = label;
+    var card = document.querySelector('.cat-card[data-cat="' + slug + '"] h3');
+    if (card) card.textContent = label;
+  });
+}
+
 // ── CATEGORY NAV STRIP ────────────────────────────────────────────────────
 function syncCatNav(cat) {
   document.querySelectorAll('.cn-item').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));

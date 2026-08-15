@@ -30,7 +30,7 @@ function switchTab(tab) {
   if (tab==='deleted')   { renderDeletedTab(); if (_deletedSubTab==='orders') renderDeletedOrdersTab(); }
   if (tab==='orders')    { loadOrders(false); }
   if (tab==='reports')   { renderReports(); renderOrdersReport(); _autoWriteReports(); }
-  if (tab==='categories')  renderCatEditor();
+  if (tab==='categories')  loadCatLayout();
   if (tab==='banners')     loadBanners();
   if (tab==='featured')    renderFeaturedTab();
   if (tab==='seo')       { loadSEOSettings(); renderSEOProducts(); }

@@ -477,6 +477,33 @@ function onHeaderSearchInput(val) {
   if (!real) return;
   real.value = val;
   debouncedRenderProducts();
+  // Same closest-match-first overlay the grid's own search box opens (see
+  // js/02-catalog-render.js) — this used to only mirror into the grid
+  // filter with no visible feedback until you scrolled down to it.
+  debouncedSearchOverlay(val);
+}
+
+// Enter on either search box jumps straight to the results instead of
+// doing nothing (the grid form has onsubmit="return false" to stop an
+// actual page reload, and the header input never had a submit at all).
+// If the overlay's open, this is exactly what "View all results" does;
+// if someone types fast and hits Enter before the debounce fires, force
+// an immediate overlay update first so viewAllSearchResults() has
+// something to scroll past instead of jumping to a stale/empty grid.
+function submitHeaderSearch() {
+  var val = document.getElementById('headerSearchInput').value;
+  if (!val.trim()) return;
+  renderProducts();
+  updateSearchOverlay(val);
+  viewAllSearchResults();
+  toggleHeaderSearch(false);
+}
+function submitGridSearch() {
+  var val = document.getElementById('searchInput').value;
+  if (!val.trim()) return;
+  renderProducts();
+  updateSearchOverlay(val);
+  viewAllSearchResults();
 }
 
 document.addEventListener('click', function(e) {
