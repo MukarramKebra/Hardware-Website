@@ -97,7 +97,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202608131015';
+    v = /^[0-9]+$/.test(v) ? v : '202608131100';
     ['01-base','02-sections','03-cart-features-contact','04-footer','05-responsive','06-lang-rtl','07-modals','08-account-auth','09-widgets'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -258,10 +258,6 @@
         <h2 data-i18n-html="cat_h2">Shop by <span class="orange">Category</span></h2>
       </div>
       <div class="categories-grid" id="categoriesGrid">
-        <div class="cat-card" data-cat="tools"            onclick="filterProducts('tools')"            style="background-image:url('cat-images/tools.jpg')">
-          <h3>DCK Power Tools</h3>
-          <p>Drills, Grinders, Saws & More</p>
-        </div>
         <div class="cat-card" data-cat="hand-tools"       onclick="filterProducts('hand-tools')"       style="background-image:url('cat-images/hand-tools.png')">
           <h3>Hand Tools</h3>
           <p>Hammers, Pliers, Spanners</p>
@@ -356,7 +352,6 @@
         </div>
         <div class="filter-pills">
           <button class="pill active" data-filter="all">All</button>
-          <button class="pill" data-filter="tools">DCK Power Tools</button>
           <button class="pill" data-filter="hand-tools">Hand Tools</button>
           <button class="pill" data-filter="fastener">Fasteners</button>
           <button class="pill" data-filter="construction">Nails/Wires</button>
@@ -778,6 +773,28 @@
     </div>
   </div>
 
+  <!-- Shown once, right after a brand-new Google sign-up completes — the
+       normal signup form's "Send me offers & updates" checkbox never gets
+       a chance to appear for Google accounts, since that flow is a full-page
+       redirect away and back (see completeGoogleSignupSubscribePrompt() in
+       js/05-accounts.js). Email is already known, so this is just the one
+       checkbox, no form fields. -->
+  <div id="googleSubscribePrompt" class="login-prompt" style="display:none">
+    <button class="lp-close" onclick="dismissGoogleSubscribePrompt()" title="Dismiss" aria-label="Dismiss"><i class="fa fa-times"></i></button>
+    <div class="lp-inner">
+      <div class="lp-icon"><i class="fa fa-envelope-open-text"></i></div>
+      <div class="lp-text">
+        <strong>Welcome!</strong>
+        <span>Want deals, new arrivals and trade discounts in your inbox?</span>
+        <label class="lp-sub-consent">
+          <input type="checkbox" id="googleSubscribeCheck" />
+          <span>Send me offers &amp; updates by email.</span>
+        </label>
+        <button type="button" class="lp-btn" onclick="confirmGoogleSubscribePrompt()">Save</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── AUTH MODAL (Login / Sign Up / Forgot Password) ────────────────── -->
   <div class="auth-overlay" id="authOverlay" onclick="if(event.target===this)closeAuthModal()">
     <div class="auth-modal">
@@ -852,6 +869,10 @@
           <label class="auth-consent">
             <input type="checkbox" id="authSignupConsent" />
             <span>I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="terms.html#privacy" target="_blank" rel="noopener">Privacy Policy</a>, and consent to Expert Hardware processing my data as described.</span>
+          </label>
+          <label class="auth-consent">
+            <input type="checkbox" id="authSignupSubscribe" />
+            <span>Send me offers &amp; updates by email.</span>
           </label>
           <button class="auth-submit" id="authSignupBtn" onclick="doAuthSignup()">
             <i class="fa fa-user-plus"></i> Create Account
@@ -1042,7 +1063,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202608131015';
+    v = /^[0-9]+$/.test(v) ? v : '202608131100';
     ['01-config-data','02-catalog-render','03-product-cart-checkout','04-i18n-order','05-accounts','06-features','07-subscribe'].forEach(function(f) {
       var s = document.createElement('script');
       s.src = 'js/' + f + '.js?v=' + v;

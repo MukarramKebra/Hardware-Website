@@ -367,6 +367,13 @@
   <div id="categoriesSection" class="main" style="display:none">
     <div class="table-top" style="margin-bottom:24px">
       <h2><i class="fa fa-th-large" style="color:var(--orange);margin-right:8px"></i>Edit Category Images</h2>
+      <div class="ctrl-right">
+        <div class="ur-group">
+          <button class="ur-btn" id="catUndoBtn" onclick="catUndo()" disabled title="Undo (Ctrl+Z)"><i class="fa fa-undo"></i> Undo</button>
+          <button class="ur-btn" id="catRedoBtn" onclick="catRedo()" disabled title="Redo (Ctrl+Y)"><i class="fa fa-redo"></i> Redo</button>
+        </div>
+        <button class="save-btn" id="catSaveBtn" onclick="saveCatChanges()" disabled><i class="fa fa-save"></i> Save Changes</button>
+      </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px" id="catEditGrid"></div>
   </div>
@@ -443,6 +450,7 @@
       <table>
         <thead>
           <tr>
+            <th style="width:30px"></th>
             <th class="chk-col"><input type="checkbox" id="foSelectAll" title="Select/unselect all (filtered)" onchange="foToggleSelectAll()" /></th>
             <th>Product</th><th>Brand</th><th>Price KWD</th><th>Sale %</th><th>Description</th>
           </tr>

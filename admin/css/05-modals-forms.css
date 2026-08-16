@@ -150,6 +150,8 @@
     /* ── MULTI-SELECT ──────────────────────────────────────────────────── */
     .chk-col{width:38px;text-align:center;}
     .row-chk{width:16px;height:16px;cursor:pointer;accent-color:var(--orange);}
+    .fo-dragging{opacity:.4;}
+    .fo-drag-over{box-shadow:0 0 0 2px var(--orange) inset;}
     .hidden-cats-panel{background:#f7f7f9;border:1px dashed var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;}
     .hidden-cats-title{font-size:12px;font-weight:800;color:var(--gray);display:flex;align-items:center;gap:7px;margin-bottom:10px;}
     .hidden-cats-title i{color:var(--orange);}

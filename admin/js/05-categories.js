@@ -32,8 +32,9 @@ var CAT_DEFS = [
 // every category, and "Can't Find Products" always sorts last per how it's
 // used (it's the catch-all for unverified imports, checked last).
 var HIDDEN_CATS = [
-  { slug: 'marhaba',             label: 'Marhaba' },
-  { slug: 'cant-find-products',  label: "Can't Find Products" }
+  { slug: 'tools',                label: 'DCK Power Tools' },
+  { slug: 'marhaba',              label: 'Marhaba' },
+  { slug: 'cant-find-products',   label: "Can't Find Products" }
 ];
 function renderHiddenCats() {
   var list = document.getElementById('hiddenCatsList');
@@ -55,57 +56,101 @@ function renderHiddenCats() {
   }).join('');
 }
 
-// Custom order + renamed labels persist the same way category background
-// images already did here (localStorage cache + Supabase expert_settings,
-// so every admin session/device sees the same layout, not just the one
-// that dragged the tiles). Labels are also picked up by the storefront
-// (see applyCatLabelOverrides() in js/02-catalog-render.js) so a rename
-// here actually changes what customers see, not just this admin grid.
-function _catOrderKey() { return 'jain_cat_order'; }
-function _catLabelsKey() { return 'jain_cat_labels'; }
-function getCatOrder() {
-  try { return JSON.parse(localStorage.getItem(_catOrderKey()) || '[]'); } catch(e) { return []; }
+// Custom order + renamed labels work like the Featured tab's picks
+// (js/05-categories.js foItems below): drag/rename only touches an
+// in-memory pending copy, Undo/Redo step through snapshots of it, and
+// nothing reaches Supabase until "Save Changes" — so a bad drag or a
+// typo can be walked back before it goes live on the storefront (labels
+// are picked up there by applyCatLabelOverrides() in js/02-catalog-render.js).
+var _catPendingOrder  = [];   // array of slugs, working copy
+var _catPendingLabels = {};   // slug -> custom label, working copy
+var _catUndoStack = [];
+var _catRedoStack = [];
+var _catDirty = false;
+
+function _catSnapshot() { return JSON.stringify({ order: _catPendingOrder, labels: _catPendingLabels }); }
+function _catPushUndo() {
+  _catUndoStack.push(_catSnapshot());
+  if (_catUndoStack.length > 50) _catUndoStack.shift();
+  _catRedoStack = [];
+  _catDirty = true;
+  _catSyncButtons();
 }
-function getCatLabels() {
-  try { return JSON.parse(localStorage.getItem(_catLabelsKey()) || '{}'); } catch(e) { return {}; }
+function _catSyncButtons() {
+  var u = document.getElementById('catUndoBtn');
+  var r = document.getElementById('catRedoBtn');
+  var s = document.getElementById('catSaveBtn');
+  if (u) u.disabled = _catUndoStack.length === 0;
+  if (r) r.disabled = _catRedoStack.length === 0;
+  if (s) s.disabled = !_catDirty;
 }
+function catUndo() {
+  if (!_catUndoStack.length) return;
+  _catRedoStack.push(_catSnapshot());
+  var snap = JSON.parse(_catUndoStack.pop());
+  _catPendingOrder = snap.order;
+  _catPendingLabels = snap.labels;
+  _catDirty = true;
+  _catSyncButtons();
+  renderCatEditor();
+  showToast('Undone ↩');
+}
+function catRedo() {
+  if (!_catRedoStack.length) return;
+  _catUndoStack.push(_catSnapshot());
+  var snap = JSON.parse(_catRedoStack.pop());
+  _catPendingOrder = snap.order;
+  _catPendingLabels = snap.labels;
+  _catDirty = true;
+  _catSyncButtons();
+  renderCatEditor();
+  showToast('Redone ↪');
+}
+
 function _orderedCatDefs() {
-  var order = getCatOrder();
-  var labels = getCatLabels();
   var bySlug = {};
   CAT_DEFS.forEach(function(c) { bySlug[c.slug] = c; });
-  var ordered = order.map(function(slug) { return bySlug[slug]; }).filter(Boolean);
-  CAT_DEFS.forEach(function(c) { if (order.indexOf(c.slug) === -1) ordered.push(c); });
+  var ordered = _catPendingOrder.map(function(slug) { return bySlug[slug]; }).filter(Boolean);
+  CAT_DEFS.forEach(function(c) { if (_catPendingOrder.indexOf(c.slug) === -1) ordered.push(c); });
   return ordered.map(function(c) {
-    return Object.assign({}, c, { label: labels[c.slug] || c.label });
+    return Object.assign({}, c, { label: _catPendingLabels[c.slug] || c.label });
   });
 }
-async function saveCatOrder(slugs) {
-  localStorage.setItem(_catOrderKey(), JSON.stringify(slugs));
-  await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+
+async function saveCatChanges() {
+  var slugs = _orderedCatDefs().map(function(c) { return c.slug; });
+  localStorage.setItem('jain_cat_order', JSON.stringify(slugs));
+  localStorage.setItem('jain_cat_labels', JSON.stringify(_catPendingLabels));
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
-    body: JSON.stringify([{ key: 'cat_order', value: JSON.stringify(slugs) }])
+    body: JSON.stringify([
+      { key: 'cat_order',  value: JSON.stringify(slugs) },
+      { key: 'cat_labels', value: JSON.stringify(_catPendingLabels) }
+    ])
   });
+  if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
+  _catDirty = false;
+  _catSyncButtons();
+  showToast('Category layout saved!');
 }
-async function saveCatLabel(slug, label) {
-  var labels = getCatLabels();
-  if (label) labels[slug] = label; else delete labels[slug];
-  localStorage.setItem(_catLabelsKey(), JSON.stringify(labels));
-  await sbFetch(SB_URL + '/rest/v1/expert_settings', {
-    method: 'POST',
-    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
-    body: JSON.stringify([{ key: 'cat_labels', value: JSON.stringify(labels) }])
-  });
-}
+
 async function loadCatLayout() {
   var res = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(cat_order,cat_labels)&select=key,value', { headers: SB_HDRS });
+  var order = [], labels = {};
   if (!res.error && Array.isArray(res.data)) {
     res.data.forEach(function(row) {
-      if (row.key === 'cat_order')  { try { localStorage.setItem(_catOrderKey(), row.value); } catch(e) {} }
-      if (row.key === 'cat_labels') { try { localStorage.setItem(_catLabelsKey(), row.value); } catch(e) {} }
+      if (row.key === 'cat_order')  { try { order  = JSON.parse(row.value) || []; } catch(e) {} }
+      if (row.key === 'cat_labels') { try { labels = JSON.parse(row.value) || {}; } catch(e) {} }
     });
   }
+  _catPendingOrder = order;
+  _catPendingLabels = labels;
+  // Undo history doesn't survive a fresh reload from the source of truth.
+  _catUndoStack = [];
+  _catRedoStack = [];
+  _catDirty = false;
+  _catSyncButtons();
   renderCatEditor();
 }
 
@@ -135,17 +180,22 @@ function catDrop(e, targetSlug) {
   var from = slugs.indexOf(_catDragSlug);
   var to   = slugs.indexOf(targetSlug);
   if (from === -1 || to === -1) return;
+  _catPushUndo();
   slugs.splice(from, 1);
   slugs.splice(to, 0, _catDragSlug);
-  saveCatOrder(slugs);
+  _catPendingOrder = slugs;
   renderCatEditor();
 }
 
 function catRenameCommit(slug, el) {
   var val = el.textContent.replace(/\s+/g, ' ').trim();
   var def = CAT_DEFS.find(function(c) { return c.slug === slug; });
-  if (!val) { el.textContent = (getCatLabels()[slug] || (def ? def.label : slug)); return; }
-  saveCatLabel(slug, val === (def ? def.label : slug) ? null : val);
+  var current = _catPendingLabels[slug] || (def ? def.label : slug);
+  if (!val) { el.textContent = current; return; }
+  if (val === current) return;
+  _catPushUndo();
+  if (val === (def ? def.label : slug)) delete _catPendingLabels[slug];
+  else _catPendingLabels[slug] = val;
 }
 function catRenameKeydown(e) {
   if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
@@ -563,7 +613,17 @@ function _foRenderList(q) {
       '<span style="font-size:11px;color:var(--gray)">%</span>' +
       (sale > 0 ? '<button onclick="foSetSale(' + p.id + ',0)" title="Clear sale" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:12px;padding:2px"><i class="fa fa-times"></i></button>' : '') +
     '</div>';
-    return '<tr class="' + (ck ? 'fo-row-selected' : '') + '" onclick="foToggle(this,' + p.id + ')" style="cursor:pointer">' +
+    // Drag handle only does anything for items already in the strip — order
+    // only matters once something's actually featured, and dragging an
+    // unfeatured row would just reorder ids that aren't in _foItems at all.
+    var dragAttrs = ck
+      ? 'draggable="true" ondragstart="foDragStart(event,' + p.id + ')" ondragend="foDragEnd(event)" ondragover="foDragOver(event)" ondragleave="foDragLeave(event)" ondrop="foDrop(event,' + p.id + ')"'
+      : '';
+    var dragHandle = ck
+      ? '<i class="fa fa-grip-vertical" style="color:#ccc;cursor:grab" title="Drag to reorder"></i>'
+      : '';
+    return '<tr class="' + (ck ? 'fo-row-selected' : '') + '" ' + dragAttrs + ' onclick="foToggle(this,' + p.id + ')" style="cursor:pointer">' +
+      '<td class="chk-col" onclick="event.stopPropagation()" style="cursor:default">' + dragHandle + '</td>' +
       '<td class="chk-col"><input type="checkbox" style="pointer-events:none"' + (ck ? ' checked' : '') + ' /></td>' +
       '<td><div style="display:flex;align-items:center;gap:11px">' +
         '<img class="prod-img" src="' + thumb + '" alt="" loading="lazy" onerror="this.onerror=null;this.src=NO_IMG" />' +
@@ -576,9 +636,9 @@ function _foRenderList(q) {
     '</tr>';
   }).join('');
   var correctionRow = correctedFrom
-    ? '<tr class="search-correction-row"><td colspan="6"><i class="fa fa-info-circle"></i> Showing results for "'+encodeHtml(correctedFrom)+'" instead of "'+encodeHtml(q)+'"</td></tr>'
+    ? '<tr class="search-correction-row"><td colspan="7"><i class="fa fa-info-circle"></i> Showing results for "'+encodeHtml(correctedFrom)+'" instead of "'+encodeHtml(q)+'"</td></tr>'
     : '';
-  document.getElementById('foTblBody').innerHTML = correctionRow + (rows || '<tr><td colspan="6" style="color:#aaa;padding:20px;text-align:center">No products match this search.</td></tr>');
+  document.getElementById('foTblBody').innerHTML = correctionRow + (rows || '<tr><td colspan="7" style="color:#aaa;padding:20px;text-align:center">No products match this search.</td></tr>');
   var nSel = list.filter(function(p) { return !!_foFind(p.id); }).length;
   var allSelected = list.length > 0 && nSel === list.length;
   var saChk = document.getElementById('foSelectAll');
@@ -719,6 +779,43 @@ function foToggle(row, id) {
     _foItems.splice(idx, 1);
   }
   _foUpdateCount();
+  _foRenderList(document.getElementById('foSearch').value);
+}
+
+// ── DRAG-TO-REORDER (Featured tab) ──────────────────────────────────────────
+// _foItems' array order IS the storefront ticker's display order (see the
+// comment above _foItems' declaration), so this reorders the real thing, not
+// just how the admin table happens to be sorted. Only featured rows are
+// draggable (see the ck check in _foRenderList) — reordering something not
+// in the strip yet wouldn't mean anything.
+var _foDragId = null;
+function foDragStart(e, id) {
+  _foDragId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.classList.add('fo-dragging');
+}
+function foDragEnd(e) {
+  e.currentTarget.classList.remove('fo-dragging');
+  _foDragId = null;
+}
+function foDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('fo-drag-over');
+}
+function foDragLeave(e) {
+  e.currentTarget.classList.remove('fo-drag-over');
+}
+function foDrop(e, targetId) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('fo-drag-over');
+  if (_foDragId === null || _foDragId === targetId) return;
+  var from = _foItems.findIndex(function(x) { return x.id === _foDragId; });
+  var to   = _foItems.findIndex(function(x) { return x.id === targetId; });
+  if (from === -1 || to === -1) return;
+  _foPushUndo();
+  var moved = _foItems.splice(from, 1)[0];
+  _foItems.splice(to, 0, moved);
   _foRenderList(document.getElementById('foSearch').value);
 }
 // Setting a sale % on a product that isn't featured yet features it first —

@@ -72,10 +72,16 @@ async function _handleOAuthHash() {
     saveAuthSession({ access_token: access, refresh_token: refresh, user: { id: user.id, email: user.email } });
     // If Google gave us a display name and there's no profile row yet, seed one.
     const gName = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || '';
+    const isNewAccount = !(_userProfile && _userProfile.name);
     cleanHash();
     await loadUserProfile();
-    if (gName && !(_userProfile && _userProfile.name)) { await saveUserProfile(gName, '', ''); await loadUserProfile(); }
+    if (gName && isNewAccount) { await saveUserProfile(gName, '', ''); await loadUserProfile(); }
     updateHeaderForAuth();
+    // Google sign-up is a full-page redirect away and back, so the normal
+    // signup form's "Send me offers & updates" checkbox never gets a chance
+    // to show — ask once, right here, only for a brand-new account (not
+    // every time an existing user happens to sign back in via Google).
+    if (isNewAccount) showGoogleSubscribePrompt();
     return true;
   } catch (e) {
     cleanHash();
@@ -306,6 +312,23 @@ function dismissOffersNudge() {
   localStorage.setItem('jain_offers_nudge_dismissed', '1');
 }
 
+// ── Post-Google-signup offers prompt — see _handleOAuthHash() above ────────
+function showGoogleSubscribePrompt() {
+  const el = document.getElementById('googleSubscribePrompt');
+  if (el) el.style.display = 'block';
+}
+function dismissGoogleSubscribePrompt() {
+  const el = document.getElementById('googleSubscribePrompt');
+  if (el) el.style.display = 'none';
+}
+function confirmGoogleSubscribePrompt() {
+  const check = document.getElementById('googleSubscribeCheck');
+  if (check && check.checked && _authUser && _authUser.email) {
+    subscribeEmailToOffers(_authUser.email);
+  }
+  dismissGoogleSubscribePrompt();
+}
+
 // ── Auth Modal ─────────────────────────────────────────────────────────────────
 function openAuthModal(tab) {
   document.getElementById('authOverlay').classList.add('open');
@@ -369,11 +392,15 @@ async function doAuthSignup() {
   if (!/[a-zA-Z]/.test(pass) || !/[0-9]/.test(pass)) { _showAuthErr('Password must include both letters and numbers.'); return; }
   const consent = document.getElementById('authSignupConsent');
   if (consent && !consent.checked) { _showAuthErr('Please accept the Terms & Conditions to create an account.'); return; }
+  // Offers subscription is a separate, optional checkbox — never blocks
+  // signup either way, unlike the T&C consent above.
+  const wantsOffers = document.getElementById('authSignupSubscribe');
   const btn = document.getElementById('authSignupBtn');
   btn.disabled = true; btn.textContent = 'Creating account…';
   const result = await authSignUp(name, email, pass);
   btn.disabled = false; btn.innerHTML = '<i class="fa fa-user-plus"></i> Create Account';
   if (result.error) { _showAuthErr(result.error); return; }
+  if (wantsOffers && wantsOffers.checked) subscribeEmailToOffers(email);
   if (result.confirmed) {
     _showAuthOk('✅ Account created! Welcome, ' + (name || email) + '!');
     setTimeout(() => { closeAuthModal(); openAcctModal(); }, 1200);

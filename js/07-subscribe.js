@@ -76,6 +76,30 @@ async function _submitSubscribe(ids, onSuccess) {
   }
 }
 
+// Fire-and-forget subscribe used where there's no dedicated form on screen —
+// the signup modal's "Send me offers & updates" checkbox (email already
+// captured by the signup fields) and the post-Google-signup prompt (email
+// comes from the Google account). Same table/insert as _submitSubscribe,
+// just without any DOM ids to read from or report into.
+async function subscribeEmailToOffers(email) {
+  email = (email || '').trim().toLowerCase();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+  try {
+    await fetch(SB_URL + '/rest/v1/offer_subscribers?on_conflict=email', {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=ignore-duplicates,return=minimal'
+      },
+      body: JSON.stringify({ email: email, consent: true, consent_at: new Date().toISOString(), unsubscribed: false })
+    });
+  } catch (e) {
+    console.error('[subscribe] network error', e);
+  }
+}
+
 function doSubscribe(ev) {
   if (ev && ev.preventDefault) ev.preventDefault();
   _submitSubscribe({ email: 'subEmail', consent: 'subConsent', btn: 'subBtn', msg: 'subMsg' });
