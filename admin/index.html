@@ -16,7 +16,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202607151100';
+    v = /^[0-9]+$/.test(v) ? v : '202608161730';
     ['01-layout','02-inventory-table','03-sections','04-responsive','05-modals-forms'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -909,6 +909,16 @@
   </div>
 </div>
 
+<!-- PRODUCT VIEW / EDIT MODAL — click a product row to see it just like a
+     customer would (same layout as the storefront's product popup), with
+     every field editable right there instead of hunting through the table. -->
+<div class="pv-overlay" id="pvOverlay" onclick="if(event.target===this)closeProductView()">
+  <div class="pv-modal">
+    <button class="pv-close-btn" onclick="closeProductView()" title="Close" aria-label="Close"><i class="fa fa-times"></i></button>
+    <div class="pv-body" id="pvBody"></div>
+  </div>
+</div>
+
 <!-- PER-PRODUCT QTY LIMITS MODAL -->
 <div class="photo-overlay" id="qtyLimitsOverlay" onclick="if(event.target===this)closeQtyLimits()">
   <div class="photo-box">
@@ -1078,8 +1088,8 @@
 (function() {
   var v = '';
   try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-  v = /^[0-9]+$/.test(v) ? v : '202607151100';
-  ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo','13-offers'].forEach(function(f) {
+  v = /^[0-9]+$/.test(v) ? v : '202608161730';
+  ['01-core-data','02-helpers','03-auth','04-tabs-nav','05-categories','06-reports','07-orders','08-inventory','09-deleted','10-csv-import','11-multiselect-brand-cat','12-seo','13-offers','14-product-view'].forEach(function(f) {
     var s = document.createElement('script');
     s.src = 'admin/js/' + f + '.js?v=' + v;
     s.async = false;

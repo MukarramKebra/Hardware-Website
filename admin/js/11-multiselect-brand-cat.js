@@ -280,12 +280,14 @@ function mcChkChange(chk, isPrimary) {
 }
 function saveMC() {
   if (!_mcCurrentId) return;
+  var id = _mcCurrentId;
   var cats = Array.from(document.querySelectorAll('#mcCatsList input[type="checkbox"]:checked'))
     .map(function(c){return c.value;});
-  saveExtraCats(_mcCurrentId, cats);
+  saveExtraCats(id, cats);
   showToast('Categories updated!');
   closeMC();
   renderTable();
+  if (typeof pvRefreshIfOpen === 'function') pvRefreshIfOpen(id);
 }
 
 async function savePhoto() {
@@ -351,9 +353,11 @@ async function savePhoto() {
   });
   if (dbErr) console.warn('Photo DB save failed:', dbErr);
 
+  var savedId = currentPhotoId;
   _pendingFile = null;
   closePhoto();
   showToast('Photo saved!');
+  if (typeof pvRefreshIfOpen === 'function') pvRefreshIfOpen(savedId);
 }
 
 // ── AUTO-LOGIN ON PAGE LOAD ────────────────────────────────────────────────────

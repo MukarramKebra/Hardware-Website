@@ -339,7 +339,7 @@ function renderTable() {
       }).join('') +
       '<button onclick="openMC('+p.id+')" style="background:none;border:1px dashed #ccc;color:#aaa;font-size:9px;padding:2px 6px;border-radius:20px;cursor:pointer;font-weight:700;flex-shrink:0;line-height:1.4" title="Edit categories"><i class="fa fa-edit"></i></button>' +
     '</div>';
-    return '<tr class="'+(p.hidden?'row-hidden':'')+'">' +
+    return '<tr class="'+(p.hidden?'row-hidden':'')+'" style="cursor:pointer" title="Click to view &amp; edit this product" onclick="if(!event.target.closest(\'input,button,select,textarea,a\'))openProductView('+p.id+')">' +
       '<td class="chk-col"><input type="checkbox" class="row-chk" data-id="'+p.id+'" '+(isChk?'checked':'')+' onchange="toggleRowSelect('+p.id+',this.checked)" /></td>' +
       '<td style="color:#aaa;font-size:11px;font-weight:700">#'+p.id+'</td>' +
       '<td><div style="display:flex;align-items:center;gap:11px">' +
@@ -484,28 +484,63 @@ function jumpToProduct(id) {
 }
 async function saveAll() {
   _pushUndo();
-  // collect name + price edits
-  getAllAdminProducts().forEach(function(p) {
+  const allProducts = getAllAdminProducts();
+
+  // Pull any currently-visible row inputs into _prodOverrides first (covers
+  // whatever's on screen right now), then diff EVERY staged override — not
+  // just visible rows — against each product's real Supabase value and PATCH
+  // the ones that actually changed. Name/price used to live in _prodOverrides/
+  // localStorage only and never reached expert_products, so an edit here never
+  // actually changed what a customer or another admin session saw — only this
+  // browser's own table redraw. Now it's the same real write badge/description
+  // already get, just batched behind this button instead of firing per keystroke.
+  allProducts.forEach(function(p) {
     var ni = document.getElementById('ni'+p.id);
     var pi = document.getElementById('pi'+p.id);
     if (ni) { if (!_prodOverrides[p.id]) _prodOverrides[p.id]={}; _prodOverrides[p.id].name = ni.value; }
     if (pi) { var pv=parseFloat(pi.value); if (!isNaN(pv)) { if (!_prodOverrides[p.id]) _prodOverrides[p.id]={}; _prodOverrides[p.id].price=pv; } }
   });
+  var toPush = [];
+  Object.keys(_prodOverrides).forEach(function(idStr) {
+    var id = parseInt(idStr, 10);
+    var ov = _prodOverrides[id] || {};
+    var p  = allProducts.find(function(x){ return x.id === id; });
+    if (!p) return;
+    var changed = {};
+    if (ov.name !== undefined && ov.name.trim() !== '' && ov.name !== p.name) changed.name = ov.name;
+    if (ov.price !== undefined && ov.price >= 0 && ov.price !== p.price) changed.price = ov.price;
+    if (Object.keys(changed).length) toPush.push({ id: id, changed: changed });
+  });
+  const pushResults = await Promise.all(toPush.map(function(u) {
+    return sbFetch(SB_URL + '/rest/v1/expert_products?id=eq.' + u.id, {
+      method: 'PATCH', headers: SB_HDRS, body: JSON.stringify(u.changed)
+    }).then(function(res) {
+      if (!res.error) {
+        var row = _customProductRows.find(function(r){ return r.id === u.id; });
+        if (row) Object.assign(row, u.changed);
+        // Now the real synced value — clear the override so future renders
+        // read straight from the (now up to date) product row again.
+        if (_prodOverrides[u.id]) { delete _prodOverrides[u.id].name; delete _prodOverrides[u.id].price; }
+      }
+      return res;
+    });
+  }));
+  const nameErr = pushResults.some(function(r){ return r.error; });
   localStorage.setItem('bahar_overrides', JSON.stringify(_prodOverrides));
 
   // Was iterating the old hardcoded PRODUCTS array (now empty since the demo
-  // products were removed) — stock quantity edits for the real 100 products
+  // products were removed) -- stock quantity edits for the real 100 products
   // were silently never reaching Supabase when "Save Changes" was clicked.
-  const allProductsForStock = getAllAdminProducts();
-  allProductsForStock.forEach(function(p) { const el=document.getElementById('si'+p.id); if(el) stockData[p.id]=Math.max(0,parseInt(el.value)||0); });
+  allProducts.forEach(function(p) { const el=document.getElementById('si'+p.id); if(el) stockData[p.id]=Math.max(0,parseInt(el.value)||0); });
   localStorage.setItem('jain_stock', JSON.stringify(stockData));
-  const rows = allProductsForStock.map(function(p) { return { product_id: p.id, qty: stockData[p.id]||0 }; });
-  const { error } = await sbFetch(SB_URL + '/rest/v1/expert_stock', {
+  const stockRows = allProducts.map(function(p) { return { product_id: p.id, qty: stockData[p.id]||0 }; });
+  const { error: stockErr } = await sbFetch(SB_URL + '/rest/v1/expert_stock', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
-    body: JSON.stringify(rows)
+    body: JSON.stringify(stockRows)
   });
-  showToast(error ? 'Saved locally (cloud error)' : 'Saved to cloud â˜ï¸');
+  showToast((nameErr || stockErr) ? 'Saved locally (cloud error)' : 'Saved to cloud ☁️');
+  renderTable();
   renderStats();
 }
 
