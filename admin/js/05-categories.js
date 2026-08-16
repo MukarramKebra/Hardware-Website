@@ -26,16 +26,13 @@ var CAT_DEFS = [
 ];
 
 // ── HIDDEN CATEGORIES (Inventory tab) ─────────────────────────────────────
-// Admin-only categories with no storefront pill/tile (see DEFAULT_CATS in
-// 01-core-data.js). Fixed list + fixed order rather than derived from
-// getAllCats() — this is specifically the "hidden from customers" set, not
-// every category, and "Can't Find Products" always sorts last per how it's
-// used (it's the catch-all for unverified imports, checked last).
-var HIDDEN_CATS = [
-  { slug: 'tools',                label: 'DCK Power Tools' },
-  { slug: 'marhaba',              label: 'Marhaba' },
-  { slug: 'cant-find-products',   label: "Can't Find Products" }
-];
+// "Hidden" here is fully dynamic now, driven by cat_hidden (the same toggle
+// as the Categories tab's Hide/Show button) — this panel is no longer a
+// fixed slug list. Two exceptions: "Can't Find Products" is always included
+// and always sorts last (it never had a real storefront tile to toggle —
+// it's the catch-all for unverified imports, not a shop category), and
+// "All" is a synthetic first entry that resets the table.
+var CANT_FIND_SLUG = 'cant-find-products';
 // Reads only — the Categories tab's own working copy (_catPendingLabels etc.)
 // is what's actually being edited; these just reflect the last *saved*
 // state, which is what everywhere else in admin (this panel, the Inventory
@@ -50,29 +47,23 @@ function renderHiddenCats() {
   var list = document.getElementById('hiddenCatsList');
   if (!list) return;
   var products = getAllAdminProducts();
-  // Labels here follow whatever's been renamed in the Categories tab (e.g.
-  // Marhaba -> "Generators") — read the same override, not the hardcoded
-  // HIDDEN_CATS default, so this panel never shows a stale name.
   var labels = getCatLabels();
   var hiddenMap = getCatHidden();
-  // Structurally-hidden categories (no real storefront tile at all) plus
-  // anything an admin toggled off with the per-category Hide button in the
-  // Categories tab — same panel either way, "Can't Find Products" always last.
-  var slugs = HIDDEN_CATS.map(function(c) { return c.slug; });
-  var extra = Object.keys(hiddenMap).filter(function(s) { return hiddenMap[s] && slugs.indexOf(s) === -1; });
   var defsBySlug = {};
   CAT_DEFS.forEach(function(c) { defsBySlug[c.slug] = c; });
-  var all = HIDDEN_CATS.concat(extra.map(function(s) { return { slug: s, label: (defsBySlug[s] || {}).label || s }; }));
-  all.sort(function(a, b) {
-    if (a.slug === 'cant-find-products') return 1;
-    if (b.slug === 'cant-find-products') return -1;
+  var hiddenSlugs = Object.keys(hiddenMap).filter(function(s) { return hiddenMap[s]; });
+  var entries = hiddenSlugs.map(function(s) { return { slug: s, label: (defsBySlug[s] || {}).label || s }; });
+  entries.push({ slug: CANT_FIND_SLUG, label: "Can't Find Products" });
+  entries.sort(function(a, b) {
+    if (a.slug === CANT_FIND_SLUG) return 1;
+    if (b.slug === CANT_FIND_SLUG) return -1;
     return 0;
   });
   // "All" comes first and resets the table back to every product — a quick
   // way back out after filtering into a hidden category from this panel,
   // without hunting for the main Category dropdown's All option.
   var chips = [{ slug: 'all', label: 'All', count: products.length }].concat(
-    all.map(function(c) {
+    entries.map(function(c) {
       return { slug: c.slug, label: labels[c.slug] || c.label, count: products.filter(function(p) { return p.cat === c.slug; }).length };
     })
   );
@@ -81,7 +72,42 @@ function renderHiddenCats() {
       '<span class="hc-name">' + encodeHtml(c.label) + '</span>' +
       '<span class="hc-count">' + c.count + '</span>' +
     '</div>';
-  }).join('');
+  }).join('') + _hideCatPickerHTML(hiddenSlugs);
+}
+
+// "+ Hide a category" — creates a new hidden category right from this
+// panel instead of requiring a trip to the Categories tab. Takes effect
+// immediately (not staged behind that tab's Save/Undo/Redo — this is a
+// separate, simpler surface) and keeps the two in sync since both read/
+// write the same cat_hidden setting.
+function _hideCatPickerHTML(hiddenSlugs) {
+  var options = CAT_DEFS.filter(function(c) {
+    return c.slug !== 'all' && hiddenSlugs.indexOf(c.slug) === -1;
+  });
+  if (!options.length) return '';
+  var labels = getCatLabels();
+  return '<select class="hidden-cat-add" onchange="if(this.value){quickHideCategory(this.value);this.value=\'\';}" style="margin-left:auto">' +
+    '<option value="">+ Hide a category…</option>' +
+    options.map(function(c) {
+      return '<option value="' + c.slug + '">' + encodeHtml(labels[c.slug] || c.label) + '</option>';
+    }).join('') +
+  '</select>';
+}
+async function quickHideCategory(slug) {
+  var hidden = getCatHidden();
+  hidden[slug] = true;
+  localStorage.setItem('jain_cat_hidden', JSON.stringify(hidden));
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'cat_hidden', value: JSON.stringify(hidden) }])
+  });
+  if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
+  // Keep the Categories tab's own pending copy in sync if it's already
+  // loaded this session, so switching tabs doesn't show stale state.
+  if (typeof _catPendingHidden !== 'undefined') _catPendingHidden = hidden;
+  renderHiddenCats();
+  showToast('Category hidden from storefront');
 }
 
 // Custom order + renamed labels work like the Featured tab's picks

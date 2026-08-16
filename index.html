@@ -97,7 +97,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202608131145';
+    v = /^[0-9]+$/.test(v) ? v : '202608131230';
     ['01-base','02-sections','03-cart-features-contact','04-footer','05-responsive','06-lang-rtl','07-modals','08-account-auth','09-widgets'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -258,6 +258,10 @@
         <h2 data-i18n-html="cat_h2">Shop by <span class="orange">Category</span></h2>
       </div>
       <div class="categories-grid" id="categoriesGrid">
+        <div class="cat-card" data-cat="tools"            onclick="filterProducts('tools')"            style="background-image:url('cat-images/tools.jpg')">
+          <h3>DCK Power Tools</h3>
+          <p>Drills, Grinders, Saws & More</p>
+        </div>
         <div class="cat-card" data-cat="hand-tools"       onclick="filterProducts('hand-tools')"       style="background-image:url('cat-images/hand-tools.png')">
           <h3>Hand Tools</h3>
           <p>Hammers, Pliers, Spanners</p>
@@ -322,6 +326,10 @@
           <h3>Filters</h3>
           <p>Water & Air Filters</p>
         </div>
+        <div class="cat-card" data-cat="marhaba"          onclick="filterProducts('marhaba')"          style="background-image:url('cat-images/marhaba.jpg')">
+          <h3>Marhaba</h3>
+          <p>Generators &amp; Voltage Regulators</p>
+        </div>
         <div class="cat-card" data-cat="all"              onclick="filterProducts('all')"              style="background-image:url('Bahar-Products/SKU-0015.jpg')">
           <h3>All Products</h3>
           <p>Browse our full catalog</p>
@@ -352,6 +360,7 @@
         </div>
         <div class="filter-pills">
           <button class="pill active" data-filter="all">All</button>
+          <button class="pill" data-filter="tools">DCK Power Tools</button>
           <button class="pill" data-filter="hand-tools">Hand Tools</button>
           <button class="pill" data-filter="fastener">Fasteners</button>
           <button class="pill" data-filter="construction">Nails/Wires</button>
@@ -368,6 +377,7 @@
           <button class="pill" data-filter="plumbing-fitting">Fittings</button>
           <button class="pill" data-filter="sanitary">Sanitary</button>
           <button class="pill" data-filter="filter">Filters</button>
+          <button class="pill" data-filter="marhaba">Marhaba</button>
         </div>
         <div class="sub-filter-pills" id="subFilterPills"></div>
       </div>
@@ -1063,7 +1073,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202608131145';
+    v = /^[0-9]+$/.test(v) ? v : '202608131230';
     ['01-config-data','02-catalog-render','03-product-cart-checkout','04-i18n-order','05-accounts','06-features','07-subscribe'].forEach(function(f) {
       var s = document.createElement('script');
       s.src = 'js/' + f + '.js?v=' + v;

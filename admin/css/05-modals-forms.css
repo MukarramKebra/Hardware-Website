@@ -156,7 +156,8 @@
     .hidden-cats-title{font-size:12px;font-weight:800;color:var(--gray);display:flex;align-items:center;gap:7px;margin-bottom:10px;}
     .hidden-cats-title i{color:var(--orange);}
     .hidden-cats-hint{font-weight:500;color:#aaa;font-size:11px;}
-    .hidden-cats-list{display:flex;gap:10px;flex-wrap:wrap;}
+    .hidden-cats-list{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .hidden-cat-add{background:#fff;border:1px dashed var(--border);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;color:var(--gray);cursor:pointer;}
     .hidden-cat-chip{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;transition:all .15s;}
     .hidden-cat-chip:hover{border-color:var(--orange);box-shadow:0 2px 8px rgba(0,0,0,.06);}
     .hidden-cat-chip .hc-name{font-size:12.5px;font-weight:700;color:#1c1c1c;}
