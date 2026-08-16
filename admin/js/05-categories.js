@@ -788,6 +788,25 @@ function foClearBulkSale() {
   showToast(matches.length ? ('Cleared sale from ' + matches.length + ' product' + (matches.length === 1 ? '' : 's')) : 'Nothing to clear');
 }
 
+// Search/filter for a group (e.g. brand=Makita), Select All to feature
+// them, then this instead of dragging each one to the front by hand.
+// Only reorders — anything matching the search/filter that isn't already
+// featured is left alone, same as Apply/Clear Sale above.
+function foMoveSelectedToFirst() {
+  var q = document.getElementById('foSearch').value;
+  var matchIds = _foFilteredList(q).map(function(p) { return p.id; });
+  var idSet = new Set(matchIds);
+  var toMove = _foItems.filter(function(item) { return idSet.has(item.id); });
+  if (!toMove.length) { showToast('Nothing selected here is currently featured'); return; }
+  _foPushUndo();
+  var rest = _foItems.filter(function(item) { return !idSet.has(item.id); });
+  // Keep the matched items in whatever order they were already in, just
+  // move that whole block to the front rather than shuffling it further.
+  _foItems = toMove.concat(rest);
+  _foRenderList(q);
+  showToast('Moved ' + toMove.length + ' product' + (toMove.length === 1 ? '' : 's') + ' to first');
+}
+
 // ── CATEGORY + BRAND FILTER DROPDOWNS (Featured tab) ──────────────────────────
 // Parallel to Inventory's fcToggle/fcRenderList/fcPick (js/10-csv-import.js)
 // but scoped to this tab's own combo ids so the two tabs' filters don't clash;
@@ -800,11 +819,22 @@ function _foFcIds(kind) {
 }
 function _foFcRebuild(kind) {
   if (kind === 'cat') {
+    // Can't Find Products is excluded from the picker itself (see
+    // _foFilteredList) — leaving it selectable here would offer a category
+    // that always resolves to zero results, no different than a brand whose
+    // only products all happen to be Can't Find Products (fixed below).
     _foFcOptions.cat = [{ value: 'all', label: 'All Categories' }].concat(
-      getAllCats().map(function(c) { return { value: c.slug, label: c.label }; }));
+      getAllCats().filter(function(c) { return c.slug !== 'cant-find-products'; }).map(function(c) { return { value: c.slug, label: c.label }; }));
   } else {
+    // Brands are collected only from products that can actually appear in
+    // this list — otherwise a brand whose entire catalog sits in Can't Find
+    // Products (e.g. DCK/DCA, an early unverified import batch) shows up as
+    // a selectable option that silently returns zero results every time.
     var brands = {};
-    getAllAdminProducts().forEach(function(p) { var b = getBrand(p.id); if (b) brands[b] = true; });
+    getAllAdminProducts().forEach(function(p) {
+      if (p.cat === 'cant-find-products') return;
+      var b = getBrand(p.id); if (b) brands[b] = true;
+    });
     _foFcOptions.brand = [{ value: 'all', label: 'All Brands' }].concat(
       Object.keys(brands).sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); })
         .map(function(b) { return { value: b, label: b }; }));
