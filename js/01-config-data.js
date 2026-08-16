@@ -192,7 +192,7 @@ async function loadSBData() {
   // parallel. One key=in.(...) request returns all of them in a single trip.
   const productsP = sbFetchAll(SB_URL + '/rest/v1/expert_products?select=*', SB_H);
   const photosP   = sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=*',   SB_H);
-  const settingsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(hidden_prices,featured_offers,sku_map,brand_map,multi_cats,product_keywords,qty_limits,product_variants,cat_labels,cat_hidden)&select=key,value', { headers: SB_H });
+  const settingsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(hidden_prices,featured_offers,sku_map,brand_map,multi_cats,product_keywords,qty_limits,product_variants,cat_labels,cat_hidden,cat_order)&select=key,value', { headers: SB_H });
 
   const stockP   = sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',           SB_H);
   const hiddenP  = sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id', SB_H);
@@ -232,6 +232,7 @@ async function loadSBData() {
   // click a name to rename — see admin/js/05-categories.js) apply here too,
   // patching whatever static label is already in the page rather than
   // requiring the whole category nav to be rebuilt from JS.
+  applyCatOrderOverride(_settingJSON('cat_order', []));
   applyCatLabelOverrides(_settingJSON('cat_labels', {}));
   applyCatVisibilityOverrides(_settingJSON('cat_hidden', {}));
 

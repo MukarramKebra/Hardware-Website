@@ -132,6 +132,28 @@ function applyCatVisibilityOverrides(hidden) {
   if (fellBackFromActive) { activeFilter = 'all'; syncCatNav('all'); renderProducts(); }
 }
 
+// Drag-reordering in the admin's category editor only ever touched that
+// admin grid's own markup — the storefront pill row / category grid are
+// static HTML, so a reorder saved there never actually moved anything a
+// customer sees. Reorders the real DOM nodes here to match the saved
+// order; anything not in the saved list (a brand-new category, or "all"
+// if it was never part of the drag-and-drop set) keeps its current
+// position relative to the others rather than jumping somewhere unexpected.
+function applyCatOrderOverride(order) {
+  if (!order || !order.length) return;
+  function reorder(container, selector, attr) {
+    if (!container) return;
+    var els = Array.from(container.children);
+    var bySlug = {};
+    els.forEach(function(el) { bySlug[el.getAttribute(attr)] = el; });
+    var ordered = order.map(function(slug) { return bySlug[slug]; }).filter(Boolean);
+    var leftover = els.filter(function(el) { return order.indexOf(el.getAttribute(attr)) === -1; });
+    ordered.concat(leftover).forEach(function(el) { container.appendChild(el); });
+  }
+  reorder(document.getElementById('categoriesGrid'), '.cat-card', 'data-cat');
+  reorder(document.querySelector('.filter-pills'), '.pill', 'data-filter');
+}
+
 // ── CATEGORY NAV STRIP ────────────────────────────────────────────────────
 function syncCatNav(cat) {
   document.querySelectorAll('.cn-item').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
