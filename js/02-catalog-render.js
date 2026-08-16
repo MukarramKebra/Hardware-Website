@@ -113,6 +113,25 @@ function applyCatLabelOverrides(labels) {
   });
 }
 
+// Per-category Hide/Show toggle from the admin's category editor — same
+// idea as applyCatLabelOverrides above, just hiding the pill/tile instead
+// of relabeling it. If someone's mid-browse on a category that gets hidden
+// out from under them (rare — this only changes on a page load), fall back
+// to "all" rather than leaving them on a dead filter with no way back to it.
+function applyCatVisibilityOverrides(hidden) {
+  if (!hidden) return;
+  var fellBackFromActive = false;
+  Object.keys(hidden).forEach(function(slug) {
+    if (!hidden[slug]) return;
+    var pill = document.querySelector('.pill[data-filter="' + slug + '"]');
+    if (pill) pill.style.display = 'none';
+    var card = document.querySelector('.cat-card[data-cat="' + slug + '"]');
+    if (card) card.style.display = 'none';
+    if (activeFilter === slug) fellBackFromActive = true;
+  });
+  if (fellBackFromActive) { activeFilter = 'all'; syncCatNav('all'); renderProducts(); }
+}
+
 // ── CATEGORY NAV STRIP ────────────────────────────────────────────────────
 function syncCatNav(cat) {
   document.querySelectorAll('.cn-item').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));

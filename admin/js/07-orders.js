@@ -308,6 +308,14 @@ function renderTable() {
     const suggestion = _adminDidYouMean(q, function(corrected) { return _filterAdminInventory(corrected).length > 0; });
     if (suggestion) { list = _filterAdminInventory(suggestion); correctedFrom = suggestion; }
   }
+  // Can't Find Products is unverified/unconfirmed catalog data — it has the
+  // lowest ids (earliest import batch), so an unfiltered "All" view used to
+  // open on a wall of it. Push it to the end instead (stable sort keeps
+  // everything else in its existing order); filtering the category dropdown
+  // straight to it still works normally, this only affects the mixed view.
+  list = list.slice().sort(function(a, b) {
+    return (a.cat === 'cant-find-products' ? 1 : 0) - (b.cat === 'cant-find-products' ? 1 : 0);
+  });
   const rows = list.map(function(p) {
     const qty    = stockData[p.id]||0;
     const cls    = qty===0?'out':qty<=10?'low':'';

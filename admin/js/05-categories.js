@@ -36,16 +36,44 @@ var HIDDEN_CATS = [
   { slug: 'marhaba',              label: 'Marhaba' },
   { slug: 'cant-find-products',   label: "Can't Find Products" }
 ];
+// Reads only — the Categories tab's own working copy (_catPendingLabels etc.)
+// is what's actually being edited; these just reflect the last *saved*
+// state, which is what everywhere else in admin (this panel, the Inventory
+// table's sort) should follow.
+function getCatLabels() {
+  try { return JSON.parse(localStorage.getItem('jain_cat_labels') || '{}'); } catch(e) { return {}; }
+}
+function getCatHidden() {
+  try { return JSON.parse(localStorage.getItem('jain_cat_hidden') || '{}'); } catch(e) { return {}; }
+}
 function renderHiddenCats() {
   var list = document.getElementById('hiddenCatsList');
   if (!list) return;
   var products = getAllAdminProducts();
+  // Labels here follow whatever's been renamed in the Categories tab (e.g.
+  // Marhaba -> "Generators") — read the same override, not the hardcoded
+  // HIDDEN_CATS default, so this panel never shows a stale name.
+  var labels = getCatLabels();
+  var hiddenMap = getCatHidden();
+  // Structurally-hidden categories (no real storefront tile at all) plus
+  // anything an admin toggled off with the per-category Hide button in the
+  // Categories tab — same panel either way, "Can't Find Products" always last.
+  var slugs = HIDDEN_CATS.map(function(c) { return c.slug; });
+  var extra = Object.keys(hiddenMap).filter(function(s) { return hiddenMap[s] && slugs.indexOf(s) === -1; });
+  var defsBySlug = {};
+  CAT_DEFS.forEach(function(c) { defsBySlug[c.slug] = c; });
+  var all = HIDDEN_CATS.concat(extra.map(function(s) { return { slug: s, label: (defsBySlug[s] || {}).label || s }; }));
+  all.sort(function(a, b) {
+    if (a.slug === 'cant-find-products') return 1;
+    if (b.slug === 'cant-find-products') return -1;
+    return 0;
+  });
   // "All" comes first and resets the table back to every product — a quick
-  // way back out after filtering into Marhaba or Can't Find Products from
-  // this panel, without hunting for the main Category dropdown's All option.
+  // way back out after filtering into a hidden category from this panel,
+  // without hunting for the main Category dropdown's All option.
   var chips = [{ slug: 'all', label: 'All', count: products.length }].concat(
-    HIDDEN_CATS.map(function(c) {
-      return { slug: c.slug, label: c.label, count: products.filter(function(p) { return p.cat === c.slug; }).length };
+    all.map(function(c) {
+      return { slug: c.slug, label: labels[c.slug] || c.label, count: products.filter(function(p) { return p.cat === c.slug; }).length };
     })
   );
   list.innerHTML = chips.map(function(c) {
@@ -64,11 +92,12 @@ function renderHiddenCats() {
 // are picked up there by applyCatLabelOverrides() in js/02-catalog-render.js).
 var _catPendingOrder  = [];   // array of slugs, working copy
 var _catPendingLabels = {};   // slug -> custom label, working copy
+var _catPendingHidden = {};   // slug -> true if hidden from the storefront nav
 var _catUndoStack = [];
 var _catRedoStack = [];
 var _catDirty = false;
 
-function _catSnapshot() { return JSON.stringify({ order: _catPendingOrder, labels: _catPendingLabels }); }
+function _catSnapshot() { return JSON.stringify({ order: _catPendingOrder, labels: _catPendingLabels, hidden: _catPendingHidden }); }
 function _catPushUndo() {
   _catUndoStack.push(_catSnapshot());
   if (_catUndoStack.length > 50) _catUndoStack.shift();
@@ -90,6 +119,7 @@ function catUndo() {
   var snap = JSON.parse(_catUndoStack.pop());
   _catPendingOrder = snap.order;
   _catPendingLabels = snap.labels;
+  _catPendingHidden = snap.hidden || {};
   _catDirty = true;
   _catSyncButtons();
   renderCatEditor();
@@ -101,6 +131,7 @@ function catRedo() {
   var snap = JSON.parse(_catRedoStack.pop());
   _catPendingOrder = snap.order;
   _catPendingLabels = snap.labels;
+  _catPendingHidden = snap.hidden || {};
   _catDirty = true;
   _catSyncButtons();
   renderCatEditor();
@@ -113,39 +144,54 @@ function _orderedCatDefs() {
   var ordered = _catPendingOrder.map(function(slug) { return bySlug[slug]; }).filter(Boolean);
   CAT_DEFS.forEach(function(c) { if (_catPendingOrder.indexOf(c.slug) === -1) ordered.push(c); });
   return ordered.map(function(c) {
-    return Object.assign({}, c, { label: _catPendingLabels[c.slug] || c.label });
+    return Object.assign({}, c, { label: _catPendingLabels[c.slug] || c.label, hidden: !!_catPendingHidden[c.slug] });
   });
+}
+
+// "All Products" isn't a real storefront category (there's no pill/tile to
+// hide) — the toggle only makes sense on actual categories.
+function catToggleHidden(slug) {
+  if (slug === 'all') return;
+  _catPushUndo();
+  if (_catPendingHidden[slug]) delete _catPendingHidden[slug];
+  else _catPendingHidden[slug] = true;
+  renderCatEditor();
 }
 
 async function saveCatChanges() {
   var slugs = _orderedCatDefs().map(function(c) { return c.slug; });
   localStorage.setItem('jain_cat_order', JSON.stringify(slugs));
   localStorage.setItem('jain_cat_labels', JSON.stringify(_catPendingLabels));
+  localStorage.setItem('jain_cat_hidden', JSON.stringify(_catPendingHidden));
   var res = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
     method: 'POST',
     headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
     body: JSON.stringify([
       { key: 'cat_order',  value: JSON.stringify(slugs) },
-      { key: 'cat_labels', value: JSON.stringify(_catPendingLabels) }
+      { key: 'cat_labels', value: JSON.stringify(_catPendingLabels) },
+      { key: 'cat_hidden', value: JSON.stringify(_catPendingHidden) }
     ])
   });
   if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
   _catDirty = false;
   _catSyncButtons();
+  renderHiddenCats();
   showToast('Category layout saved!');
 }
 
 async function loadCatLayout() {
-  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(cat_order,cat_labels)&select=key,value', { headers: SB_HDRS });
-  var order = [], labels = {};
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(cat_order,cat_labels,cat_hidden)&select=key,value', { headers: SB_HDRS });
+  var order = [], labels = {}, hidden = {};
   if (!res.error && Array.isArray(res.data)) {
     res.data.forEach(function(row) {
       if (row.key === 'cat_order')  { try { order  = JSON.parse(row.value) || []; } catch(e) {} }
       if (row.key === 'cat_labels') { try { labels = JSON.parse(row.value) || {}; } catch(e) {} }
+      if (row.key === 'cat_hidden') { try { hidden = JSON.parse(row.value) || {}; } catch(e) {} }
     });
   }
   _catPendingOrder = order;
   _catPendingLabels = labels;
+  _catPendingHidden = hidden;
   // Undo history doesn't survive a fresh reload from the source of truth.
   _catUndoStack = [];
   _catRedoStack = [];
@@ -208,11 +254,12 @@ function renderCatEditor() {
   if (!grid) return;
   grid.innerHTML = _orderedCatDefs().map(function(cat) {
     var img = bgs[cat.slug] || cat.default;
-    return '<div class="cat-edit-card" draggable="true" ' +
+    return '<div class="cat-edit-card' + (cat.hidden ? ' cat-edit-hidden' : '') + '" draggable="true" ' +
         'ondragstart="catDragStart(event,\'' + cat.slug + '\')" ondragend="catDragEnd(event)" ' +
         'ondragover="catDragOver(event)" ondragleave="catDragLeave(event)" ondrop="catDrop(event,\'' + cat.slug + '\')" ' +
         'style="background:#fff;border:1px solid #e2e4e8;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.07)">' +
       '<div class="cat-edit-drag-handle" title="Drag to reorder"><i class="fa fa-grip-lines"></i></div>' +
+      (cat.hidden ? '<div class="cat-edit-hidden-badge"><i class="fa fa-eye-slash"></i> Hidden</div>' : '') +
       '<div style="height:150px;background:url(\'' + img + '\') center/cover no-repeat"></div>' +
       '<div style="padding:12px 14px">' +
         '<div class="cat-edit-name" contenteditable="true" spellcheck="false" ' +
@@ -225,6 +272,9 @@ function renderCatEditor() {
         '</label>' +
         (cat.slug !== 'all'
           ? '<button onclick="openCatProducts(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid var(--orange);border-radius:6px;padding:7px;font-size:11px;font-weight:700;color:var(--orange);cursor:pointer"><i class="fa fa-boxes"></i> Products</button>'
+          : '') +
+        (cat.slug !== 'all'
+          ? '<button onclick="catToggleHidden(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid ' + (cat.hidden ? 'var(--green,#1c7a52)' : '#e2e4e8') + ';border-radius:6px;padding:6px;font-size:11px;font-weight:700;color:' + (cat.hidden ? 'var(--green,#1c7a52)' : '#888') + ';cursor:pointer"><i class="fa ' + (cat.hidden ? 'fa-eye' : 'fa-eye-slash') + '"></i> ' + (cat.hidden ? 'Show on storefront' : 'Hide from storefront') + '</button>'
           : '') +
         '<button onclick="resetCatBg(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid #e2e4e8;border-radius:6px;padding:6px;font-size:11px;color:#888;cursor:pointer"><i class="fa fa-undo"></i> Reset Default</button>' +
       '</div>' +

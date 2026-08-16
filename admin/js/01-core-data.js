@@ -262,7 +262,7 @@ async function loadFromSupabase() {
     sbFetchAll(SB_URL + '/rest/v1/expert_products?select=*',       SB_HDRS),
     sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id',SB_HDRS),
     sbFetchAll(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        SB_HDRS),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(sku_map,brand_map,multi_cats,ignored_alerts,product_keywords,hidden_prices,qty_limits,product_variants)&select=key,value', { headers: SB_HDRS })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(sku_map,brand_map,multi_cats,ignored_alerts,product_keywords,hidden_prices,qty_limits,product_variants,cat_labels,cat_order,cat_hidden)&select=key,value', { headers: SB_HDRS })
   ]);
   const _settingsByKey = {};
   if (!st.error && Array.isArray(st.data)) {
@@ -291,6 +291,12 @@ async function loadFromSupabase() {
   window._sbQtyLimits = _settingJSON('qty_limits', {});
     // Manually hidden prices (see togglePriceHidden() in 07-orders.js)
   window._sbPriceHidden = _settingJSON('hidden_prices', {});
+    // Category order/renames/hide-show — seeded into localStorage here so
+    // renderHiddenCats() (Inventory tab, which loads before Categories) shows
+    // current names/visibility on a fresh admin session, not stale defaults.
+  if (_settingsByKey.cat_labels) localStorage.setItem('jain_cat_labels', _settingsByKey.cat_labels);
+  if (_settingsByKey.cat_order)  localStorage.setItem('jain_cat_order',  _settingsByKey.cat_order);
+  if (_settingsByKey.cat_hidden) localStorage.setItem('jain_cat_hidden', _settingsByKey.cat_hidden);
     // Category backgrounds
   if (!cb.error && Array.isArray(cb.data)) {
         var catBgs = {};
