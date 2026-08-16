@@ -496,7 +496,13 @@ function submitHeaderSearch() {
   renderProducts();
   updateSearchOverlay(val);
   viewAllSearchResults();
-  toggleHeaderSearch(false);
+  // Hide the header search box without going through toggleHeaderSearch(false)
+  // — that clears headerSearchInput and mirrors the empty value into the
+  // real #searchInput via onHeaderSearchInput(''), which wiped out the
+  // search that was just submitted a moment before the debounce re-ran it,
+  // so the grid landed back on "show everything" instead of staying on
+  // whatever was searched.
+  document.getElementById('headerSearchWrap').classList.remove('open');
 }
 function submitGridSearch() {
   var val = document.getElementById('searchInput').value;
