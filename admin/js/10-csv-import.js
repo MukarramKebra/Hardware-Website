@@ -333,7 +333,7 @@ function getCustomCats() {
 // change: saveNewCat() and deleteCustomCat() below.
 var _allCatsCache = null;
 function getAllCats() {
-  if (!_allCatsCache) _allCatsCache = [...DEFAULT_CATS, ...getCustomCats()];
+  if (!_allCatsCache) _allCatsCache = [...DEFAULT_CATS, ...getCustomCats(), ...getCustomHiddenCats()];
   return _allCatsCache;
 }
 function _invalidateCatsCache() { _allCatsCache = null; }

@@ -52,8 +52,15 @@ function renderHiddenCats() {
   var defsBySlug = {};
   CAT_DEFS.forEach(function(c) { defsBySlug[c.slug] = c; });
   var hiddenSlugs = Object.keys(hiddenMap).filter(function(s) { return hiddenMap[s]; });
-  var entries = hiddenSlugs.map(function(s) { return { slug: s, label: (defsBySlug[s] || {}).label || s }; });
-  entries.push({ slug: CANT_FIND_SLUG, label: "Can't Find Products" });
+  // "default" = a real storefront category (tools, hand-tools, ...) currently
+  // toggled hidden — restorable, but not rename/delete-able here (that's the
+  // Categories tab's job, where the tile + label are managed together).
+  // "custom" = a genuinely new category created from this panel — no
+  // storefront tile ever exists for these, so rename/delete both make sense
+  // straight from here. "locked" = the one permanent catch-all, untouchable.
+  var entries = hiddenSlugs.map(function(s) { return { slug: s, label: (defsBySlug[s] || {}).label || s, kind: 'default' }; });
+  entries = entries.concat(getCustomHiddenCats().map(function(c) { return { slug: c.slug, label: c.label, kind: 'custom' }; }));
+  entries.push({ slug: CANT_FIND_SLUG, label: "Can't Find Products", kind: 'locked' });
   entries.sort(function(a, b) {
     if (a.slug === CANT_FIND_SLUG) return 1;
     if (b.slug === CANT_FIND_SLUG) return -1;
@@ -62,17 +69,125 @@ function renderHiddenCats() {
   // "All" comes first and resets the table back to every product — a quick
   // way back out after filtering into a hidden category from this panel,
   // without hunting for the main Category dropdown's All option.
-  var chips = [{ slug: 'all', label: 'All', count: products.length }].concat(
+  var chips = [{ slug: 'all', label: 'All', count: products.length, kind: 'reset' }].concat(
     entries.map(function(c) {
-      return { slug: c.slug, label: labels[c.slug] || c.label, count: products.filter(function(p) { return p.cat === c.slug; }).length };
+      return { slug: c.slug, label: labels[c.slug] || c.label, count: products.filter(function(p) { return p.cat === c.slug; }).length, kind: c.kind };
     })
   );
   list.innerHTML = chips.map(function(c) {
-    return '<div class="hidden-cat-chip" onclick="fcSet(\'cat\',\'' + c.slug + '\',\'' + c.label.replace(/'/g, "\\'") + '\')">' +
-      '<span class="hc-name">' + encodeHtml(c.label) + '</span>' +
-      '<span class="hc-count">' + c.count + '</span>' +
+    var manage = '';
+    if (c.kind === 'default') {
+      manage = '<button class="hc-action" onclick="event.stopPropagation();quickUnhideCategory(\'' + c.slug + '\')" title="Restore to storefront"><i class="fa fa-eye"></i></button>';
+    } else if (c.kind === 'custom') {
+      manage = '<button class="hc-action" onclick="event.stopPropagation();renameHiddenCategory(\'' + c.slug + '\')" title="Rename"><i class="fa fa-pencil"></i></button>' +
+               '<button class="hc-action" onclick="event.stopPropagation();deleteHiddenCategory(\'' + c.slug + '\')" title="Delete"><i class="fa fa-trash"></i></button>';
+    }
+    return '<div class="hidden-cat-chip">' +
+      '<span class="hc-click" onclick="fcSet(\'cat\',\'' + c.slug + '\',\'' + c.label.replace(/'/g, "\\'") + '\')">' +
+        '<span class="hc-name">' + encodeHtml(c.label) + '</span>' +
+        '<span class="hc-count">' + c.count + '</span>' +
+      '</span>' +
+      manage +
     '</div>';
   }).join('') + _hideCatPickerHTML(hiddenSlugs);
+}
+
+// ── CUSTOM HIDDEN CATEGORIES ──────────────────────────────────────────────
+// Genuinely NEW categories that don't exist in CAT_DEFS at all — same idea
+// as Can't Find Products (admin-only, no storefront pill/tile), except
+// user-created and any number can exist. No storefront tile by construction:
+// index.html's category grid only renders the fixed CAT_DEFS set, so
+// anything outside it is automatically invisible to customers — no separate
+// "hidden" flag needed the way real storefront categories require one.
+// Synced through Supabase (expert_settings key 'custom_hidden_cats') so
+// every admin session and the category-assignment dropdowns (Add Product,
+// multi-category picker, CSV import) see the same list — unlike the older
+// getCustomCats()/'bahar_categories' mechanism, which is localStorage-only
+// (see handoff.md "Next steps").
+function getCustomHiddenCats() {
+  if (window._sbCustomHiddenCats) return window._sbCustomHiddenCats;
+  try { return JSON.parse(localStorage.getItem('jain_custom_hidden_cats') || '[]'); } catch(e) { return []; }
+}
+function _pushCustomHiddenCats(list) {
+  window._sbCustomHiddenCats = list;
+  localStorage.setItem('jain_custom_hidden_cats', JSON.stringify(list));
+  _invalidateCatsCache();
+  return sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'custom_hidden_cats', value: JSON.stringify(list) }])
+  });
+}
+// Avoids colliding with ANY existing category slug (built-in, custom,
+// hidden, or the Can't Find Products catch-all) — plain slugify() isn't
+// enough since two different names can slugify to the same thing, or land
+// on a built-in slug (e.g. "MARHABA" -> "marhaba", already the Generators
+// category's slug).
+function _uniqueHiddenCatSlug(base) {
+  var taken = {};
+  getAllCats().forEach(function(c){ taken[c.slug] = true; });
+  taken[CANT_FIND_SLUG] = true;
+  var slug = base, n = 2;
+  while (taken[slug]) { slug = base + '-' + n; n++; }
+  return slug;
+}
+async function createHiddenCategory(name) {
+  name = (name || '').trim();
+  if (!name) { showToast('Enter a category name'); return; }
+  var base = slugify(name);
+  if (!base) { showToast('Enter a valid category name'); return; }
+  var slug = _uniqueHiddenCatSlug(base);
+  var list = getCustomHiddenCats().concat([{ slug: slug, label: name }]);
+  var res = await _pushCustomHiddenCats(list);
+  if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
+  refreshCategorySelects();
+  renderHiddenCats();
+  showToast('"' + name + '" created as a hidden category');
+}
+async function renameHiddenCategory(slug) {
+  var list = getCustomHiddenCats();
+  var entry = list.find(function(c){ return c.slug === slug; });
+  if (!entry) return;
+  var name = prompt('Rename "' + entry.label + '" to:', entry.label);
+  if (name === null) return;
+  name = name.trim();
+  if (!name) { showToast("Name can't be empty"); return; }
+  entry.label = name;
+  var res = await _pushCustomHiddenCats(list);
+  if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
+  refreshCategorySelects();
+  renderHiddenCats();
+  renderTable();
+  showToast('Renamed to "' + name + '"');
+}
+async function deleteHiddenCategory(slug) {
+  var list = getCustomHiddenCats();
+  var entry = list.find(function(c){ return c.slug === slug; });
+  if (!entry) return;
+  var count = getAllAdminProducts().filter(function(p){ return p.cat === slug; }).length;
+  if (!confirm('Delete "' + entry.label + '"?' + (count ? ' ' + count + ' product(s) using it will need reassigning to a new category.' : ''))) return;
+  var next = list.filter(function(c){ return c.slug !== slug; });
+  var res = await _pushCustomHiddenCats(next);
+  if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
+  refreshCategorySelects();
+  renderHiddenCats();
+  showToast('Category deleted');
+}
+// Inverse of quickHideCategory() below — restores a real storefront
+// category (one currently toggled hidden via cat_hidden) back to the nav.
+async function quickUnhideCategory(slug) {
+  var hidden = getCatHidden();
+  delete hidden[slug];
+  localStorage.setItem('jain_cat_hidden', JSON.stringify(hidden));
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'cat_hidden', value: JSON.stringify(hidden) }])
+  });
+  if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
+  if (typeof _catPendingHidden !== 'undefined') _catPendingHidden = hidden;
+  renderHiddenCats();
+  showToast('Category restored to storefront');
 }
 
 // "+ Hide a category" — creates a new hidden category right from this

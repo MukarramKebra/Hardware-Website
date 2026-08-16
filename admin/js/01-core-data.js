@@ -262,7 +262,7 @@ async function loadFromSupabase() {
     sbFetchAll(SB_URL + '/rest/v1/expert_products?select=*',       SB_HDRS),
     sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id',SB_HDRS),
     sbFetchAll(SB_URL + '/rest/v1/expert_cat_bgs?select=*',        SB_HDRS),
-    sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(sku_map,brand_map,multi_cats,ignored_alerts,product_keywords,hidden_prices,qty_limits,product_variants,cat_labels,cat_order,cat_hidden)&select=key,value', { headers: SB_HDRS })
+    sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(sku_map,brand_map,multi_cats,ignored_alerts,product_keywords,hidden_prices,qty_limits,product_variants,cat_labels,cat_order,cat_hidden,custom_hidden_cats)&select=key,value', { headers: SB_HDRS })
   ]);
   const _settingsByKey = {};
   if (!st.error && Array.isArray(st.data)) {
@@ -297,6 +297,13 @@ async function loadFromSupabase() {
   if (_settingsByKey.cat_labels) localStorage.setItem('jain_cat_labels', _settingsByKey.cat_labels);
   if (_settingsByKey.cat_order)  localStorage.setItem('jain_cat_order',  _settingsByKey.cat_order);
   if (_settingsByKey.cat_hidden) localStorage.setItem('jain_cat_hidden', _settingsByKey.cat_hidden);
+    // Custom hidden categories (admin-created, no storefront tile by
+    // construction — see createHiddenCategory() in 05-categories.js). Synced
+    // through Supabase so every admin session and the category dropdowns
+    // (Add Product, multi-category picker, CSV import) see the same list.
+  window._sbCustomHiddenCats = _settingJSON('custom_hidden_cats', []);
+  localStorage.setItem('jain_custom_hidden_cats', JSON.stringify(window._sbCustomHiddenCats));
+  _invalidateCatsCache();
     // Category backgrounds
   if (!cb.error && Array.isArray(cb.data)) {
         var catBgs = {};
