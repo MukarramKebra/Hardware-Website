@@ -224,6 +224,7 @@ async function loadSBData() {
     var tp = await sbFetch(SB_URL + '/rest/v1/expert_products?select=*&id=in.(' + ids.join(',') + ')', { headers: SB_H });
     if (!tp.error && Array.isArray(tp.data) && tp.data.length && !_customProds.length) {
       _customProds = tp.data.filter(function(r) { return !r.hidden; });
+      _invalidateAllProductsCache();
       if (typeof initOffersTicker === 'function') initOffersTicker();
     }
   });
@@ -231,6 +232,7 @@ async function loadSBData() {
   const [c, ph, st] = await Promise.all([productsP, photosP, settingsP]);
 
   if (Array.isArray(c.data) && c.data.length > 0) _customProds = c.data.filter(r => !r.hidden);
+  _invalidateAllProductsCache();
   if (Array.isArray(ph.data)) {
         ph.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });
         localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos));
@@ -300,6 +302,9 @@ async function loadSBData() {
           }
           if (Array.isArray(b.data) && b.data.length > 0) _sbBanners = b.data;
     }
+    // _sbBrandMap and _hiddenIds may have changed since the cache was last
+    // built above — invalidate once more before the first real grid render.
+    _invalidateAllProductsCache();
     renderProducts();
     if (typeof initSideBanners === 'function') initSideBanners();
     if (typeof _injectProductSchema === 'function') _injectProductSchema();
@@ -358,8 +363,19 @@ function normalizeCategory(raw) {
     return map[c] || c;
 }
 
-// Merged base + admin-added products, with hidden ones removed
+// Merged base + admin-added products, with hidden ones removed.
+// Rebuilding this (a .filter+.map over all 1577+ products) used to happen
+// on EVERY call — and it's called on every category click, search
+// keystroke, and product lookup (21 call sites), several of them just to
+// .find() a single product by id. That's what made opening a category feel
+// slow, especially on phones. _customProds/_hiddenIds/_sbBrandMap only ever
+// change inside loadSBData() (nothing on the storefront mutates them
+// live), so the merged array is cached here and only rebuilt when
+// _invalidateAllProductsCache() is called from those same few spots.
+let _allProductsCache = null;
+function _invalidateAllProductsCache() { _allProductsCache = null; }
 function getAllProducts() {
+    if (_allProductsCache) return _allProductsCache;
     const baseIds = new Set(PRODUCTS.map(p => p.id));  // IDs 1-60 are authoritative
   // normalizeCategory maps the old built-in slugs (power-tools, fasteners, …)
   // onto the Expert Hardware category set so these stay filterable
@@ -384,7 +400,8 @@ function getAllProducts() {
         brand:    _sbBrandMap[String(p.id)] || '',
         stock:    'in-stock'
   }));
-    return [...base, ...extra];
+    _allProductsCache = [...base, ...extra];
+    return _allProductsCache;
 }
 
 const PRODUCTS = [];
