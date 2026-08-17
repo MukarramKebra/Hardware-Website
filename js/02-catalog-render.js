@@ -502,6 +502,15 @@ function renderSubFilters() {
 // happen while hidden behind the overlay, so what the visitor sees is
 // "click → brief load → already looking at the right section", never a
 // visible scroll or a flash of the old category's products.
+// The 500ms wait here used to be doing real work — getAllProducts()
+// rebuilt the entire 1577+ product catalog from scratch on every category
+// click (see getAllProducts() in js/01-config-data.js), which could
+// genuinely take a while on a phone. Now that it's cached, renderProducts()
+// below finishes in a few milliseconds, so holding the overlay up for a
+// fixed 500ms was pure wasted waiting, not disguising anything — that's
+// what made every category feel slow to open. 50ms is just enough for the
+// overlay's own .18s opacity transition to visibly start (avoiding a hard
+// instant cut), not an artificial delay on top of real work.
 let _catLoadTimer = null;
 function _switchCategoryWithLoading() {
   clearTimeout(_catLoadTimer);
@@ -511,7 +520,7 @@ function _switchCategoryWithLoading() {
     renderProducts();
     scrollToProducts();
     if (overlay) overlay.classList.remove('show');
-  }, 500);
+  }, 50);
 }
 // ── STOCK HELPERS ─────────────────────────────────────────────────────────
 function getLiveStock(productId) {
