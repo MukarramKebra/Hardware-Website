@@ -97,7 +97,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202608170100';
+    v = /^[0-9]+$/.test(v) ? v : '202608170200';
     ['01-base','02-sections','03-cart-features-contact','04-footer','05-responsive','06-lang-rtl','07-modals','08-account-auth','09-widgets'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
@@ -379,6 +379,35 @@
           <button class="pill" data-filter="filter">Filters</button>
           <button class="pill" data-filter="marhaba">Marhaba</button>
         </div>
+        <!-- Reorders the category tile grid + pill row to match the admin's
+             saved order BEFORE the rest of the page finishes parsing, using
+             whatever order localStorage cached on the last visit (see
+             loadSBData() in js/01-config-data.js). Without this, the page
+             painted the hardcoded HTML order first and only jumped to the
+             real saved order once the Supabase fetch resolved a moment
+             later — visible every single load. This can still show the
+             hardcoded order once on a browser's very first-ever visit
+             (nothing cached yet), but every load after that is correct
+             from the start. -->
+        <script>
+        (function() {
+          try {
+            var order = JSON.parse(localStorage.getItem('cat_order_cache') || 'null');
+            if (!order || !order.length) return;
+            function reorder(container, attr) {
+              if (!container) return;
+              var els = Array.prototype.slice.call(container.children);
+              var bySlug = {};
+              els.forEach(function(el) { bySlug[el.getAttribute(attr)] = el; });
+              var ordered = order.map(function(slug) { return bySlug[slug]; }).filter(Boolean);
+              var leftover = els.filter(function(el) { return order.indexOf(el.getAttribute(attr)) === -1; });
+              ordered.concat(leftover).forEach(function(el) { container.appendChild(el); });
+            }
+            reorder(document.getElementById('categoriesGrid'), 'data-cat');
+            reorder(document.querySelector('.filter-pills'), 'data-filter');
+          } catch (e) {}
+        })();
+        </script>
         <div class="sub-filter-pills" id="subFilterPills"></div>
       </div>
       <!-- Shown when the typed search found nothing but a nearby spelling did
@@ -1073,7 +1102,7 @@
   (function() {
     var v = '';
     try { v = localStorage.getItem('expert_asset_v') || ''; } catch(e) {}
-    v = /^[0-9]+$/.test(v) ? v : '202608170100';
+    v = /^[0-9]+$/.test(v) ? v : '202608170200';
     ['01-config-data','02-catalog-render','03-product-cart-checkout','04-i18n-order','05-accounts','06-features','07-subscribe'].forEach(function(f) {
       var s = document.createElement('script');
       s.src = 'js/' + f + '.js?v=' + v;

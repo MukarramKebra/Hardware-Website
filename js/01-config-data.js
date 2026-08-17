@@ -232,9 +232,16 @@ async function loadSBData() {
   // click a name to rename — see admin/js/05-categories.js) apply here too,
   // patching whatever static label is already in the page rather than
   // requiring the whole category nav to be rebuilt from JS.
-  applyCatOrderOverride(_settingJSON('cat_order', []));
+  const catOrder = _settingJSON('cat_order', []);
+  applyCatOrderOverride(catOrder);
   applyCatLabelOverrides(_settingJSON('cat_labels', {}));
   applyCatVisibilityOverrides(_settingJSON('cat_hidden', {}));
+  // Cached so the very first paint on the NEXT visit can reorder the pill
+  // row/tile grid synchronously (see the inline script right after them in
+  // index.html) instead of showing the static HTML's built-in order for a
+  // moment and then visibly jumping to the saved order once this async
+  // fetch finally resolves.
+  try { localStorage.setItem('cat_order_cache', JSON.stringify(catOrder)); } catch(e) {}
 
   const [s, h, b, rv] = await Promise.all([stockP, hiddenP, bannersP, reviewsP]);
   // Bulk review stats (avg + count per product) for the Product schema's
