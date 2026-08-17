@@ -199,6 +199,35 @@ async function loadSBData() {
   const bannersP = sbFetchAll(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc', SB_H);
   const reviewsP  = sbFetchAll(SB_URL + '/rest/v1/expert_reviews?select=product_id,rating', SB_H);
 
+  // The offers ticker used to wait on the SAME Promise.all as the full
+  // 1577+ row product catalog below (productsP) — by far the slowest of the
+  // three requests it was grouped with, so the ticker rendered a beat after
+  // everything else on the page even though it only ever shows up to 40
+  // cards. settingsP (a handful of small settings rows) resolves much
+  // sooner; as soon as it does, fetch ONLY the featured-offer products by id
+  // — a small targeted request, not the whole catalog — and render the
+  // ticker right away. The authoritative Promise.all below still re-renders
+  // it once the real full catalog is in, so this is a head start, not a
+  // separate source of truth; if it loses the race to the full fetch (fast
+  // network) the guard below just makes it a no-op.
+  settingsP.then(async function(st) {
+    if (st.error || !Array.isArray(st.data)) return;
+    var byKey = {};
+    st.data.forEach(function(row) { byKey[row.key] = row.value; });
+    function early(key, fb) { try { return JSON.parse(byKey[key]) || fb; } catch(e) { return fb; } }
+    window._sbFeaturedOffers = early('featured_offers', []).map(function(x) {
+      return (typeof x === 'number') ? { id: x, sale: 0 } : { id: x.id, sale: x.sale || 0 };
+    });
+    window._sbPriceHidden = early('hidden_prices', {});
+    if (_customProds.length || !window._sbFeaturedOffers.length) return; // full catalog already won the race, or nothing to show
+    var ids = window._sbFeaturedOffers.map(function(o) { return o.id; });
+    var tp = await sbFetch(SB_URL + '/rest/v1/expert_products?select=*&id=in.(' + ids.join(',') + ')', { headers: SB_H });
+    if (!tp.error && Array.isArray(tp.data) && tp.data.length && !_customProds.length) {
+      _customProds = tp.data.filter(function(r) { return !r.hidden; });
+      if (typeof initOffersTicker === 'function') initOffersTicker();
+    }
+  });
+
   const [c, ph, st] = await Promise.all([productsP, photosP, settingsP]);
 
   if (Array.isArray(c.data) && c.data.length > 0) _customProds = c.data.filter(r => !r.hidden);
