@@ -95,7 +95,7 @@ function openProduct(id) {
     '</div>' +
     '<div class="pm-info-col">' +
       '<div class="pm-badge-row">' +
-        '<span class="pm-badge cat"><i class="fa fa-tag"></i> ' + p.category.replace('-', ' ') + '</span>' +
+        '<span class="pm-badge cat"><i class="fa fa-tag"></i> ' + catLabel(p.category) + '</span>' +
         (p.badge ? '<span class="pm-badge orange">' + p.badge + '</span>' : '') +
       '</div>' +
       '<h2 class="pm-name">' + p.name + '</h2>' +

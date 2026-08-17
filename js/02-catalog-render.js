@@ -103,6 +103,7 @@ function productSlug(p) {
 // actually renames something, so a page-load patch is simpler than making
 // the whole category nav data-driven for a rename that may never happen.
 function applyCatLabelOverrides(labels) {
+  window._sbCatLabels = labels || {};
   if (!labels) return;
   Object.keys(labels).forEach(function(slug) {
     var label = labels[slug];
@@ -111,6 +112,15 @@ function applyCatLabelOverrides(labels) {
     var card = document.querySelector('.cat-card[data-cat="' + slug + '"] h3');
     if (card) card.textContent = label;
   });
+}
+// Display name for a category slug — the admin's custom rename (e.g.
+// "marhaba" -> "Generators") if one's been set, else the slug title-cased.
+// Anywhere a category name is shown outside the pill/tile nav itself (which
+// applyCatLabelOverrides patches directly) needs to go through this instead
+// of stringifying the raw slug, or a rename never reaches it.
+function catLabel(slug) {
+  if (window._sbCatLabels && window._sbCatLabels[slug]) return window._sbCatLabels[slug];
+  return (slug || '').replace(/-/g, ' ');
 }
 
 // Per-category Hide/Show toggle from the admin's category editor — same
@@ -225,7 +235,7 @@ function initOffersTicker() {
       ? (hasSale
           ? `<span class="offer-price-now">${offerPrice.toFixed(3)} KWD</span> <span class="offer-price-was">${p.price.toFixed(3)} KWD</span>`
           : `${p.price.toFixed(3)} KWD`)
-      : p.category.replace('-', ' ');
+      : catLabel(p.category);
     const tag = hasSale ? `-${sale}%` : p.badge;
     return `
     <div class="offer-card" onclick="openProduct(${p.id})">
@@ -890,7 +900,7 @@ function renderProducts() {
     const arP = isAr && _AR_PRODUCTS[p.id];
     const pName = arP ? arP.name : p.name;
     const pDesc = arP ? arP.desc : p.desc;
-    const pCat  = isAr ? (_AR_CATS[p.category] || p.category.replace('-',' ')) : p.category.replace('-',' ');
+    const pCat  = isAr ? (_AR_CATS[p.category] || catLabel(p.category)) : catLabel(p.category);
     let stockLabel, stockClass;
     if (isOut)      { stockLabel = isAr ? '&#10006; غير متوفر'  : '&#10006; Out of Stock';  stockClass = 'out-of-stock'; }
     else if (isLow) { stockLabel = (isAr ? '&#9888; كمية محدودة' : '&#9888; Low Stock') + (liveQty !== null ? ' (' + liveQty + (isAr ? ' متبقي)' : ' left)') : ''); stockClass = 'low-stock'; }
@@ -1036,7 +1046,7 @@ function updateSearchOverlay(query) {
       const priceHtml = hasVisiblePrice(p)
         ? applySale(p.price, p.id).toFixed(3) + ' KWD'
         : (isAr ? 'السعر عند الطلب' : 'Price on request');
-      const pCat = isAr ? (_AR_CATS[p.category] || p.category.replace('-', ' ')) : p.category.replace('-', ' ');
+      const pCat = isAr ? (_AR_CATS[p.category] || catLabel(p.category)) : catLabel(p.category);
       return '<div class="search-overlay-card" onclick="selectSearchOverlayResult(' + p.id + ')">' +
         '<div class="so-img-wrap">' +
           (photo ? '<img src="' + photo + '" alt="' + p.name + '" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'" />' : '') +
