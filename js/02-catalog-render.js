@@ -249,6 +249,13 @@ function initOffersTicker() {
       </div>
     </div>`;
   }).join('');
+  // Cached (un-duplicated, one copy) so the very first paint on the NEXT
+  // visit can fill the ticker synchronously — see the inline script right
+  // after #offersTrack in index.html — instead of waiting on even the fast
+  // targeted fetch this function is normally reached through. Still real
+  // network-dependent data underneath; this just means a returning visitor
+  // never sees the ticker load in at all, only ever already there.
+  try { localStorage.setItem('offers_ticker_cache', cards); } catch (e) {}
   // Repeat the card set enough times to comfortably exceed the viewport width
   // (same technique as fillMarquee() in js/04-i18n-order.js) — with only one
   // duplicate, wide screens could show the whole loop at once, making the

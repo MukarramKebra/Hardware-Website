@@ -220,6 +220,32 @@
       <div class="offers-track" id="offersTrack"></div>
     </div>
   </section>
+  <!-- Fills the ticker synchronously from whatever initOffersTicker() cached
+       on the last visit (see js/02-catalog-render.js), before the JS bundle
+       even loads, let alone the network fetch that normally builds it. On a
+       returning visit this is what makes the strip already-there instead of
+       popping in — the async path still runs afterward and replaces this
+       with fresh data (price/sale changes, newly picked offers, etc.), same
+       duplication math initOffersTicker() itself uses for the seamless loop. -->
+  <script>
+  (function() {
+    try {
+      var cards = localStorage.getItem('offers_ticker_cache');
+      if (!cards) return;
+      var track = document.getElementById('offersTrack');
+      if (!track) return;
+      track.innerHTML = cards;
+      var singleW = track.scrollWidth;
+      if (!singleW) { track.innerHTML = cards + cards; return; }
+      var vw = window.innerWidth || 1280;
+      var copies = Math.max(2, Math.ceil(vw / singleW) + 1);
+      var half = '';
+      for (var i = 0; i < copies; i++) half += cards;
+      track.innerHTML = half + half;
+      track.style.animationDuration = Math.round((singleW * copies) / 70) + 's';
+    } catch (e) {}
+  })();
+  </script>
 
   <div class="marquee-wrap">
     <div class="marquee-track">
