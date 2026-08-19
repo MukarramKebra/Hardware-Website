@@ -458,7 +458,13 @@ var _SUBCAT_LABELS = {
     'oil-filter':   'Oil Filters',
     'water-filter': 'Water Filters',
 
-    'floor-cleaning': 'Floor Cleaning'
+    'floor-cleaning': 'Floor Cleaning',
+
+    'jacks-lifting':  'Jacks & Lifting',
+    'garage-storage': 'Garage Storage',
+    'diy-market':     'Magnetic Accessories',
+    'car-lifts-tire': 'Car Lifts & Tire Machines',
+    'e-vehicle':      'E-Vehicle'
 };
 var _AR_SUBCATS = {
     'nails':     'مسامير',
@@ -508,7 +514,13 @@ var _AR_SUBCATS = {
     'oil-filter':   'فلاتر زيت',
     'water-filter': 'فلاتر مياه',
 
-    'floor-cleaning': 'تنظيف الأرضيات'
+    'floor-cleaning': 'تنظيف الأرضيات',
+
+    'jacks-lifting':  'رافعات',
+    'garage-storage': 'تخزين الكراج',
+    'diy-market':     'ملحقات مغناطيسية',
+    'car-lifts-tire': 'روافع السيارات وأدوات الإطارات',
+    'e-vehicle':      'المركبات الكهربائية'
 };
 
 // ── ARABIC PRODUCT TRANSLATIONS ───────────────────────────────────────────
