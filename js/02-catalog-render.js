@@ -307,11 +307,23 @@ function _interleaveByBrand(list) {
   }
   return result;
 }
+// Banners pinned to a side in the admin's Banners editor (window._sbBannerSides,
+// id -> 'left'|'right') go straight to that side; everything else still runs
+// through the automatic brand-interleave split below, same as before pins
+// existed.
 function _splitBanners(list) {
-  const seq = _interleaveByBrand(list);
-  const left = [], right = [];
-  seq.forEach(function(b, i) { (i % 2 === 0 ? left : right).push(b); });
-  return { left: left, right: right };
+  const sides = window._sbBannerSides || {};
+  const pinnedLeft = [], pinnedRight = [], unpinned = [];
+  list.forEach(function(b) {
+    const s = b.id != null ? sides[b.id] : null;
+    if (s === 'left') pinnedLeft.push(b);
+    else if (s === 'right') pinnedRight.push(b);
+    else unpinned.push(b);
+  });
+  const seq = _interleaveByBrand(unpinned);
+  const autoLeft = [], autoRight = [];
+  seq.forEach(function(b, i) { (i % 2 === 0 ? autoLeft : autoRight).push(b); });
+  return { left: pinnedLeft.concat(autoLeft), right: pinnedRight.concat(autoRight) };
 }
 
 function _renderBannerSlides(container, slides) {
@@ -401,7 +413,7 @@ function initSideBanners() {
   const rightEl = document.getElementById('bannerRight');
   if (!leftEl || !rightEl) return;
   const source = (_sbBanners && _sbBanners.length)
-    ? _sbBanners.map(function(b) { return { brand: b.brand, img: b.img_url }; })
+    ? _sbBanners.map(function(b) { return { id: b.id, brand: b.brand, img: b.img_url }; })
     : DEFAULT_BANNERS;
   const split = _splitBanners(source);
   _bannerIdx = 0;

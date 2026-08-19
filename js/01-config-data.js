@@ -192,7 +192,7 @@ async function loadSBData() {
   // parallel. One key=in.(...) request returns all of them in a single trip.
   const productsP = sbFetchAll(SB_URL + '/rest/v1/expert_products?select=*', SB_H);
   const photosP   = sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=*',   SB_H);
-  const settingsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(hidden_prices,featured_offers,sku_map,brand_map,multi_cats,product_keywords,qty_limits,product_variants,cat_labels,cat_hidden,cat_order)&select=key,value', { headers: SB_H });
+  const settingsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(hidden_prices,featured_offers,sku_map,brand_map,multi_cats,product_keywords,qty_limits,product_variants,cat_labels,cat_hidden,cat_order,banner_sides)&select=key,value', { headers: SB_H });
 
   const stockP   = sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',           SB_H);
   const hiddenP  = sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id', SB_H);
@@ -259,6 +259,10 @@ async function loadSBData() {
   _sbProductKeywords = _settingJSON('product_keywords', {});
   window._sbQtyLimits = _settingJSON('qty_limits', {});
   window._sbVariants = _settingJSON('product_variants', {});
+  // Per-banner Left/Right pin from the admin's Banners editor (id -> 'left'|
+  // 'right'). Banners without an entry here fall back to the automatic
+  // brand-interleave split in _splitBanners() (js/02-catalog-render.js).
+  window._sbBannerSides = _settingJSON('banner_sides', {});
   // Category renames from the admin's category editor (drag-reorder tiles,
   // click a name to rename — see admin/js/05-categories.js) apply here too,
   // patching whatever static label is already in the page rather than

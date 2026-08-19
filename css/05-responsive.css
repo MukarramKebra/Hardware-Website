@@ -64,7 +64,7 @@
   .pill { flex-shrink: 0; }
   /* auto-fill instead of a fixed column count — lets 3+ tiles share a line
      whenever the container has room instead of always wrapping at 2 */
-  .subcat-tiles { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+  .subcat-tiles { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 12px; }
   .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
   /* Categories */

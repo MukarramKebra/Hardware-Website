@@ -466,6 +466,11 @@ function resetCatBg(slug) {
 // deleteBanner()  — removes one banner
 var _bannerList = [];
 var _editBannerId = null;
+// Per-banner Left/Right pin (id -> 'left'|'right'), stored in Supabase
+// expert_settings key 'banner_sides'. A banner with no entry here is "Auto"
+// — the storefront's brand-interleave split (_splitBanners() in
+// js/02-catalog-render.js) decides its side, same as before this existed.
+var _bannerSides = {};
 var DEFAULT_BANNERS = [
   { brand: 'DCK',    img: 'Banners/dck1.jpg' },
   { brand: 'DCK',    img: 'Banners/dck2.jpg' },
@@ -492,7 +497,57 @@ async function loadBanners() {
     list = Array.isArray(seedRes.data) ? seedRes.data : [];
   }
   _bannerList = list;
+
+  var sidesRes = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.banner_sides&select=value', { headers: SB_HDRS });
+  _bannerSides = {};
+  if (!sidesRes.error && Array.isArray(sidesRes.data) && sidesRes.data[0] && sidesRes.data[0].value) {
+    try { _bannerSides = JSON.parse(sidesRes.data[0].value) || {}; } catch(e) {}
+  }
   renderBannerEditor();
+}
+
+async function setBannerSide(id, side) {
+  if (side) { _bannerSides[id] = side; } else { delete _bannerSides[id]; }
+  renderBannerEditor();
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'banner_sides', value: JSON.stringify(_bannerSides) }])
+  });
+  if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
+  showToast(side ? ('Pinned to ' + side) : 'Set back to Auto');
+}
+
+// Mirrors _interleaveByBrand()/_splitBanners() in js/02-catalog-render.js
+// exactly, so the "Currently showing" badge below matches what the
+// storefront actually renders — pinned banners go straight to their side,
+// everything else is interleaved by brand and split even/odd.
+function _computeEffectiveSides(list, sides) {
+  var pinnedLeft = [], pinnedRight = [], unpinned = [];
+  list.forEach(function(b) {
+    var s = sides[b.id];
+    if (s === 'left') pinnedLeft.push(b);
+    else if (s === 'right') pinnedRight.push(b);
+    else unpinned.push(b);
+  });
+  var byBrand = {}, order = [];
+  unpinned.forEach(function(b) {
+    if (!byBrand[b.brand]) { byBrand[b.brand] = []; order.push(b.brand); }
+    byBrand[b.brand].push(b);
+  });
+  var seq = [], more = true;
+  while (more) {
+    more = false;
+    order.forEach(function(brand) {
+      if (byBrand[brand].length) { seq.push(byBrand[brand].shift()); more = true; }
+    });
+  }
+  var autoLeft = [], autoRight = [];
+  seq.forEach(function(b, i) { (i % 2 === 0 ? autoLeft : autoRight).push(b); });
+  var effective = {};
+  pinnedLeft.concat(autoLeft).forEach(function(b) { effective[b.id] = 'left'; });
+  pinnedRight.concat(autoRight).forEach(function(b) { effective[b.id] = 'right'; });
+  return effective;
 }
 
 function renderBannerEditor() {
@@ -502,11 +557,25 @@ function renderBannerEditor() {
     grid.innerHTML = '<p style="color:#aaa;font-size:12px;grid-column:1/-1">No custom banners yet — the homepage is showing the default set from the Banners folder.</p>';
     return;
   }
+  var effective = _computeEffectiveSides(_bannerList, _bannerSides);
+  function sideBtn(b, val, label) {
+    var pinned = _bannerSides[b.id];
+    var active = val === 'auto' ? !pinned : pinned === val;
+    return '<button onclick="setBannerSide(' + b.id + ',' + (val === 'auto' ? 'null' : "'" + val + "'") + ')" style="flex:1;padding:5px 0;font-size:10px;font-weight:800;border-radius:5px;cursor:pointer;border:1px solid ' + (active ? 'var(--red)' : 'var(--border)') + ';background:' + (active ? 'var(--red)' : '#fff') + ';color:' + (active ? '#fff' : 'var(--gray)') + '">' + label + '</button>';
+  }
   grid.innerHTML = _bannerList.map(function(b) {
+    var pinned = _bannerSides[b.id];
+    var shown  = effective[b.id] === 'left' ? 'Left' : 'Right';
     return '<div style="background:#fff;border:1px solid #e2e4e8;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.07)">' +
-      '<div style="height:130px;background:url(\'' + b.img_url + '\') center/cover no-repeat"></div>' +
+      // contain (not cover) so the whole 9:16 banner is visible, just
+      // letterboxed smaller within the card instead of being cropped
+      '<div style="height:180px;background:url(\'' + b.img_url + '\') center/contain no-repeat;background-color:#151515"></div>' +
       '<div style="padding:10px 12px">' +
-        '<div style="font-weight:800;font-size:13px;color:#1c1c1c;margin-bottom:8px">' + encodeHtml(b.brand) + '</div>' +
+        '<div style="font-weight:800;font-size:13px;color:#1c1c1c;margin-bottom:4px">' + encodeHtml(b.brand) + '</div>' +
+        '<div style="font-size:10px;font-weight:700;color:var(--gray);margin-bottom:8px"><i class="fa fa-eye"></i> Showing on: ' + shown + (pinned ? ' (pinned)' : ' (auto)') + '</div>' +
+        '<div style="display:flex;gap:4px;margin-bottom:8px">' +
+          sideBtn(b, 'left', 'Left') + sideBtn(b, 'auto', 'Auto') + sideBtn(b, 'right', 'Right') +
+        '</div>' +
         '<div style="display:flex;gap:6px">' +
           '<button onclick="editBanner(' + b.id + ')" style="flex:1;background:none;border:1px solid var(--border);color:var(--gray);border-radius:6px;padding:6px;font-size:11px;font-weight:700;cursor:pointer"><i class="fa fa-edit"></i> Edit</button>' +
           '<button onclick="deleteBanner(' + b.id + ')" style="flex:1;background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:6px;font-size:11px;font-weight:700;cursor:pointer"><i class="fa fa-trash"></i> Delete</button>' +
@@ -588,6 +657,14 @@ async function saveEditBanner() {
 async function deleteBanner(id) {
   if (!confirm('Delete this banner?')) return;
   await sbFetch(SB_URL + '/rest/v1/expert_banners?id=eq.' + id, { method: 'DELETE', headers: SB_HDRS });
+  if (_bannerSides[id]) {
+    delete _bannerSides[id];
+    await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+      method: 'POST',
+      headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+      body: JSON.stringify([{ key: 'banner_sides', value: JSON.stringify(_bannerSides) }])
+    });
+  }
   showToast('Banner deleted');
   loadBanners();
 }
