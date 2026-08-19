@@ -533,7 +533,8 @@ var _AR_CATS = {
     'plumbing-fitting': 'تمديدات السباكة',
     'sanitary':         'أدوات صحية',
     'filter':           'فلاتر',
-    'marhaba':          'مرحبا'
+    'marhaba':          'مرحبا',
+    'big-red':          'بيج ريد'
 };
 
 let cart = [];

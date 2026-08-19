@@ -282,7 +282,9 @@ const DEFAULT_BANNERS = [
   { brand: 'iTrust', img: 'Banners/itrust1.jpg' },
   { brand: 'iTrust', img: 'Banners/itrust2.jpg' },
   { brand: 'iTrust', img: 'Banners/itrust3.jpg' },
-  { brand: 'iTrust', img: 'Banners/itrust4.jpg' }
+  { brand: 'iTrust', img: 'Banners/itrust4.jpg' },
+  { brand: 'BIG RED', img: 'Banners/bigred1.jpg' },
+  { brand: 'BIG RED', img: 'Banners/bigred2.jpg' }
 ];
 
 // Groups banners by brand and interleaves them (one per brand per pass) so no
