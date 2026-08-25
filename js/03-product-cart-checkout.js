@@ -62,7 +62,10 @@ function pmSelectVariant(idx) {
   });
 }
 
-function openProduct(id) {
+// _fromHistory is true only when this call is replaying a browser
+// forward/back navigation (see popstate handler below) — skips pushing a
+// second history entry on top of the one the browser just navigated to.
+function openProduct(id, _fromHistory) {
   trackView(id);
   trackRecentlyViewed(id);
   _pmId  = id;
@@ -168,6 +171,14 @@ function openProduct(id) {
   overlay.scrollTop = 0;
   document.body.classList.add('product-open');
   document.body.style.overflow = 'hidden';
+  // Gives the phone's physical/gesture Back button something of ours to
+  // undo first — without this, opening a product added no history entry,
+  // so the very first Back press exited the site entirely (e.g. straight
+  // to the Google result you arrived from) instead of just closing the
+  // product view.
+  if (!_fromHistory) {
+    history.pushState({ pmOpen: true, id: id }, '', '#product-' + id);
+  }
 }
 
 // "Customers Also Bought" — shown below the product info, same-category items
@@ -196,12 +207,30 @@ function renderRelatedProducts(currentId, category) {
     '</div>';
 }
 
-function closeProduct() {
+// _fromHistory is true only when this call is replaying a browser Back
+// press (see popstate handler below) — the browser has already moved off
+// the pmOpen history entry at that point, so calling history.back() again
+// here would skip past whatever page the visitor actually wanted.
+function closeProduct(_fromHistory) {
   document.getElementById('prodOverlay').classList.remove('open');
   document.body.style.overflow = '';
   document.body.classList.remove('product-open');
   _pmId = null; _pmQty = 1;
+  if (!_fromHistory && history.state && history.state.pmOpen) {
+    history.back();
+  }
 }
+
+// Keeps the product modal in sync with the phone/browser Back and Forward
+// buttons — Back closes the modal (see the history entry openProduct()
+// pushes above) instead of leaving the site, Forward reopens it.
+window.addEventListener('popstate', function(e) {
+  const overlay = document.getElementById('prodOverlay');
+  const isOpen  = overlay && overlay.classList.contains('open');
+  const wantsModal = e.state && e.state.pmOpen;
+  if (isOpen && !wantsModal)      closeProduct(true);
+  else if (!isOpen && wantsModal) openProduct(e.state.id, true);
+});
 
 // Effective ceiling for the quantity stepper: the smallest of live stock and
 // this product's admin-set max order quantity (0 = no limit on that side).
