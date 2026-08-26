@@ -8,6 +8,26 @@
 // visibility/price-hidden save instantly, same as their table equivalents) so
 // nothing about how edits persist changes — only how you get to them does.
 var _pvId = null;
+// Lazily-loaded copy of expert_settings 'featured_offers' (the array Sale %
+// lives in — see admin/js/05-categories.js's Featured tab) so this view can
+// show/edit a product's sale without requiring a trip through that tab
+// first. Reuses the Featured tab's own live _foItems array when it's
+// already loaded this session (so an edit from either place stays in sync
+// instead of writing over the other's unsaved staged edits); otherwise
+// fetches its own copy once and caches it here.
+var _pvFeaturedCache = null;
+async function _pvEnsureFeatured() {
+  if (typeof _foItems !== 'undefined' && _foItems.length) return _foItems;
+  if (_pvFeaturedCache) return _pvFeaturedCache;
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.featured_offers&select=value', { headers: SB_HDRS });
+  var raw = [];
+  if (!res.error && Array.isArray(res.data) && res.data[0] && res.data[0].value) {
+    try { raw = JSON.parse(res.data[0].value) || []; } catch(e) {}
+  }
+  _pvFeaturedCache = raw.map(function(x) { return (typeof x === 'number') ? { id: x, sale: 0 } : { id: x.id, sale: x.sale || 0 }; });
+  return _pvFeaturedCache;
+}
+function _pvFindFeatured(list, id) { return list.find(function(x) { return x.id === id; }); }
 
 function _pvRawSku(id) {
   var val = (window._sbSkuMap || {})[String(id)];
@@ -17,10 +37,14 @@ function _pvRawSku(id) {
   return (val === undefined || val === null) ? '' : String(val);
 }
 
-function openProductView(id) {
+async function openProductView(id) {
   var p = getAllAdminProducts().find(function(x){ return x.id === id; });
   if (!p) return;
   _pvId = id;
+  var featured = await _pvEnsureFeatured();
+  if (_pvId !== id) return; // switched to a different product while this was loading
+  var saleItem = _pvFindFeatured(featured, id);
+  var salePct  = saleItem ? saleItem.sale : 0;
   var raw = _customProductRows.find(function(r){ return r.id === id; }) || {};
   var photos = {};
   try { photos = JSON.parse(localStorage.getItem('jain_photos') || '{}'); } catch(e) {}
@@ -63,6 +87,7 @@ function openProductView(id) {
         '<input class="pv-brand-input" id="pvBrand" value="' + encodeHtml(getBrand(id)) + '" placeholder="Brand" oninput="pvOnBrandEdit()" />' +
       '</div>' +
       '<textarea class="pv-desc-input" id="pvDesc" rows="3" placeholder="Product description..." onblur="pvOnDescBlur()">' + encodeHtml(p.desc || '') + '</textarea>' +
+      '<input class="pv-desc-input" id="pvKeywords" style="margin-top:8px" placeholder="SEO keywords, comma separated..." value="' + encodeHtml((window._sbProductKeywords||{})[id] || '') + '" onblur="pvOnKeywordsBlur()" />' +
       '<div class="pv-price-row">' +
         '<div class="pv-price-field"><input type="number" step="0.001" min="0" id="pvPrice" value="' + displayPrice.toFixed(3) + '" oninput="pvOnPriceEdit()" /><span>KWD</span></div>' +
         '<button class="pv-toggle-btn" onclick="pvTogglePriceHidden()">' +
@@ -70,6 +95,10 @@ function openProductView(id) {
         '</button>' +
       '</div>' +
       (priceHidden ? '<div class="pv-hint"><i class="fa fa-info-circle"></i> Customers see "Price on request" + an Ask Price on WhatsApp button instead.</div>' : '') +
+      '<div class="pv-price-row">' +
+        '<div class="pv-price-field"><input type="number" step="1" min="0" max="95" id="pvSale" value="' + salePct + '" onblur="pvOnSaleBlur()" /><span>% Sale</span></div>' +
+        (salePct > 0 ? '<span class="pv-hint" style="margin:0"><i class="fa fa-tag"></i> Shown in the homepage offers strip at ' + (displayPrice * (1 - salePct/100)).toFixed(3) + ' KWD</span>' : '<span class="pv-hint" style="margin:0">0 = not on sale (also removes it from the offers strip)</span>') +
+      '</div>' +
       '<div class="pv-stock-row">' +
         '<span class="status-dot"><span class="dot ' + statusCls + '"></span>' + statusTxt + '</span>' +
         '<input type="number" class="stock-input ' + (qty===0?'out':qty<=10?'low':'') + '" id="pvStock" value="' + qty + '" min="0" oninput="pvOnStockEdit()" />' +
@@ -199,6 +228,44 @@ async function pvOnBadgeEdit() {
   var row = _customProductRows.find(function(r){ return r.id === _pvId; });
   if (row) row.badge = val || null;
   showToast('Badge updated');
+}
+// Mirrors foSetSale() (admin/js/05-categories.js) — same clamp, same
+// featured_offers array shape — just reachable from Inventory too instead
+// of only the Featured tab.
+async function pvOnSaleBlur() {
+  if (!_pvId) return;
+  var id = _pvId;
+  var pct = Math.max(0, Math.min(95, parseInt(document.getElementById('pvSale').value, 10) || 0));
+  var featured = await _pvEnsureFeatured();
+  if (_pvId !== id) return;
+  var item = _pvFindFeatured(featured, id);
+  if (!item) { item = { id: id, sale: 0 }; featured.push(item); }
+  item.sale = pct;
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST', headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'featured_offers', value: JSON.stringify(featured) }])
+  });
+  if (res.error) { showToast('Failed to save sale %'); return; }
+  window._sbFeaturedOffers = featured;
+  showToast(pct > 0 ? ('Sale set to ' + pct + '%') : 'Sale removed');
+  if (_pvId === id) openProductView(id);
+}
+// Same instant-PATCH save saveProductSEO() uses for keywords (js/12-seo.js),
+// just without also touching the description field this view already saves
+// separately via pvOnDescBlur().
+async function pvOnKeywordsBlur() {
+  if (!_pvId) return;
+  var id = _pvId;
+  var keywords = document.getElementById('pvKeywords').value.trim();
+  if (!window._sbProductKeywords) window._sbProductKeywords = {};
+  window._sbProductKeywords[id] = keywords;
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST', headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'product_keywords', value: JSON.stringify(window._sbProductKeywords) }])
+  });
+  if (res.error) { showToast('Failed to save keywords'); return; }
+  showToast('Keywords saved');
+  if (document.getElementById('seoSection') && document.getElementById('seoSection').style.display !== 'none') renderSEOProducts();
 }
 function pvTogglePriceHidden() {
   if (!_pvId) return;

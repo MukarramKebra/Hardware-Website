@@ -313,7 +313,12 @@ function renderTable() {
   // open on a wall of it. Push it to the end instead (stable sort keeps
   // everything else in its existing order); filtering the category dropdown
   // straight to it still works normally, this only affects the mixed view.
+  // Hidden products sink even further, below that — once you've hidden
+  // something from the storefront it's no longer something you're actively
+  // managing, so it shouldn't keep sitting in the middle of the list you
+  // scroll through every time.
   list = list.slice().sort(function(a, b) {
+    if (!!a.hidden !== !!b.hidden) return (a.hidden ? 1 : 0) - (b.hidden ? 1 : 0);
     return (a.cat === 'cant-find-products' ? 1 : 0) - (b.cat === 'cant-find-products' ? 1 : 0);
   });
   const rows = list.map(function(p) {

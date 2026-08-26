@@ -271,12 +271,15 @@ async function loadSBData() {
   applyCatOrderOverride(catOrder);
   applyCatLabelOverrides(_settingJSON('cat_labels', {}));
   applyCatVisibilityOverrides(_settingJSON('cat_hidden', {}));
-  // Cached so the very first paint on the NEXT visit can reorder the pill
-  // row/tile grid synchronously (see the inline script right after them in
-  // index.html) instead of showing the static HTML's built-in order for a
-  // moment and then visibly jumping to the saved order once this async
-  // fetch finally resolves.
+  // Cached so the very first paint on the NEXT visit can reorder/relabel the
+  // pill row/tile grid synchronously (see the inline script right after them
+  // in index.html) instead of showing the static HTML's built-in order and
+  // names for a moment and then visibly jumping to the saved ones once this
+  // async fetch finally resolves — this is what made a renamed category
+  // (e.g. "Marhaba" renamed to "Generators") flash its old name on every
+  // load before snapping to the real one.
   try { localStorage.setItem('cat_order_cache', JSON.stringify(catOrder)); } catch(e) {}
+  try { localStorage.setItem('cat_labels_cache', JSON.stringify(_settingJSON('cat_labels', {}))); } catch(e) {}
 
   const [s, h, b, rv] = await Promise.all([stockP, hiddenP, bannersP, reviewsP]);
   // Bulk review stats (avg + count per product) for the Product schema's
