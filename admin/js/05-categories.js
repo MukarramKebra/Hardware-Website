@@ -22,6 +22,7 @@ var CAT_DEFS = [
   { slug:'sanitary',         label:'Sanitary Ware',   icon:'fa-shower',       default:'cat-images/sanitary.png' },
   { slug:'filter',           label:'Filters',         icon:'fa-filter',       default:'cat-images/filter.png' },
   { slug:'marhaba',          label:'Marhaba',         icon:'fa-plug',         default:'cat-images/marhaba.jpg' },
+  { slug:'big-red',          label:'Big Red',         icon:'fa-car',          default:'cat-images/big-red-jack.jpg' },
   { slug:'all',              label:'All Products',    icon:'fa-th-large',     default:'Bahar-Products/SKU-0015.jpg' }
 ];
 
