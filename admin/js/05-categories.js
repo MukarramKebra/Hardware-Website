@@ -916,12 +916,15 @@ function _foRenderList(q) {
       '<td>' + priceCell + '</td>' +
       '<td>' + saleCell + '</td>' +
       '<td style="max-width:320px;color:var(--gray);font-size:12px;font-weight:500">' + (p.desc ? encodeHtml(p.desc) : '') + '</td>' +
+      '<td onclick="event.stopPropagation()" style="cursor:default">' +
+        '<button class="act-btn" onclick="openProductView(' + p.id + ')"><i class="fa fa-edit"></i> Edit</button>' +
+      '</td>' +
     '</tr>';
   }).join('');
   var correctionRow = correctedFrom
-    ? '<tr class="search-correction-row"><td colspan="7"><i class="fa fa-info-circle"></i> Showing results for "'+encodeHtml(correctedFrom)+'" instead of "'+encodeHtml(q)+'"</td></tr>'
+    ? '<tr class="search-correction-row"><td colspan="8"><i class="fa fa-info-circle"></i> Showing results for "'+encodeHtml(correctedFrom)+'" instead of "'+encodeHtml(q)+'"</td></tr>'
     : '';
-  document.getElementById('foTblBody').innerHTML = correctionRow + (rows || '<tr><td colspan="7" style="color:#aaa;padding:20px;text-align:center">No products match this search.</td></tr>');
+  document.getElementById('foTblBody').innerHTML = correctionRow + (rows || '<tr><td colspan="8" style="color:#aaa;padding:20px;text-align:center">No products match this search.</td></tr>');
   var nSel = list.filter(function(p) { return !!_foFind(p.id); }).length;
   var allSelected = list.length > 0 && nSel === list.length;
   var saChk = document.getElementById('foSelectAll');
