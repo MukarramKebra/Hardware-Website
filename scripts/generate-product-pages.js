@@ -16,7 +16,7 @@
  * anywhere Node 18+ is available (locally and in GitHub Actions).
  *
  * Data source: the live Supabase project. The URL + public anon key are read
- * straight out of js/01-config-data.js (the same values the site itself uses)
+ * straight out of code/js/01-config-data.js (the same values the site itself uses)
  * so there is no second copy of any secret to keep in sync.
  *
  * Local testing: set SEO_FIXTURE=/path/to/fixture.json to render from a local
@@ -39,10 +39,10 @@ const TODAY = new Date().toISOString().slice(0, 10);
 
 // ── Supabase config (read from the site's own file — no separate secret) ────
 function readSupabaseConfig() {
-  const src = fs.readFileSync(path.join(ROOT, 'js', '01-config-data.js'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'code', 'js', '01-config-data.js'), 'utf8');
   const urlM = src.match(/const\s+SB_URL\s*=\s*'([^']+)'/);
   const keyM = src.match(/const\s+SB_KEY\s*=\s*(?:atob\('([^']+)'\)|'([^']+)')/);
-  if (!urlM || !keyM) throw new Error('Could not read SB_URL / SB_KEY from js/01-config-data.js');
+  if (!urlM || !keyM) throw new Error('Could not read SB_URL / SB_KEY from code/js/01-config-data.js');
   const SB_URL = urlM[1];
   const SB_KEY = keyM[1] ? Buffer.from(keyM[1], 'base64').toString('utf8') : keyM[2];
   return { SB_URL, SB_KEY };
@@ -98,7 +98,7 @@ async function loadData() {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-// slugify + productSlug are mirrored verbatim in js/02-catalog-render.js so the
+// slugify + productSlug are mirrored verbatim in code/js/02-catalog-render.js so the
 // storefront's card links point at exactly the files this script writes.
 function slugify(s) {
   return String(s == null ? '' : s)
@@ -190,7 +190,7 @@ function renderPage(p) {
     ? `<p class="p-avail ${inStock ? 'in' : 'out'}">${inStock ? '✔ In stock' : '✖ Out of stock'}</p>`
     : '';
   const imgHtml = `<img class="p-img" src="${esc(ogImage)}" alt="${esc(p.name)}" width="480" height="480" />`;
-  // Mirrors the storefront's variant price gating (js/02-catalog-render.js
+  // Mirrors the storefront's variant price gating (code/js/02-catalog-render.js
   // cardVariantChange / the select options): only show a per-option price
   // when prices aren't hidden and the option's price actually differs.
   const variantsHtml = (p.variants && p.variants.length)
@@ -225,7 +225,7 @@ function renderPage(p) {
   <meta name="twitter:description" content="${esc(metaDesc)}" />
   <meta name="twitter:image" content="${esc(ogImage)}" />
   <link rel="icon" type="image/png" href="../favicon.png" />
-  <link rel="stylesheet" href="../css/01-base.css" />
+  <link rel="stylesheet" href="../code/css/01-base.css" />
   <script type="application/ld+json">${jsonld(product)}</script>
   <script type="application/ld+json">${jsonld(breadcrumb)}</script>
   <style>

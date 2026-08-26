@@ -101,21 +101,21 @@
     ['01-base','02-sections','03-cart-features-contact','04-footer','05-responsive','06-lang-rtl','07-modals','08-account-auth','09-widgets'].forEach(function(f) {
       var l = document.createElement('link');
       l.rel = 'stylesheet';
-      l.href = 'css/' + f + '.css?v=' + v;
+      l.href = 'code/css/' + f + '.css?v=' + v;
       document.head.appendChild(l);
     });
   })();
   </script>
   <noscript>
-    <link rel="stylesheet" href="css/01-base.css" />
-    <link rel="stylesheet" href="css/02-sections.css" />
-    <link rel="stylesheet" href="css/03-cart-features-contact.css" />
-    <link rel="stylesheet" href="css/04-footer.css" />
-    <link rel="stylesheet" href="css/05-responsive.css" />
-    <link rel="stylesheet" href="css/06-lang-rtl.css" />
-    <link rel="stylesheet" href="css/07-modals.css" />
-    <link rel="stylesheet" href="css/08-account-auth.css" />
-    <link rel="stylesheet" href="css/09-widgets.css" />
+    <link rel="stylesheet" href="code/css/01-base.css" />
+    <link rel="stylesheet" href="code/css/02-sections.css" />
+    <link rel="stylesheet" href="code/css/03-cart-features-contact.css" />
+    <link rel="stylesheet" href="code/css/04-footer.css" />
+    <link rel="stylesheet" href="code/css/05-responsive.css" />
+    <link rel="stylesheet" href="code/css/06-lang-rtl.css" />
+    <link rel="stylesheet" href="code/css/07-modals.css" />
+    <link rel="stylesheet" href="code/css/08-account-auth.css" />
+    <link rel="stylesheet" href="code/css/09-widgets.css" />
   </noscript>
   <!-- Opens the connection to these origins early (DNS + TLS), in parallel
        with everything else, instead of waiting until the stylesheet
@@ -284,79 +284,79 @@
         <h2 data-i18n-html="cat_h2">Shop by <span class="orange">Category</span></h2>
       </div>
       <div class="categories-grid" id="categoriesGrid">
-        <div class="cat-card" data-cat="tools"            onclick="filterProducts('tools')"            style="background-image:url('cat-images/tools.jpg')">
+        <div class="cat-card" data-cat="tools"            onclick="filterProducts('tools')"            style="background-image:url('expert-products/cat-images/tools.jpg')">
           <h3>DCK Power Tools</h3>
           <p>Drills, Grinders, Saws & More</p>
         </div>
-        <div class="cat-card" data-cat="hand-tools"       onclick="filterProducts('hand-tools')"       style="background-image:url('cat-images/hand-tools.png')">
+        <div class="cat-card" data-cat="hand-tools"       onclick="filterProducts('hand-tools')"       style="background-image:url('expert-products/cat-images/hand-tools.png')">
           <h3>Hand Tools</h3>
           <p>Hammers, Pliers, Spanners</p>
         </div>
-        <div class="cat-card" data-cat="fastener"         onclick="filterProducts('fastener')"         style="background-image:url('cat-images/fastener.png')">
+        <div class="cat-card" data-cat="fastener"         onclick="filterProducts('fastener')"         style="background-image:url('expert-products/cat-images/fastener.png')">
           <h3>Fasteners</h3>
           <p>Screws, Bolts & Anchors</p>
         </div>
-        <div class="cat-card" data-cat="construction"     onclick="filterProducts('construction')"     style="background-image:url('cat-images/construction.png')">
+        <div class="cat-card" data-cat="construction"     onclick="filterProducts('construction')"     style="background-image:url('expert-products/cat-images/construction.png')">
           <h3>Nails/Wires</h3>
           <p>Nails, Wires, Mesh & Tarps</p>
         </div>
-        <div class="cat-card" data-cat="safety"           onclick="filterProducts('safety')"           style="background-image:url('cat-images/safety.jpg')">
+        <div class="cat-card" data-cat="safety"           onclick="filterProducts('safety')"           style="background-image:url('expert-products/cat-images/safety.jpg')">
           <h3>Safety</h3>
           <p>Helmets, Gloves, Hi-Vis</p>
         </div>
-        <div class="cat-card" data-cat="spray-adhesive"   onclick="filterProducts('spray-adhesive')"   style="background-image:url('cat-images/spray-adhesive.png')">
+        <div class="cat-card" data-cat="spray-adhesive"   onclick="filterProducts('spray-adhesive')"   style="background-image:url('expert-products/cat-images/spray-adhesive.png')">
           <h3>Adhesives</h3>
           <p>Silicone, Sealants & Glue</p>
         </div>
-        <div class="cat-card" data-cat="tape"             onclick="filterProducts('tape')"             style="background-image:url('cat-images/tape.png')">
+        <div class="cat-card" data-cat="tape"             onclick="filterProducts('tape')"             style="background-image:url('expert-products/cat-images/tape.png')">
           <h3>Tapes</h3>
           <p>Clear, Duct & Masking Tape</p>
         </div>
-        <div class="cat-card" data-cat="door-handle"      onclick="filterProducts('door-handle')"      style="background-image:url('cat-images/door-handle.png')">
+        <div class="cat-card" data-cat="door-handle"      onclick="filterProducts('door-handle')"      style="background-image:url('expert-products/cat-images/door-handle.png')">
           <h3>Door Handles</h3>
           <p>Handles, Locks & Knobs</p>
         </div>
-        <div class="cat-card" data-cat="hardware"         onclick="filterProducts('hardware')"         style="background-image:url('cat-images/hardware.png')">
+        <div class="cat-card" data-cat="hardware"         onclick="filterProducts('hardware')"         style="background-image:url('expert-products/cat-images/hardware.png')">
           <h3>Hardware</h3>
           <p>Hinges, Slides & Fittings</p>
         </div>
-        <div class="cat-card" data-cat="paint-tool"       onclick="filterProducts('paint-tool')"       style="background-image:url('cat-images/paint-tool.jpg')">
+        <div class="cat-card" data-cat="paint-tool"       onclick="filterProducts('paint-tool')"       style="background-image:url('expert-products/cat-images/paint-tool.jpg')">
           <h3>Paint Tools</h3>
           <p>Rollers, Brushes & Trays</p>
         </div>
-        <div class="cat-card" data-cat="gardening"        onclick="filterProducts('gardening')"        style="background-image:url('cat-images/gardening.png')">
+        <div class="cat-card" data-cat="gardening"        onclick="filterProducts('gardening')"        style="background-image:url('expert-products/cat-images/gardening.png')">
           <h3>Garden Tools</h3>
           <p>Hoses, Trimmers & Garden Kit</p>
         </div>
-        <div class="cat-card" data-cat="disc"             onclick="filterProducts('disc')"             style="background-image:url('cat-images/disc.jpg')">
+        <div class="cat-card" data-cat="disc"             onclick="filterProducts('disc')"             style="background-image:url('expert-products/cat-images/disc.jpg')">
           <h3>Discs</h3>
           <p>Cutting & Grinding Discs</p>
         </div>
-        <div class="cat-card" data-cat="trolley-caster"   onclick="filterProducts('trolley-caster')"   style="background-image:url('cat-images/trolley-caster.png')">
+        <div class="cat-card" data-cat="trolley-caster"   onclick="filterProducts('trolley-caster')"   style="background-image:url('expert-products/cat-images/trolley-caster.png')">
           <h3>Wheel Barrow</h3>
           <p>Wheelbarrows, Trolleys & Casters</p>
         </div>
-        <div class="cat-card" data-cat="household"        onclick="filterProducts('household')"        style="background-image:url('cat-images/household.png')">
+        <div class="cat-card" data-cat="household"        onclick="filterProducts('household')"        style="background-image:url('expert-products/cat-images/household.png')">
           <h3>Cleaning</h3>
           <p>Brooms, Mops & Cleaning</p>
         </div>
-        <div class="cat-card" data-cat="plumbing-fitting" onclick="filterProducts('plumbing-fitting')" style="background-image:url('cat-images/plumbing-fitting.png')">
+        <div class="cat-card" data-cat="plumbing-fitting" onclick="filterProducts('plumbing-fitting')" style="background-image:url('expert-products/cat-images/plumbing-fitting.png')">
           <h3>Fittings</h3>
           <p>Plumbing Pipes & Fittings</p>
         </div>
-        <div class="cat-card" data-cat="sanitary"         onclick="filterProducts('sanitary')"         style="background-image:url('cat-images/sanitary.png')">
+        <div class="cat-card" data-cat="sanitary"         onclick="filterProducts('sanitary')"         style="background-image:url('expert-products/cat-images/sanitary.png')">
           <h3>Sanitary Ware</h3>
           <p>Taps, Showers & Sanitary</p>
         </div>
-        <div class="cat-card" data-cat="filter"           onclick="filterProducts('filter')"           style="background-image:url('cat-images/filter.png')">
+        <div class="cat-card" data-cat="filter"           onclick="filterProducts('filter')"           style="background-image:url('expert-products/cat-images/filter.png')">
           <h3>Filters</h3>
           <p>Water & Air Filters</p>
         </div>
-        <div class="cat-card" data-cat="marhaba"          onclick="filterProducts('marhaba')"          style="background-image:url('cat-images/marhaba.jpg')">
+        <div class="cat-card" data-cat="marhaba"          onclick="filterProducts('marhaba')"          style="background-image:url('expert-products/cat-images/marhaba.jpg')">
           <h3>Marhaba</h3>
           <p>Generators &amp; Voltage Regulators</p>
         </div>
-        <div class="cat-card" data-cat="big-red"          onclick="filterProducts('big-red')"          style="background-image:url('cat-images/big-red-jack.jpg')">
+        <div class="cat-card" data-cat="big-red"          onclick="filterProducts('big-red')"          style="background-image:url('expert-products/cat-images/big-red-jack.jpg')">
           <h3>Big Red</h3>
           <p>Torin Big Red Jacks</p>
         </div>
@@ -1152,7 +1152,7 @@
     v = /^[0-9]+$/.test(v) ? v : '202608170500';
     ['01-config-data','02-catalog-render','03-product-cart-checkout','04-i18n-order','05-accounts','06-features','07-subscribe'].forEach(function(f) {
       var s = document.createElement('script');
-      s.src = 'js/' + f + '.js?v=' + v;
+      s.src = 'code/js/' + f + '.js?v=' + v;
       s.async = false;
       document.body.appendChild(s);
     });
