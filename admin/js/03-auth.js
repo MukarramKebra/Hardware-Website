@@ -347,7 +347,7 @@ function renderSuperAdmin() {
     var undoBtn2  = document.getElementById('suUndoBtn'     + sfx);
     if (statusEl)  { statusEl.textContent = isDisabled ? '🔴 Disabled' : '🟢 Active'; statusEl.style.color = isDisabled ? 'var(--red)' : 'var(--green)'; }
     if (toggleBtn) { toggleBtn.textContent = isDisabled ? 'Enable' : 'Disable'; toggleBtn.className = 'su-toggle-btn ' + (isDisabled ? 'enable' : 'disable'); }
-    if (undoBtn2)  undoBtn2.disabled = getWeekLog().length === 0;
+    if (undoBtn2)  undoBtn2.disabled = getLogInRange(_suRangeDays).length === 0;
   });
   // Update bahar15 row status (shown to ultimate15 only)
   var b15Disabled = localStorage.getItem('jain15_user_disabled') === '1';
@@ -357,15 +357,16 @@ function renderSuperAdmin() {
   if (b15Btn)      { b15Btn.textContent = b15Disabled ? 'Enable' : 'Disable'; b15Btn.className = 'su-toggle-btn ' + (b15Disabled ? 'enable' : 'disable'); }
   // Load site status from Supabase (for ultimate15)
   if (localStorage.getItem('jain_auth') === 'super') { loadSiteStatus(); }
-  var log     = getWeekLog().slice().reverse();
+  var log     = getLogInRange(_suRangeDays).slice().reverse();
   var logEl   = document.getElementById('suAuditLog');
   var logEl2  = document.getElementById('suAuditLog2');
   var undoBtn = document.getElementById('suUndoBtn');
   if (undoBtn) undoBtn.disabled = log.length === 0;
   if (!logEl && !logEl2) return;
+  var rangeLabel = _suRangeDays === 1 ? 'today' : _suRangeDays === 7 ? 'this week' : 'this month';
   var html;
   if (!log.length) {
-    html = '<div class="su-empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p style="font-size:14px;font-weight:700;color:var(--green)">No actions this week</p><small>expert has not made any changes in the past 7 days.</small></div>';
+    html = '<div class="su-empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p style="font-size:14px;font-weight:700;color:var(--green)">No actions ' + rangeLabel + '</p><small>No changes have been made in this period.</small></div>';
     if (logEl)  logEl.innerHTML  = html;
     if (logEl2) logEl2.innerHTML = html;
     return;
@@ -388,8 +389,9 @@ function renderSuperAdmin() {
     else if (entry.action==='add_product') detail = d.name || 'New product';
     var timeStr = new Date(entry.ts).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
     return '<div class="su-log-item"><div class="su-log-icon '+def.cls+'"><i class="fa '+def.icon+'"></i></div>' +
-      '<div><div class="su-log-text">'+def.label+': '+encodeHtml(String(detail))+'</div>' +
-      '<div class="su-log-time">'+timeStr+'</div></div></div>';
+      '<div style="flex:1"><div class="su-log-text">'+def.label+': '+encodeHtml(String(detail))+'</div>' +
+      '<div class="su-log-time">'+timeStr+'</div></div>' +
+      '<button class="su-log-undo" onclick="undoOneLogAction('+entry.ts+')"><i class="fa fa-undo"></i> Undo</button></div>';
   }).join('');
   if (logEl)  logEl.innerHTML  = html;
   if (logEl2) logEl2.innerHTML = html;
@@ -397,10 +399,13 @@ function renderSuperAdmin() {
 
 // ── AUDIT LOG ─────────────────────────────────────────────────────────────────
 // Records every action jain makes so ultimate15 can review and undo them.
-// logAction(action, data) — saves an entry with a timestamp
-// getWeekLog()            — returns only entries from the last 7 days
-// undoAllThisWeek()       — loops through the last 7 days and reverses each action
-// undoSingleAction(entry) — reverses one specific action (restore product/order, revert stock, etc.)
+// logAction(action, data)   — saves an entry with a timestamp
+// getLogInRange(days)       — entries from the last N days (1/7/30, see the
+//                             Admin Actions dropdown / suSyncRange())
+// undoAllInRange()          — reverses every entry in the currently selected range
+// undoOneLogAction(ts)      — reverses just the one entry with that timestamp
+// undoSingleAction(entry)   — shared by both above: reverses one specific
+//                             action (restore product/order, revert stock, etc.)
 function getAuditLog() { try { return JSON.parse(localStorage.getItem('jain_audit_log')||'[]'); } catch(e) { return []; } }
 function saveAuditLog(log) { localStorage.setItem('jain_audit_log', JSON.stringify(log)); }
 function logAction(action, data) {
@@ -409,23 +414,54 @@ function logAction(action, data) {
   var cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
   saveAuditLog(log.filter(function(e) { return e.ts > cutoff; }));
 }
-function getWeekLog() {
-  var cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+function getWeekLog() { return getLogInRange(7); }
+// days: 1 = today, 7 = this week, 30 = this month (logAction already prunes
+// anything older than 30 days, so that's the practical ceiling here too).
+function getLogInRange(days) {
+  var cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
   return getAuditLog().filter(function(e) { return e.ts > cutoff; });
 }
 
-async function undoAllThisWeek() {
-  var log = getWeekLog().slice().reverse();
+// Which range (in days) the Admin Actions dropdown is currently showing —
+// shared by both su-card instances (owner section + legacy standalone panel),
+// see suSyncRange() below.
+var _suRangeDays = 7;
+function suSyncRange(val) {
+  _suRangeDays = parseInt(val, 10) || 7;
+  ['suRangeSel', 'suRangeSel2'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = String(_suRangeDays);
+  });
+  renderSuperAdmin();
+}
+
+async function undoAllInRange() {
+  var log = getLogInRange(_suRangeDays).slice().reverse();
   if (!log.length) { showToast('Nothing to undo'); return; }
-  if (!confirm('Undo all ' + log.length + ' action(s) by bahar from the past 7 days? This cannot be undone.')) return;
+  var rangeLabel = _suRangeDays === 1 ? 'today' : _suRangeDays === 7 ? 'the past week' : 'the past month';
+  if (!confirm('Undo all ' + log.length + ' action(s) from ' + rangeLabel + '? This cannot be undone.')) return;
   var done = 0, failed = 0;
   for (var i = 0; i < log.length; i++) {
     var ok = await undoSingleAction(log[i]);
     if (ok) done++; else failed++;
   }
-  var cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  saveAuditLog(getAuditLog().filter(function(e) { return e.ts <= cutoff; }));
+  var doneTimestamps = log.map(function(e) { return e.ts; });
+  saveAuditLog(getAuditLog().filter(function(e) { return doneTimestamps.indexOf(e.ts) === -1; }));
   showToast('↩️ Undone: ' + done + (failed ? ' | ' + failed + ' failed' : ''));
+  renderSuperAdmin();
+}
+// Reverses and removes just ONE entry from the log — same underlying
+// undoSingleAction() the bulk "Undo All Shown" button already used per item,
+// just triggered from that item's own row instead of only in a loop.
+async function undoOneLogAction(ts) {
+  var log = getAuditLog();
+  var entry = log.find(function(e) { return e.ts === ts; });
+  if (!entry) return;
+  if (!confirm('Undo this one action? This cannot be undone.')) return;
+  var ok = await undoSingleAction(entry);
+  if (!ok) { showToast('Failed to undo — the item may already be gone'); return; }
+  saveAuditLog(getAuditLog().filter(function(e) { return e.ts !== ts; }));
+  showToast('↩️ Undone');
   renderSuperAdmin();
 }
 

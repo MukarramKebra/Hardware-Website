@@ -696,8 +696,15 @@
 
       <!-- Audit log card -->
       <div class="su-card">
-        <div class="su-card-h"><i class="fa fa-history"></i> Admin Actions — Past 7 Days</div>
-        <button class="su-undo-btn" id="suUndoBtn2" onclick="undoAllThisWeek()"><i class="fa fa-undo-alt"></i> Undo All This Week's Actions</button>
+        <div class="su-card-h"><i class="fa fa-history"></i> Admin Actions</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+          <select id="suRangeSel2" class="su-range-sel" onchange="suSyncRange(this.value)">
+            <option value="1">Today</option>
+            <option value="7" selected>This Week</option>
+            <option value="30">This Month</option>
+          </select>
+          <button class="su-undo-btn" id="suUndoBtn2" onclick="undoAllInRange()"><i class="fa fa-undo-alt"></i> Undo All Shown</button>
+        </div>
         <div id="suAuditLog2"></div>
       </div>
     </div>
@@ -1075,8 +1082,15 @@
       </div>
     </div>
     <div class="su-card">
-      <div class="su-card-h"><i class="fa fa-history"></i> Bahar's Actions — Past 7 Days</div>
-      <button class="su-undo-btn" id="suUndoBtn" onclick="undoAllThisWeek()"><i class="fa fa-undo-alt"></i> Undo All This Week's Actions</button>
+      <div class="su-card-h"><i class="fa fa-history"></i> Bahar's Actions</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <select id="suRangeSel" class="su-range-sel" onchange="suSyncRange(this.value)">
+          <option value="1">Today</option>
+          <option value="7" selected>This Week</option>
+          <option value="30">This Month</option>
+        </select>
+        <button class="su-undo-btn" id="suUndoBtn" onclick="undoAllInRange()"><i class="fa fa-undo-alt"></i> Undo All Shown</button>
+      </div>
       <div id="suAuditLog"></div>
     </div>
   </div>

@@ -47,26 +47,38 @@ async function deleteProduct(id, isBase) {
   await loadFromSupabase();
 }
 
-async function restoreProduct(id, isBase) {
-  if (!confirm('Restore this product back to inventory?')) return;
+// Returns true/false so editDeletedProduct() (below) knows whether it's
+// safe to jump straight into the edit view afterward.
+async function restoreProduct(id, isBase, skipConfirm) {
+  if (!skipConfirm && !confirm('Restore this product back to inventory?')) return false;
   const deleted = getDeletedProducts();
   const entry = deleted.find(function(d){ return d.id===id; });
-  if (!entry) { showToast('Product not found'); return; }
+  if (!entry) { showToast('Product not found'); return false; }
   if (isBase) {
     const { error } = await sbFetch(SB_URL + '/rest/v1/expert_hidden?product_id=eq.' + id, { method:'DELETE', headers:SB_HDRS });
-    if (error) { showToast('Restore failed: ' + error); return; }
+    if (error) { showToast('Restore failed: ' + error); return false; }
     _hiddenBaseIds.delete(id);
   } else {
     const { error } = await sbFetch(SB_URL + '/rest/v1/expert_products', {
       method:'POST', headers:Object.assign({},SB_HDRS,{'Prefer':'return=representation'}),
       body:JSON.stringify([{ name:entry.name, category:entry.cat, price:entry.price, img_url:entry.img||'', hidden:false }])
     });
-    if (error) { showToast('Restore failed: ' + error); return; }
+    if (error) { showToast('Restore failed: ' + error); return false; }
   }
   saveDeletedProducts(deleted.filter(function(d){ return d.id!==id; }));
   showToast('Product restored to inventory!');
   await loadFromSupabase();
   renderDeletedTab();
+  return true;
+}
+// "Edit" on a deleted row — a deleted product isn't part of the live catalog
+// the product-view modal reads from, so editing it in place isn't possible;
+// this restores it first (one combined confirm instead of two separate
+// clicks) and then opens straight into the edit view.
+async function editDeletedProduct(id, isBase) {
+  if (!confirm('Restore this product and open it for editing?')) return;
+  const ok = await restoreProduct(id, isBase, true);
+  if (ok) openProductView(id);
 }
 
 function permanentDelete(id) {
@@ -256,6 +268,7 @@ function renderDeletedTab() {
       '</td>' +
       '<td>' +
         '<button class="act-btn" style="color:var(--green);border-color:var(--green);margin-right:4px" onclick="restoreProduct('+d.id+','+d.isBase+')"><i class="fa fa-undo"></i> Restore</button>' +
+        '<button class="act-btn" style="margin-right:4px" onclick="editDeletedProduct('+d.id+','+d.isBase+')" title="Restore and edit"><i class="fa fa-edit"></i> Edit</button>' +
         '<button class="del-btn" onclick="permanentDelete('+d.id+')" title="Delete permanently"><i class="fa fa-times"></i></button>' +
       '</td>' +
     '</tr>';

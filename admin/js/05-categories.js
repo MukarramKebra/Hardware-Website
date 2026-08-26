@@ -314,6 +314,18 @@ async function saveCatChanges() {
     ])
   });
   if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
+  // Also update the storefront's OWN read-cache keys directly (admin and
+  // storefront share one localStorage since they're the same origin) — the
+  // index.html inline script paints category order/names from these before
+  // the storefront's async settings fetch even starts. Without this, this
+  // browser's copy stayed one rename behind: renaming here wouldn't be
+  // visible on the storefront (in this same browser) until AFTER the flash
+  // of the old name, because the cache only otherwise updates at the END of
+  // a storefront page's own load — i.e. the next visit after this one.
+  try {
+    localStorage.setItem('cat_order_cache', JSON.stringify(slugs));
+    localStorage.setItem('cat_labels_cache', JSON.stringify(_catPendingLabels));
+  } catch (e) {}
   _catDirty = false;
   _catSyncButtons();
   renderHiddenCats();
