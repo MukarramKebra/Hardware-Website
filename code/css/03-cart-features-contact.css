@@ -83,7 +83,7 @@
   #intro {
     /* Use gradient as reliable fallback; image loads on top if available */
     background: linear-gradient(160deg, #d20d17),
-                url('../full-phone.jpg') center center / cover no-repeat;
+                url('../../full-phone.jpg') center center / cover no-repeat;
     background-blend-mode: overlay, normal;
     position: relative;
     border: none;
