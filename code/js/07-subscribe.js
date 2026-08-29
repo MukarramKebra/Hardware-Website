@@ -42,22 +42,30 @@ async function _submitSubscribe(ids, onSuccess) {
   if (btn) { btn.disabled = true; btn.dataset._html = btn.innerHTML; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Subscribing…'; }
 
   try {
-    // INSERT with ON CONFLICT DO NOTHING (ignore-duplicates). The public anon
-    // key is granted INSERT only — never UPDATE/SELECT — so a duplicate email
-    // is silently ignored (still a 2xx) rather than erroring. This keeps the
-    // subscribers table unreadable/unwritable to the public beyond adding a row.
-    const res = await fetch(SB_URL + '/rest/v1/offer_subscribers?on_conflict=email', {
+    // Plain INSERT — NOT an upsert (?on_conflict=...). The public anon key is
+    // granted INSERT only, never SELECT, on this table (unsubscribe_token is
+    // a secret, and the subscriber list itself shouldn't be publicly
+    // readable). Postgres' ON CONFLICT handling has to check for the
+    // conflicting row to decide whether to skip/update it, and under RLS
+    // that check requires SELECT visibility — which anon deliberately
+    // doesn't have here — so ?on_conflict=email always got rejected with a
+    // row-level-security error before it ever reached the "is this a
+    // duplicate" logic. No one was ever actually able to subscribe.
+    // A duplicate email now just hits the table's unique constraint
+    // directly and comes back as a plain 409, handled as a normal
+    // duplicate. This is a real fix.
+    const res = await fetch(SB_URL + '/rest/v1/offer_subscribers', {
       method: 'POST',
       headers: {
         'apikey': SB_KEY,
         'Authorization': 'Bearer ' + SB_KEY,
         'Content-Type': 'application/json',
-        'Prefer': 'resolution=ignore-duplicates,return=minimal'
+        'Prefer': 'return=minimal'
       },
       body: JSON.stringify(payload)
     });
 
-    if (res.ok) {
+    if (res.ok || res.status === 409) {
       _subMsg(ids.msg, '🎉 You’re subscribed! Watch your inbox for our next offers.', true);
       if (emailEl) emailEl.value = '';
       if (consentEl) consentEl.checked = false;
@@ -85,13 +93,15 @@ async function subscribeEmailToOffers(email) {
   email = (email || '').trim().toLowerCase();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
   try {
-    await fetch(SB_URL + '/rest/v1/offer_subscribers?on_conflict=email', {
+    // Plain INSERT, not an upsert — see the long comment in
+    // _submitSubscribe() above for why ?on_conflict=email never worked here.
+    await fetch(SB_URL + '/rest/v1/offer_subscribers', {
       method: 'POST',
       headers: {
         'apikey': SB_KEY,
         'Authorization': 'Bearer ' + SB_KEY,
         'Content-Type': 'application/json',
-        'Prefer': 'resolution=ignore-duplicates,return=minimal'
+        'Prefer': 'return=minimal'
       },
       body: JSON.stringify({ email: email, consent: true, consent_at: new Date().toISOString(), unsubscribed: false })
     });
