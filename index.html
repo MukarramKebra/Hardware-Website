@@ -2,6 +2,14 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
+  <!-- Stops the browser auto-restoring the scroll position a phone's tab
+       was at before the OS reloaded it in the background (very common on
+       mobile under memory pressure — desktop tabs rarely get suspended
+       this way). Without this, reopening the site sometimes landed
+       straight at the footer, wherever the tab happened to be scrolled to
+       last, instead of the top. Must run before anything else touches
+       history — the browser reads this once, synchronously, on load. -->
+  <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
   <!-- No maximum-scale/user-scalable=no — those disable pinch-zoom, a real
        accessibility harm for low-vision users, not just a Lighthouse nit. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
