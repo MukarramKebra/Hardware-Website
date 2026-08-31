@@ -1,5 +1,19 @@
 {
   "permissions": {
     "defaultMode": "bypassPermissions"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e '\nlet d=\"\";process.stdin.on(\"data\",c=>d+=c);process.stdin.on(\"end\",()=>{\n  let cmd=\"\";\n  try { cmd = JSON.parse(d).tool_input.command || \"\"; } catch(e) {}\n  const actionRe = /(git\\s+mv|(^|[;&|\\s])mv\\s|rm\\s+-[a-zA-Z]*r)/i;\n  const folderRe = /(expert-products|cat-images|Bahar-Products|marhaba-products|Banners)/i;\n  if (actionRe.test(cmd) && folderRe.test(cmd)) {\n    const msg = \"Before moving, renaming, or deleting this image folder: query Supabase first to check whether expert_photos.img_url or expert_products.img_url store an ABSOLUTE URL pointing at it (e.g. https://mukarramkebra.github.io/Hardware-Website/FOLDER/...) using an ilike wildcard match on the folder name against both expert_photos.img_url and expert_products.img_url. Renaming without checking has broken live product images twice already in this project. See CLAUDE.md, Hard-won gotchas section, for the full writeup.\";\n    process.stdout.write(JSON.stringify({hookSpecificOutput:{hookEventName:\"PreToolUse\",additionalContext:msg}}));\n  }\n});\n'",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }

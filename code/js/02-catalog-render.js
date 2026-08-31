@@ -441,6 +441,20 @@ function filterProducts(category) {
   _switchCategoryWithLoading();
 }
 
+// Header logo click. #header is position:fixed, so a plain href="#header"
+// anchor jump does nothing reliable — a fixed element has no real position
+// in document flow for the browser to scroll to, so clicking the logo
+// looked broken (URL changed to #header, page didn't move) rather than
+// acting like a "go home" link. Resets to the All-products view (same as
+// clicking the "All Products" tile) and scrolls to the very top, timed to
+// run after _switchCategoryWithLoading()'s own scrollToProducts() so this
+// wins instead of landing back in the products grid.
+function goHome(e) {
+  if (e) e.preventDefault();
+  filterProducts('all');
+  setTimeout(function() { window.scrollTo({ top: 0, behavior: 'instant' }); }, 60);
+}
+
 // subcatLabel — display name for a subcategory slug. Falls back to a
 // title-cased version of the slug so a new subcategory shows up sensibly
 // in the UI even before someone adds it to _SUBCAT_LABELS/_AR_SUBCATS.
