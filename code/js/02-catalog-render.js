@@ -905,7 +905,7 @@ function renderProducts() {
     // flips true once (js/01-config-data.js) and this same function runs
     // again right after, replacing this with the real result.
     if (!window._catalogReady) {
-      empty.innerHTML = '<i class="fa fa-spinner fa-spin"></i><p>' + (isArU ? 'جارٍ تحميل المنتجات...' : 'Loading products…') + '</p>';
+      empty.innerHTML = '<span class="loading-gear" aria-hidden="true"></span><p>' + (isArU ? 'جارٍ تحميل المنتجات...' : 'Loading products…') + '</p>';
       return;
     }
     empty.innerHTML = '<i class="fa fa-box-open"></i>' +

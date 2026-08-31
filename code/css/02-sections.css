@@ -147,4 +147,7 @@
 .search-correction-notice strong { color: var(--orange); }
 .products-loading { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; padding: 100px 0; }
 .products-loading i { font-size: 40px; color: var(--orange); }
+.loading-gear { display: inline-block; width: 56px; height: 56px; margin-bottom: 14px; background-image: url('../../loader-gear.png'); background-repeat: no-repeat; background-size: 100% 100%; animation: loading-gear-spin 1.4s linear infinite; }
+@keyframes loading-gear-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .loading-gear { animation: none; } }
 
