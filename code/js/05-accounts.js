@@ -108,13 +108,6 @@ async function initAuth() {
     await loadUserProfile();
     updateHeaderForAuth();
   } else {
-    // Full-screen welcome modal (Sign In / Create Account, with the benefits
-    // list) — shown once, 2.5s in, unless already dismissed. Closing it any
-    // way (X, backdrop click, or completing sign-in) marks it seen so it
-    // never auto-pops again in this browser.
-    if (!localStorage.getItem('jain_welcome_modal_dismissed')) {
-      setTimeout(function() { openAuthModal('login'); }, 2500);
-    }
     updateHeaderForAuth();
   }
 }
@@ -338,7 +331,6 @@ function openAuthModal(tab) {
 function closeAuthModal() {
   document.getElementById('authOverlay').classList.remove('open');
   _clearAuthMessages();
-  localStorage.setItem('jain_welcome_modal_dismissed', '1');
 }
 function switchAuthTab(tab) {
   document.getElementById('authLoginForm').style.display  = tab === 'login'  ? '' : 'none';
