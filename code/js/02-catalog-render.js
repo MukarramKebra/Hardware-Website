@@ -884,6 +884,16 @@ function renderProducts() {
   if (!filtered.length) {
     grid.innerHTML = '';
     empty.style.display = 'block';
+    // The very first render (before the Supabase fetch in loadSBData() has
+    // resolved) and any category click made before it resolves both hit
+    // this branch with an incomplete catalog — that's "still loading", not
+    // "genuinely no matches", and shouldn't say so. window._catalogReady
+    // flips true once (js/01-config-data.js) and this same function runs
+    // again right after, replacing this with the real result.
+    if (!window._catalogReady) {
+      empty.innerHTML = '<i class="fa fa-spinner fa-spin"></i><p>' + (isArU ? 'جارٍ تحميل المنتجات...' : 'Loading products…') + '</p>';
+      return;
+    }
     empty.innerHTML = '<i class="fa fa-box-open"></i>' +
       '<p data-i18n="no_results">' + (isArU ? 'لا توجد منتجات مطابقة. جرّب بحثاً آخر.' : 'No products found. Try a different search.') + '</p>' +
       (suggestion

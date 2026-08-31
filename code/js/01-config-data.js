@@ -312,6 +312,14 @@ async function loadSBData() {
     // _sbBrandMap and _hiddenIds may have changed since the cache was last
     // built above — invalidate once more before the first real grid render.
     _invalidateAllProductsCache();
+    // See renderProducts()'s "still loading" check in js/02-catalog-render.js
+    // — until this flips true, an empty grid means "the catalog hasn't
+    // arrived yet", not "genuinely no matches". Categories with few/no
+    // hardcoded base products (e.g. DCK Power Tools, almost entirely
+    // admin-added) were flashing "No products found" for the second or two
+    // before this fetch resolved, on every single category click made
+    // before it did.
+    window._catalogReady = true;
     renderProducts();
     if (typeof initSideBanners === 'function') initSideBanners();
     if (typeof _injectProductSchema === 'function') _injectProductSchema();

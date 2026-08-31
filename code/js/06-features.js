@@ -523,7 +523,13 @@ document.addEventListener('click', function(e) {
 // load live stock/photos/hidden status from Supabase and re-render. This runs
 // here (last script to load) so every helper renderProducts() needs is defined.
 renderProducts();
-loadSBData();
+// Safety net for renderProducts()'s "still loading" check (see
+// window._catalogReady in js/02-catalog-render.js) — even if the Supabase
+// fetch fails outright (not just a partial field error, which loadSBData()
+// already recovers from on its own), this still flips the flag so a
+// category with no matching hardcoded/base products doesn't show "Loading
+// products..." forever.
+loadSBData().catch(function() { window._catalogReady = true; renderProducts(); });
 if (new URLSearchParams(window.location.search).get('q')) {
   setTimeout(scrollToProducts, 300);
 }
