@@ -47,10 +47,16 @@
 .co-pickup-info .fa-map-marker-alt { margin-top:2px; color:var(--orange); }
 .co-wa-btn { width:100%; padding:15px; background:#25D366; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:background 0.2s; margin-top:6px; }
 .co-wa-btn:hover { background:#1da851; }
-.co-success { text-align:center; padding:40px 24px; }
+.co-success { text-align:center; padding:40px 24px; max-width:460px; margin:0 auto; }
 .co-success i { font-size:56px; color:#25D366; margin-bottom:14px; display:block; }
 .co-success h3 { font-size:22px; font-weight:800; color:var(--dark); margin-bottom:8px; }
 .co-success p { color:#888; font-size:14px; line-height:1.6; }
+.co-success-ref { margin-top:18px; padding:10px 16px; background:var(--light); border:1px dashed var(--border); border-radius:8px; font-size:12px; color:#888; text-transform:uppercase; letter-spacing:0.5px; }
+.co-success-ref strong { color:var(--orange); font-size:14px; letter-spacing:1px; }
+.co-success-summary { text-align:left; background:var(--light); border:1px solid var(--border); border-radius:8px; padding:13px; margin-top:16px; }
+.co-success-total { border-top:1px solid var(--border); margin-top:4px; padding-top:11px !important; font-weight:800; color:var(--dark); }
+.co-success-btns { display:flex; gap:10px; margin-top:22px; }
+.co-success-btns .btn { flex:1; justify-content:center; }
 
 /* ── LIVE SEARCH RESULTS (full-screen, closest-match-first) ─────────────── */
 .search-overlay { position:fixed; inset:0; background:rgba(45,0,0,0.55); z-index:9700; display:none; align-items:flex-start; justify-content:center; padding:80px 16px 24px; overflow-y:auto; -webkit-overflow-scrolling:touch; }

@@ -38,6 +38,11 @@
 [dir="rtl"] .about-text { text-align: right; }
 [dir="rtl"] .about-features li { flex-direction: row-reverse; }
 
+/* FAQ */
+[dir="rtl"] .faq-item summary { text-align: right; padding: 18px 0 18px 32px; }
+[dir="rtl"] .faq-item summary::after { right: auto; left: 0; }
+[dir="rtl"] .faq-item p { text-align: right; }
+
 /* Forms */
 [dir="rtl"] .form-group label { text-align: right; display: block; }
 [dir="rtl"] .form-group input,
@@ -59,6 +64,8 @@
 [dir="rtl"] .co-field input,
 [dir="rtl"] .co-field select { text-align: right; direction: rtl; }
 [dir="rtl"] .co-total { flex-direction: row-reverse; }
+[dir="rtl"] .co-success-summary { text-align: right; }
+[dir="rtl"] .co-success-summary .co-item { flex-direction: row-reverse; }
 
 /* Mobile RTL overrides */
 @media (max-width: 768px) {

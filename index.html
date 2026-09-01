@@ -197,6 +197,7 @@
       <nav id="nav">
         <a href="#about" data-i18n="nav_about" onclick="document.getElementById('nav').classList.remove('open')">About</a>
         <a href="#products" data-i18n="nav_products" onclick="document.getElementById('nav').classList.remove('open')">Products</a>
+        <a href="#faq" data-i18n="nav_faq" onclick="document.getElementById('nav').classList.remove('open')">FAQ</a>
         <a href="#contact" data-i18n="nav_contact" onclick="document.getElementById('nav').classList.remove('open')">Contact</a>
         <a href="#" id="navMyOrders" onclick="document.getElementById('nav').classList.remove('open');onAccountBtnClick();return false;" style="display:none"><i class="fa fa-receipt" style="margin-right:6px"></i>My Orders</a>
         <a href="#" id="navSignIn" onclick="document.getElementById('nav').classList.remove('open');openAuthModal('login');return false;"><i class="fa fa-user" style="margin-right:6px"></i>Sign In</a>
@@ -533,6 +534,37 @@
     </div>
   </section>
 
+  <section id="faq">
+    <div class="container">
+      <div class="faq-head">
+        <span class="section-tag" data-i18n="faq_tag">Got Questions?</span>
+        <h2 data-i18n-html="faq_h2">Frequently Asked <span class="orange">Questions</span></h2>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary data-i18n="faq_q1">Which areas in Kuwait do you deliver to?</summary>
+          <p data-i18n="faq_a1">We offer same-day delivery across Kuwait City, with delivery to the rest of Kuwait within 1-2 business days. GCC shipping is available in 3-5 business days.</p>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="faq_q2">What payment methods do you accept?</summary>
+          <p data-i18n="faq_a2">We accept cash on delivery, KNET, and bank transfer for trade accounts. Payment details are confirmed with you directly on WhatsApp after you place an order.</p>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="faq_q3">Do you offer bulk or wholesale pricing?</summary>
+          <p data-i18n="faq_a3">Yes — we offer trade and bulk pricing for contractors, businesses, and large-quantity orders. Use the "Get a Quote" button or contact us on WhatsApp with your list.</p>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="faq_q4">Can I return or exchange a product?</summary>
+          <p data-i18n="faq_a4">Yes, unused items in original packaging can be returned or exchanged within 7 days of delivery. Contact us on WhatsApp with your order details to arrange it.</p>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="faq_q5">How do I track my order or get help?</summary>
+          <p data-i18n="faq_a5">Use the "Track Order" button in the header and enter the WhatsApp number you ordered with, or message us directly on WhatsApp anytime — our team replies fast.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
   <section id="contact">
     <div class="container contact-grid">
       <div class="contact-info">
@@ -646,6 +678,7 @@
         <h3 data-i18n="footer_nav">Navigation</h3>
         <a href="#about" data-i18n="nav_about">About Us</a>
         <a href="#products" data-i18n="nav_products">Products</a>
+        <a href="#faq" data-i18n="nav_faq">FAQ</a>
         <a href="#contact" data-i18n="nav_contact">Contact</a>
       </div>
       <div class="footer-links">

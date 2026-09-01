@@ -30,7 +30,7 @@ fillMarquee();
 var _lang = 'en';
 var _T = {
   en: {
-    nav_home:'Home', nav_about:'About', nav_products:'Products', nav_categories:'Categories', nav_contact:'Contact',
+    nav_home:'Home', nav_about:'About', nav_products:'Products', nav_categories:'Categories', nav_faq:'FAQ', nav_contact:'Contact',
     cart_label:' Cart',
     hero_tag:'<i class="fa fa-tools"></i> Kuwait\'s #1 Hardware Store',
     hero_h1:'Built <span>Tough.</span><br/>Built for <span>Kuwait.</span>',
@@ -55,6 +55,17 @@ var _T = {
     feat_genuine_h:'100% Genuine', feat_genuine_p:'All products are sourced directly from authorised distributors and manufacturers.',
     feat_advice_h:'Expert Advice', feat_advice_p:'Our hardware experts help you choose the right tool for every job.',
     feat_pricing_h:'Trade Pricing', feat_pricing_p:'Bulk and trade discounts available for contractors and businesses.',
+    faq_tag:'Got Questions?', faq_h2:'Frequently Asked <span class="orange">Questions</span>',
+    faq_q1:'Which areas in Kuwait do you deliver to?',
+    faq_a1:'We offer same-day delivery across Kuwait City, with delivery to the rest of Kuwait within 1-2 business days. GCC shipping is available in 3-5 business days.',
+    faq_q2:'What payment methods do you accept?',
+    faq_a2:'We accept cash on delivery, KNET, and bank transfer for trade accounts. Payment details are confirmed with you directly on WhatsApp after you place an order.',
+    faq_q3:'Do you offer bulk or wholesale pricing?',
+    faq_a3:'Yes — we offer trade and bulk pricing for contractors, businesses, and large-quantity orders. Use the "Get a Quote" button or contact us on WhatsApp with your list.',
+    faq_q4:'Can I return or exchange a product?',
+    faq_a4:'Yes, unused items in original packaging can be returned or exchanged within 7 days of delivery. Contact us on WhatsApp with your order details to arrange it.',
+    faq_q5:'How do I track my order or get help?',
+    faq_a5:'Use the "Track Order" button in the header and enter the WhatsApp number you ordered with, or message us directly on WhatsApp anytime — our team replies fast.',
     contact_tag:'Get In Touch', contact_h2:'We\'re Here to <span class="orange">Help</span>',
     contact_p:'Need a specific tool? Looking for a bulk quote? Our team is ready to assist you in Arabic and English.',
     contact_loc_label:'Location', contact_loc:'Kuwait City, Kuwait',
@@ -94,7 +105,7 @@ var _T = {
     mq_items:['Power Tools','Hand Tools','Fasteners','Safety Gear','Measuring Tools','Cutting Tools','Drill Bits','Tool Storage','Accessories']
   },
   ar: {
-    nav_home:'الرئيسية', nav_about:'من نحن', nav_products:'المنتجات', nav_categories:'الفئات', nav_contact:'اتصل بنا',
+    nav_home:'الرئيسية', nav_about:'من نحن', nav_products:'المنتجات', nav_categories:'الفئات', nav_faq:'الأسئلة الشائعة', nav_contact:'اتصل بنا',
     cart_label:' سلة',
     hero_tag:'<i class="fa fa-tools"></i> محل الأدوات والمعدات الأول في الكويت',
     hero_h1:'ابنِ بقوة.<br/>صُنع لـ<span>الكويت.</span>',
@@ -119,6 +130,17 @@ var _T = {
     feat_genuine_h:'100% أصلي', feat_genuine_p:'جميع المنتجات مصدرها مباشرة من الموزعين والمصنعين المعتمدين.',
     feat_advice_h:'نصيحة متخصصة', feat_advice_p:'خبراؤنا في الأدوات يساعدونك في اختيار الأداة المناسبة لكل مهمة.',
     feat_pricing_h:'أسعار تجارية', feat_pricing_p:'خصومات بالجملة والتجزئة متاحة للمقاولين والشركات.',
+    faq_tag:'لديك سؤال؟', faq_h2:'الأسئلة <span class="orange">الشائعة</span>',
+    faq_q1:'ما هي مناطق التوصيل في الكويت؟',
+    faq_a1:'نوفر توصيل في نفس اليوم داخل مدينة الكويت، والتوصيل لبقية مناطق الكويت خلال 1-2 يوم عمل. الشحن لدول الخليج متاح خلال 3-5 أيام عمل.',
+    faq_q2:'ما هي طرق الدفع المتاحة؟',
+    faq_a2:'نقبل الدفع عند الاستلام، كي نت، والتحويل البنكي للحسابات التجارية. يتم تأكيد تفاصيل الدفع معك مباشرة عبر واتساب بعد إتمام الطلب.',
+    faq_q3:'هل تقدمون أسعار جملة أو تجارية؟',
+    faq_a3:'نعم — نوفر أسعار تجارية وبالجملة للمقاولين والشركات والطلبات الكبيرة. استخدم زر "احصل على عرض سعر" أو تواصل معنا عبر واتساب بقائمتك.',
+    faq_q4:'هل يمكنني إرجاع أو استبدال منتج؟',
+    faq_a4:'نعم، يمكن إرجاع أو استبدال المنتجات غير المستخدمة وبعبوتها الأصلية خلال 7 أيام من الاستلام. تواصل معنا عبر واتساب بتفاصيل طلبك لترتيب ذلك.',
+    faq_q5:'كيف أتتبع طلبي أو أحصل على مساعدة؟',
+    faq_a5:'استخدم زر "تتبع الطلب" في الأعلى وأدخل رقم الواتساب الذي طلبت به، أو راسلنا مباشرة على واتساب في أي وقت — فريقنا يرد بسرعة.',
     contact_tag:'تواصل معنا', contact_h2:'نحن هنا <span class="orange">لمساعدتك</span>',
     contact_p:'تحتاج أداة معينة؟ تبحث عن عرض سعر بالجملة؟ فريقنا جاهز لمساعدتك بالعربية والإنجليزية.',
     contact_loc_label:'الموقع', contact_loc:'مدينة الكويت، الكويت',
@@ -221,8 +243,10 @@ async function saveOrderToSupabase(order) {
   // header requires SELECT-level RLS access to the just-inserted row —
   // access the anon role intentionally no longer has, now that
   // expert_orders isn't bulk-readable. Knowing the id up front avoids
-  // needing that read entirely.
-  const newOrderId = crypto.randomUUID();
+  // needing that read entirely. Callers that already need the id before
+  // this resolves (e.g. to show it on the order-confirmation screen) can
+  // pass their own via order.id.
+  const newOrderId = order.id || crypto.randomUUID();
   const payload = [{
     id:             newOrderId,
     customer_name:  order.name,

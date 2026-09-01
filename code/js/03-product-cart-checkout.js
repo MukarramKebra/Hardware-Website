@@ -520,6 +520,13 @@ function handleCheckoutSubmit() {
   const notes  = document.getElementById('coNotes').value.trim();
   const total  = cart.reduce((s,c) => s+c.price*c.qty, 0);
   const orderLines = cart.map(c => `  • ${c.name} x${c.qty} — ${(c.price*c.qty).toFixed(3)} KWD`).join('\n');
+  // Generated here (not inside saveOrderToSupabase) so it's available
+  // immediately for the WhatsApp message and the confirmation screen below,
+  // without awaiting the Supabase call — awaiting first would delay
+  // window.open() past the click's user-gesture window and risk it being
+  // popup-blocked.
+  const orderId  = crypto.randomUUID();
+  const orderRef = 'EH-' + orderId.slice(0, 8).toUpperCase();
 
   let address = '';
   if (!isPickup) {
@@ -533,6 +540,7 @@ function handleCheckoutSubmit() {
 
   const msg = [
     '🔧 *Expert Hardware Order* 🔧',
+    '📋 *Ref:* ' + orderRef,
     '',
     '👤 *Name:* ' + name,
     '📞 *WhatsApp:* ' + phone,
@@ -550,13 +558,18 @@ function handleCheckoutSubmit() {
   // Deduct stock
   deductStock(cart);
 
-  // Save order to Supabase
-  saveOrderToSupabase({ name, phone, address: isPickup ? 'PICK UP' : address, notes, items: cart.map(c=>({name:c.name,sku:c.sku||getProductSku(c.id),qty:c.qty,price:c.price})), total });
+  // Save order to Supabase (fire-and-forget — see orderId comment above)
+  saveOrderToSupabase({ id: orderId, name, phone, address: isPickup ? 'PICK UP' : address, notes, items: cart.map(c=>({name:c.name,sku:c.sku||getProductSku(c.id),qty:c.qty,price:c.price})), total });
 
   // Open WhatsApp
   window.open('https://wa.me/96597656372?text=' + encodeURIComponent(msg), '_blank');
 
   // Show success, clear cart
+  const orderItemsHtml = cart.map(c => `
+      <div class="co-item">
+        <div><span class="co-item-name">${c.name}</span><br/><span class="co-item-qty">x${c.qty} unit${c.qty>1?'s':''}</span></div>
+        <span class="co-item-price">${(c.price*c.qty).toFixed(3)} KWD</span>
+      </div>`).join('');
   cart = [];
   updateCartUI();
   renderProducts();
@@ -564,11 +577,30 @@ function handleCheckoutSubmit() {
     <div class="co-success">
       <i class="fab fa-whatsapp"></i>
       <h3>Order Sent!</h3>
-      <p>Your order has been sent to Expert Hardware on WhatsApp.<br/>We will confirm and arrange delivery shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
-      <br/>
-      <button class="btn btn-primary" onclick="document.getElementById('checkoutOverlay').classList.remove('open');document.getElementById('coBody').innerHTML=origCoBody">Continue Shopping</button>
+      <p>Your order has been sent to Expert Hardware on WhatsApp.<br/>We will confirm and arrange ${isPickup ? 'pick up' : 'delivery'} shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
+      <div class="co-success-ref">Order Reference <strong>${orderRef}</strong></div>
+      <div class="co-success-summary">
+        ${orderItemsHtml}
+        <div class="co-item co-success-total"><span>Total</span><span>${total.toFixed(3)} KWD</span></div>
+      </div>
+      <div class="co-success-btns">
+        <button class="btn btn-outline" onclick="trackJustPlacedOrder()">Track Order</button>
+        <button class="btn btn-primary" onclick="document.getElementById('checkoutOverlay').classList.remove('open');document.getElementById('coBody').innerHTML=origCoBody">Continue Shopping</button>
+      </div>
     </div>`;
+  // Read by trackJustPlacedOrder() below — kept off the HTML attribute
+  // above since phone is free-typed user input and doesn't belong
+  // interpolated into an inline onclick string.
+  _lastCheckoutPhone = phone;
 }
+
+function trackJustPlacedOrder() {
+  document.getElementById('checkoutOverlay').classList.remove('open');
+  openOrderTracker();
+  const tp = document.getElementById('trackPhone');
+  if (tp) tp.value = _lastCheckoutPhone || '';
+}
+let _lastCheckoutPhone = '';
 
 // Store original checkout body to reset it
 let origCoBody = '';
