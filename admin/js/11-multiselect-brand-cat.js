@@ -366,11 +366,23 @@ async function savePhoto() {
 // jain_auth = 'super'   → owner session (ultimate15)
 // jain_auth = 'bahar15' → manager session (bahar15)
 // jain_auth = 'custom'  → restricted team account (see admin/js/03-auth.js)
-if (localStorage.getItem('jain_auth') === '1')       { showAdmin(); }
-if (localStorage.getItem('jain_auth') === 'super')   { showSuperAdmin(); }
-if (localStorage.getItem('jain_auth') === 'bahar15') { showManager(); }
-if (localStorage.getItem('jain_auth') === 'custom')  {
-  var _savedPerms = {};
-  try { _savedPerms = JSON.parse(localStorage.getItem('jain_custom_perms') || '{}'); } catch(e) {}
-  showCustomAdmin(_savedPerms);
-}
+// A saved role alone isn't enough now — the write session (Supabase Auth
+// access token) has to actually still be valid, or every save/edit/delete
+// in the panel would silently go out as anon and get rejected by RLS. So
+// this refreshes the token first and only restores the panel if that
+// succeeds; otherwise the saved role is cleared and the login screen (the
+// page's default state) stays up.
+(async function() {
+  var role = localStorage.getItem('jain_auth');
+  if (!role) return;
+  var ok = await refreshAdminSession();
+  if (!ok) { localStorage.removeItem('jain_auth'); return; }
+  if (role === '1')       { showAdmin(); }
+  if (role === 'super')   { showSuperAdmin(); }
+  if (role === 'bahar15') { showManager(); }
+  if (role === 'custom')  {
+    var _savedPerms = {};
+    try { _savedPerms = JSON.parse(localStorage.getItem('jain_custom_perms') || '{}'); } catch(e) {}
+    showCustomAdmin(_savedPerms);
+  }
+})();

@@ -14,7 +14,7 @@ async function loadOrders(showToastMsg) {
   var res = await sbFetch(SB_URL + '/rest/v1/rpc/admin_list_orders', {
     method: 'POST',
     headers: SB_HDRS,
-    body: JSON.stringify({ p_token: ADMIN_ORDER_TOKEN })
+    body: JSON.stringify({})
   });
   console.log('[Admin] loadOrders result:', res);
   if (res.error) {
@@ -96,7 +96,7 @@ async function updateOrderStatus(id, newStatus, selectEl) {
   var res = await sbFetch(SB_URL + '/rest/v1/rpc/admin_update_order_status', {
     method: 'POST',
     headers: SB_HDRS,
-    body: JSON.stringify({ p_token: ADMIN_ORDER_TOKEN, p_id: id, p_status: newStatus })
+    body: JSON.stringify({ p_id: id, p_status: newStatus })
   });
   if (res.error) { showToast('Failed to update status'); return; }
   var ord = _allOrders.find(function(o){ return o.id === id; });

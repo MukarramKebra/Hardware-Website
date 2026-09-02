@@ -5,6 +5,55 @@
 // Ensure owner-only rows are visible by default (will be hidden if bahar15 logs in)
 document.querySelectorAll('.owner-only-row').forEach(function(el){ el.style.display = ''; });
 
+// ── SESSION (real Supabase Auth) ─────────────────────────────────────────────
+// The password is verified by Supabase itself (grant_type=password) — never
+// compared client-side, never stored anywhere. Usernames map to a fixed
+// synthetic email (see EMAIL_DOMAIN) so the login form can stay
+// username-based. Mutating SB_HDRS.Authorization here — rather than at every
+// individual write call site — is what makes every existing admin-panel
+// write authenticated: every save/edit/delete already sends SB_HDRS (or
+// Object.assign({}, SB_HDRS, ...)) as its headers (see 01-core-data.js).
+const EMAIL_DOMAIN = 'expert-admin.internal';
+let _refreshTimer = null;
+
+function setAdminSession(session) {
+  localStorage.setItem('jain_access_token', session.access_token);
+  localStorage.setItem('jain_refresh_token', session.refresh_token);
+  SB_HDRS.Authorization = 'Bearer ' + session.access_token;
+  clearInterval(_refreshTimer);
+  // Access tokens expire in ~1h; refresh well before that so a session
+  // already open in a browser tab never silently goes stale mid-use.
+  _refreshTimer = setInterval(refreshAdminSession, 45 * 60 * 1000);
+}
+
+async function refreshAdminSession() {
+  const rt = localStorage.getItem('jain_refresh_token');
+  if (!rt) return false;
+  const res = await sbFetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY },
+    body: JSON.stringify({ refresh_token: rt })
+  });
+  if (res.error || !res.data || !res.data.access_token) { clearAdminSession(); return false; }
+  setAdminSession(res.data);
+  return true;
+}
+
+function clearAdminSession() {
+  localStorage.removeItem('jain_access_token');
+  localStorage.removeItem('jain_refresh_token');
+  clearInterval(_refreshTimer);
+  SB_HDRS.Authorization = 'Bearer ' + SB_KEY;
+}
+
+// Restores SB_HDRS.Authorization synchronously from whatever token was
+// saved last (so the very first write after a page reload isn't sent as
+// anon before the async refresh below finishes).
+(function() {
+  const at = localStorage.getItem('jain_access_token');
+  if (at) SB_HDRS.Authorization = 'Bearer ' + at;
+})();
+
 async function doLogin(e) {
   if (e) e.preventDefault();
   const u   = document.getElementById('loginUser').value.trim();
@@ -12,43 +61,54 @@ async function doLogin(e) {
   const err = document.getElementById('loginError');
   err.style.display = 'none';
 
-  // Credential check happens server-side now (admin-login Edge Function) —
-  // see supabase/functions/admin-login/index.ts. Nothing password-shaped
-  // lives in this file or gets sent to the browser except the outcome for
-  // whichever single account just tried to log in.
-  let res;
+  let session;
   try {
-    const r = await fetch(SB_URL + '/functions/v1/admin-login', {
+    const r = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
-      body: JSON.stringify({ username: u, password: p })
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY },
+      body: JSON.stringify({ email: u + '@' + EMAIL_DOMAIN, password: p })
     });
-    res = await r.json();
+    session = await r.json();
   } catch (fetchErr) {
     err.textContent = 'Could not reach the server. Try again.';
     err.style.display = 'block';
     return;
   }
 
-  if (!res || !res.ok) {
+  if (!session || !session.access_token) {
     err.textContent = 'Wrong username or password.';
     err.style.display = 'block';
     setTimeout(function() { err.style.display = 'none'; }, 3000);
     return;
   }
 
+  // RLS only allows reading your own profile row, so this identifies the
+  // role/permissions for exactly the account that just logged in.
+  const profRes = await sbFetch(SB_URL + '/rest/v1/expert_admin_profiles?select=role,permissions,display_name', {
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + session.access_token }
+  });
+  const profile = profRes.data && profRes.data[0];
+  if (!profile) {
+    err.textContent = 'Wrong username or password.';
+    err.style.display = 'block';
+    return;
+  }
+
+  setAdminSession(session);
+
   // ── Owner (ultimate15) ────────────────────────────────────────────────────
-  if (res.role === 'super') {
+  if (profile.role === 'super') {
     localStorage.setItem('jain_auth', 'super');
     showSuperAdmin();
     return;
   }
 
   // ── Manager (bahar15) — all owner powers except disabling ultimate/site ──
-  if (res.role === 'bahar15') {
+  if (profile.role === 'bahar15') {
     if (localStorage.getItem('jain15_user_disabled') === '1') {
       err.textContent = 'This account has been disabled by the owner.';
       err.style.display = 'block';
+      clearAdminSession();
       return;
     }
     localStorage.setItem('jain_auth', 'bahar15');
@@ -57,10 +117,11 @@ async function doLogin(e) {
   }
 
   // ── Regular admin (bahar) ─────────────────────────────────────────────────
-  if (res.role === '1') {
+  if (profile.role === '1') {
     if (localStorage.getItem('jain_user_disabled') === '1') {
       err.textContent = 'This account has been disabled by the owner.';
       err.style.display = 'block';
+      clearAdminSession();
       return;
     }
     localStorage.setItem('jain_auth', '1');
@@ -73,11 +134,11 @@ async function doLogin(e) {
   }
 
   // ── Team accounts created by ultimate15 (Owner Controls) ──────────────────
-  if (res.role === 'custom') {
+  if (profile.role === 'custom') {
     localStorage.setItem('jain_auth', 'custom');
-    localStorage.setItem('jain_custom_perms', JSON.stringify(res.permissions || {}));
-    localStorage.setItem('jain_custom_name', res.display_name || u);
-    showCustomAdmin(res.permissions || {});
+    localStorage.setItem('jain_custom_perms', JSON.stringify(profile.permissions || {}));
+    localStorage.setItem('jain_custom_name', profile.display_name || u);
+    showCustomAdmin(profile.permissions || {});
     return;
   }
 }
@@ -141,6 +202,7 @@ function showCustomAdmin(perms) {
 }
 
 function logoutCustom() {
+  clearAdminSession();
   localStorage.removeItem('jain_auth');
   localStorage.removeItem('jain_custom_perms');
   localStorage.removeItem('jain_custom_name');
@@ -155,6 +217,7 @@ function logoutCustom() {
   if (logoutBtn) { logoutBtn.setAttribute('onclick', 'logout()'); }
 }
 function logout() {
+  clearAdminSession();
   localStorage.removeItem('jain_auth');
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('adminPanel').style.display = 'none';
@@ -194,6 +257,7 @@ function showSuperAdmin() {
   loadTeamAccounts();
 }
 function logoutSuper() {
+  clearAdminSession();
   localStorage.removeItem('jain_auth');
   document.getElementById('adminPanel').style.display  = 'none';
   document.getElementById('tabOwner').style.display    = 'none';
@@ -239,6 +303,7 @@ function showManager() {
   renderSuperAdmin();
 }
 function logoutManager() {
+  clearAdminSession();
   localStorage.removeItem('jain_auth');
   document.getElementById('adminPanel').style.display  = 'none';
   document.getElementById('tabOwner').style.display    = 'none';
@@ -517,7 +582,7 @@ async function undoSingleAction(entry) {
       return !r.error;
     }
     if (entry.action === 'status_change') {
-      var r = await sbFetch(SB_URL+'/rest/v1/rpc/admin_update_order_status', { method:'POST', headers:SB_HDRS, body:JSON.stringify({ p_token: ADMIN_ORDER_TOKEN, p_id: d.id, p_status: d.oldStatus }) });
+      var r = await sbFetch(SB_URL+'/rest/v1/rpc/admin_update_order_status', { method:'POST', headers:SB_HDRS, body:JSON.stringify({ p_id: d.id, p_status: d.oldStatus }) });
       if (!r.error && _allOrders) { var o = _allOrders.find(function(x){return x.id===d.id;}); if (o) o.status = d.oldStatus; }
       return !r.error;
     }
@@ -588,7 +653,10 @@ function openTeamAccountForm(id) {
   var account = id ? _teamAccounts.find(function(a) { return a.id === id; }) : null;
   document.getElementById('teamAcctModalTitle').textContent = account ? 'Edit Team Account' : 'Add Team Account';
   document.getElementById('taUsername').value    = account ? account.username : '';
-  document.getElementById('taPassword').value    = account ? account.password : '';
+  // Real passwords are never readable back (Supabase Auth only lets you SET
+  // one) — left blank on edit; saveTeamAccount() only changes it if typed.
+  document.getElementById('taPassword').value       = '';
+  document.getElementById('taPassword').placeholder = account ? 'Leave blank to keep current password' : '';
   document.getElementById('taDisplayName').value = account ? (account.display_name || '') : '';
   document.getElementById('taHideStock').checked = !!(account && account.permissions && account.permissions.hideStockNumbers);
   document.getElementById('taHideStats').checked = !!(account && account.permissions && account.permissions.hideValueStats);
@@ -601,11 +669,16 @@ function closeTeamAccountForm() {
   _editingAccountId = null;
 }
 
+// Team accounts are real Supabase Auth users now, created/edited/deleted
+// only through admin-manage-accounts (service-role-backed — see that
+// function's header comment). SB_HDRS carries the logged-in owner/manager's
+// own access token, which is how that function confirms they're allowed to
+// manage accounts at all.
 async function saveTeamAccount() {
   var username    = document.getElementById('taUsername').value.trim();
   var password    = document.getElementById('taPassword').value;
   var displayName = document.getElementById('taDisplayName').value.trim();
-  if (!username || !password) { showToast('Username and password are required'); return; }
+  if (!username || (!_editingAccountId && !password)) { showToast('Username and password are required'); return; }
 
   var perms = {};
   TAB_KEYS.forEach(function(key) {
@@ -617,26 +690,25 @@ async function saveTeamAccount() {
   perms.hideStockNumbers = document.getElementById('taHideStock').checked;
   perms.hideValueStats   = document.getElementById('taHideStats').checked;
 
-  var body = { username: username, password: password, display_name: displayName, permissions: perms };
-  var res;
-  if (_editingAccountId) {
-    res = await sbFetch(SB_URL + '/rest/v1/expert_admin_accounts?id=eq.' + _editingAccountId, {
-      method: 'PATCH', headers: Object.assign({}, SB_HDRS, { 'Prefer': 'return=representation' }), body: JSON.stringify(body)
-    });
-  } else {
-    res = await sbFetch(SB_URL + '/rest/v1/expert_admin_accounts', {
-      method: 'POST', headers: Object.assign({}, SB_HDRS, { 'Prefer': 'return=representation' }), body: JSON.stringify([body])
-    });
-  }
-  if (res.error) { showToast('Failed to save — that username may already be taken'); return; }
+  var body = _editingAccountId
+    ? { action: 'update', id: _editingAccountId, display_name: displayName, permissions: perms }
+    : { action: 'create', username: username, display_name: displayName, permissions: perms };
+  if (password) body.password = password;
+
+  var res = await sbFetch(SB_URL + '/functions/v1/admin-manage-accounts', {
+    method: 'POST', headers: SB_HDRS, body: JSON.stringify(body)
+  });
+  if (res.error || !res.data || !res.data.ok) { showToast('Failed to save — that username may already be taken'); return; }
   showToast('Account saved!');
   closeTeamAccountForm();
   loadTeamAccounts();
 }
 
 async function loadTeamAccounts() {
-  var res = await sbFetch(SB_URL + '/rest/v1/expert_admin_accounts?select=*&order=id.asc', { headers: SB_HDRS });
-  _teamAccounts = Array.isArray(res.data) ? res.data : [];
+  var res = await sbFetch(SB_URL + '/functions/v1/admin-manage-accounts', {
+    method: 'POST', headers: SB_HDRS, body: JSON.stringify({ action: 'list' })
+  });
+  _teamAccounts = (res.data && Array.isArray(res.data.accounts)) ? res.data.accounts : [];
   renderTeamAccountsList();
 }
 
@@ -654,8 +726,8 @@ function renderTeamAccountsList() {
         '<div style="font-size:11px;color:var(--gray);margin-top:3px">' + tabs + '</div>' +
       '</div>' +
       '<div style="display:flex;gap:8px">' +
-        '<button class="ur-btn" onclick="openTeamAccountForm(' + a.id + ')"><i class="fa fa-edit"></i> Edit</button>' +
-        '<button class="ur-btn" style="color:var(--red);border-color:var(--red)" onclick="deleteTeamAccount(' + a.id + ')"><i class="fa fa-trash"></i> Delete</button>' +
+        '<button class="ur-btn" onclick="openTeamAccountForm(\'' + a.id + '\')"><i class="fa fa-edit"></i> Edit</button>' +
+        '<button class="ur-btn" style="color:var(--red);border-color:var(--red)" onclick="deleteTeamAccount(\'' + a.id + '\')"><i class="fa fa-trash"></i> Delete</button>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -663,7 +735,9 @@ function renderTeamAccountsList() {
 
 async function deleteTeamAccount(id) {
   if (!confirm('Delete this team account? They will no longer be able to log in.')) return;
-  await sbFetch(SB_URL + '/rest/v1/expert_admin_accounts?id=eq.' + id, { method: 'DELETE', headers: SB_HDRS });
+  await sbFetch(SB_URL + '/functions/v1/admin-manage-accounts', {
+    method: 'POST', headers: SB_HDRS, body: JSON.stringify({ action: 'delete', id: id })
+  });
   showToast('Account deleted');
   loadTeamAccounts();
 }

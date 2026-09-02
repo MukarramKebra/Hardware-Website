@@ -145,7 +145,7 @@ async function deleteOrder(id) {
   var res = await sbFetch(SB_URL + '/rest/v1/rpc/admin_delete_order', {
     method: 'POST',
     headers: SB_HDRS,
-    body: JSON.stringify({ p_token: ADMIN_ORDER_TOKEN, p_id: id })
+    body: JSON.stringify({ p_id: id })
   });
   if (res.error) { showToast('Delete failed: ' + res.error); return; }
   // Remove from local list and re-render

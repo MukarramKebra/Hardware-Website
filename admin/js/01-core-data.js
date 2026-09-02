@@ -54,13 +54,14 @@
 // SB_HDRS = the headers sent with every database request (authentication)
 const SB_URL  = 'https://qhebhvllkovfbkqrcnmm.supabase.co';
 const SB_KEY  = atob('c2JfcHVibGlzaGFibGVfakN3cnAteTE2VFdWblg4QWszcjFtd19laEtBU2lwZA==');
+// Mutated in place by setAdminSession()/clearAdminSession() (js/03-auth.js)
+// once logged in — every write in this admin panel sends this same object
+// as its headers, so that's what makes them all authenticated.
 const SB_HDRS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
-// Not a real credential — a shared token the three admin_* order RPCs check
-// for, so bulk order listing/status-change/delete aren't reachable by
-// anyone who just has the public SB_KEY (same as everyone browsing the
-// site). Same class of protection as the admin login itself: it stops
-// automated scanners hitting the raw REST API, not someone reading this file.
-const ADMIN_ORDER_TOKEN = 'be251bcef02d21d2d3a2c976d4a749c25c21a47005839292';
+// The three admin_* order RPCs (and every other admin write) now check
+// is_admin(auth.uid()) server-side instead of a shared token that used to
+// live here in plain text — see supabase/functions/admin-login and the
+// is_admin() Postgres function.
 
 // Default categories shown in the admin category filter dropdown
 const DEFAULT_CATS = [

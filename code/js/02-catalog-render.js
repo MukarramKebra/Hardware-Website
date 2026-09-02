@@ -572,14 +572,18 @@ async function deductStock(cartItems) {
     const cur = _sbStock[item.id] !== undefined ? _sbStock[item.id] : 50;
     _sbStock[item.id] = Math.max(0, cur - item.qty);
   });
-  // Push to Supabase so admin sees real numbers
-  const rows = cartItems.map(item => ({ product_id: item.id, qty: _sbStock[item.id] }));
-  const { error } = await sbFetch(SB_URL + '/rest/v1/expert_stock', {
+  // Push to Supabase via decrement_stock — a narrow RPC that only ever
+  // subtracts (never sets an arbitrary value), so a checkout from a real
+  // customer can stay callable with just the public key even once direct
+  // writes to expert_stock are locked down to admins. Server-side
+  // subtraction also avoids a race between two simultaneous buyers that a
+  // client-computed absolute value would be vulnerable to.
+  const results = await Promise.all(cartItems.map(item => sbFetch(SB_URL + '/rest/v1/rpc/decrement_stock', {
     method: 'POST',
-    headers: { ...SB_H, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
-    body: JSON.stringify(rows)
-  });
-  if (error) localStorage.setItem('jain_stock', JSON.stringify(_sbStock));
+    headers: { ...SB_H, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_product_id: item.id, p_qty: item.qty })
+  })));
+  if (results.some(r => r.error)) localStorage.setItem('jain_stock', JSON.stringify(_sbStock));
 }
 
 // ── SMART SEARCH ─────────────────────────────────────────────────────────────
