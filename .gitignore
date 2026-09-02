@@ -1,2 +1,5 @@
 # graphify tool output — analysis artifacts, not site source
 graphify-out/
+
+# Supabase CLI local cache
+supabase/.temp/

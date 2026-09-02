@@ -12,15 +12,40 @@ async function doLogin(e) {
   const err = document.getElementById('loginError');
   err.style.display = 'none';
 
+  // Credential check happens server-side now (admin-login Edge Function) —
+  // see supabase/functions/admin-login/index.ts. Nothing password-shaped
+  // lives in this file or gets sent to the browser except the outcome for
+  // whichever single account just tried to log in.
+  let res;
+  try {
+    const r = await fetch(SB_URL + '/functions/v1/admin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify({ username: u, password: p })
+    });
+    res = await r.json();
+  } catch (fetchErr) {
+    err.textContent = 'Could not reach the server. Try again.';
+    err.style.display = 'block';
+    return;
+  }
+
+  if (!res || !res.ok) {
+    err.textContent = 'Wrong username or password.';
+    err.style.display = 'block';
+    setTimeout(function() { err.style.display = 'none'; }, 3000);
+    return;
+  }
+
   // ── Owner (ultimate15) ────────────────────────────────────────────────────
-  if (u === SUPER_USER && p === SUPER_PASS) {
+  if (res.role === 'super') {
     localStorage.setItem('jain_auth', 'super');
     showSuperAdmin();
     return;
   }
 
   // ── Manager (bahar15) — all owner powers except disabling ultimate/site ──
-  if (u === MANAGER_USER && p === MANAGER_PASS) {
+  if (res.role === 'bahar15') {
     if (localStorage.getItem('jain15_user_disabled') === '1') {
       err.textContent = 'This account has been disabled by the owner.';
       err.style.display = 'block';
@@ -32,7 +57,7 @@ async function doLogin(e) {
   }
 
   // ── Regular admin (bahar) ─────────────────────────────────────────────────
-  if (u === ADMIN_USER && p === ADMIN_PASS) {
+  if (res.role === '1') {
     if (localStorage.getItem('jain_user_disabled') === '1') {
       err.textContent = 'This account has been disabled by the owner.';
       err.style.display = 'block';
@@ -48,20 +73,13 @@ async function doLogin(e) {
   }
 
   // ── Team accounts created by ultimate15 (Owner Controls) ──────────────────
-  const res = await sbFetch(SB_URL + '/rest/v1/expert_admin_accounts?username=eq.' + encodeURIComponent(u) + '&select=*', { headers: SB_HDRS });
-  if (Array.isArray(res.data) && res.data.length && res.data[0].password === p) {
-    const account = res.data[0];
+  if (res.role === 'custom') {
     localStorage.setItem('jain_auth', 'custom');
-    localStorage.setItem('jain_custom_perms', JSON.stringify(account.permissions || {}));
-    localStorage.setItem('jain_custom_name', account.display_name || account.username);
-    showCustomAdmin(account.permissions || {});
+    localStorage.setItem('jain_custom_perms', JSON.stringify(res.permissions || {}));
+    localStorage.setItem('jain_custom_name', res.display_name || u);
+    showCustomAdmin(res.permissions || {});
     return;
   }
-
-  // ── Wrong credentials ─────────────────────────────────────────────────────
-  err.textContent = 'Wrong username or password.';
-  err.style.display = 'block';
-  setTimeout(function() { err.style.display = 'none'; }, 3000);
 }
 function showAdmin() {
   resetAccountPermissions();

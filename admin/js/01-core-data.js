@@ -39,13 +39,13 @@
  */
 
 // ── LOGIN CREDENTIALS ──────────────────────────────────────────────────────────
-// Change these to update usernames/passwords
-const ADMIN_USER    = 'expert';       // Regular admin username
-const ADMIN_PASS    = 'Kuw963258';   // Regular admin password
-const SUPER_USER    = 'ultimate15';  // Owner (super-admin) username
-const SUPER_PASS    = 'Zahab2011';   // Owner (super-admin) password
-const MANAGER_USER  = 'expert15';     // Manager account — same powers as owner except cannot disable ultimate15 or site
-const MANAGER_PASS  = 'Kuw963258';   // Manager password
+// No longer stored here — this used to hold the owner/manager/admin passwords
+// as plain constants, which meant anyone who loaded (or just fetched) this
+// public file could read them and log in directly. The check now happens
+// server-side in the admin-login Edge Function (see supabase/functions/
+// admin-login/index.ts and doLogin() in js/03-auth.js), against a table
+// that isn't reachable from the browser at all. To change a password, update
+// the expert_admin_master table in Supabase (or ask Claude to).
 
 // ── SUPABASE CONNECTION ────────────────────────────────────────────────────────
 // Supabase is the online database where all products, stock, orders, photos live.
