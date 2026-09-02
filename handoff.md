@@ -12,380 +12,226 @@ Repo: `MukarramKebra/Hardware-Website`, working copy at `C:\Users\mukke\Desktop\
 (a second clone without "new" exists and should be kept in sync via `git reset --hard origin/main`).
 
 A second reference site exists — **`https://expertshardware.com`** (the owner's real, older Magento-based
-storefront) — used this session as the source of truth for what prices/sales/options should actually show.
+storefront) — used across sessions as the source of truth for pricing, categories, and subcategories, and
+still the origin a large slice of product images are hotlinked from (see section 6 — worth re-hosting).
+**A third site, `marhabahardwares.com`, is a competitor's storefront** — a request in an earlier session to
+scrape its generator products/images into this catalog was declined (copying a competitor's product photos
+and descriptions, even with superficial changes, is a real IP problem, not a gray area like mirroring
+`expertshardware.com`). The existing `marhaba` category slug is unrelated to that competitor.
 
 **Important operational note**: multiple Claude Code sessions (and a GitHub Action, see section 2) are
-routinely working on this exact repo at the same time, sometimes concurrently with this one. `git status`/
-`git fetch` before every push, expect divergence, and verify byte-for-byte identical content before
-discarding any "conflicting" untracked file rather than assuming. Real logical merge conflicts (not just
-identical-content ones) have now happened too — see section 4/5 for how one was resolved carefully instead
-of blindly taking one side.
+routinely working on this exact repo at the same time. `git status`/`git fetch` before every push, expect
+divergence, and verify byte-for-byte identical content before discarding any "conflicting" untracked file
+rather than assuming. Real logical merge conflicts (not just identical-content ones) have happened before —
+read both sides' logic before resolving rather than picking a side by default.
 
 ## 2) Current state
-- **1468 products** live in `expert_products` (verified via a live count query — this number is stale
-  almost as soon as it's written; re-verify live). Products keep arriving in large batches from ongoing
-  scraping/import work, ids strictly increasing (`identity`, `start with 100000`), currently up to id
-  `101471`.
-- **Pricing now matches the real site, deliberately, for almost every product.** This session did a full
-  category-by-category sweep of `expertshardware.com` (all ~17 top categories + every subcategory) and
-  found that only a small, specific set of products (~32, all from one batch, ids in the 100445–100924
-  range — chargers, saws, a few power tools) actually show a real price there; everything else is
-  quote-only ("Ask on WhatsApp" territory) on the real site. Built and now maintain
-  `expert_settings.hidden_prices` (a `{ "<product_id>": true }` map, read into `window._sbPriceHidden` by
-  `loadSBData()`) so the storefront matches: **1436 of 1468 products currently show "Ask Price on
-  WhatsApp"** instead of a number + Add to Cart. This has to be re-run (matching new product names against
-  the confirmed real-price list, defaulting everything else to hidden) every time a new batch lands — it's
-  an ongoing maintenance task, not a one-time fix. The confirmed "real price" name list is saved nowhere
-  in the repo (only in this session's history) — if picking this up again, re-derive it by re-sweeping
-  `expertshardware.com`'s categories rather than guessing.
-- **Sales are also now real-site-accurate for the one case checked.** "Wall chaser 5000W with waterflow for
-  black wall" (id 100820) sells at a genuine ~20% off on the real site (KD 59.500 vs 75.000) and is now the
-  only product with an actual verified discount in `featured_offers`. Everything else in `featured_offers`
-  still has `sale: 0` (or the pre-existing blanket 20% badge on ~158 older items, unchanged/unverified from
-  before this session — see Failed Attempts / Next Steps, this wasn't re-audited against the real site).
-- **Featured Products (homepage scrolling strip)**: still admin-curated via its own **Featured** tab
-  (unchanged UI), stored in `expert_settings.featured_offers` as `{ id, sale }[]`. **Still not actually
-  curated** — holds most of the catalog, owner's explicit choice to leave as-is. **New this session**: the
-  ticker rendering is now hard-capped at **40 cards** regardless of how many are in `featured_offers`
-  (`initOffersTicker()` in `js/02-catalog-render.js`) — it was duplicating the *entire* list 2–4x for the
-  seamless-scroll loop, rendering 2000+ DOM nodes and dominating page weight on every load. This was the
-  single biggest mobile/desktop performance fix this session.
-- **Full-page loading splash + category-switch spinner**, both using the owner's "iTrust" gear logo
-  (`loader-gear.png`, root), not a generic spinner. The page-load one is inline CSS/JS in `index.html`
-  (deliberately not in the async-loaded `css/*.css` files, so it renders correctly even before those load).
-  Hides on `DOMContentLoaded` (not `window.load` — see Failed Attempts for why that mattered). The
-  category-switch overlay (`#catLoadOverlay` / `.cat-load-gear` in `css/01-base.css`) now uses the same
-  gear instead of a plain FontAwesome spinner.
-- **Full-screen welcome modal on first visit** (once per browser, 2.5s after load, signed-out visitors
-  only) — reuses the existing `#authOverlay` Sign In/Create Account modal, now with a benefits list
-  (`#authBenefits` in `index.html`) above the tabs. Went through an intermediate design (a small
-  corner "subscribe to offers" nudge) before landing here on direct feedback — see section 5. Closing it
-  any way marks `jain_welcome_modal_dismissed` in localStorage so it never auto-pops again in that browser.
-  The corner offers-nudge markup/logic (`#offersNudge`, `showOffersNudge()`) is still in the codebase but
-  no longer auto-triggered — dead-but-harmless unless intentionally reused.
-- **Signup password now requires 8+ characters with both letters and numbers** (was: 6 chars, no complexity
-  check) — `doAuthSignup()` in `js/05-accounts.js`.
-- **Every order now emails an invoice to `muk@expertshardware.com`.** New Supabase Edge Functions
-  `notify-order` (fires after checkout saves the order — re-fetches server-side rather than trusting client
-  data, idempotent via a `notified` boolean column + atomic conditional UPDATE) and `order-invoice` (JSON
-  API backing a real printable invoice page). See section 3/4 for why the invoice itself had to be a static
-  HTML page rather than served directly from the function.
-- **The `unsubscribe` Edge Function was silently broken since it was first built** (by concurrent work,
-  discovered and fixed this session) — every customer who ever clicked "unsubscribe" in a marketing email
-  was shown raw HTML source instead of a confirmation page. Root cause and fix below (section 4) — this is
-  a real Supabase platform behavior worth knowing about for any future Edge Function that wants to return
-  HTML from a GET request.
-- **The legacy Supabase anon API key was disabled project-wide this session** (most likely the owner's own
-  response, via the Supabase dashboard, to the shared-anon-key access-control gap flagged earlier — see
-  below) — this broke *every* Supabase call on both the storefront and admin panel simultaneously (offers
-  ticker, product data, checkout, accounts, and the SEO-page-generator GitHub Action, which reads the key
-  straight out of `js/01-config-data.js`'s source at build time). Fixed by swapping to the new
-  `sb_publishable_...` key everywhere it's hardcoded. **This has the exact same effective permissions as
-  the old key** — RLS is still wide open for `anon` on `expert_products`/`expert_stock`/`expert_settings`/
-  `expert_admin_accounts` (see below), so this key rotation did not fix the real security gap, only the
-  format.
-- **Admin panel security posture — audited in depth this session, mostly unchanged, now precisely
-  documented instead of just flagged:**
-  - Confirmed via `pg_policies` that `expert_products`, `expert_stock`, `expert_settings`, and
-    **`expert_admin_accounts` itself** all grant full INSERT/UPDATE/DELETE to the public `anon` role with
-    no restriction (`qual: true`). The admin login is a pure client-side UI gate; anyone with the site's
-    public key (visible to any visitor) can bypass it entirely via direct REST calls.
-  - The three built-in admin accounts' credentials are hardcoded plaintext constants in
-    `admin/js/01-core-data.js` (a publicly-fetchable static file). Two disposable-looking team accounts
-    also exist in `expert_admin_accounts` (`test`/`test123`, `2`/`123`) — likely test entries, not deleted.
-  - Removed one small piece of dead code in `admin/js/03-auth.js` that used to write the admin
-    username/password into `#fpUser`/`#fpPass` elements — those elements don't exist in the current
-    `admin/index.html`, so this was already a no-op, not a live exposure, but worth not leaving lying
-    around (see section 5 for the correction — this was initially mis-reported as an active bug).
-  - **Real fix (proper Supabase Auth for the admin panel, or at minimum routing all admin writes through a
-    secret-gated Edge Function with RLS locked down) was explicitly deferred again this round** — "not
-    for admin only for users" — see section 6.
-  - Session tokens (customer-facing, real Supabase Auth) are stored in plain `localStorage`
-    (`jain_access_token`/`jain_refresh_token`) — normal for a backend-less SPA, mitigated by a real,
-    verified **1-hour access-token expiry** (confirmed via an actual test signup, not assumed) plus
-    single-use rotating refresh tokens (Supabase's own default behavior). No rate limiting on the admin
-    login form, but since the credentials are already in the shipped JS, rate-limiting the form itself
-    would be close to security theater — the real fix is the same one deferred above.
-- **Privacy Policy is now actually linked from the site** — the content already existed in `terms.html`
-  under a `#privacy` anchor (added earlier for Google OAuth), but nothing linked to it labeled as "Privacy
-  Policy". Added to the footer and all four consent checkboxes (signup, footer subscribe, offers-nudge
-  subscribe).
-- **New Accessibility Statement page** (`accessibility.html`, linked from the footer) — describes what's
-  actually implemented (alt text, keyboard operability, no forced color scheme, bilingual EN/AR, Lighthouse
-  audits) rather than claiming formal compliance. Backed one specific claim on that page (respects
-  `prefers-reduced-motion`) with a real global CSS rule in `css/01-base.css`, since previously only the
-  preloader honored it.
-- **Search-as-you-type is now debounced (180ms)** — both the grid's own search box and the header search
-  dropdown were calling `renderProducts()` (which rebuilds the whole grid via `innerHTML`, up to ~1000+
-  cards) on every raw keystroke. Shared via `debouncedRenderProducts()` in `js/02-catalog-render.js`.
-- **A stale `pg_cron` job was silently failing every minute** (`send-offers` with `action:'run_scheduled'`)
-  — 401 Unauthorized on every run because its hardcoded `x-admin-token` header predated a token rotation
-  earlier this session. Fixed via `cron.alter_job()`; verified via `net._http_response` that runs
-  immediately after the fix return real 200s.
-- **The email campaign system (`admin/js/13-offers.js` + `send-offers`/`unsubscribe` Edge Functions,
-  described as "added by concurrent work, not deeply exercised" in the prior handoff) turned out to have
-  never actually been deployed** — the source existed in the repo but the functions weren't live on
-  Supabase. Deployed both, set up `ADMIN_SEND_TOKEN` and `RESEND_API_KEY` secrets, sent and confirmed a
-  real test email. It works now.
-- Everything else from before is unchanged unless noted above: admin panel tabs (Inventory, Analytics,
-  Deleted, Orders, Reports, Categories, Banners, Featured, SEO, Owner Controls), size/pack variants,
-  skeleton shimmer, matched cart/WhatsApp FABs, hidden "View details" SEO links, Sign In/Guest checkout
-  choice, Google Sign-In still stuck in Testing publishing status, per-product SEO pages + sitemap
-  generation, the code-only knowledge graph at `graphify-out/`, and the generic `expert_settings` key/value
-  store.
+- **1,577+ products** live in `expert_products` (re-verify live — this number moves as new batches land,
+  ids strictly increasing from `100000`, now past `101580`).
+- **Admin panel now has real authentication and authorization — this reverses a prior "permanent decision"
+  not to build one.** A security review this session found the previous setup (owner/manager/admin
+  passwords as plaintext constants in the public `admin/js/01-core-data.js`, plus RLS granting the public
+  anon key full read/write/delete on nearly every operational table) was actively exploitable — not a
+  theoretical gap. Full rebuild:
+  - The 4 login types (owner `ultimate15`, manager `expert15`, regular admin `expert`, and "Team Accounts"
+    from Owner Controls) are now real **Supabase Auth** users. `doLogin()` (`admin/js/03-auth.js`) calls
+    `/auth/v1/token?grant_type=password` directly; a synthetic email (`<username>@expert-admin.internal`)
+    keeps the login form username-based. Session tokens refresh in the background and restore on reload.
+  - New `is_admin(uid)` Postgres helper backs a fresh RLS policy (`authenticated` + `is_admin(auth.uid())`)
+    on every write-sensitive table: `expert_products`, `expert_stock`, `expert_photos`, `expert_hidden`,
+    `expert_banners`, `expert_cat_bgs`, `expert_settings`. Anon keeps read-only. Verified with raw `curl`
+    using only the public key that writes are now rejected while reads and real admin writes still work.
+  - `SB_HDRS.Authorization` (one shared object already used by every existing admin write call) is mutated
+    in place after login — no per-call-site changes were needed to authenticate ~40 existing write paths.
+  - Team account create/update/delete/list now goes through a new `admin-manage-accounts` Edge Function
+    (service-role-backed — only the service role can create/delete Supabase Auth users), not written
+    directly from the browser. `expert_admin_accounts`/`expert_admin_master` (old plaintext-password tables)
+    are dead, RLS-locked with zero policies.
+  - The 3 order-management RPCs (`admin_list_orders`, `admin_update_order_status`, `admin_delete_order`)
+    check `is_admin(auth.uid())` instead of the `ADMIN_ORDER_TOKEN` that used to sit in plain client JS. Two
+    real gotchas hit and fixed along the way, now in `CLAUDE.md`: `create or replace function` with a
+    changed parameter list creates a *new* overload rather than replacing the old (possibly-vulnerable) one
+    — had to explicitly `drop function` the old token-checking versions; and a newly created function grants
+    `EXECUTE` to the `PUBLIC` pseudo-role by default, so `revoke ... from anon` alone didn't stop anon from
+    calling it — had to `revoke ... from public` explicitly.
+  - The storefront's own checkout stock write goes through a new `decrement_stock` RPC (only ever subtracts,
+    still anon-callable since real customers aren't logged in) instead of a direct `expert_stock` write, so
+    that table could be locked down without breaking real checkouts.
+  - **Not done, flagged as remaining gaps**: `cancel_order`/`get_orders_by_phone` RPCs still have no
+    ownership check (anyone can cancel or look up any order by guessing an id/phone — smaller, same family
+    of issue, not touched this session). Supabase's "leaked password protection" (HaveIBeenPwned check on
+    new/changed passwords) requires a paid plan — this project is on Free, confirmed unavailable via the
+    dashboard, not an oversight.
+- **Category hide/show now has two levels.** Previously hiding a category only removed its nav pill/tile —
+  every product in it stayed fully browsable via All Products, search, and direct links. A new checkbox
+  ("Also hide all its products," admin Categories tab, only shown once a category is already hidden) filters
+  every product in that category out of the whole storefront — `getAllProducts()` in
+  `code/js/01-config-data.js` is the single choke point this hooks into, since every listing/search/product-
+  lookup already goes through it. Un-hiding the category restores both together by design (no separate
+  "un-hide products only" step). `cat_hidden[slug]` values: `true` (nav only, unchanged from before) or
+  `'all'` (nav + products, new). Verified end-to-end against the database, not just the UI: hid a real
+  category, confirmed 0 matching products anywhere including search, un-hid it, confirmed all came back.
+- **Several smaller storefront fixes**, all pushed and live-verified this session:
+  - Custom `404.html` (previously fell through to GitHub's default 404).
+  - Fixed a race where clicking a category before `loadSBData()`'s Supabase fetch resolved showed
+    "No products found" for a moment before the real catalog painted — `window._catalogReady` flag
+    distinguishes "still loading" from "genuinely empty" in `renderProducts()`.
+  - Header logo now actually navigates home (`goHome()` in `code/js/02-catalog-render.js`) — previously the
+    `<a href="#header">` did nothing, since `#header` is `position: fixed` and has no real scroll-anchor
+    position.
+  - Removed a full-screen "Sign In" modal that auto-popped 2.5s after any page load for signed-out visitors
+    (`code/js/05-accounts.js`) — the auth modal now only opens from explicit user actions.
+  - "Loading products…" now shows the same branded rotating gear (`loader-gear.png`) as the initial page
+    splash instead of a generic FontAwesome spinner (`.loading-gear` in `code/css/02-sections.css`).
+  - Added a 5-question bilingual (EN/AR) FAQ section (delivery, payment, bulk pricing, returns, order
+    tracking) between Features and Contact, linked from header + footer nav.
+  - Checkout's "Order Sent!" screen is a real order-confirmation now: shows a generated order reference,
+    a recap of items + total, and a "Track Order" button that reopens the order tracker pre-filled with the
+    phone number just used — instead of a bare thank-you message.
+  - Two `Banners/itrust1.jpg`/`itrust4.jpg` side-banner images were unfinished draft exports (one still had
+    a raw "1080x1920px" size label baked into the design; the other had garbled AI-generated placeholder
+    text) — regenerated both to match the finished style of the other iTrust banners already in rotation.
+- Everything from the prior session (catalog reconciliation against `expertshardware.com`'s live GraphQL
+  catalog, the `cant-find-products` unverified-import category, the 36-subcategory system, admin category
+  drag/rename/hide management, the Featured tab's drag-reorder + bulk tools, unified header/grid search with
+  Enter-to-results, the offers-ticker load-order fix, the signup offers-opt-in checkbox) is unchanged this
+  session except where noted above — see git history / a prior version of this file for that session's full
+  detail if it needs re-verifying.
 
 ## 3) Active files
+**New this session:**
+- `supabase/functions/admin-login/index.ts` — verifies {username, password} server-side (service role) against
+  `expert_admin_master`/`expert_admin_accounts`; superseded for the built-in 3 accounts by real Supabase Auth
+  partway through the session, but still deployed/functional, not removed.
+- `supabase/functions/admin-manage-accounts/index.ts` — create/update/delete/list for admin accounts
+  (service-role-backed, since only it can touch Supabase Auth users); has a one-time `bootstrap` action that
+  self-disables once `expert_admin_profiles` has any row.
+- `404.html` — self-contained custom 404 page (no dependency on `code/css`/`code/js`).
+
 **Storefront (root):**
-- `index.html` — main markup; **new this session**: inline page-load preloader (`#pagePreloader`, styled
-  inline on purpose — see section 2), full-screen welcome modal with benefits list (`#authBenefits`),
-  footer Privacy Policy link, cache-busting fallback timestamp (bump on every JS/CSS/HTML change — see
-  section 6)
-- `js/01-config-data.js` — Supabase config (**`SB_KEY` now the new `sb_publishable_...` key, not the
-  legacy anon JWT — see section 2**), `loadSBData()` (now also reads `hidden_prices`), `sbFetchAll()`
-  (paginates past PostgREST's 1000-row cap — added by concurrent work, survived a real merge conflict this
-  session), `getFeaturedSale()`/`applySale()`, `checkAssetVersion()`
-- `js/02-catalog-render.js` — category/offer rendering, **`initOffersTicker()` now hard-capped at 40
-  cards**, product card rendering, search matching + sort, **`debouncedRenderProducts()`** (shared by both
-  search entry points), skeleton-shimmer wiring
-- `js/03-product-cart-checkout.js` — product modal, cart, checkout; search input now calls
-  `debouncedRenderProducts` instead of `renderProducts` directly
-- `js/04-i18n-order.js` — translations/RTL, order submission (`saveOrderToSupabase()` now also fires
-  `notifyOrderByEmail()` after a successful save)
-- `js/05-accounts.js` — customer accounts; **`doAuthSignup()` password check now 8+ chars + letters &
-  numbers**; welcome-modal auto-show/dismiss logic (`showOffersNudge`/`dismissOffersNudge` renamed
-  conceptually — the actual auto-trigger now calls `openAuthModal('login')` directly, gated on
-  `jain_welcome_modal_dismissed`)
-- `js/06-features.js` — wishlist/reviews/WhatsApp share/recently-viewed, header search dropdown (now calls
-  `debouncedRenderProducts`)
-- `js/07-subscribe.js` — refactored to share one `_submitSubscribe()` core between the footer form and the
-  offers-nudge form (`doSubscribe`/`doNudgeSubscribe` are now thin wrappers)
-- `css/01-base.css` — **new this session**: `.cat-load-gear` (category-switch spinner, now the gear image),
-  global `prefers-reduced-motion` rule; `.cat-icon` rules removed (category tile icon badges deleted)
-- `css/02-sections.css`, `css/05-responsive.css` — `.cat-icon` rules removed
-- `css/08-account-auth.css` — `.auth-benefits` (welcome-modal benefits list), `.lp-sub-form` (offers-nudge
-  compact subscribe form, still present but currently unused UI)
-- `css/03-cart-features-contact.css`, `css/09-widgets.css` — unchanged this session
-- `terms.html` — unchanged this session (still has the `#privacy` anchor from before)
-- `accessibility.html` — **new this session**
-- `order-invoice.html` — **new this session**: static printable-invoice page, fetches order JSON from the
-  `order-invoice` Edge Function client-side and renders it (has to be a real static page, not served
-  directly from the function — see section 4)
-- `unsubscribed.html` — **new this session**: static confirmation page the `unsubscribe` function now
-  redirects to (same reason as above)
-- `loader-gear.png` — **new this session**: the cropped, transparent-background gear logo used for both
-  loading spinners
-- `product/*.html` — auto-generated, unchanged mechanism
+- `index.html` — first-line `history.scrollRestoration = 'manual'` (fixes mobile tabs landing at the
+  footer on reopen); new FAQ section + nav links; header logo `onclick="goHome(event)"`.
+- `code/js/01-config-data.js` — `window._catalogReady` flag; `_catFullyHiddenSlugs` set + `getAllProducts()`
+  filter for the new category-hides-products option.
+- `code/js/02-catalog-render.js` — `goHome()`; `_catalogReady`-aware "loading" vs "empty" state in
+  `renderProducts()`; `applyCatVisibilityOverrides()` now also populates `_catFullyHiddenSlugs`;
+  `deductStock()` calls the new `decrement_stock` RPC instead of writing `expert_stock` directly.
+- `code/js/03-product-cart-checkout.js` — real order-confirmation screen (`orderRef`, item/total recap,
+  `trackJustPlacedOrder()`) in `handleCheckoutSubmit()`.
+- `code/js/04-i18n-order.js` — FAQ translation keys (EN/AR); `saveOrderToSupabase()` accepts a caller-
+  supplied `order.id` instead of always generating its own (needed for the confirmation screen's reference).
+- `code/js/05-accounts.js` — removed the auto-popup welcome/sign-in modal trigger.
+- `code/css/02-sections.css` — `.loading-gear` (branded spinner), FAQ section styles.
+- `code/css/06-lang-rtl.css`, `code/css/07-modals.css` — FAQ RTL + checkout confirmation-screen styles.
 
 **Admin (`admin/`):**
-- `admin/js/01-core-data.js` — **`SB_KEY` swapped to the new publishable key** (same as storefront);
-  duplicate `sbFetchAll()` definition left by a merge was cleaned up to one
-- `admin/js/03-auth.js` — removed the dead `#fpUser`/`#fpPass` credential-display lines (see section 2)
-- All other `admin/js/*.js` files unchanged this session
+- `admin/js/01-core-data.js` — removed the hardcoded `ADMIN_USER`/`ADMIN_PASS`/`SUPER_USER`/`SUPER_PASS`/
+  `MANAGER_USER`/`MANAGER_PASS`/`ADMIN_ORDER_TOKEN` constants entirely; `SB_HDRS` comment updated to explain
+  it's mutated post-login.
+- `admin/js/03-auth.js` — real-Supabase-Auth `doLogin()`, `setAdminSession()`/`refreshAdminSession()`/
+  `clearAdminSession()`; all 4 `logout*()` functions now also clear the session; team-account
+  create/update/delete/list rewired to `admin-manage-accounts`.
+- `admin/js/05-categories.js` — `catToggleHideProducts()`; `_orderedCatDefs()` exposes `hiddenAll`; category
+  card UI gets the "Also hide all its products" checkbox + an updated hidden-badge label.
+- `admin/js/07-orders.js`, `admin/js/09-deleted.js` — order RPC calls drop the `p_token` param (server checks
+  `is_admin()` now, not a shared token).
+- `admin/js/11-multiselect-brand-cat.js` — auto-login block now awaits `refreshAdminSession()` and bails to
+  the login screen if the saved session token can't actually be refreshed, instead of trusting a stale
+  `jain_auth` role flag alone.
 
-**Backend (`supabase/functions/`):**
-- `send-offers/index.ts` — **deployed live this session** (existed in repo, was never actually pushed to
-  Supabase before)
-- `unsubscribe/index.ts` — **rewritten this session**: does its DB work then 302-redirects to
-  `unsubscribed.html` instead of returning HTML directly (see section 4 for why)
-- `notify-order/index.ts` — **new this session**: order → invoice email
-- `order-invoice/index.ts` — **new this session**: returns one order as JSON (not HTML — see section 4)
-
-**Data/reference:** unchanged this session — see prior version of this file for the full list
-(`expert-hardware-*.sql` migrations, `expert products/*/expert_import_*.csv`, `cat-images/`,
-`.github/workflows/generate-seo.yml`, `scripts/generate-product-pages.js`, `graphify-out/`).
+**Backend / data:** `expert_admin_profiles` (new — role/permissions/display_name keyed by Supabase Auth
+uuid), `is_admin(uid)`, `decrement_stock(product_id, qty)` — all new this session. `expert_admin_accounts`/
+`expert_admin_master` still exist but are dead (RLS-locked, zero policies, nothing reads/writes them). See
+prior version of this file for the rest of the Edge Functions list (`notify-order`, `order-invoice`,
+`send-offers`, `unsubscribe`) and general data/migration file list, unchanged.
 
 ## 4) Changes made
-*(Earlier history — full pre-session list of category/banner rebuild, Supabase migration, RLS hardening,
-id-sequence fix, Sign In/Guest checkout, Resend SMTP, header search dropdown, sort dropdown, skeleton
-shimmer, matched FABs, `#privacy` anchor, knowledge graph — unchanged, see git history / prior version of
-this file for full detail. This session's changes, roughly in order:)*
-- Deployed the email campaign system for real (`send-offers`, `unsubscribe`) — it existed only as
-  undeployed source before. Generated and set `ADMIN_SEND_TOKEN` + `RESEND_API_KEY` secrets, sent and
-  confirmed a real test campaign email.
-- Added a full-page loading splash and category-switch spinner using the owner's iTrust gear logo. Cropped
-  the source image precisely via canvas pixel-scanning (not eyeballed), made it self-contained (inline
-  CSS/JS), fixed it hiding on `window.load` instead of `DOMContentLoaded` (was making desktop feel much
-  slower than mobile, since more images sit "above the fold" on a wide screen), swapped in a
-  transparent-background version, then reused the same gear for the category-switch spinner (previously a
-  plain red FontAwesome icon).
-- Found and fixed the real cause of "site feels slow": `initOffersTicker()` duplicating the *entire*
-  (uncurated) featured-offers list 2–4x for the scroll loop, rendering 2000+ DOM nodes. Capped at 40 cards.
-- Fixed `full-phone.jpg` and (separately, later) `loader-gear.png` 404ing on mobile/category-switch — both
-  were CSS `url()` references missing the `../` needed from inside `css/`.
-- Shrunk `loader-gear.png` from 868KB to 106KB (later 87KB with a transparent-background swap) by cropping
-  to the actual badge content instead of shipping the full source image's large blank margins.
-- Debounced search-as-you-type (180ms, shared between the grid search box and header dropdown) — was
-  rebuilding the whole product grid on every keystroke.
-- Removed the small icon badge from category tiles (cosmetic request); cleaned up the now-dead `.cat-icon`
-  CSS.
-- Did a full category-by-category (+ subcategory) sweep of `expertshardware.com`'s real storefront to
-  compare pricing/sales/options against ours. Found and fixed one genuine missing sale (Wall chaser 5000W,
-  now 20% off matching the real ~20.7%). Found several genuine missing product options/variants (flagged,
-  not implemented — see section 6). Found that only ~32 products site-wide actually show a real price on
-  the real site; built `expert_settings.hidden_prices` and marked the rest (1436 of 1468 as of last run) as
-  "Ask Price on WhatsApp" instead of showing a stored number with an Add to Cart button. Re-ran this same
-  matching process against each new product batch that landed during the session.
-- Replaced the auto-popping sign-in modal with a corner "subscribe to offers" nudge (lower ask, no account
-  required) — then, on direct follow-up feedback, replaced *that* with a full-screen welcome modal (reusing
-  the existing auth modal, adding a benefits list) instead, since the owner wanted the full sign-in
-  experience back, just redesigned to be less naggy (deliberate, dismissible, once per browser).
-- Ran a full security audit at the owner's request: confirmed session-token localStorage storage, confirmed
-  (via `pg_policies`) that admin authorization is not enforced server-side at all, confirmed no rate
-  limiting on the admin login, strengthened signup password requirements (8+ chars, letters+numbers),
-  provided the full admin credential list on request. Corrected one over-stated finding from that audit
-  (see section 5).
-- Added an explicit Privacy Policy link (footer + all consent checkboxes) pointing at the pre-existing
-  `terms.html#privacy` anchor.
-- Added `accessibility.html`, linked from the footer; added a real site-wide `prefers-reduced-motion` CSS
-  rule to back one of its claims.
-- Built the order → invoice-email system: `notify-order` (idempotent, server-side re-fetch) and
-  `order-invoice` + `order-invoice.html` (printable invoice with a working Print button). Discovered along
-  the way that Supabase Edge Functions silently rewrite any GET request returning `text/html` to
-  `text/plain` (documented platform behavior) — confirmed this had *already* been breaking the live
-  `unsubscribe` confirmation page since it was built. Fixed both using the same pattern: functions do their
-  work and either return JSON (fetched client-side by a real static page) or 302-redirect to one.
-- Fixed a stale `pg_cron` job (`send-offers` / `run_scheduled`, running every minute) that had been failing
-  with 401 since an earlier token rotation — updated the token in the job definition via
-  `cron.alter_job()`, verified via `net._http_response`.
-- Fixed a site-wide outage: Supabase's legacy anon API key was disabled project-wide (most likely the
-  owner's own response to the admin-security findings above), breaking every Supabase call site-wide
-  including the SEO-generator GitHub Action. Swapped to the new `sb_publishable_...` key in both
-  `js/01-config-data.js` and `admin/js/01-core-data.js`. This required resolving a real merge conflict
-  against a concurrent, unrelated fix (`sbFetchAll()` pagination past PostgREST's 1000-row cap) — verified
-  the two sides' logic was equivalent before resolving, rather than blindly taking one side, and cleaned up
-  a duplicate function definition the merge left behind in both files.
+*(Earlier session history — catalog reconciliation, subcategories, category drag/rename/hide management,
+Featured tab tools, unified search, offers-ticker load order, signup opt-in — unchanged, see git history /
+prior version of this file for full detail. This session's changes, roughly in order:)*
+- Found and fixed the header logo not navigating home, the DCK-category loading-flash race, and added a
+  custom 404 page — three independent small bugs reported together, fixed and verified live individually.
+- Regenerated a branded "Loading products…" spinner to match the existing page-load splash instead of a
+  generic icon.
+- **Security review found the admin panel's real security boundary didn't exist**: owner/manager/admin
+  passwords were plaintext constants in a public JS file, and RLS granted the public anon key full
+  read/write/delete on nearly every table that mattered — the login screen was cosmetic, bypassable outright
+  via a raw REST call with the public key. Confirmed via direct `curl` against the live site before touching
+  anything. Fixed in two stages at the user's explicit direction (first the login-credential exposure alone,
+  then — after walking through exactly what a full fix would mean and require — the deeper RLS lockdown):
+  see section 2 for the full technical breakdown. Verified twice: once with the old permissive policies still
+  live as a safety net, again after removing them, covering all 4 login types, every admin write path, order
+  management, team-account lifecycle (create → login → delete → login-now-fails), and storefront checkout.
+- Added the FAQ section and a real order-confirmation screen (see section 2) — requested together, built and
+  shipped together.
+- Investigated a report of category-page images not loading. Found ~1,500 product images are hotlinked from
+  `expertshardware.com` rather than hosted here; a stress test loading all ~1,564 catalog images at once
+  produced real timeouts on some of those external URLs, but the same URLs loaded in under a second when
+  requested individually right after — points to load congestion (this codebase forcing a burst of requests
+  at an external host under some conditions), not a dead link. Could not reproduce a permanently-broken image
+  in normal (lazy-loaded) browsing. Flagged the external-hosting dependency itself as a real fragility risk
+  regardless of root cause — see section 6.
+- Found and fixed two unfinished draft banner images (`itrust1.jpg`, `itrust4.jpg` — one had a raw
+  "1080x1920px" export label baked into the design, the other had garbled placeholder text) by regenerating
+  both to match the finished style already used by the site's other banners.
+- Built the "also hide all its products" category option (see section 2), end-to-end verified against the
+  live database before and after.
+- Updated this file and `CLAUDE.md` to reflect all of the above.
 
 ## 5) Failed attempts
-*(Earlier history retained — see prior version of this file / git log for the full pre-session list:
-category image path bug, `expert_photos` column mismatch, base64 image bloat, demo-product removal breaking
-admin views, CSV parser quoted-name bug, `document.write` cache-busting under ad-blockers, clipped inventory
-buttons, mobile modal layout break, GitHub Pages deployment lag, header-search-scrolls-the-page (corrected
-on feedback), cart-button sizing iterations, `.git/index.lock` contention, Google OAuth Testing-status /
-Branding-verification blockers, `sitemap.xml` "Couldn't fetch" in Search Console. This session adds:)*
-- **The page-load preloader's crop math (percentage-based `background-size`/`background-position`) silently
-  rendered nothing** (0×0, background `none`) despite being logically correct — root cause never fully
-  pinned down; switching to absolute-pixel values for the same crop worked immediately. If building another
-  cropped-background-image effect, prefer pixel values over percentages until this is understood.
-- **The category-switch gear fix looked broken during local `file://` testing** (computed styles showed no
-  background image) purely because the local preview browser was serving a cached parse of the versioned
-  CSS `<link>` across reloads, seemingly ignoring the query-string cache-buster for `file://` URLs
-  specifically. Confirmed the actual code was correct by manually injecting a freshly-fetched copy of the
-  stylesheet — worth remembering as a test-environment quirk, not a real site bug, before chasing it further
-  next time.
-- **Mis-reported an admin-panel security finding as an active bug**: initially said the "forgot password"
-  screen was live-displaying the admin username/password in plaintext. It wasn't — the code that would do
-  that (`admin/js/03-auth.js`) targets `#fpUser`/`#fpPass` elements that don't exist anywhere in the current
-  `admin/index.html`, so it was dead code with a null-guard, never actually executing. Corrected this
-  directly rather than letting the overstated claim stand. Lesson: verify the HTML side exists before
-  reporting a client-side "this is displayed" finding, not just the JS that would display it.
-- **`order-invoice`/`unsubscribe` Edge Functions originally returned HTML directly** — Supabase silently
-  rewrites any GET request's `text/html` response to `text/plain` (documented, not a bug in the function
-  code). Cost real debugging time (checked response headers, re-deployed, compared against a known-working
-  function before finding this in Supabase's own docs). Fixed by moving the actual HTML to a static page
-  and having the function return JSON or redirect instead. Any future Edge Function meant to render a page
-  directly to a browser needs this same workaround.
-- **A merge conflict this session was a real logical conflict, not just noise** — both this session and a
-  concurrent one edited `js/01-config-data.js`/`admin/js/01-core-data.js` at the same time (the key swap vs.
-  the 1000-row pagination fix). A naive "just take mine" or "just take theirs" resolution would have either
-  reintroduced the disabled key or silently dropped the pagination fix. Read every conflict block, confirmed
-  the two sides' logic was actually equivalent apart from the key value, and caught a duplicate
-  `sbFetchAll()` function definition the merge tool left in both files (harmless — second definition just
-  shadows the first — but worth cleaning up).
+*(Earlier history retained — see prior version of this file / git log for the full pre-session list. This
+session adds:)*
+- **`create or replace function` on an RPC with a changed parameter list does not remove the old
+  overload.** Rewriting `admin_list_orders`/`admin_update_order_status`/`admin_delete_order` to drop the
+  `p_token` parameter left the old, token-checking 2-/3-arg versions callable right alongside the new ones —
+  caught by querying `pg_proc`/`pg_get_function_identity_arguments` after the fact, not assumed fixed just
+  because the new version worked. Had to explicitly `drop function` each old signature. Now in `CLAUDE.md`.
+- **`revoke execute ... from anon` on those same RPCs didn't actually stop anon from calling them** — the
+  function body's own `is_admin()` check was still correctly rejecting unauthorized calls, so this wasn't
+  exploitable, but the grant itself was still open because Postgres grants new functions to the `PUBLIC`
+  pseudo-role by default, which every role (including `anon`) implicitly inherits from. Caught by checking
+  `information_schema.routine_privileges` directly rather than trusting the `revoke` statement's apparent
+  success. Fixed with an explicit `revoke ... from public`. Now in `CLAUDE.md`.
+- **An early attempt to bump the site's cache-busting `asset_version` for local testing used a non-integer
+  value** (`extract(epoch from now())` returns a value with a decimal point) — the client's own regex
+  validation (`/^[0-9]+$/`) silently rejected it and fell back to an old hardcoded default version instead of
+  actually busting the cache, which briefly affected the *live* site too (shared `expert_settings` row).
+  Caught by checking the actual script-tag URLs rendered in the browser rather than assuming the SQL update
+  alone was sufficient. Fixed immediately with a proper integer-millisecond value.
 
 ## 6) Next steps
-- **`hidden_prices` needs to be re-run against every new product batch, indefinitely.** This isn't a
-  one-time fix — it's now a standing maintenance task. The "confirmed real price" name list (~32 items) was
-  derived from a full sweep of `expertshardware.com` and isn't saved anywhere in the repo; whoever picks
-  this up next should either keep it from this session's history or re-derive it.
-- **Admin panel will NOT get a real authentication/authorization system — this is a permanent decision, not
-  a deferral.** The owner has declined this every time it's come up (most recently, explicitly, on
-  2026-08-10: "never actually update the admin like that, I don't want real life authorization"). Do not
-  propose or implement Supabase Auth for the admin panel, a secret-gated Edge Function routing admin writes,
-  or any other server-side auth enforcement for it — the login stays a client-side-only UI gate,
-  indefinitely. **Scope of this rule, confirmed 2026-08-10**: it covers auth/authorization systems only.
-  Plain RLS data-exposure tightening (e.g. blocking anon SELECT/INSERT/UPDATE/DELETE on
-  `expert_admin_accounts` itself, or on any other table) is explicitly still fine to propose and implement —
-  that's closing a leak, not building an authorization system. If a future audit re-flags "no admin auth,"
-  note it and move on without re-litigating it.
-- **Fresh RLS audit run 2026-08-10** (via the `supabase-audit-rls` skill) re-confirmed `expert_admin_accounts`
-  is still fully anon-readable/writable (plaintext `test`/`test123`, `2`/`123` credentials) — **not yet
-  fixed, still open** (this specific table wasn't touched this session; the rule above says tightening it is
-  in-bounds whenever someone picks it up). `expert_products`, `expert_stock`, `expert_settings`,
-  `expert_hidden`, `expert_photos`, `expert_banners`, `expert_cat_bgs`, `expert_analytics` also still have
-  anon write access (policy-confirmed, not live-tested to avoid touching production data) — also not yet
-  fixed. `expert_customers`, `offer_subscribers`, `offer_campaigns`, `expert_reviews` are correctly scoped —
-  no action needed there. Full audit evidence (including live PoC responses) was deliberately kept out of
-  this repo, in the scratchpad of whichever session ran the audit — not pushed to the remote.
-- **`expert_orders` anon exposure — fixed 2026-08-10.** The audit above found a new, more severe issue: an
-  `expert_orders_anon_all` policy (`role: anon`, `cmd: ALL`, `qual: true`) layered *alongside* the
-  correctly-scoped `auth.uid() = user_id` policies for authenticated users — since Postgres OR's permissive
-  policies together, the anon-wide one alone granted any unauthenticated request full read/write/delete on
-  every customer's order (name, phone, address, total, status), not just the phone-filtered view the
-  Track/Cancel Order UI shows. Live-confirmed via an unfiltered anon REST call, then fixed the same session:
-  - Table policy is now anon-INSERT-only (guest checkout, admin restore-from-deleted). No anon SELECT or
-    DELETE at all anymore.
-  - Guest phone lookup (Track Order) now goes through `get_orders_by_phone(p_phone)`, a SECURITY DEFINER RPC
-    that filters server-side instead of trusting the client to include a phone filter.
-  - Guest self-cancel now goes through `cancel_order(p_id)`, a SECURITY DEFINER RPC (status/1-hour-age
-    gated) instead of a table UPDATE policy — discovered mid-fix that Postgres RLS requires a row to be
-    SELECT-visible before UPDATE/DELETE can target it at all, so a bare UPDATE-only policy with no
-    accompanying SELECT policy silently matched zero rows; the RPC sidesteps that since SECURITY DEFINER
-    bypasses the caller's RLS entirely.
-  - Admin's list-all/change-status/delete-order operations (`admin/js/07-orders.js`, `09-deleted.js`,
-    `03-auth.js`'s undo) now go through `admin_list_orders`/`admin_update_order_status`/`admin_delete_order`
-    RPCs, gated by a shared static token (`ADMIN_ORDER_TOKEN` in `admin/js/01-core-data.js`) — **not** a
-    login/session (the no-real-admin-auth rule above still holds), just a password-like gate against
-    automated scanners hitting the raw Supabase REST API directly. Someone who reads the admin JS can still
-    extract the token, same as they can already read the hardcoded admin login — this closes the "random bot
-    finds the open table" case specifically, not a targeted attacker.
-  - Also fixed two things this broke along the way: `Prefer: return=representation` on the order INSERT
-    (checkout in `js/04-i18n-order.js`, admin restore in `09-deleted.js`/`03-auth.js`) needs the same
-    SELECT-level RLS access to hand the new row back — checkout now generates the order id client-side
-    (`crypto.randomUUID()`) and uses `return=minimal` instead; the two admin insert paths just switched to
-    `return=minimal` since neither used the returned row anyway.
-  - Full live end-to-end verification (checkout insert, self-cancel, phone lookup, admin list/update/delete,
-    wrong-token rejection) done against throwaway test rows, cleaned up afterward — the one real order in the
-    table was never touched.
-- **Supabase Auth "Confirm email" needs to be turned off in the dashboard** (Authentication → Sign In / Up →
-  Email) so customer signup doesn't require a manual email-confirmation click — the owner asked for this,
-  but no available tool can change Supabase Auth provider settings (not exposed via the Management API
-  tools currently connected, and it's platform config, not a database row). No code change is needed once
-  it's toggled — `authSignUp()` already branches correctly on whether Supabase returns an access token
-  immediately.
-- **Genuine missing product options from the real-site sweep — now implemented (2026-08-09).** DROP IN
-  ANCHOR (100301), WEDGE ANCHOR (100318), STAPLE PIN READER (100499), and RAIN COAT YELLOW (100306) all
-  now have their real size/pack options (labels, per-option prices, SKUs, sourced from a live sweep of each
-  product page on `expertshardware.com`, including switching the option dropdown there to read each
-  option's own price/SKU) written into `expert_settings.product_variants`. While wiring this up, found and
-  fixed a real, pre-existing bug: the size/pack selector was gated behind the same branch that hides price
-  ("Ask Price on WhatsApp"), so it was **never reachable on any price-hidden product** — including all 18
-  products that already had options configured before this fix, since every one of them turned out to also
-  be in `hidden_prices`. Moved the variant tiles (product modal, `js/03-product-cart-checkout.js`) and
-  dropdown (grid card, `js/02-catalog-render.js`) out of that branch so they render regardless of price
-  visibility, and threaded the selected option through to `askPriceOnWhatsApp()` (`js/06-features.js`, now
-  takes an optional variant index) so the WhatsApp message names the specific size the customer picked.
-- **The ~158-item blanket 20% sale badge in `featured_offers` (pre-existing, not from this session) was
-  never cross-checked against the real site** — only the one specific "Wall chaser" case was verified and
-  fixed. If sale-accuracy matters going forward, that whole set needs the same real-site verification
-  treatment.
-- **Featured Products still isn't actually curated** — unchanged, owner's explicit choice.
-- **Google OAuth is still stuck in Testing publishing status**, and the Google Cloud Branding verification
-  blocker is still unresolved — unchanged from before this session, see prior version of this file for full
-  detail.
-- **`sitemap.xml` "Couldn't fetch" in Search Console** — unchanged, recheck after it's had more time.
-- **Lighthouse performance items** (unused CSS/JS reduction, cache-control headers, minification) — still
-  not attempted, still hard to do safely without introducing a build step this site intentionally doesn't
-  have. Note that the two biggest real perf wins found this session (offers-ticker DOM bloat, preloader
-  waiting on the wrong load event) were both logic bugs, not Lighthouse-style asset optimization — worth
-  checking for more of that class of issue before reaching for a build step.
-- **Concurrent work on this repo is the norm, not the exception** — the `generate-seo` GitHub Action pushes
-  independently, and other sessions can and do touch the exact same files at the same time (this session hit
-  a real logical merge conflict, not just an identical-content one, for the first time — see section 5).
-  Always `git fetch` before pushing, verify actual file content before treating anything as a conflict, and
-  when a real conflict does happen, read both sides' logic before resolving rather than picking a side by
-  default.
-- **Standing workflow, still in effect**: bump the baked-in `?v=` fallback timestamp in `index.html` (two
-  occurrences), commit, push, and flush the Supabase cache (`expert_settings.asset_version`) on every change
-  that touches JS/CSS/HTML — pre-authorized, no need to ask before doing it each time. GitHub Pages itself
-  also has a real deploy lag (seen repeatedly this session, usually clears within a couple of minutes) —
-  don't mistake that for a real bug when verifying a just-pushed change live.
+- **Re-host the ~1,500 product images currently hotlinked from `expertshardware.com`** into
+  `expert-products/`/`expert_photos` — flagged this session as a real fragility risk (that site going down,
+  restructuring, or rate-limiting breaks images here with nothing fixable on this side), not yet started.
+- **`cancel_order`/`get_orders_by_phone` RPCs still have no ownership check** — anyone can cancel or look up
+  any order by guessing/knowing an id or phone number. Same family of issue as the admin-auth work this
+  session, smaller blast radius, not yet fixed.
+- **Supabase "leaked password protection" is off and can't be turned on** — requires a paid plan, this
+  project is on Free. Confirmed via the dashboard, not an oversight. Revisit if the plan ever changes.
+- **`hidden_prices` needs to be re-run against every new product batch, indefinitely** — unchanged standing
+  task. The confirmed "real price" name list (~32 items) still isn't saved anywhere in the repo.
+- **The 437 `cant-find-products` items still need real verification against `expertshardware.com`, or a
+  decision to just keep them as permanently-unverified stock** — unchanged, not touched this session.
+- **Custom categories (added via admin's "+ Category" button) are still stored in `localStorage` only, not
+  synced through Supabase** — unchanged, not touched this session. Separate from `cat_order`/`cat_labels`/
+  `cat_hidden`, which *are* properly synced.
+- **The ~158-item blanket 20% sale badge in `featured_offers` was never cross-checked against the real
+  site** — unchanged, only one specific case ("Wall chaser") was ever verified.
+- **Google OAuth is still stuck in Testing publishing status** — unchanged, Google Cloud Branding
+  verification blocker unresolved.
+- **`sitemap.xml` "Couldn't fetch" in Search Console** — unchanged, recheck after more time has passed.
+- **Lighthouse performance items** (unused CSS/JS reduction, cache-control headers, minification) — still not
+  attempted; the image-hosting/congestion finding this session (see above) is the same *class* of issue as
+  prior sessions' real dependency/load-order bugs — worth continuing to look for more of that class before
+  reaching for a build step this site intentionally doesn't have.
+- **Concurrent work on this repo is the norm, not the exception** — unchanged, always `git fetch` before
+  pushing, verify actual file content before treating anything as a conflict.
+- **Standing workflow, still in effect**: bump the baked-in `?v=` fallback timestamp in `index.html` and
+  `admin/index.html` on every JS/CSS/HTML change, commit, push, and flush the Supabase cache
+  (`expert_settings.asset_version`) — pre-authorized, no need to ask before doing it each time. That value
+  must be a plain integer (see section 5 — a decimal value silently breaks the client's own validation).
+  GitHub Pages deploy lag (usually clears within a couple of minutes) is real and not itself a bug — always
+  confirm a fix live with a cache-busted URL/fresh tab rather than trusting a plain reload, and be aware the
+  browser tooling itself can serve a stale cached copy of a JS/CSS file under an *identical* `?v=` URL across
+  repeated local test navigations — a `fetch(url, {cache:'no-store'})` check is the reliable way to confirm
+  what's actually being served versus what a given tab happens to have cached.
