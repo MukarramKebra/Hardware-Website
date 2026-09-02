@@ -286,7 +286,14 @@ function _orderedCatDefs() {
   var ordered = _catPendingOrder.map(function(slug) { return bySlug[slug]; }).filter(Boolean);
   CAT_DEFS.forEach(function(c) { if (_catPendingOrder.indexOf(c.slug) === -1) ordered.push(c); });
   return ordered.map(function(c) {
-    return Object.assign({}, c, { label: _catPendingLabels[c.slug] || c.label, hidden: !!_catPendingHidden[c.slug] });
+    // _catPendingHidden[slug] is false/undefined (visible), true (hidden from
+    // the storefront nav only — products still browsable via All Products/
+    // search), or 'all' (hidden from nav AND every product in it filtered
+    // out storefront-wide — see applyCatVisibilityOverrides() in
+    // code/js/02-catalog-render.js and getAllProducts() in
+    // code/js/01-config-data.js).
+    var h = _catPendingHidden[c.slug];
+    return Object.assign({}, c, { label: _catPendingLabels[c.slug] || c.label, hidden: !!h, hiddenAll: h === 'all' });
   });
 }
 
@@ -295,8 +302,20 @@ function _orderedCatDefs() {
 function catToggleHidden(slug) {
   if (slug === 'all') return;
   _catPushUndo();
+  // Un-hiding always restores products too (confirmed behavior: the two
+  // are tied together, not independently reversible) — no separate
+  // "un-hide products only" path.
   if (_catPendingHidden[slug]) delete _catPendingHidden[slug];
   else _catPendingHidden[slug] = true;
+  renderCatEditor();
+}
+
+// Only meaningful once a category is already hidden from the nav — flips
+// between "nav only" (true) and "nav + every product in it" ('all').
+function catToggleHideProducts(slug) {
+  if (slug === 'all' || !_catPendingHidden[slug]) return;
+  _catPushUndo();
+  _catPendingHidden[slug] = _catPendingHidden[slug] === 'all' ? true : 'all';
   renderCatEditor();
 }
 
@@ -413,7 +432,7 @@ function renderCatEditor() {
         'ondragover="catDragOver(event)" ondragleave="catDragLeave(event)" ondrop="catDrop(event,\'' + cat.slug + '\')" ' +
         'style="background:#fff;border:1px solid #e2e4e8;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.07)">' +
       '<div class="cat-edit-drag-handle" title="Drag to reorder"><i class="fa fa-grip-lines"></i></div>' +
-      (cat.hidden ? '<div class="cat-edit-hidden-badge"><i class="fa fa-eye-slash"></i> Hidden</div>' : '') +
+      (cat.hidden ? '<div class="cat-edit-hidden-badge"><i class="fa fa-eye-slash"></i> ' + (cat.hiddenAll ? 'Hidden + products' : 'Hidden') + '</div>' : '') +
       '<div style="height:150px;background:url(\'' + img + '\') center/cover no-repeat"></div>' +
       '<div style="padding:12px 14px">' +
         '<div class="cat-edit-name" contenteditable="true" spellcheck="false" ' +
@@ -429,6 +448,11 @@ function renderCatEditor() {
           : '') +
         (cat.slug !== 'all'
           ? '<button onclick="catToggleHidden(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid ' + (cat.hidden ? 'var(--green,#1c7a52)' : '#e2e4e8') + ';border-radius:6px;padding:6px;font-size:11px;font-weight:700;color:' + (cat.hidden ? 'var(--green,#1c7a52)' : '#888') + ';cursor:pointer"><i class="fa ' + (cat.hidden ? 'fa-eye' : 'fa-eye-slash') + '"></i> ' + (cat.hidden ? 'Show on storefront' : 'Hide from storefront') + '</button>'
+          : '') +
+        (cat.slug !== 'all' && cat.hidden
+          ? '<label style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:6px 2px;font-size:11px;color:#888;cursor:pointer" title="Also filters every product in this category out of All Products and search, not just the storefront nav">' +
+              '<input type="checkbox" ' + (cat.hiddenAll ? 'checked' : '') + ' onchange="catToggleHideProducts(\'' + cat.slug + '\')" /> Also hide all its products' +
+            '</label>'
           : '') +
         '<button onclick="resetCatBg(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid #e2e4e8;border-radius:6px;padding:6px;font-size:11px;color:#888;cursor:pointer"><i class="fa fa-undo"></i> Reset Default</button>' +
       '</div>' +

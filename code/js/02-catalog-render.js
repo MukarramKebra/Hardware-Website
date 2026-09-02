@@ -131,6 +131,11 @@ function catLabel(slug) {
 function applyCatVisibilityOverrides(hidden) {
   if (!hidden) return;
   var fellBackFromActive = false;
+  // hidden[slug] is true (nav pill/tile only) or 'all' (nav + every product
+  // in it — see _catFullyHiddenSlugs, checked by getAllProducts() in
+  // code/js/01-config-data.js).
+  _catFullyHiddenSlugs = new Set(Object.keys(hidden).filter(function(slug) { return hidden[slug] === 'all'; }));
+  if (_catFullyHiddenSlugs.size) _invalidateAllProductsCache();
   Object.keys(hidden).forEach(function(slug) {
     if (!hidden[slug]) return;
     var pill = document.querySelector('.pill[data-filter="' + slug + '"]');

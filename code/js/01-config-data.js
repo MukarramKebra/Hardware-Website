@@ -133,6 +133,10 @@ let _sbStock    = {};
 let _sbPhotos   = {};
 let _customProds = [];      // admin-added products from jain_products table
 let _hiddenIds   = new Set(); // base product IDs hidden by admin
+// Category slugs where the admin chose "also hide all its products" (not
+// just the nav pill/tile) — set by applyCatVisibilityOverrides() in
+// code/js/02-catalog-render.js, read by getAllProducts() below.
+let _catFullyHiddenSlugs = new Set();
 let _sbBanners   = [];       // admin-managed side banners (brand + img_url)
 let _sbBrandMap  = {};       // product id -> brand name, set from admin
 let _sbProductKeywords = {}; // product id -> SEO keyword phrases, set from admin
@@ -395,9 +399,10 @@ function getAllProducts() {
   // normalizeCategory maps the old built-in slugs (power-tools, fasteners, …)
   // onto the Expert Hardware category set so these stay filterable
   const base  = PRODUCTS.filter(p => !_hiddenIds.has(p.id))
-      .map(p => Object.assign({}, p, { category: normalizeCategory(p.category), brand: _sbBrandMap[String(p.id)] || p.brand || '' }));
+      .map(p => Object.assign({}, p, { category: normalizeCategory(p.category), brand: _sbBrandMap[String(p.id)] || p.brand || '' }))
+      .filter(p => !_catFullyHiddenSlugs.has(p.category));
     // Only show custom products with safe IDs > 60 (ID fix in admin handles conflicts)
-  const extra = _customProds.filter(p => !baseIds.has(p.id) && p.id > 60).map(p => ({
+  const extra = _customProds.filter(p => !baseIds.has(p.id) && p.id > 60 && !_catFullyHiddenSlugs.has(normalizeCategory(p.category))).map(p => ({
         id:       p.id,
         name:     p.name,
         category: normalizeCategory(p.category),
