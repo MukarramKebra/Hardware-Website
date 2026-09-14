@@ -2,29 +2,17 @@
 //   OFFERS TAB — compose + send/schedule marketing campaigns
 // ═══════════════════════════════════════════════════════════════════════════════
 // All sending happens in the `send-offers` Edge Function (the Resend key lives
-// there, never in the browser). This tab authenticates with a shared admin
-// token that the operator pastes once; it's kept only in this browser's
-// localStorage and sent as the `x-admin-token` header on every call.
+// there, never in the browser). Authenticated the same way every other admin
+// write is: SB_HDRS.Authorization carries the logged-in admin's real Supabase
+// Auth session token, checked server-side against is_admin(auth.uid()) — see
+// CLAUDE.md's Admin auth note. Previously this tab used a separate shared
+// ADMIN_SEND_TOKEN that the operator pasted in and that sat in this browser's
+// localStorage indefinitely with no expiry; that's gone now.
 
 var OFFERS_FN_URL = SB_URL + '/functions/v1/send-offers';
-var _OFFERS_TOKEN_KEY = 'expert_offer_admin_token';
-
-function _offToken() { return localStorage.getItem(_OFFERS_TOKEN_KEY) || ''; }
 
 function initOffersTab() {
-  var tf = document.getElementById('offAdminToken');
-  if (tf && !tf.value) tf.value = _offToken();
   offToggleMode();
-  if (_offToken()) { offLoadSubscribers(); offLoadCampaigns(); }
-  else _offStatus('Paste your Admin Send Token and click Save Token to begin.', false);
-}
-
-function saveOffersToken() {
-  var tf = document.getElementById('offAdminToken');
-  var val = (tf && tf.value || '').trim();
-  if (!val) { _offStatus('Enter the token first.', false); return; }
-  localStorage.setItem(_OFFERS_TOKEN_KEY, val);
-  _offStatus('Token saved on this device.', true);
   offLoadSubscribers();
   offLoadCampaigns();
 }
@@ -48,18 +36,16 @@ function _offStatus(msg, ok) {
 
 // Core call to the Edge Function.
 async function _offCall(payload) {
-  var token = _offToken();
-  if (!token) { _offStatus('No admin token set — click Save Token.', false); throw new Error('no token'); }
   var res = await fetch(OFFERS_FN_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+    headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': SB_HDRS.Authorization },
     body: JSON.stringify(payload)
   });
   var data = {};
   try { data = await res.json(); } catch (_) {}
   if (!res.ok) {
     var msg = data.error || ('HTTP ' + res.status);
-    if (res.status === 401) msg = 'Unauthorized — the admin token is wrong.';
+    if (res.status === 401) msg = 'Unauthorized — please log in again.';
     throw new Error(msg);
   }
   return data;

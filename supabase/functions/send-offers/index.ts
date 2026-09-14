@@ -3,15 +3,23 @@
 //  Secure server-side sender for Expert Hardware marketing campaigns.
 //
 //  A static frontend can't hold the Resend API key, so ALL sending happens
-//  here. The admin panel and pg_cron call this function; it authenticates the
-//  caller with a shared admin token, reads subscribers with the service role,
-//  and sends via Resend from muk@expertshardware.com — with a per-recipient
-//  unsubscribe link (legally required) in every email.
+//  here. Two callers, two different auth paths:
+//    - The admin panel (Offers tab) — must be a real logged-in admin
+//      (is_admin(auth.uid()), same check every other admin write uses —
+//      see CLAUDE.md's Admin auth note). Previously this authenticated with
+//      a shared ADMIN_SEND_TOKEN that the operator pasted into the browser
+//      and that sat in localStorage indefinitely with no expiry; now that
+//      real admin sessions exist, that token never needs to reach a browser
+//      at all.
+//    - pg_cron's "run_scheduled" job — not a browser session, so it still
+//      authenticates with ADMIN_SEND_TOKEN, sent as a header from inside the
+//      cron job definition (stored server-side in Postgres, never touches
+//      the frontend). See the send-offers-scheduled job in cron.job.
 //
 //  Secrets (set with `supabase secrets set …`, never in git):
 //    RESEND_API_KEY     – your Resend API key
-//    ADMIN_SEND_TOKEN   – a long random string; the admin panel + cron must
-//                         send it in the `x-admin-token` header
+//    ADMIN_SEND_TOKEN   – long random string; only pg_cron's run_scheduled
+//                         call uses this now
 //  Auto-provided by the platform:
 //    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 //
@@ -35,7 +43,7 @@ const ADMIN_TOKEN = Deno.env.get("ADMIN_SEND_TOKEN")!;
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-admin-token, content-type",
+  "Access-Control-Allow-Headers": "authorization, apikey, x-admin-token, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -60,6 +68,19 @@ async function db(path: string, init: RequestInit = {}) {
   if (!res.ok) throw new Error(`DB ${path} -> ${res.status} ${await res.text()}`);
   const text = await res.text();
   return text ? JSON.parse(text) : null;
+}
+
+// Resolves the caller's own uid from their Supabase session access token,
+// then confirms expert_admin_profiles has a row for them (is_admin()).
+async function isRealAdmin(authHeader: string | null): Promise<boolean> {
+  if (!authHeader) return false;
+  const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { apikey: SERVICE_KEY, Authorization: authHeader },
+  });
+  if (!userRes.ok) return false;
+  const user = await userRes.json();
+  const profiles = await db(`expert_admin_profiles?id=eq.${user.id}&select=id`);
+  return Array.isArray(profiles) && profiles.length > 0;
 }
 
 function unsubscribeUrl(token: string) {
@@ -144,15 +165,21 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-  // ── Auth: shared admin token (constant-ish check) ────────────────────────
-  const token = req.headers.get("x-admin-token") || "";
-  if (!ADMIN_TOKEN || token !== ADMIN_TOKEN) {
-    return json({ error: "Unauthorized" }, 401);
-  }
-
   let body: any = {};
   try { body = await req.json(); } catch (_) { /* empty body ok for cron */ }
   const action = body.action || "run_scheduled";
+
+  // ── Auth ──────────────────────────────────────────────────────────────
+  // run_scheduled is pg_cron only (no browser session possible) — shared
+  // token, stored server-side in the cron job definition. Every other
+  // action must come from a real logged-in admin.
+  if (action === "run_scheduled") {
+    const token = req.headers.get("x-admin-token") || "";
+    if (!ADMIN_TOKEN || token !== ADMIN_TOKEN) return json({ error: "Unauthorized" }, 401);
+  } else {
+    const ok = await isRealAdmin(req.headers.get("authorization"));
+    if (!ok) return json({ error: "Unauthorized" }, 401);
+  }
 
   try {
     switch (action) {
