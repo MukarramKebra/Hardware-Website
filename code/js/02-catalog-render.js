@@ -917,6 +917,18 @@ function renderProducts() {
       empty.innerHTML = '<span class="loading-gear" aria-hidden="true"></span><p>' + (isArU ? 'جارٍ تحميل المنتجات...' : 'Loading products…') + '</p>';
       return;
     }
+    // Distinct from "still loading" and "genuinely no matches" — the
+    // products fetch itself failed even after retrying (see
+    // sbFetchAllWithRetry() in js/01-config-data.js), so there's nothing to
+    // show no matter what's clicked. A plain "No products found" here would
+    // look like a permanently empty store instead of a connection hiccup.
+    if (window._catalogLoadFailed) {
+      empty.innerHTML = '<i class="fa fa-wifi" style="opacity:.5"></i>' +
+        '<p>' + (isArU ? 'تعذّر تحميل المنتجات. تحقق من اتصالك.' : "Couldn't load products. Check your connection.") + '</p>' +
+        '<button class="btn btn-primary" style="margin-top:14px" onclick="location.reload()">' +
+        (isArU ? 'إعادة المحاولة' : 'Retry') + '</button>';
+      return;
+    }
     empty.innerHTML = '<i class="fa fa-box-open"></i>' +
       '<p data-i18n="no_results">' + (isArU ? 'لا توجد منتجات مطابقة. جرّب بحثاً آخر.' : 'No products found. Try a different search.') + '</p>' +
       (suggestion

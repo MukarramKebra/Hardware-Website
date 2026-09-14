@@ -128,6 +128,23 @@ async function sbFetchAll(baseUrl, headers) {
   return { data: all, error: null };
 }
 
+// A transient network blip on the ONE fetch the whole catalog depends on
+// (expert_products) used to permanently show every category as "No products
+// found" for that visitor — sbFetchAll had no retry, and loadSBData() below
+// marked window._catalogReady = true regardless of whether it actually got
+// any data. Retries a couple of times with a short backoff before giving up
+// for real.
+async function sbFetchAllWithRetry(baseUrl, headers, retries) {
+  retries = retries === undefined ? 2 : retries;
+  let last;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    last = await sbFetchAll(baseUrl, headers);
+    if (!last.error) return last;
+    if (attempt < retries) await new Promise(r => setTimeout(r, 600 * (attempt + 1)));
+  }
+  return last;
+}
+
 // Live data loaded from Supabase (falls back to localStorage if offline)
 let _sbStock    = {};
 let _sbPhotos   = {};
@@ -194,7 +211,7 @@ async function loadSBData() {
   // (700ms-1.7s measured), and the browser's ~6-connection cap per origin
   // meant most of them queued behind each other instead of truly running in
   // parallel. One key=in.(...) request returns all of them in a single trip.
-  const productsP = sbFetchAll(SB_URL + '/rest/v1/expert_products?select=*', SB_H);
+  const productsP = sbFetchAllWithRetry(SB_URL + '/rest/v1/expert_products?select=*', SB_H);
   const photosP   = sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=*',   SB_H);
   const settingsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(hidden_prices,featured_offers,sku_map,brand_map,multi_cats,product_keywords,qty_limits,product_variants,cat_labels,cat_hidden,cat_order,banner_sides)&select=key,value', { headers: SB_H });
 
@@ -236,6 +253,11 @@ async function loadSBData() {
   const [c, ph, st] = await Promise.all([productsP, photosP, settingsP]);
 
   if (Array.isArray(c.data) && c.data.length > 0) _customProds = c.data.filter(r => !r.hidden);
+  // Still empty after sbFetchAllWithRetry's retries — a real, distinct state
+  // from "still loading" or "no matches", checked in renderProducts()'s
+  // empty-state branch (js/02-catalog-render.js) so a visitor sees "try
+  // reloading", not a permanent-looking empty store.
+  window._catalogLoadFailed = !!c.error && !_customProds.length;
   _invalidateAllProductsCache();
   if (Array.isArray(ph.data)) {
         ph.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });

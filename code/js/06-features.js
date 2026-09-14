@@ -529,7 +529,7 @@ renderProducts();
 // already recovers from on its own), this still flips the flag so a
 // category with no matching hardcoded/base products doesn't show "Loading
 // products..." forever.
-loadSBData().catch(function() { window._catalogReady = true; renderProducts(); });
+loadSBData().catch(function() { window._catalogReady = true; window._catalogLoadFailed = true; renderProducts(); });
 if (new URLSearchParams(window.location.search).get('q')) {
   setTimeout(scrollToProducts, 300);
 }
