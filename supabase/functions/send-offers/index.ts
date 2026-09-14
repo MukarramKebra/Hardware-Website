@@ -12,14 +12,12 @@
 //      real admin sessions exist, that token never needs to reach a browser
 //      at all.
 //    - pg_cron's "run_scheduled" job — not a browser session, so it still
-//      authenticates with ADMIN_SEND_TOKEN, sent as a header from inside the
-//      cron job definition (stored server-side in Postgres, never touches
-//      the frontend). See the send-offers-scheduled job in cron.job.
+//      needs a static shared secret. That secret lives in
+//      expert_service_secrets (key 'send_offers_cron_token', service-role
+//      only), not an env var — see cronToken() below for why.
 //
 //  Secrets (set with `supabase secrets set …`, never in git):
 //    RESEND_API_KEY     – your Resend API key
-//    ADMIN_SEND_TOKEN   – long random string; only pg_cron's run_scheduled
-//                         call uses this now
 //  Auto-provided by the platform:
 //    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 //
@@ -39,7 +37,15 @@ const SITE_BASE = "https://mukarramkebra.github.io/Hardware-Website/";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
-const ADMIN_TOKEN = Deno.env.get("ADMIN_SEND_TOKEN")!;
+// pg_cron's shared secret now lives in expert_service_secrets (service-role
+// only table, read via db() below) instead of an env var — the previous
+// ADMIN_SEND_TOKEN secret and this cron job's own hardcoded header had
+// drifted out of sync after a rotation that only updated one side, silently
+// breaking every scheduled send. Both sides now read/write the same row.
+async function cronToken(): Promise<string> {
+  const rows = await db(`expert_service_secrets?key=eq.send_offers_cron_token&select=value`);
+  return Array.isArray(rows) && rows[0] ? rows[0].value : "";
+}
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -175,7 +181,8 @@ Deno.serve(async (req) => {
   // action must come from a real logged-in admin.
   if (action === "run_scheduled") {
     const token = req.headers.get("x-admin-token") || "";
-    if (!ADMIN_TOKEN || token !== ADMIN_TOKEN) return json({ error: "Unauthorized" }, 401);
+    const expected = await cronToken();
+    if (!expected || token !== expected) return json({ error: "Unauthorized" }, 401);
   } else {
     const ok = await isRealAdmin(req.headers.get("authorization"));
     if (!ok) return json({ error: "Unauthorized" }, 401);
