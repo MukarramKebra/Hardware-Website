@@ -399,7 +399,10 @@ function _sizeSideBanners() {
   // full height) so it hugs the image with no leftover space, capped to the
   // section's own height so it can never overflow past it.
   const IMG_RATIO  = 1024 / 572; // height / width
-  const maxHeight  = document.getElementById('categories').offsetHeight;
+  // The banners are now fixed and vertically centered in the VIEWPORT (not
+  // resting inside #categories), so cap their height to the screen height so a
+  // tall portrait banner is never clipped off the top/bottom of the window.
+  const maxHeight  = window.innerHeight - 56;
   const height     = Math.min(Math.round(width * IMG_RATIO), maxHeight);
   slots.forEach(function(s) {
     s.style.display    = 'block';
@@ -407,7 +410,32 @@ function _sizeSideBanners() {
     s.style.height     = height + 'px';
     s.style.marginTop  = -(height / 2) + 'px';
   });
+  _updateBannerPin();
 }
+// Decides, on scroll, whether the fixed gutter banners should be visible:
+// shown once the visitor has reached the category area, hidden again before the
+// footer so they never float over it. Only the .banner-pinned class is toggled;
+// _sizeSideBanners() still owns display (whether there's gutter room at all).
+function _updateBannerPin() {
+  const cats  = document.getElementById('categories');
+  const foot  = document.querySelector('footer');
+  const slots = document.querySelectorAll('.side-banner-slot');
+  if (!cats || !slots.length) return;
+  const vh       = window.innerHeight;
+  const catTop   = cats.getBoundingClientRect().top;
+  const footTop  = foot ? foot.getBoundingClientRect().top : Infinity;
+  const started  = catTop <= vh * 0.5;   // scrolled into the category area
+  const atFooter = footTop <= vh * 0.9;  // footer starting to appear
+  const show = started && !atFooter;
+  slots.forEach(function(s) { s.classList.toggle('banner-pinned', show); });
+}
+window.addEventListener('scroll', function() {
+  if (window._bannerPinRAF) return;
+  window._bannerPinRAF = requestAnimationFrame(function() {
+    window._bannerPinRAF = 0;
+    _updateBannerPin();
+  });
+}, { passive: true });
 window.addEventListener('resize', function() {
   clearTimeout(window._bannerResizeT);
   window._bannerResizeT = setTimeout(_sizeSideBanners, 200);
