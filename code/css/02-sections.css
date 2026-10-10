@@ -30,14 +30,18 @@
    nav strip removed, #categories now sits directly against #products, and
    matching top/bottom padding on both stacked into a ~176px empty gap. */
 #categories { padding: 88px 0 24px; background: var(--light); position: relative; overflow: visible; }
-.categories-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-.cat-card { background: #1a1a1a; border: none; border-radius: var(--radius); padding: 0; text-align: center; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; background-size: cover; background-position: center; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.cat-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.22) 55%, rgba(0,0,0,0.62) 100%); transition: background 0.25s; z-index: 1; }
+.categories-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.cat-card { background: #1a1a1a; border: none; border-radius: var(--radius); padding: 0; text-align: center; cursor: pointer; transition: transform 0.25s, box-shadow 0.25s; position: relative; overflow: hidden; background-size: cover; background-position: center; min-height: 184px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
+.cat-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.28) 55%, rgba(0,0,0,0.68) 100%); transition: background 0.25s; z-index: 1; }
 .cat-card:hover::before { background: rgba(200,21,27,0.72); }
-.cat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.28); }
+/* Hover "go" affordance — a small arrow chip, top-right */
+.cat-card::after { content: '\f061'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; top: 12px; right: 12px; z-index: 2; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.20); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; opacity: 0; transform: translateY(-4px); transition: opacity 0.25s, transform 0.25s; }
+.cat-card:hover::after { opacity: 1; transform: translateY(0); }
+.cat-card:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(0,0,0,0.30); }
 .cat-card h3, .cat-card p { position: relative; z-index: 2; }
-.cat-card h3 { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; text-shadow: 0 1px 4px rgba(0,0,0,0.4); }
-.cat-card p { font-size: 12px; color: rgba(255,255,255,0.85); line-height: 1.4; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+.cat-card h3 { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 5px; letter-spacing: 0.3px; text-shadow: 0 1px 5px rgba(0,0,0,0.5); }
+.cat-card p { font-size: 12px; color: rgba(255,255,255,0.88); line-height: 1.45; text-shadow: 0 1px 5px rgba(0,0,0,0.6); padding: 0 8px; }
+@media (prefers-reduced-motion: reduce) { .cat-card, .cat-card::after { transition: none; } .cat-card:hover { transform: none; } }
 
 /* ── SIDE BANNERS — fill the leftover gutter space beside the category grid
    on wide screens; hidden below that so they never crowd the grid. ── */

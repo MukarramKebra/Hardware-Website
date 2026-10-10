@@ -72,9 +72,14 @@ body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--l
 .logo-dhow { color: #fff; }
 .logo-tech { color: var(--orange); }
 
-#nav { display: flex; gap: 30px; }
-#nav a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; transition: color 0.2s; text-transform: uppercase; }
-#nav a:hover { color: #f87171; }
+#nav { display: flex; gap: 26px; }
+#nav a { position: relative; color: rgba(255,255,255,0.9); text-decoration: none; font-size: 13px; font-weight: 600; letter-spacing: 0.4px; transition: color 0.2s; text-transform: uppercase; padding: 4px 0; }
+/* Animated underline on hover/focus — a crisper, more professional cue than
+   the old colour-only swap. */
+#nav a::after { content: ''; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: #fff; border-radius: 2px; transform: scaleX(0); transform-origin: left; transition: transform 0.22s ease; }
+#nav a:hover, #nav a:focus-visible { color: #fff; }
+#nav a:hover::after, #nav a:focus-visible::after { transform: scaleX(1); }
+@media (prefers-reduced-motion: reduce) { #nav a::after { transition: none; } }
 /* #navMyOrders / #navSignIn are mobile-dropdown-only shortcuts (the header's
    own Sign In / My Account button already covers desktop) — without this they
    render as a near-invisible link in the middle of the desktop nav row. */
