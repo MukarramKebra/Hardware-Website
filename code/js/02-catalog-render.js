@@ -377,7 +377,8 @@ function _sizeSideBanners() {
   container.style.maxWidth = '';
   const naturalW  = container.offsetWidth;
   let available = (window.innerWidth - naturalW) / 2 - 24 - 12; // edge offset + breathing room
-  const TARGET = 560; // wanted banner width
+  const TARGET = 380; // wanted banner width (kept compact so the pinned banner
+                      // reads as a side ad, not a full-height wall)
   // If the free gutter is too narrow, narrow the category grid a little
   // (up to 150px per side) to give the banners more room
   if (available < TARGET) {
@@ -399,10 +400,11 @@ function _sizeSideBanners() {
   // full height) so it hugs the image with no leftover space, capped to the
   // section's own height so it can never overflow past it.
   const IMG_RATIO  = 1024 / 572; // height / width
-  // The banners are now fixed and vertically centered in the VIEWPORT (not
-  // resting inside #categories), so cap their height to the screen height so a
-  // tall portrait banner is never clipped off the top/bottom of the window.
-  const maxHeight  = window.innerHeight - 56;
+  // The banners are fixed and vertically centered in the VIEWPORT (not resting
+  // inside #categories). Cap height to both the screen and a fixed ceiling so
+  // the portrait banner stays a tidy side-ad size instead of spanning the whole
+  // window on big monitors.
+  const maxHeight  = Math.min(window.innerHeight - 56, 680);
   const height     = Math.min(Math.round(width * IMG_RATIO), maxHeight);
   slots.forEach(function(s) {
     s.style.display    = 'block';
@@ -424,7 +426,9 @@ function _updateBannerPin() {
   const vh       = window.innerHeight;
   const catTop   = cats.getBoundingClientRect().top;
   const footTop  = foot ? foot.getBoundingClientRect().top : Infinity;
-  const started  = catTop <= vh * 0.5;   // scrolled into the category area
+  const started  = catTop <= 80;         // category section reached the top —
+                                         // offers carousel has scrolled away,
+                                         // so the banners no longer cover it
   const atFooter = footTop <= vh * 0.9;  // footer starting to appear
   const show = started && !atFooter;
   slots.forEach(function(s) { s.classList.toggle('banner-pinned', show); });
