@@ -39,6 +39,17 @@ Static e-commerce site for a Kuwait hardware store, hosted on GitHub Pages, back
 - `expert_settings` key `cat_hidden` is `{slug: true}` (hidden from the storefront nav only — pill/tile gone, products still browsable via All Products/search) or `{slug: 'all'}` (nav *and* every product in that category filtered out storefront-wide). The second case is enforced in `getAllProducts()` (`code/js/01-config-data.js`) via `_catFullyHiddenSlugs` — that function is the single choke point every product listing/search/lookup on the storefront goes through, so a category-level (as opposed to per-product) filter belongs there, not scattered across render call sites.
 - A large slice of product images are hotlinked directly from `expertshardware.com` (the owner's older Magento storefront, treated as a data source for this catalog — see `getAllProducts()`'s `img_url` handling) rather than hosted in `expert-products/`/Supabase. That's a real fragility point — that site going down, restructuring its media paths, or rate-limiting a burst of requests breaks images here with nothing fixable on this side. Re-hosting them is worth doing eventually; until then, don't assume a "broken image" report is a bug in this codebase without first checking whether the URL resolves to that external domain.
 
+## Standing instructions from the owner (override default "ask first" behavior)
+
+- **Never ask the owner whether to commit or push.** When a change to the site is finished and verified locally, commit and push it straight away (explicit paths only, merge `origin/main` first if rejected — see the gotchas above). Don't end a turn with "want me to push this?".
+- **After every push, flush the cache.** The storefront only picks up new JS/CSS when `expert_settings.asset_version` changes (see Architecture), and a git push doesn't change it. Claude can't use the admin's Flush Cache button (never enter the admin password), so do the same thing the button does through the Supabase MCP `execute_sql` tool on project `qhebhvllkovfbkqrcnmm`:
+  ```sql
+  insert into expert_settings (key, value)
+  values ('asset_version', (extract(epoch from now()) * 1000)::bigint::text)
+  on conflict (key) do update set value = excluded.value;
+  ```
+  Then poll the live GitHub Pages URL to confirm the deploy landed, and tell the owner the cache was flushed. Only skip the flush if the push touched nothing the storefront loads (e.g. docs or `scripts/` only).
+
 ## Workflow notes
 
 - No test suite. Verification is: local static server (`.claude/launch.json`, `local-static`) + browser console/network checks for anything visual/interactive, then push, then poll the live GitHub Pages URLs with `curl` to confirm the deploy actually landed (GitHub Pages + the SEO Action both take a minute or two).
