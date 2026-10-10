@@ -54,13 +54,28 @@ function pmSelectVariant(idx) {
   _pmVariantIdx = idx;
   const p = getAllProducts().find(x => x.id === _pmId);
   if (!p) return;
-  const priceEl = document.getElementById('pmPriceDisplay');
-  if (priceEl) priceEl.innerHTML = _pmPriceHtml(_pmCurrentPrice(p), p.id);
+  const priceHtml = _pmPriceHtml(_pmCurrentPrice(p), p.id);
+  ['pmPriceDisplay', 'pmStickyPrice'].forEach(function(elId) {
+    const el = document.getElementById(elId);
+    if (el) el.innerHTML = priceHtml;
+  });
   _pmApplyVariantDisplay(p);
   document.querySelectorAll('#pmVariantTiles .pm-variant-tile').forEach(function(t, i) {
     t.classList.toggle('selected', i === idx);
+    t.setAttribute('aria-checked', i === idx ? 'true' : 'false');
   });
+  const opt = getVariants(_pmId)[idx];
+  const nameEl = document.getElementById('pmVariantName');
+  if (nameEl && opt) nameEl.textContent = opt.label;
 }
+
+// Escapes a value for use inside an HTML attribute
+function _pmEsc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+let _pmObserver = null; // shows the phone's sticky buy bar once the inline button scrolls away
+let _pmOpener   = null; // element focused before the popup opened, so focus can go back to it
 
 // _fromHistory is true only when this call is replaying a browser
 // forward/back navigation (see popstate handler below) — skips pushing a
@@ -68,6 +83,9 @@ function pmSelectVariant(idx) {
 function openProduct(id, _fromHistory) {
   trackView(id);
   trackRecentlyViewed(id);
+  const wasOpen = document.getElementById('prodOverlay').classList.contains('open');
+  if (!wasOpen) _pmOpener = document.activeElement;
+  if (_pmObserver) { _pmObserver.disconnect(); _pmObserver = null; }
   _pmId  = id;
   _pmVariantIdx = 0;
   const limits = getQtyLimits(id);
@@ -84,93 +102,139 @@ function openProduct(id, _fromHistory) {
     ? rawPhoto
     : p.img;
   _pmBaseImg = bigImg; // remembered so pmSelectVariant can fall back to it
+  const hasPrice = hasVisiblePrice(p);
+  const variants = getVariants(id);
+  const wished   = isWishlisted(id);
 
   let stockIcon, stockTxt, stockCls;
   if (isOut)      { stockIcon = 'fa-times-circle'; stockTxt = 'Out of Stock'; stockCls = 'out-of-stock'; }
   else if (isLow) { stockIcon = 'fa-exclamation-circle'; stockTxt = 'Low Stock — only ' + (liveQty||'few') + ' left!'; stockCls = 'low-stock'; }
   else            { stockIcon = 'fa-check-circle'; stockTxt = 'In Stock' + (liveQty !== null ? ' — ' + liveQty + ' available' : ''); stockCls = 'in-stock'; }
 
+  // The inline buy button and the phone's sticky one share the same states
+  const buyBtn = function(btnId, extraCls) {
+    if (!hasPrice) {
+      return '<button type="button" class="pm-add-btn pm-wa-btn' + extraCls + '" id="' + btnId + '" onclick="askPriceOnWhatsApp(' + id + ', _pmVariantIdx)">' +
+        '<i class="fab fa-whatsapp" aria-hidden="true"></i> <span>Ask Price on WhatsApp</span></button>';
+    }
+    return '<button type="button" class="pm-add-btn' + extraCls + '" id="' + btnId + '" ' + (isOut ? 'disabled' : 'onclick="pmAddToCart()"') + '>' +
+      '<i class="fa ' + (isOut ? 'fa-ban' : 'fa-shopping-cart') + '" aria-hidden="true"></i> <span>' + (isOut ? 'Out of Stock' : 'Add to Cart') + '</span></button>';
+  };
+
   document.getElementById('prodModalBody').innerHTML =
-    '<button class="pm-side-back-btn" onclick="closeProduct()" title="Back to Products" aria-label="Back to products"><i class="fa fa-arrow-left"></i></button>' +
+    '<button type="button" class="pm-side-back-btn" onclick="closeProduct()" title="Back to Products" aria-label="Back to products"><i class="fa fa-arrow-left" aria-hidden="true"></i></button>' +
     '<div class="pm-img-col">' +
-      '<img id="pmMainImg" src="' + (bigImg || '') + '" alt="' + p.name + '" onerror="imgError(this)" style="display:' + (bigImg ? '' : 'none') + '" />' +
-      '<div class="pm-img-fallback" id="pmFallback" style="display:' + (bigImg ? 'none' : 'flex') + '"><i class="fa fa-tools"></i></div>' +
+      '<img id="pmMainImg" src="' + (bigImg || '') + '" alt="' + _pmEsc(p.name) + '" onerror="imgError(this)" style="display:' + (bigImg ? '' : 'none') + '" />' +
+      '<div class="pm-img-fallback" id="pmFallback" style="display:' + (bigImg ? 'none' : 'flex') + '"><i class="fa fa-tools" aria-hidden="true"></i></div>' +
     '</div>' +
     '<div class="pm-info-col">' +
       '<div class="pm-badge-row">' +
-        '<span class="pm-badge cat"><i class="fa fa-tag"></i> ' + catLabel(p.category) + '</span>' +
+        '<span class="pm-badge cat"><i class="fa fa-tag" aria-hidden="true"></i> ' + catLabel(p.category) + '</span>' +
         (p.badge ? '<span class="pm-badge orange">' + p.badge + '</span>' : '') +
       '</div>' +
       '<h2 class="pm-name">' + p.name + '</h2>' +
-      '<span class="prod-modal-sku" id="prodModalSku">' + getProductSku(id) + '</span>' +
+      '<div class="pm-meta">' +
+        '<span class="prod-modal-sku"><i class="fa fa-barcode" aria-hidden="true"></i><span id="prodModalSku">' + getProductSku(id) + '</span></span>' +
+        (hasPrice ? '<span class="pm-stock-line ' + stockCls + '" role="status"><i class="fa ' + stockIcon + '" aria-hidden="true"></i> ' + stockTxt + '</span>' : '') +
+      '</div>' +
+      (hasPrice
+        ? '<div class="pm-price" id="pmPriceDisplay">' + _pmPriceHtml(_pmCurrentPrice(p), p.id) + '</div>'
+        : '<div class="pm-price pm-price-ask">Price on request</div>') +
       '<p class="pm-desc" id="pmDescDisplay">' + p.desc + '</p>' +
-      (getVariants(id).length ?
-        '<div class="pm-variant-block">' +
-          '<span class="pm-qty-lbl">Size / Pack</span>' +
+      (variants.length ?
+        '<div class="pm-variant-block" role="radiogroup" aria-label="Size / Pack">' +
+          '<span class="pm-qty-lbl">Size / Pack: <b id="pmVariantName">' + variants[0].label + '</b></span>' +
           '<div class="pm-variant-tiles" id="pmVariantTiles">' +
-            getVariants(id).map(function(v, i) {
+            variants.map(function(v, i) {
               var thumb = v.image || bigImg || '';
-              var safeLabel = v.label.replace(/"/g, '&quot;');
-              return '<div class="pm-variant-tile' + (i === 0 ? ' selected' : '') + '" onclick="pmSelectVariant(' + i + ')">' +
+              return '<button type="button" role="radio" aria-checked="' + (i === 0) + '" class="pm-variant-tile' + (i === 0 ? ' selected' : '') + '" onclick="pmSelectVariant(' + i + ')">' +
                 (thumb
-                  ? '<img src="' + thumb + '" alt="' + safeLabel + '" onerror="this.parentNode.classList.add(\'pm-variant-tile-broken\')" />'
-                  : '<div class="pm-variant-tile-noimg"><i class="fa fa-tools"></i></div>') +
-                '<span>' + v.label + ((hasVisiblePrice(p) && v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : '') + '</span>' +
-              '</div>';
+                  ? '<img src="' + thumb + '" alt="" onerror="this.parentNode.classList.add(\'pm-variant-tile-broken\')" />'
+                  : '<div class="pm-variant-tile-noimg"><i class="fa fa-tools" aria-hidden="true"></i></div>') +
+                '<span>' + v.label + ((hasPrice && v.price > 0 && v.price !== p.price) ? ' — ' + v.price.toFixed(3) + ' KWD' : '') + '</span>' +
+              '</button>';
             }).join('') +
           '</div>' +
         '</div>'
       : '') +
-      (hasVisiblePrice(p) ? (
-      '<div class="pm-price" id="pmPriceDisplay">' + _pmPriceHtml(_pmCurrentPrice(p), p.id) + '</div>' +
-      '<div class="pm-stock-line ' + stockCls + '"><i class="fa ' + stockIcon + '"></i> ' + stockTxt + '</div>' +
-      (!isOut ?
-        '<div class="pm-qty-row">' +
-          '<span class="pm-qty-lbl">Quantity</span>' +
-          '<div class="pm-qty-ctrl">' +
-            '<button onclick="pmChangeQty(-1)" aria-label="Decrease quantity"><i class="fa fa-minus"></i></button>' +
-            '<input type="number" id="pmQtyDisplay" aria-label="Quantity" value="' + _pmQty + '" min="' + Math.max(1, limits.min) + '" autocomplete="off" oninput="pmQtyInput(this)" onblur="pmQtyBlur(this)" />' +
-            '<button onclick="pmChangeQty(1)" aria-label="Increase quantity"><i class="fa fa-plus"></i></button>' +
-          '</div>' +
-        '</div>'
-      : '') +
-      '<button class="pm-add-btn" id="pmAddBtn" ' + (isOut ? 'disabled' : 'onclick="pmAddToCart()"') + '>' +
-        '<i class="fa ' + (isOut ? 'fa-ban' : 'fa-shopping-cart') + '"></i> ' +
-        (isOut ? 'Out of Stock' : 'Add to Cart') +
-      '</button>'
-      ) : (
-      '<div class="pm-price" style="font-size:15px;color:var(--gray-600)">Price on request</div>' +
-      '<button class="pm-add-btn" id="pmAddBtn" style="background:#25D366" onclick="askPriceOnWhatsApp(' + id + ', _pmVariantIdx)">' +
-        '<i class="fab fa-whatsapp"></i> Ask Price on WhatsApp' +
-      '</button>'
-      )) +
+      '<div class="pm-buybox">' +
+        ((hasPrice && !isOut) ?
+          '<div class="pm-qty-head"><span class="pm-qty-lbl" id="pmQtyLbl">Quantity</span><span class="pm-qty-hint" id="pmQtyHint"></span></div>' +
+          '<div class="pm-buy-row">' +
+            '<div class="pm-qty-ctrl" role="group" aria-labelledby="pmQtyLbl">' +
+              '<button type="button" id="pmQtyMinus" onclick="pmChangeQty(-1)" aria-label="Decrease quantity"><i class="fa fa-minus" aria-hidden="true"></i></button>' +
+              '<input type="number" inputmode="numeric" id="pmQtyDisplay" aria-label="Quantity" value="' + _pmQty + '" min="' + Math.max(1, limits.min) + '" autocomplete="off" oninput="pmQtyInput(this)" onblur="pmQtyBlur(this)" />' +
+              '<button type="button" id="pmQtyPlus" onclick="pmChangeQty(1)" aria-label="Increase quantity"><i class="fa fa-plus" aria-hidden="true"></i></button>' +
+            '</div>' +
+            buyBtn('pmAddBtn', '') +
+          '</div>'
+        : buyBtn('pmAddBtn', '')) +
+      '</div>' +
       '<div class="pm-action-row">' +
-        '<button class="pm-wl-btn '+(isWishlisted(id)?'wishlisted':'')+'" onclick="toggleWishlist('+id+', event)">' +
-          '<i class="fa fa-heart"></i> '+(isWishlisted(id)?'Saved':'Save') +
+        '<button type="button" class="pm-wl-btn ' + (wished ? 'wishlisted' : '') + '" id="pmWlBtn" aria-pressed="' + wished + '" onclick="pmToggleWishlist(' + id + ', event)">' +
+          '<i class="fa fa-heart" aria-hidden="true"></i> <span>' + (wished ? 'Saved' : 'Save') + '</span>' +
         '</button>' +
-        '<button class="pm-share-btn" onclick="shareProduct('+id+')">' +
-          '<i class="fab fa-whatsapp"></i> Share' +
+        '<button type="button" class="pm-share-btn" onclick="shareProduct(' + id + ')">' +
+          '<i class="fab fa-whatsapp" aria-hidden="true"></i> <span>Share</span>' +
         '</button>' +
-        '<button class="pm-review-btn" onclick="openReviews('+id+')">' +
-          '<i class="fa fa-star"></i> Reviews' +
+        '<button type="button" class="pm-review-btn" onclick="openReviews(' + id + ')">' +
+          '<i class="fa fa-star" aria-hidden="true"></i> <span>Reviews</span>' +
         '</button>' +
       '</div>' +
-      '<div class="pm-divider"></div>' +
-      '<div class="pm-features">' +
-        '<div class="pm-feat"><i class="fa fa-check-circle"></i> 100% genuine, quality-tested product</div>' +
-        '<div class="pm-feat"><i class="fa fa-shipping-fast"></i> Same-day delivery in Kuwait City</div>' +
-        '<div class="pm-feat"><i class="fa fa-shield-alt"></i> Easy returns &amp; after-sales support</div>' +
-        '<div class="pm-feat"><i class="fa fa-tags"></i> Bulk pricing available for contractors</div>' +
-      '</div>' +
-    '</div>';
+      '<ul class="pm-features">' +
+        '<li class="pm-feat"><i class="fa fa-check-circle" aria-hidden="true"></i><span>100% genuine, quality-tested product</span></li>' +
+        '<li class="pm-feat"><i class="fa fa-shipping-fast" aria-hidden="true"></i><span>Same-day delivery in Kuwait City</span></li>' +
+        '<li class="pm-feat"><i class="fa fa-shield-alt" aria-hidden="true"></i><span>Easy returns &amp; after-sales support</span></li>' +
+        '<li class="pm-feat"><i class="fa fa-tags" aria-hidden="true"></i><span>Bulk pricing available for contractors</span></li>' +
+      '</ul>' +
+    '</div>' +
+    // Phone-only buy bar: appears once the inline button has scrolled out of view
+    ((hasPrice && isOut) ? '' :
+      '<div class="pm-sticky" id="pmSticky">' +
+        '<div class="pm-sticky-info">' +
+          '<span class="pm-sticky-lbl">' + (hasPrice ? 'Price' : 'Price on request') + '</span>' +
+          (hasPrice ? '<span class="pm-sticky-price" id="pmStickyPrice">' + _pmPriceHtml(_pmCurrentPrice(p), p.id) + '</span>' : '') +
+        '</div>' +
+        buyBtn('pmAddBtn2', ' pm-sticky-btn') +
+      '</div>');
 
-  if (getVariants(id).length) _pmApplyVariantDisplay(p);
+  // Breadcrumb in the red top bar (desktop): Products › Category › this product
+  const crumbs = document.getElementById('pmCrumbs');
+  if (crumbs) {
+    crumbs.innerHTML =
+      '<button type="button" class="pm-crumb-link" onclick="closeProduct()">Products</button>' +
+      '<i class="fa fa-chevron-right" aria-hidden="true"></i><span class="pm-crumb-cat">' + catLabel(p.category) + '</span>' +
+      '<i class="fa fa-chevron-right" aria-hidden="true"></i><span class="pm-crumb-cur" aria-current="page">' + p.name + '</span>';
+  }
+
+  if (variants.length) _pmApplyVariantDisplay(p);
+  _pmSyncQty();
+  const hint = document.getElementById('pmQtyHint');
+  if (hint) {
+    const max = _pmMaxQty(), min = _pmMinQty();
+    const bits = [];
+    if (min > 1) bits.push('Min ' + min);
+    if (max < 999) bits.push('Max ' + max);
+    hint.textContent = bits.join(' · ');
+  }
   renderRelatedProducts(id, p.category);
   const overlay = document.getElementById('prodOverlay');
   overlay.classList.add('open');
   overlay.scrollTop = 0;
   document.body.classList.add('product-open');
   document.body.style.overflow = 'hidden';
+
+  const sticky = document.getElementById('pmSticky');
+  const inlineBtn = document.getElementById('pmAddBtn');
+  if (sticky && inlineBtn && 'IntersectionObserver' in window) {
+    _pmObserver = new IntersectionObserver(function(entries) {
+      sticky.classList.toggle('show', !entries[0].isIntersecting);
+    }, { root: overlay, rootMargin: '0px 0px -76px 0px' });
+    _pmObserver.observe(inlineBtn);
+  }
+  const backBtn = overlay.querySelector('.prod-back-btn');
+  if (backBtn) { try { backBtn.focus({ preventScroll: true }); } catch (e) {} }
+
   // Gives the phone's physical/gesture Back button something of ours to
   // undo first — without this, opening a product added no history entry,
   // so the very first Back press exited the site entirely (e.g. straight
@@ -179,6 +243,19 @@ function openProduct(id, _fromHistory) {
   if (!_fromHistory) {
     history.pushState({ pmOpen: true, id: id }, '', '#product-' + id);
   }
+}
+
+// Save/unsave from the product page — also flips this button's own state
+// (toggleWishlist only refreshes the grid cards behind the popup)
+function pmToggleWishlist(id, event) {
+  toggleWishlist(id, event);
+  const btn = document.getElementById('pmWlBtn');
+  if (!btn) return;
+  const on = isWishlisted(id);
+  btn.classList.toggle('wishlisted', on);
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  const lbl = btn.querySelector('span');
+  if (lbl) lbl.textContent = on ? 'Saved' : 'Save';
 }
 
 // "Customers Also Bought" — shown below the product info, same-category items
@@ -193,16 +270,16 @@ function renderRelatedProducts(currentId, category) {
   if (!picks.length) { section.innerHTML = ''; return; }
   const customPhotos = _sbPhotos || {};
   section.innerHTML =
-    '<div class="pm-related-head"><i class="fa fa-thumbs-up"></i> Customers Also Bought</div>' +
-    '<div class="rv-grid">' +
+    '<div class="pm-related-head"><i class="fa fa-thumbs-up" aria-hidden="true"></i> Customers Also Bought</div>' +
+    '<div class="rv-grid pm-rel-grid">' +
     picks.map(p => {
       const raw   = customPhotos[p.id];
       const photo = (raw && (raw.startsWith('http') || raw.startsWith('data:'))) ? raw : p.img;
-      return '<div class="rv-card" onclick="openProduct(' + p.id + ')">' +
-        '<img src="' + photo + '" alt="' + p.name + '" onerror="imgError(this)" />' +
-        '<div class="rv-name">' + p.name + '</div>' +
-        '<div class="rv-price">' + applySale(p.price, p.id).toFixed(3) + ' KWD</div>' +
-      '</div>';
+      return '<button type="button" class="rv-card pm-rel-card" onclick="openProduct(' + p.id + ')">' +
+        '<span class="pm-rel-img"><img src="' + photo + '" alt="' + _pmEsc(p.name) + '" loading="lazy" onerror="imgError(this)" /></span>' +
+        '<span class="rv-name">' + p.name + '</span>' +
+        '<span class="rv-price">' + applySale(p.price, p.id).toFixed(3) + ' KWD</span>' +
+      '</button>';
     }).join('') +
     '</div>';
 }
@@ -212,10 +289,17 @@ function renderRelatedProducts(currentId, category) {
 // the pmOpen history entry at that point, so calling history.back() again
 // here would skip past whatever page the visitor actually wanted.
 function closeProduct(_fromHistory) {
-  document.getElementById('prodOverlay').classList.remove('open');
+  const overlay = document.getElementById('prodOverlay');
+  const wasOpen = overlay.classList.contains('open');
+  overlay.classList.remove('open');
   document.body.style.overflow = '';
   document.body.classList.remove('product-open');
+  if (_pmObserver) { _pmObserver.disconnect(); _pmObserver = null; }
   _pmId = null; _pmQty = 1;
+  if (wasOpen && _pmOpener && document.contains(_pmOpener)) {
+    try { _pmOpener.focus({ preventScroll: true }); } catch (e) {}
+  }
+  _pmOpener = null;
   if (!_fromHistory && history.state && history.state.pmOpen) {
     history.back();
   }
@@ -244,20 +328,29 @@ function _pmMaxQty() {
 function _pmMinQty() {
   return Math.max(1, getQtyLimits(_pmId).min);
 }
+// Greys out the − / + button that can't go any further
+function _pmSyncQty() {
+  const minus = document.getElementById('pmQtyMinus');
+  const plus  = document.getElementById('pmQtyPlus');
+  if (minus) minus.disabled = _pmQty <= _pmMinQty();
+  if (plus)  plus.disabled  = _pmQty >= _pmMaxQty();
+}
 
 function pmChangeQty(delta) {
   const min = _pmMinQty(), max = _pmMaxQty();
   _pmQty = Math.max(min, Math.min(max, _pmQty + delta));
   var el = document.getElementById('pmQtyDisplay');
   if (el) el.value = _pmQty;
+  _pmSyncQty();
 }
 
 function pmQtyInput(el) {
   const min = _pmMinQty(), max = _pmMaxQty();
   var v = parseInt(el.value, 10);
-  if (isNaN(v) || v < min) { _pmQty = min; return; }
+  if (isNaN(v) || v < min) { _pmQty = min; _pmSyncQty(); return; }
   if (v > max) { v = max; el.value = max; }
   _pmQty = v;
+  _pmSyncQty();
 }
 
 function pmQtyBlur(el) {
@@ -267,6 +360,7 @@ function pmQtyBlur(el) {
   if (isNaN(v) || v < min) v = min;
   _pmQty = Math.min(v, max);
   el.value = _pmQty;
+  _pmSyncQty();
 }
 
 function pmAddToCart() {
@@ -305,16 +399,22 @@ function pmAddToCart() {
     }));
   }
   updateCartUI();
-  // Flash the button green — stay on the product page, no cart popup
-  const btn = document.getElementById('pmAddBtn');
-  const original = btn.innerHTML;
-  btn.classList.add('pm-added-flash');
-  btn.innerHTML = '<i class="fa fa-check"></i> Added to Cart!';
+  // Flash the buy buttons (inline + phone sticky bar) green — stay on the
+  // product page, no cart popup
+  ['pmAddBtn', 'pmAddBtn2'].forEach(function(btnId) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    if (btn.dataset.orig === undefined) btn.dataset.orig = btn.innerHTML;
+    btn.classList.add('pm-added-flash');
+    btn.innerHTML = '<i class="fa fa-check" aria-hidden="true"></i> <span>Added to Cart!</span>';
+    clearTimeout(btn._flashT);
+    btn._flashT = setTimeout(function() {
+      btn.classList.remove('pm-added-flash');
+      btn.innerHTML = btn.dataset.orig;
+      delete btn.dataset.orig;
+    }, 1200);
+  });
   showToast('Added to cart');
-  setTimeout(function() {
-    btn.classList.remove('pm-added-flash');
-    btn.innerHTML = original;
-  }, 1200);
 }
 
 // ESC key closes any open modal
