@@ -247,6 +247,29 @@
   .pm-related-section .rv-grid { margin:0 -12px; padding-left:12px; padding-right:12px; }
   .pm-rel-card { flex-basis:140px; }
 }
+/* Phone: compact one-frame product card — small photo on the left with title, stock and price beside it, quantity + Add to Cart right underneath */
+@media(max-width:700px) {
+  .prod-modal-body { grid-template-columns:116px minmax(0,1fr); gap:0 12px; background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); padding:12px; align-items:start; }
+  .pm-info-col { display:contents; }
+  .pm-img-col { grid-column:1; grid-row:1 / span 4; align-self:stretch; aspect-ratio:auto; max-height:none; min-height:116px; border-radius:10px; box-shadow:none; position:relative; top:auto; }
+  .pm-img-col img { position:absolute; inset:0; padding:6px; }
+  .pm-badge-row,.pm-name,.pm-meta,.pm-price { grid-column:2; min-width:0; }
+  .pm-desc,.pm-variant-block,.pm-buybox,.pm-action-row,.pm-features { grid-column:1 / -1; min-width:0; }
+  .pm-badge-row { margin-bottom:8px; gap:5px; }
+  .pm-badge { font-size:10px; padding:3px 9px; }
+  .pm-name { font-size:16px; line-height:1.25; margin-bottom:8px; }
+  .pm-meta { gap:6px; margin-bottom:8px; }
+  .prod-modal-sku { font-size:11px; padding:4px 8px; }
+  .pm-stock-line { font-size:12px; padding:4px 10px; }
+  .pm-price { font-size:22px; padding:8px 10px; margin-bottom:0; align-self:start; }
+  .pm-desc { font-size:13.5px; line-height:1.55; margin:12px 0; }
+  .pm-variant-block { margin-bottom:12px; }
+  .pm-buybox { padding-top:12px; margin-bottom:12px; }
+  .pm-action-row { margin-bottom:12px; }
+  .pm-features { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .pm-feat { font-size:11.5px; padding:8px 9px; gap:8px; }
+  .pm-feat i { width:26px; height:26px; font-size:12px; }
+}
 @media(prefers-reduced-motion:reduce) {
   .prod-back-btn,.pm-add-btn,.pm-side-back-btn,.pm-sticky,.pm-sticky.show { transition:none; }
   .prod-back-btn:hover,.pm-add-btn:hover:not(:disabled),.pm-side-back-btn:hover { transform:none; }
