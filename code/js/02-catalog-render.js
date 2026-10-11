@@ -379,8 +379,12 @@ function _sizeSideBanners() {
   let available = (window.innerWidth - naturalW) / 2 - 24 - 12; // edge offset + breathing room
   // Banner images are all ~9:16 portrait (measured across the actual files).
   const IMG_RATIO  = 1024 / 572; // height / width
-  const maxHeight  = window.innerHeight - 40; // full viewport height, minus breathing room
-  const desiredWidth = Math.round(maxHeight / IMG_RATIO); // width needed to use the full viewport height at the image's own ratio
+  // Filling 100% of the available gutter/viewport space read as too large/heavy
+  // on screen, so the target size is scaled down from the full gutter-filling
+  // size before anything (including how much grid space to steal) is based on it.
+  const SCALE = 0.75;
+  const maxHeight  = Math.round((window.innerHeight - 40) * SCALE); // viewport height, minus breathing room, scaled down
+  const desiredWidth = Math.round(maxHeight / IMG_RATIO); // width needed to use the full target height at the image's own ratio
   // If the free gutter is too narrow, narrow the category grid a little
   // (up to 150px per side) to give the banners more room
   if (available < desiredWidth) {
