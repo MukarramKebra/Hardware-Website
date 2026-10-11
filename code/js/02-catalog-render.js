@@ -419,18 +419,12 @@ function _sizeSideBanners() {
   });
   _updateBannerPin();
 }
-// Decides, on scroll, whether the fixed gutter banners should be visible and
-// where their top edge should sit. The banner's top is aligned with the top of
-// the categories section — so when the visitor is at the top of the page, the
-// banners' top edge sits level with the categories heading (lower in the
-// viewport), and as they scroll down the banner follows the categories section
-// up until it would go past the top of the viewport, at which point it sticks
-// there so it stays visible while scrolling through the products. Hidden just
-// before the footer so it never floats over it. Only the .banner-pinned class
-// and inline `top` are toggled; _sizeSideBanners() still owns display (whether
-// there's gutter room at all).
+// Banners sit at a fixed `top` in the viewport (no scroll-following) so they
+// stay rock-steady while the rest of the page scrolls past. _updateBannerPin()
+// only toggles .banner-pinned so they fade out just before the footer and never
+// float over it; `top` itself is set once by CSS (`.side-banner-slot { top }`),
+// not re-written on scroll.
 function _updateBannerPin() {
-  const cats  = document.getElementById('categories');
   const foot  = document.querySelector('footer');
   const slots = document.querySelectorAll('.side-banner-slot');
   if (!slots.length) return;
@@ -438,13 +432,7 @@ function _updateBannerPin() {
   const footTop  = foot ? foot.getBoundingClientRect().top : Infinity;
   const atFooter = footTop <= vh * 0.9;  // footer starting to appear
   const show = !atFooter;
-  const minTop  = 20;                    // pinned top offset once scrolled
-  const catTop  = cats ? cats.getBoundingClientRect().top : minTop;
-  const top     = Math.max(minTop, catTop);
-  slots.forEach(function(s) {
-    s.classList.toggle('banner-pinned', show);
-    s.style.top = top + 'px';
-  });
+  slots.forEach(function(s) { s.classList.toggle('banner-pinned', show); });
 }
 window.addEventListener('scroll', function() {
   if (window._bannerPinRAF) return;

@@ -61,7 +61,7 @@
    display by available gutter room; _updateBannerPin() toggles .banner-pinned so
    they're visible from page load and only fade out right before the footer
    (never floating over it). */
-.side-banner-slot { display: none; position: fixed; top: 0; z-index: 2; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.35s ease; }
+.side-banner-slot { display: none; position: fixed; top: 30px; z-index: 2; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.35s ease; }
 .side-banner-slot.banner-pinned { opacity: 1; visibility: visible; pointer-events: auto; }
 .side-banner-slot.left  { left: 24px; }
 .side-banner-slot.right { right: 24px; }
