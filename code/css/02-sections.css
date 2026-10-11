@@ -58,8 +58,8 @@
    you scroll the products on desktop instead of scrolling away with the category
    grid. JS (_sizeSideBanners) still sets width/height/marginTop and gates
    display by available gutter room; _updateBannerPin() toggles .banner-pinned so
-   they only show once you've reached the category area and fade out at the
-   footer (never floating over it). */
+   they're visible from page load and only fade out right before the footer
+   (never floating over it). */
 .side-banner-slot { display: none; position: fixed; top: 50%; z-index: 2; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.35s ease; }
 .side-banner-slot.banner-pinned { opacity: 1; visibility: visible; pointer-events: auto; }
 .side-banner-slot.left  { left: 24px; }
