@@ -290,7 +290,6 @@
     <div class="container">
       <div class="section-header">
         <span class="section-tag" data-i18n="cat_tag">Browse by Type</span>
-        <h2 data-i18n-html="cat_h2">Shop by <span class="orange">Category</span></h2>
       </div>
       <div class="categories-grid" id="categoriesGrid">
         <div class="cat-card" data-cat="tools"            onclick="filterProducts('tools')"            style="background-image:url('expert-products/cat-images/tools.jpg')">
@@ -861,6 +860,9 @@
     <div class="prod-modal">
       <div class="prod-modal-topbar">
         <div class="prod-modal-topbar-inner">
+          <button class="pm-home-btn" onclick="closeProduct()" title="Expert Hardware home" aria-label="Expert Hardware home">
+            <img src="logo.png" alt="Expert Hardware" onerror="this.style.display='none'" />
+          </button>
           <button class="prod-back-btn" onclick="closeProduct()">
             <i class="fa fa-arrow-left"></i> <span data-i18n="back_btn">Back to Products</span>
           </button>

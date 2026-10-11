@@ -416,15 +416,21 @@ function _sizeSideBanners() {
     s.style.display    = 'block';
     s.style.width      = width + 'px';
     s.style.height     = height + 'px';
-    s.style.marginTop  = -(height / 2) + 'px';
   });
   _updateBannerPin();
 }
-// Decides, on scroll, whether the fixed gutter banners should be visible: shown
-// from page load, hidden again just before the footer so they never float over
-// it. Only the .banner-pinned class is toggled; _sizeSideBanners() still owns
-// display (whether there's gutter room at all).
+// Decides, on scroll, whether the fixed gutter banners should be visible and
+// where their top edge should sit. The banner's top is aligned with the top of
+// the categories section — so when the visitor is at the top of the page, the
+// banners' top edge sits level with the categories heading (lower in the
+// viewport), and as they scroll down the banner follows the categories section
+// up until it would go past the top of the viewport, at which point it sticks
+// there so it stays visible while scrolling through the products. Hidden just
+// before the footer so it never floats over it. Only the .banner-pinned class
+// and inline `top` are toggled; _sizeSideBanners() still owns display (whether
+// there's gutter room at all).
 function _updateBannerPin() {
+  const cats  = document.getElementById('categories');
   const foot  = document.querySelector('footer');
   const slots = document.querySelectorAll('.side-banner-slot');
   if (!slots.length) return;
@@ -432,7 +438,13 @@ function _updateBannerPin() {
   const footTop  = foot ? foot.getBoundingClientRect().top : Infinity;
   const atFooter = footTop <= vh * 0.9;  // footer starting to appear
   const show = !atFooter;
-  slots.forEach(function(s) { s.classList.toggle('banner-pinned', show); });
+  const minTop  = 20;                    // pinned top offset once scrolled
+  const catTop  = cats ? cats.getBoundingClientRect().top : minTop;
+  const top     = Math.max(minTop, catTop);
+  slots.forEach(function(s) {
+    s.classList.toggle('banner-pinned', show);
+    s.style.top = top + 'px';
+  });
 }
 window.addEventListener('scroll', function() {
   if (window._bannerPinRAF) return;
