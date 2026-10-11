@@ -55,17 +55,16 @@
    actually free next to the grid on THIS screen — a fixed pixel breakpoint
    kept needing manual re-guessing every time the banner size changed and
    could end up wider than the visitor's monitor, hiding the banners entirely. */
-/* Pinned to the viewport gutters (position:fixed) so the banners ride along as
-   you scroll the products on desktop instead of scrolling away with the category
-   grid. JS (_sizeSideBanners) still sets width/height/marginTop and gates
-   display by available gutter room; _updateBannerPin() toggles .banner-pinned so
-   they're visible from page load and only fade out right before the footer
-   (never floating over it). */
-.side-banner-slot { display: none; position: fixed; top: 30px; z-index: 2; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.35s ease; }
-.side-banner-slot.banner-pinned { opacity: 1; visibility: visible; pointer-events: auto; }
+/* Positioned absolutely INSIDE #categories (which is position:relative), with
+   top:0 so each banner's top edge sits at the top of the categories section —
+   right at the "Browse by Type" tag. Height is sized by JS to match the
+   section's own first-four-row height (down to the Garden Tools card). This
+   lets the banners scroll with the page naturally like any other section
+   content, so there's no fixed/scroll-handler jank. JS still gates display
+   based on whether the gutter is wide enough. */
+.side-banner-slot { display: none; position: absolute; top: 0; z-index: 2; }
 .side-banner-slot.left  { left: 24px; }
 .side-banner-slot.right { right: 24px; }
-@media (prefers-reduced-motion: reduce) { .side-banner-slot { transition: none; } }
 .side-banner { position: relative; width: 100%; height: 100%; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg); }
 /* "cover" (not "contain") — the box now hugs the image's own aspect ratio, so
    there's no letterbox space left to fill; cover just guarantees zero black

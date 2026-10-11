@@ -371,36 +371,31 @@ function _restartBannerTimer() {
 // stale (and can hide the banners entirely) every time the banner width changes.
 function _sizeSideBanners() {
   const container = document.querySelector('#categories > .container');
-  const catsEl   = document.getElementById('categories');
-  const anchorEl = document.querySelector('.cat-card[data-cat="gardening"]');
+  const anchorEl  = document.querySelector('.cat-card[data-cat="gardening"]');
   const slots = document.querySelectorAll('.side-banner-slot');
   if (!container || !slots.length) return;
   // Measure the natural gutter first (reset any shrink from a previous run)
   container.style.maxWidth = '';
   const naturalW  = container.offsetWidth;
   let available   = (window.innerWidth - naturalW) / 2 - 24 - 12; // edge offset + breathing room
-  if (!catsEl || !anchorEl) {
+  if (!anchorEl) {
     container.style.maxWidth = '';
     slots.forEach(function(s) { s.style.display = 'none'; });
     return;
   }
-  // Height is the span from the top of #categories (the "Browse by Type" tag
-  // area) down to the bottom of the Garden Tools card, measured in the current
-  // layout — so the banner frames the first four rows of category tiles
-  // exactly, no more and no less. Measured in document coords (adding
-  // scrollY to the viewport rect) so the number is stable regardless of
-  // whether the visitor had already scrolled when this ran.
-  const catRect     = catsEl.getBoundingClientRect();
-  const anchorRect  = anchorEl.getBoundingClientRect();
-  const docTop      = catRect.top    + window.scrollY;
-  const docBottom   = anchorRect.bottom + window.scrollY;
-  const targetH     = Math.max(120, docBottom - docTop);
-  const IMG_RATIO   = 1024 / 572; // height / width — banner images are ~9:16 portrait
-  const desiredW    = Math.round(targetH / IMG_RATIO); // width needed to hit the target height at the image's own ratio
+  // Height spans from the top of #categories (the "Browse by Type" tag area)
+  // down to the bottom of the Garden Tools card. The banner slots are now
+  // positioned absolutely INSIDE #categories (top:0), so this height uses the
+  // anchor's own offsetTop/offsetHeight — a pure layout number, independent of
+  // scroll, that lets the browser handle scrolling naturally (no fixed/scroll
+  // handling jank).
+  const targetH   = Math.max(120, anchorEl.offsetTop + anchorEl.offsetHeight);
+  const IMG_RATIO = 1024 / 572; // height / width — banner images are ~9:16 portrait
+  const desiredW  = Math.round(targetH / IMG_RATIO); // width needed to hit the target height at the image's own ratio
   // If the free gutter is too narrow for that width, narrow the category grid
-  // a little (up to 150px per side) to give the banner more room — otherwise
+  // a little (up to 220px per side) to give the banner more room — otherwise
   // the gutter would clamp the height well short of the Browse-by-Type to
-  // Garden Tools span the user asked for.
+  // Garden Tools span.
   if (available < desiredW) {
     const steal = Math.min(desiredW - available, 220);
     const shrunkW = naturalW - steal * 2;
@@ -423,41 +418,12 @@ function _sizeSideBanners() {
     width  = Math.round(available);
     height = Math.round(width * IMG_RATIO);
   }
-  // Lock the banner at the categories section's vertical position (in the
-  // viewport the user is looking at right now). Fixed positioning keeps it
-  // there as they scroll — the earlier "scroll with the page" behavior is
-  // intentionally gone.
-  const topInViewport = docTop - window.scrollY;
   slots.forEach(function(s) {
     s.style.display = 'block';
     s.style.width   = width  + 'px';
     s.style.height  = height + 'px';
-    s.style.top     = topInViewport + 'px';
   });
-  _updateBannerPin();
 }
-// Banners sit at a fixed `top` in the viewport (no scroll-following) so they
-// stay rock-steady while the rest of the page scrolls past. _updateBannerPin()
-// only toggles .banner-pinned so they fade out just before the footer and never
-// float over it; `top` itself is set once by CSS (`.side-banner-slot { top }`),
-// not re-written on scroll.
-function _updateBannerPin() {
-  const foot  = document.querySelector('footer');
-  const slots = document.querySelectorAll('.side-banner-slot');
-  if (!slots.length) return;
-  const vh       = window.innerHeight;
-  const footTop  = foot ? foot.getBoundingClientRect().top : Infinity;
-  const atFooter = footTop <= vh * 0.9;  // footer starting to appear
-  const show = !atFooter;
-  slots.forEach(function(s) { s.classList.toggle('banner-pinned', show); });
-}
-window.addEventListener('scroll', function() {
-  if (window._bannerPinRAF) return;
-  window._bannerPinRAF = requestAnimationFrame(function() {
-    window._bannerPinRAF = 0;
-    _updateBannerPin();
-  });
-}, { passive: true });
 window.addEventListener('resize', function() {
   clearTimeout(window._bannerResizeT);
   window._bannerResizeT = setTimeout(_sizeSideBanners, 200);
