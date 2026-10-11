@@ -28,14 +28,24 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const ROOT = path.resolve(__dirname, '..');
 // SEO_OUT redirects output to a scratch dir for local testing; unset in
 // production, where pages are written into the repo for GitHub Pages to serve.
 const OUT_BASE = process.env.SEO_OUT ? path.resolve(process.env.SEO_OUT) : ROOT;
 const OUT_DIR = path.join(OUT_BASE, 'product');
+const MANIFEST_PATH = path.join(OUT_BASE, 'sitemap-manifest.json');
 const SITE_BASE = 'https://mukarramkebra.github.io/Hardware-Website/';
 const TODAY = new Date().toISOString().slice(0, 10);
+// Floor for the empty-data guard. If the generator ever ends up with fewer
+// products than this (RLS flip, Supabase outage returning [], bad fixture),
+// we hard-fail instead of overwriting the sitemap with next-to-nothing and
+// quietly de-indexing the whole catalog. SEO_MIN_PRODUCTS=0 disables it for
+// the rare case where you really do want to publish an empty-catalog site.
+const MIN_PRODUCTS = Number.isFinite(parseInt(process.env.SEO_MIN_PRODUCTS, 10))
+  ? parseInt(process.env.SEO_MIN_PRODUCTS, 10)
+  : 500;
 
 // ── Supabase config (read from the site's own file — no separate secret) ────
 function readSupabaseConfig() {
@@ -56,6 +66,19 @@ async function sbGet(SB_URL, SB_KEY, query) {
   return res.json();
 }
 
+// Soft wrapper: for tables whose absence shouldn't kill the whole regen
+// (reviews, aux settings), log the error and fall back to an empty value.
+// Hard-failing on these would mean one 5xx on a non-essential table silently
+// prevents sitemap updates for a day.
+async function sbGetSoft(SB_URL, SB_KEY, query, fallback) {
+  try {
+    return await sbGet(SB_URL, SB_KEY, query);
+  } catch (e) {
+    console.warn('WARN: non-critical Supabase query failed (' + query + '): ' + e.message + ' — using fallback');
+    return fallback;
+  }
+}
+
 // ── Load everything the pages need, from Supabase or a local fixture ────────
 async function loadData() {
   if (process.env.SEO_FIXTURE) {
@@ -74,13 +97,20 @@ async function loadData() {
     };
   }
   const { SB_URL, SB_KEY } = readSupabaseConfig();
+  // Critical tables (products, photos, hidden, stock): if any of these fail
+  // we hard-fail the run, because the sitemap/pages would be meaningfully
+  // wrong without them. Aux tables (reviews, settings) use soft fallbacks:
+  // missing reviews just drop the aggregateRating; missing settings just
+  // drop brand/SKU/variant/keyword enrichment — none of that would wipe
+  // the catalog, so one flaky aux query shouldn't block a whole day of
+  // sitemap updates.
   const [products, photos, hidden, stock, reviews, settings] = await Promise.all([
-    sbGet(SB_URL, SB_KEY, 'expert_products?select=*'),
+    sbGet(SB_URL, SB_KEY, 'expert_products?select=id,name,category,price,img_url,hidden,description,created_at'),
     sbGet(SB_URL, SB_KEY, 'expert_photos?select=product_id,img_url'),
     sbGet(SB_URL, SB_KEY, 'expert_hidden?select=product_id'),
     sbGet(SB_URL, SB_KEY, 'expert_stock?select=product_id,qty'),
-    sbGet(SB_URL, SB_KEY, 'expert_reviews?select=product_id,rating'),
-    sbGet(SB_URL, SB_KEY, 'expert_settings?key=in.(sku_map,brand_map,product_keywords,hidden_prices,product_variants)&select=key,value')
+    sbGetSoft(SB_URL, SB_KEY, 'expert_reviews?select=product_id,rating', []),
+    sbGetSoft(SB_URL, SB_KEY, 'expert_settings?key=in.(sku_map,brand_map,product_keywords,hidden_prices,product_variants)&select=key,value', [])
   ]);
   const settingVal = (k) => {
     const row = settings.find((s) => s.key === k);
@@ -95,6 +125,31 @@ async function loadData() {
     hiddenPrices: settingVal('hidden_prices'),
     variantMap: settingVal('product_variants')
   };
+}
+
+// ── Manifest (prev hash + lastmod per product) ──────────────────────────────
+// Keeps lastmod honest: a product's lastmod only bumps to TODAY when its
+// generated content actually changed. Google ignores lastmod when it's
+// "consistently inaccurate" — this prevents the daily workflow from
+// rewriting every URL to today's date on every run.
+function loadManifest() {
+  try {
+    const raw = fs.readFileSync(MANIFEST_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === 'object') ? parsed : {};
+  } catch (_) {
+    return {};
+  }
+}
+function hashProduct(p) {
+  // Fields that materially affect the generated page or sitemap entry.
+  // Order matters so the hash is stable across runs.
+  const payload = JSON.stringify([
+    p.name, p.brand, p.category, p.price, p.priceHidden,
+    p.desc, p.image, p.sku, p.keywords, p.variants,
+    p.availability, Math.round((p.reviewAvg || 0) * 10) / 10, p.reviewCount || 0
+  ]);
+  return crypto.createHash('sha1').update(payload).digest('hex');
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -290,13 +345,16 @@ function renderPage(p) {
 }
 
 // ── Sitemap ──────────────────────────────────────────────────────────────────
+// Each product's lastmod comes from the manifest-derived value on `p`, not
+// from TODAY — so unchanged products keep their old date and Google can
+// actually trust this field. Homepage stays "today" because it's dynamic.
 function renderSitemap(products) {
   const urls = [
     `  <url>\n    <loc>${SITE_BASE}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>`
   ];
   for (const p of products) {
     urls.push(
-      `  <url>\n    <loc>${SITE_BASE}product/${p.slug}.html</loc>\n    <lastmod>${TODAY}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`
+      `  <url>\n    <loc>${SITE_BASE}product/${p.slug}.html</loc>\n    <lastmod>${p.lastmod || TODAY}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`
     );
   }
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`;
@@ -340,6 +398,7 @@ async function main() {
 
     built.push({
       id, name, slug,
+      createdAt: row.created_at || null,
       brand: data.brandMap[String(id)] || row.brand || '',
       category: (row.category || '').toLowerCase().replace(/[\s_]+/g, '-'),
       price: parseFloat(row.price) || 0,
@@ -357,6 +416,42 @@ async function main() {
 
   built.sort((a, b) => a.id - b.id);
 
+  // Empty-data guard. If loadData silently returned [] (RLS flip, outage
+  // serving an empty 200, bad fixture), bail BEFORE rmSync so the previous
+  // sitemap and product pages stay intact. Without this, one flaky run
+  // would push an empty sitemap and Google would deindex the whole catalog.
+  if (built.length < MIN_PRODUCTS) {
+    console.error(
+      `generate-product-pages: refusing to overwrite with only ${built.length} products ` +
+      `(floor is ${MIN_PRODUCTS}; set SEO_MIN_PRODUCTS=0 to override). ` +
+      `Keeping previous sitemap and /product/ in place.`
+    );
+    process.exit(1);
+  }
+
+  // Per-product lastmod: if the content hash matches what the manifest
+  // recorded last time, reuse the previous lastmod. Otherwise bump to
+  // TODAY. New products that aren't in the manifest fall back to the
+  // product's own created_at (if the DB has one) or TODAY. This keeps
+  // <lastmod> trustworthy — unchanged products don't flip to today's
+  // date every daily run.
+  const prevManifest = loadManifest();
+  const nextManifest = {};
+  for (const p of built) {
+    const h = hashProduct(p);
+    const prev = prevManifest[String(p.id)];
+    let lastmod;
+    if (prev && prev.hash === h && /^\d{4}-\d{2}-\d{2}$/.test(prev.lastmod || '')) {
+      lastmod = prev.lastmod;              // unchanged: reuse
+    } else if (!prev && p.createdAt) {
+      lastmod = String(p.createdAt).slice(0, 10);  // first time we see it: use DB created_at
+    } else {
+      lastmod = TODAY;                     // content changed, or no better signal
+    }
+    p.lastmod = lastmod;
+    nextManifest[String(p.id)] = { hash: h, lastmod };
+  }
+
   // Clear stale pages so products deleted in Supabase don't leave orphan files.
   // Wrapped because some mounts (e.g. the Cowork sandbox) block unlink; there,
   // we just overwrite in place — CI runs on a normal FS where this succeeds.
@@ -366,9 +461,12 @@ async function main() {
     fs.writeFileSync(path.join(OUT_DIR, p.slug + '.html'), renderPage(p));
   }
   fs.writeFileSync(path.join(OUT_BASE, 'sitemap.xml'), renderSitemap(built));
+  fs.writeFileSync(MANIFEST_PATH, JSON.stringify(nextManifest, null, 2) + '\n');
 
+  const bumped = built.filter((p) => p.lastmod === TODAY).length;
   console.log(`Generated ${built.length} product pages into /product (skipped ${skipped}).`);
   console.log(`Wrote sitemap.xml with ${built.length + 1} URLs (homepage + products).`);
+  console.log(`lastmod: ${bumped} bumped to ${TODAY}, ${built.length - bumped} reused from manifest.`);
 }
 
 main().catch((e) => { console.error('generate-product-pages failed:', e.message); process.exit(1); });

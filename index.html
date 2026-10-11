@@ -48,6 +48,12 @@
   <meta name="geo.region" content="KW" />
   <meta name="geo.placename" content="Kuwait City" />
   <link rel="icon" type="image/png" href="favicon.png" />
+  <!-- Second discovery path for the sitemap. GitHub Pages serves this project
+       at /Hardware-Website/ so our robots.txt lives at /Hardware-Website/robots.txt,
+       which crawlers never read (they only fetch /robots.txt at the host root).
+       Pointing at the sitemap from the HTML itself gives Google/Bing a path to
+       it that doesn't depend on the host-root robots.txt we can't publish. -->
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/Hardware-Website/sitemap.xml" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",

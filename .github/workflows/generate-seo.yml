@@ -19,7 +19,8 @@ on:
   workflow_dispatch: {}      # allow manual runs from the Actions tab
 
 permissions:
-  contents: write            # needed to commit regenerated files with GITHUB_TOKEN
+  contents: write            # commit regenerated files with GITHUB_TOKEN
+  issues: write              # open/update the failure tracker issue below
 
 concurrency:
   group: generate-seo
@@ -44,10 +45,30 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add product sitemap.xml
+          git add product sitemap.xml sitemap-manifest.json
           if git diff --cached --quiet; then
             echo "No SEO changes to commit."
           else
             git commit -m "chore(seo): regenerate product pages + sitemap [skip ci]"
             git push
+          fi
+
+      # If the generator or commit step failed, open or update a tracking
+      # issue so a broken sitemap pipeline is visible the next day instead
+      # of the next quarter. Previously a failure here was silent, so stale
+      # lastmods and missing new products could pile up unnoticed.
+      - name: Report failure as a GitHub issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -e
+          TITLE="SEO generator failed"
+          BODY="The \`generate-seo\` workflow failed on $(date -u +'%Y-%m-%d %H:%M UTC').\n\nLast failing run: $RUN_URL\n\nUntil this is fixed, \`sitemap.xml\` and \`/product/\` will not update, so new/edited/deleted products in Supabase will not reach Google. Check the run log for the specific Supabase query or filesystem error."
+          EXISTING=$(gh issue list --state open --search "$TITLE in:title" --json number,title --jq ".[] | select(.title==\"$TITLE\") | .number" | head -n 1)
+          if [ -n "$EXISTING" ]; then
+            printf "%b" "$BODY" | gh issue comment "$EXISTING" --body-file -
+          else
+            printf "%b" "$BODY" | gh issue create --title "$TITLE" --body-file -
           fi

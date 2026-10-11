@@ -371,24 +371,38 @@ function _restartBannerTimer() {
 // stale (and can hide the banners entirely) every time the banner width changes.
 function _sizeSideBanners() {
   const container = document.querySelector('#categories > .container');
+  const catsEl   = document.getElementById('categories');
+  const anchorEl = document.querySelector('.cat-card[data-cat="gardening"]');
   const slots = document.querySelectorAll('.side-banner-slot');
   if (!container || !slots.length) return;
   // Measure the natural gutter first (reset any shrink from a previous run)
   container.style.maxWidth = '';
   const naturalW  = container.offsetWidth;
-  let available = (window.innerWidth - naturalW) / 2 - 24 - 12; // edge offset + breathing room
-  // Banner images are all ~9:16 portrait (measured across the actual files).
-  const IMG_RATIO  = 1024 / 572; // height / width
-  // Filling 100% of the available gutter/viewport space read as too large/heavy
-  // on screen, so the target size is scaled down from the full gutter-filling
-  // size before anything (including how much grid space to steal) is based on it.
-  const SCALE = 0.75;
-  const maxHeight  = Math.round((window.innerHeight - 40) * SCALE); // viewport height, minus breathing room, scaled down
-  const desiredWidth = Math.round(maxHeight / IMG_RATIO); // width needed to use the full target height at the image's own ratio
-  // If the free gutter is too narrow, narrow the category grid a little
-  // (up to 150px per side) to give the banners more room
-  if (available < desiredWidth) {
-    const steal = Math.min(desiredWidth - available, 150);
+  let available   = (window.innerWidth - naturalW) / 2 - 24 - 12; // edge offset + breathing room
+  if (!catsEl || !anchorEl) {
+    container.style.maxWidth = '';
+    slots.forEach(function(s) { s.style.display = 'none'; });
+    return;
+  }
+  // Height is the span from the top of #categories (the "Browse by Type" tag
+  // area) down to the bottom of the Garden Tools card, measured in the current
+  // layout — so the banner frames the first four rows of category tiles
+  // exactly, no more and no less. Measured in document coords (adding
+  // scrollY to the viewport rect) so the number is stable regardless of
+  // whether the visitor had already scrolled when this ran.
+  const catRect     = catsEl.getBoundingClientRect();
+  const anchorRect  = anchorEl.getBoundingClientRect();
+  const docTop      = catRect.top    + window.scrollY;
+  const docBottom   = anchorRect.bottom + window.scrollY;
+  const targetH     = Math.max(120, docBottom - docTop);
+  const IMG_RATIO   = 1024 / 572; // height / width — banner images are ~9:16 portrait
+  const desiredW    = Math.round(targetH / IMG_RATIO); // width needed to hit the target height at the image's own ratio
+  // If the free gutter is too narrow for that width, narrow the category grid
+  // a little (up to 150px per side) to give the banner more room — otherwise
+  // the gutter would clamp the height well short of the Browse-by-Type to
+  // Garden Tools span the user asked for.
+  if (available < desiredW) {
+    const steal = Math.min(desiredW - available, 220);
     const shrunkW = naturalW - steal * 2;
     if (shrunkW >= 760) {
       container.style.maxWidth = shrunkW + 'px';
@@ -400,22 +414,25 @@ function _sizeSideBanners() {
     slots.forEach(function(s) { s.style.display = 'none'; });
     return;
   }
-  // Fill as much of the gutter as the image's own ratio allows in both
-  // directions at once — whichever of width/height runs out of room first
-  // sets the size, instead of a fixed target that left gutter space unused.
-  const maxWidth = Math.round(available);
-  let width, height;
-  if (maxWidth * IMG_RATIO <= maxHeight) {
-    width  = maxWidth;
+  // Width derives from the height at the image's own ratio. If the gutter is
+  // still too narrow for that width (even after stealing from the grid), scale
+  // both down proportionally so the ratio stays correct and nothing clips.
+  let width  = desiredW;
+  let height = targetH;
+  if (width > available) {
+    width  = Math.round(available);
     height = Math.round(width * IMG_RATIO);
-  } else {
-    height = maxHeight;
-    width  = Math.round(height / IMG_RATIO);
   }
+  // Lock the banner at the categories section's vertical position (in the
+  // viewport the user is looking at right now). Fixed positioning keeps it
+  // there as they scroll — the earlier "scroll with the page" behavior is
+  // intentionally gone.
+  const topInViewport = docTop - window.scrollY;
   slots.forEach(function(s) {
-    s.style.display    = 'block';
-    s.style.width      = width + 'px';
-    s.style.height     = height + 'px';
+    s.style.display = 'block';
+    s.style.width   = width  + 'px';
+    s.style.height  = height + 'px';
+    s.style.top     = topInViewport + 'px';
   });
   _updateBannerPin();
 }
