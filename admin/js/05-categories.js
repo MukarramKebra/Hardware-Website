@@ -4,25 +4,25 @@
 // saveCatBg()  — saves a new background image when you click "Change Image"
 // resetCatBg() — puts the default image back
 var CAT_DEFS = [
-  { slug:'tools',            label:'DCK Power Tools', icon:'fa-bolt',         default:'../expert-products/cat-images/tools.jpg' },
-  { slug:'hand-tools',       label:'Hand Tools',      icon:'fa-hammer',       default:'../expert-products/cat-images/hand-tools.png' },
-  { slug:'fastener',         label:'Fasteners',       icon:'fa-cog',          default:'../expert-products/cat-images/fastener.png' },
-  { slug:'construction',     label:'Nails/Wires',     icon:'fa-thumbtack',    default:'../expert-products/cat-images/construction.png' },
-  { slug:'safety',           label:'Safety',          icon:'fa-hard-hat',     default:'../expert-products/cat-images/safety.jpg' },
-  { slug:'spray-adhesive',   label:'Adhesives',       icon:'fa-spray-can',    default:'../expert-products/cat-images/spray-adhesive.png' },
-  { slug:'tape',             label:'Tapes',           icon:'fa-tape',         default:'../expert-products/cat-images/tape.png' },
-  { slug:'door-handle',      label:'Door Handles',    icon:'fa-door-open',    default:'../expert-products/cat-images/door-handle.png' },
-  { slug:'hardware',         label:'Hardware',        icon:'fa-toolbox',      default:'../expert-products/cat-images/hardware.png' },
-  { slug:'paint-tool',       label:'Paint Tools',     icon:'fa-paint-roller', default:'../expert-products/cat-images/paint-tool.jpg' },
-  { slug:'gardening',        label:'Garden Tools',    icon:'fa-seedling',     default:'../expert-products/cat-images/gardening.png' },
-  { slug:'disc',             label:'Discs',           icon:'fa-compact-disc', default:'../expert-products/cat-images/disc.jpg' },
-  { slug:'trolley-caster',   label:'Wheel Barrow',    icon:'fa-dolly',        default:'../expert-products/cat-images/trolley-caster.png' },
-  { slug:'household',        label:'Cleaning',        icon:'fa-broom',        default:'../expert-products/cat-images/household.png' },
-  { slug:'plumbing-fitting', label:'Fittings',        icon:'fa-wrench',       default:'../expert-products/cat-images/plumbing-fitting.png' },
-  { slug:'sanitary',         label:'Sanitary Ware',   icon:'fa-shower',       default:'../expert-products/cat-images/sanitary.png' },
-  { slug:'filter',           label:'Filters',         icon:'fa-filter',       default:'../expert-products/cat-images/filter.png' },
-  { slug:'marhaba',          label:'Marhaba',         icon:'fa-plug',         default:'../expert-products/cat-images/marhaba.jpg' },
-  { slug:'big-red',          label:'Big Red',         icon:'fa-car',          default:'../expert-products/cat-images/big-red-jack.jpg' },
+  { slug:'tools',            label:'DCK Power Tools', icon:'fa-bolt',         default:'expert-products/cat-images/tools.jpg' },
+  { slug:'hand-tools',       label:'Hand Tools',      icon:'fa-hammer',       default:'expert-products/cat-images/hand-tools.png' },
+  { slug:'fastener',         label:'Fasteners',       icon:'fa-cog',          default:'expert-products/cat-images/fastener.png' },
+  { slug:'construction',     label:'Nails/Wires',     icon:'fa-thumbtack',    default:'expert-products/cat-images/construction.png' },
+  { slug:'safety',           label:'Safety',          icon:'fa-hard-hat',     default:'expert-products/cat-images/safety.jpg' },
+  { slug:'spray-adhesive',   label:'Adhesives',       icon:'fa-spray-can',    default:'expert-products/cat-images/spray-adhesive.png' },
+  { slug:'tape',             label:'Tapes',           icon:'fa-tape',         default:'expert-products/cat-images/tape.png' },
+  { slug:'door-handle',      label:'Door Handles',    icon:'fa-door-open',    default:'expert-products/cat-images/door-handle.png' },
+  { slug:'hardware',         label:'Hardware',        icon:'fa-toolbox',      default:'expert-products/cat-images/hardware.png' },
+  { slug:'paint-tool',       label:'Paint Tools',     icon:'fa-paint-roller', default:'expert-products/cat-images/paint-tool.jpg' },
+  { slug:'gardening',        label:'Garden Tools',    icon:'fa-seedling',     default:'expert-products/cat-images/gardening.png' },
+  { slug:'disc',             label:'Discs',           icon:'fa-compact-disc', default:'expert-products/cat-images/disc.jpg' },
+  { slug:'trolley-caster',   label:'Wheel Barrow',    icon:'fa-dolly',        default:'expert-products/cat-images/trolley-caster.png' },
+  { slug:'household',        label:'Cleaning',        icon:'fa-broom',        default:'expert-products/cat-images/household.png' },
+  { slug:'plumbing-fitting', label:'Fittings',        icon:'fa-wrench',       default:'expert-products/cat-images/plumbing-fitting.png' },
+  { slug:'sanitary',         label:'Sanitary Ware',   icon:'fa-shower',       default:'expert-products/cat-images/sanitary.png' },
+  { slug:'filter',           label:'Filters',         icon:'fa-filter',       default:'expert-products/cat-images/filter.png' },
+  { slug:'marhaba',          label:'Marhaba',         icon:'fa-plug',         default:'expert-products/cat-images/marhaba.jpg' },
+  { slug:'big-red',          label:'Big Red',         icon:'fa-car',          default:'expert-products/cat-images/big-red-jack.jpg' },
   { slug:'all',              label:'All Products',    icon:'fa-th-large',     default:'Bahar-Products/SKU-0015.jpg' }
 ];
 
@@ -141,7 +141,7 @@ async function createHiddenCategory(name) {
   var list = getCustomHiddenCats().concat([{ slug: slug, label: name }]);
   var res = await _pushCustomHiddenCats(list);
   if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
-  refreshCategorySelects();
+  _onCatsChanged();
   renderHiddenCats();
   showToast('"' + name + '" created as a hidden category');
 }
@@ -156,7 +156,7 @@ async function renameHiddenCategory(slug) {
   entry.label = name;
   var res = await _pushCustomHiddenCats(list);
   if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
-  refreshCategorySelects();
+  _onCatsChanged();
   renderHiddenCats();
   renderTable();
   showToast('Renamed to "' + name + '"');
@@ -170,7 +170,7 @@ async function deleteHiddenCategory(slug) {
   var next = list.filter(function(c){ return c.slug !== slug; });
   var res = await _pushCustomHiddenCats(next);
   if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
-  refreshCategorySelects();
+  _onCatsChanged();
   renderHiddenCats();
   showToast('Category deleted');
 }
@@ -280,11 +280,35 @@ function catRedo() {
   showToast('Redone ↪');
 }
 
+// CAT_DEFS plus every category created from Inventory's "+ Category" (or the
+// hidden-category panel), so a newly created category gets its own card here
+// automatically. Custom ones have no storefront tile (index.html's grid is
+// fixed markup), so they're flagged `custom` and skip the storefront
+// hide/show controls.
+function _allCatDefs() {
+  var known = {};
+  CAT_DEFS.forEach(function(c) { known[c.slug] = true; });
+  var extra = [];
+  getCustomCats().concat(getCustomHiddenCats()).forEach(function(c) {
+    if (known[c.slug]) return;
+    known[c.slug] = true;
+    extra.push({ slug: c.slug, label: c.label, icon: 'fa-tag', default: '', custom: true });
+  });
+  return CAT_DEFS.concat(extra);
+}
+// Delete button on a custom card — the category lives in one of two lists
+// depending on which "create" surface made it.
+function catDeleteCustom(slug) {
+  if (getCustomCats().some(function(c) { return c.slug === slug; })) deleteCustomCat(slug);
+  else deleteHiddenCategory(slug);
+}
+
 function _orderedCatDefs() {
+  var defs = _allCatDefs();
   var bySlug = {};
-  CAT_DEFS.forEach(function(c) { bySlug[c.slug] = c; });
+  defs.forEach(function(c) { bySlug[c.slug] = c; });
   var ordered = _catPendingOrder.map(function(slug) { return bySlug[slug]; }).filter(Boolean);
-  CAT_DEFS.forEach(function(c) { if (_catPendingOrder.indexOf(c.slug) === -1) ordered.push(c); });
+  defs.forEach(function(c) { if (_catPendingOrder.indexOf(c.slug) === -1) ordered.push(c); });
   return ordered.map(function(c) {
     // _catPendingHidden[slug] is false/undefined (visible), true (hidden from
     // the storefront nav only — products still browsable via All Products/
@@ -348,6 +372,8 @@ async function saveCatChanges() {
   } catch (e) {}
   _catDirty = false;
   _catSyncButtons();
+  _invalidateCatsCache();
+  refreshCategorySelects();
   renderHiddenCats();
   showToast('Category layout saved!');
 }
@@ -408,7 +434,7 @@ function catDrop(e, targetSlug) {
 
 function catRenameCommit(slug, el) {
   var val = el.textContent.replace(/\s+/g, ' ').trim();
-  var def = CAT_DEFS.find(function(c) { return c.slug === slug; });
+  var def = _allCatDefs().find(function(c) { return c.slug === slug; });
   var current = _catPendingLabels[slug] || (def ? def.label : slug);
   if (!val) { el.textContent = current; return; }
   if (val === current) return;
@@ -433,7 +459,10 @@ function renderCatEditor() {
         'style="background:#fff;border:1px solid #e2e4e8;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.07)">' +
       '<div class="cat-edit-drag-handle" title="Drag to reorder"><i class="fa fa-grip-lines"></i></div>' +
       (cat.hidden ? '<div class="cat-edit-hidden-badge"><i class="fa fa-eye-slash"></i> ' + (cat.hiddenAll ? 'Hidden + products' : 'Hidden') + '</div>' : '') +
-      '<div style="height:150px;background:url(\'' + img + '\') center/cover no-repeat"></div>' +
+      (cat.custom ? '<div class="cat-edit-hidden-badge"><i class="fa fa-tag"></i> New · admin only</div>' : '') +
+      (img
+        ? '<div style="height:150px;background:url(\'' + img + '\') center/cover no-repeat"></div>'
+        : '<div style="height:150px;background:#f1f2f4;display:flex;align-items:center;justify-content:center;color:#c3c6cc;font-size:38px"><i class="fa ' + cat.icon + '"></i></div>') +
       '<div style="padding:12px 14px">' +
         '<div class="cat-edit-name" contenteditable="true" spellcheck="false" ' +
           'onblur="catRenameCommit(\'' + cat.slug + '\',this)" onkeydown="catRenameKeydown(event)" ' +
@@ -446,10 +475,13 @@ function renderCatEditor() {
         (cat.slug !== 'all'
           ? '<button onclick="openCatProducts(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid var(--orange);border-radius:6px;padding:7px;font-size:11px;font-weight:700;color:var(--orange);cursor:pointer"><i class="fa fa-boxes"></i> Products</button>'
           : '') +
-        (cat.slug !== 'all'
+        (cat.custom
+          ? '<button onclick="catDeleteCustom(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid var(--red);border-radius:6px;padding:6px;font-size:11px;font-weight:700;color:var(--red);cursor:pointer"><i class="fa fa-trash"></i> Delete category</button>'
+          : '') +
+        (cat.slug !== 'all' && !cat.custom
           ? '<button onclick="catToggleHidden(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid ' + (cat.hidden ? 'var(--green,#1c7a52)' : '#e2e4e8') + ';border-radius:6px;padding:6px;font-size:11px;font-weight:700;color:' + (cat.hidden ? 'var(--green,#1c7a52)' : '#888') + ';cursor:pointer"><i class="fa ' + (cat.hidden ? 'fa-eye' : 'fa-eye-slash') + '"></i> ' + (cat.hidden ? 'Show on storefront' : 'Hide from storefront') + '</button>'
           : '') +
-        (cat.slug !== 'all' && cat.hidden
+        (cat.slug !== 'all' && !cat.custom && cat.hidden
           ? '<label style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:6px 2px;font-size:11px;color:#888;cursor:pointer" title="Also filters every product in this category out of All Products and search, not just the storefront nav">' +
               '<input type="checkbox" ' + (cat.hiddenAll ? 'checked' : '') + ' onchange="catToggleHideProducts(\'' + cat.slug + '\')" /> Also hide all its products' +
             '</label>'

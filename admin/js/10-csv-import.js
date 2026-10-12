@@ -333,8 +333,20 @@ function getCustomCats() {
 // change: saveNewCat() and deleteCustomCat() below.
 var _allCatsCache = null;
 function getAllCats() {
-  if (!_allCatsCache) _allCatsCache = [...DEFAULT_CATS, ...getCustomCats(), ...getCustomHiddenCats()];
+  if (!_allCatsCache) {
+    // Categories-tab renames (cat_labels, e.g. marhaba -> "Generators") apply
+    // here too, so every dropdown/filter shows the same name as the storefront.
+    var labels = getCatLabels();
+    _allCatsCache = [...DEFAULT_CATS, ...getCustomCats(), ...getCustomHiddenCats()]
+      .map(function(c) { return labels[c.slug] ? Object.assign({}, c, { label: labels[c.slug] }) : c; });
+  }
   return _allCatsCache;
+}
+// Re-render everything that lists categories after the set or names change.
+function _onCatsChanged() {
+  _invalidateCatsCache();
+  refreshCategorySelects();
+  if (typeof renderCatEditor === 'function') renderCatEditor();
 }
 function _invalidateCatsCache() { _allCatsCache = null; }
 function slugify(str) {
@@ -448,20 +460,20 @@ function saveNewCat() {
   const custom = getCustomCats();
   custom.push({ slug, label: name });
   localStorage.setItem('bahar_categories', JSON.stringify(custom));
-  _invalidateCatsCache();
+  
   document.getElementById('newCatInput').value = '';
   document.getElementById('newCatSlug').textContent = 'â€”';
   renderCatChips();
-  refreshCategorySelects();
+  _onCatsChanged();
   showToast('Category "' + name + '" added!');
 }
 function deleteCustomCat(slug) {
   if (!confirm('Delete this category? Products using it won\'t be affected.')) return;
   const custom = getCustomCats().filter(c => c.slug !== slug);
   localStorage.setItem('bahar_categories', JSON.stringify(custom));
-  _invalidateCatsCache();
+  
   renderCatChips();
-  refreshCategorySelects();
+  _onCatsChanged();
   showToast('Category deleted');
 }
 
