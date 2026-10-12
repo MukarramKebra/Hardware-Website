@@ -365,69 +365,79 @@ function _restartBannerTimer() {
   _bannerTimer = setInterval(bannerNext, 3000);
 }
 
-// Measures the actual empty space beside the centered category grid and
-// resizes/shows or hides the banners to fit it — adapts to whatever the
-// visitor's screen actually is, instead of a fixed pixel breakpoint that goes
-// stale (and can hide the banners entirely) every time the banner width changes.
+// Sizes the sticky side banners (they live in #products, pinned below the
+// fixed header while the product grid scrolls). Height targets the visible
+// viewport (minus header + breathing room) so the banner is as big as fits on
+// THIS screen; width follows the image's own ratio, limited by the empty gutter
+// beside the grid. If the gutter is too narrow, both grids (categories and
+// products, kept the same width so they line up) are narrowed a little to
+// make room; if it's still too narrow, the banners hide.
 function _sizeSideBanners() {
-  const container = document.querySelector('#categories > .container');
-  const anchorEl  = document.querySelector('.cat-card[data-cat="gardening"]');
+  const catContainer  = document.querySelector('#categories > .container');
+  const prodContainer = document.querySelector('#products > .container');
+  const prodSection   = document.getElementById('products');
+  const header        = document.getElementById('header');
+  const rails = document.querySelectorAll('.side-banner-rail');
   const slots = document.querySelectorAll('.side-banner-slot');
-  if (!container || !slots.length) return;
-  // Measure the natural gutter first (reset any shrink from a previous run)
-  container.style.maxWidth = '';
-  const naturalW  = container.offsetWidth;
-  let available   = (window.innerWidth - naturalW) / 2 - 24 - 12; // edge offset + breathing room
-  if (!anchorEl) {
-    container.style.maxWidth = '';
-    slots.forEach(function(s) { s.style.display = 'none'; });
-    return;
+  if (!catContainer || !prodContainer || !prodSection || !rails.length) return;
+  function hideAll() {
+    catContainer.style.maxWidth = prodContainer.style.maxWidth = '';
+    rails.forEach(function(r) { r.style.display = 'none'; });
   }
-  // Height spans from the top of #categories (the "Browse by Type" tag area)
-  // down to the bottom of the Garden Tools card. The banner slots are now
-  // positioned absolutely INSIDE #categories (top:0), so this height uses the
-  // anchor's own offsetTop/offsetHeight — a pure layout number, independent of
-  // scroll, that lets the browser handle scrolling naturally (no fixed/scroll
-  // handling jank).
-  const targetH   = Math.max(120, anchorEl.offsetTop + anchorEl.offsetHeight);
+  // Measure the natural gutter first (reset any shrink from a previous run)
+  catContainer.style.maxWidth = prodContainer.style.maxWidth = '';
+  const naturalW = prodContainer.offsetWidth;
+  let available  = (window.innerWidth - naturalW) / 2 - 24 - 12; // edge offset + breathing room
+  const STICK_TOP = (header ? header.offsetHeight : 68) + 16;   // pinned just below the header
+  const BOTTOM_GAP = 16;
+  // Tallest the banner can be while fully visible in the viewport — and no
+  // taller than the products section itself (rail spans it minus 24px top,
+  // 40px bottom), so a short filtered list can't make it spill out.
+  const maxH = Math.max(160, Math.min(window.innerHeight - STICK_TOP - BOTTOM_GAP, prodSection.offsetHeight - 64));
   const IMG_RATIO = 1024 / 572; // height / width — banner images are ~9:16 portrait
-  const desiredW  = Math.round(targetH / IMG_RATIO); // width needed to hit the target height at the image's own ratio
-  // If the free gutter is too narrow for that width, narrow the category grid
-  // a little (up to 220px per side) to give the banner more room — otherwise
-  // the gutter would clamp the height well short of the Browse-by-Type to
-  // Garden Tools span.
+  // Capped so a big monitor gets a bigger banner without it eating the grid.
+  const MAX_W = 300;
+  const desiredW  = Math.min(MAX_W, Math.round(maxH / IMG_RATIO));
+  // If the free gutter is too narrow for that width, narrow the grids a
+  // little (up to 220px per side) to give the banner more room.
   if (available < desiredW) {
     const steal = Math.min(desiredW - available, 220);
     const shrunkW = naturalW - steal * 2;
     if (shrunkW >= 760) {
-      container.style.maxWidth = shrunkW + 'px';
+      catContainer.style.maxWidth = prodContainer.style.maxWidth = shrunkW + 'px';
       available += steal;
     }
   }
-  if (available < 150) {
-    container.style.maxWidth = '';
-    slots.forEach(function(s) { s.style.display = 'none'; });
-    return;
-  }
+  if (available < 150) { hideAll(); return; }
   // Width derives from the height at the image's own ratio. If the gutter is
-  // still too narrow for that width (even after stealing from the grid), scale
-  // both down proportionally so the ratio stays correct and nothing clips.
+  // still too narrow, scale both down proportionally so nothing clips.
   let width  = desiredW;
-  let height = targetH;
+  let height = Math.min(maxH, Math.round(desiredW * IMG_RATIO));
   if (width > available) {
     width  = Math.round(available);
     height = Math.round(width * IMG_RATIO);
   }
+  rails.forEach(function(r) { r.style.display = 'block'; r.style.width = width + 'px'; });
   slots.forEach(function(s) {
-    s.style.display = 'block';
-    s.style.width   = width  + 'px';
-    s.style.height  = height + 'px';
+    s.style.width  = width  + 'px';
+    s.style.height = height + 'px';
+    s.style.top    = STICK_TOP + 'px';
   });
 }
 window.addEventListener('resize', function() {
   clearTimeout(window._bannerResizeT);
   window._bannerResizeT = setTimeout(_sizeSideBanners, 200);
 });
+
+// Products list length changes the rail's room (and the banner's max height)
+// without any window resize, so re-measure when the section itself resizes.
+if (window.ResizeObserver) {
+  const _ps = document.getElementById('products');
+  if (_ps) new ResizeObserver(function() {
+    clearTimeout(window._bannerResizeT);
+    window._bannerResizeT = setTimeout(_sizeSideBanners, 100);
+  }).observe(_ps);
+}
 
 function initSideBanners() {
   const leftEl  = document.getElementById('bannerLeft');

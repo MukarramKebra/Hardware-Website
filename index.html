@@ -287,12 +287,6 @@
 
   <!-- Two vertical banners, each auto-rotating through category slides in sync (see initSideBanners() in js/02-catalog-render.js) -->
   <section id="categories">
-    <!-- Rotating brand banners — fill the leftover space beside the category
-         grid on wide screens. Content is rendered by initSideBanners() in
-         js/02-catalog-render.js (falls back to Banners/ defaults, or whatever
-         the admin has configured in Supabase). -->
-    <div class="side-banner-slot left"><div class="side-banner" id="bannerLeft"></div></div>
-    <div class="side-banner-slot right"><div class="side-banner" id="bannerRight"></div></div>
     <div class="container">
       <div class="section-header">
         <span class="section-tag" data-i18n="cat_tag">Browse by Type</span>
@@ -383,6 +377,13 @@
   </section>
 
   <section id="products">
+    <!-- Rotating brand banners — start where the products start and stay
+         pinned beside the product grid while it scrolls (sticky inside each
+         rail, which spans the section). Content is rendered by
+         initSideBanners() in js/02-catalog-render.js (falls back to Banners/
+         defaults, or whatever the admin has configured in Supabase). -->
+    <div class="side-banner-rail left"><div class="side-banner-slot left"><div class="side-banner" id="bannerLeft"></div></div></div>
+    <div class="side-banner-rail right"><div class="side-banner-slot right"><div class="side-banner" id="bannerRight"></div></div></div>
     <div class="container">
       <div class="products-controls">
         <!-- autocomplete="off" on the form prevents browser from offering saved credentials -->

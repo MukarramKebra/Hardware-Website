@@ -62,9 +62,17 @@
    lets the banners scroll with the page naturally like any other section
    content, so there's no fixed/scroll-handler jank. JS still gates display
    based on whether the gutter is wide enough. */
-.side-banner-slot { display: none; position: absolute; top: 0; z-index: 2; }
-.side-banner-slot.left  { left: 24px; }
-.side-banner-slot.right { right: 24px; }
+/* UPDATE: the banners now live in #products, not #categories. Each rail is an
+   absolutely-positioned column spanning the products section (top aligned with
+   the search/sort row), and the slot inside it is position:sticky — so the
+   banner starts where the products start and stays pinned below the header
+   while the product grid scrolls, then leaves with the section. Rail/slot
+   width, slot height and sticky `top` are all set by _sizeSideBanners(). */
+#products { position: relative; }
+.side-banner-rail { display: none; position: absolute; top: 24px; bottom: 40px; z-index: 2; pointer-events: none; }
+.side-banner-rail.left  { left: 24px; }
+.side-banner-rail.right { right: 24px; }
+.side-banner-slot { position: sticky; top: 84px; pointer-events: auto; }
 .side-banner { position: relative; width: 100%; height: 100%; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg); }
 /* "cover" (not "contain") — the box now hugs the image's own aspect ratio, so
    there's no letterbox space left to fill; cover just guarantees zero black
