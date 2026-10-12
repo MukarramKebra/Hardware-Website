@@ -186,13 +186,30 @@ function skuLabel(id, skuMap) {
   return /^\d{1,4}$/.test(String(val)) ? 'SKU-' + String(val).padStart(4, '0') : String(val);
 }
 
+// Flags products whose generated <title> would be identical to another's, so
+// renderPage() can disambiguate them with the SKU (duplicate titles compete
+// with each other in search results).
+function markDuplicateTitles(products) {
+  const key = (p) => {
+    const brandTxt = (p.brand && p.brand !== 'Generic') ? p.brand : '';
+    return clip(brandTxt ? p.name + ' — ' + brandTxt : p.name, 65).toLowerCase();
+  };
+  const counts = {};
+  for (const p of products) counts[key(p)] = (counts[key(p)] || 0) + 1;
+  for (const p of products) p.dupTitle = counts[key(p)] > 1;
+}
+
 // ── Page template ───────────────────────────────────────────────────────────
 function renderPage(p) {
   const url = SITE_BASE + 'product/' + p.slug + '.html';
   const brandTxt = (p.brand && p.brand !== 'Generic') ? p.brand : '';
   const catTxt = (p.category || '').replace(/-/g, ' ');
   const titleName = brandTxt ? p.name + ' — ' + brandTxt : p.name;
-  const title = clip(titleName, 65) + ' | Expert Hardware Kuwait';
+  // Products whose name/brand collapse to an identical title (size/pack variants
+  // listed as separate products) get their SKU appended — see markDuplicateTitles().
+  const title = p.dupTitle
+    ? clip(titleName, 50) + ' (' + p.sku + ') | Expert Hardware Kuwait'
+    : clip(titleName, 65) + ' | Expert Hardware Kuwait';
   const descBase = p.desc
     ? p.desc
     : [brandTxt, p.name, catTxt ? 'in ' + catTxt : '', 'Buy from Expert Hardware, a wholesale & retail hardware store in Kuwait City.']
@@ -455,6 +472,7 @@ async function main() {
   // Clear stale pages so products deleted in Supabase don't leave orphan files.
   // Wrapped because some mounts (e.g. the Cowork sandbox) block unlink; there,
   // we just overwrite in place — CI runs on a normal FS where this succeeds.
+  markDuplicateTitles(built);
   try { fs.rmSync(OUT_DIR, { recursive: true, force: true }); } catch (_) {}
   fs.mkdirSync(OUT_DIR, { recursive: true });
   for (const p of built) {
