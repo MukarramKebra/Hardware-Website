@@ -395,8 +395,9 @@ function _sizeSideBanners() {
   // 40px bottom), so a short filtered list can't make it spill out.
   const maxH = Math.max(160, Math.min(window.innerHeight - STICK_TOP - BOTTOM_GAP, prodSection.offsetHeight - 64));
   const IMG_RATIO = 1024 / 572; // height / width — banner images are ~9:16 portrait
-  // Capped so a big monitor gets a bigger banner without it eating the grid.
-  const MAX_W = 300;
+  // Capped so a big monitor gets a bigger banner without it eating the grid:
+  // 300px up to 1920-wide screens, growing with width beyond that (~384px at 2560).
+  const MAX_W = Math.max(300, Math.round(window.innerWidth * 0.15));
   const desiredW  = Math.min(MAX_W, Math.round(maxH / IMG_RATIO));
   // If the free gutter is too narrow for that width, narrow the grids a
   // little (up to 220px per side) to give the banner more room.
