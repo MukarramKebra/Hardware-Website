@@ -26,7 +26,46 @@ rather than assuming. Real logical merge conflicts (not just identical-content o
 read both sides' logic before resolving rather than picking a side by default.
 
 ## 2) Current state
-### Most recent session — storefront UI/UX pass (2026-10-11)
+### Most recent session — admin categories, pinned banners, SEO, permissions (2026-10-12/13)
+All pushed to `main`; the storefront changes were live-verified and followed by a cache flush (latest
+`asset_version` 1791827694945 at the time). Commits: `6e688acf`, `b87d2bb5`, `d9c87f9c`, `0706ad92`,
+`19df5f3e`, `5e849a72`.
+- **Admin Categories tab fixed.** Default card images 404'd because `admin/index.html` has
+  `<base href="../">` — paths in `admin/js/05-categories.js` were `../expert-products/...`; now
+  `expert-products/...`. Categories created with Inventory "+ Category" now get a card in the Categories tab
+  automatically (new `_allCatDefs()`; custom cards show a placeholder icon, a "New · admin only" badge and a
+  "Delete category" button, with no hide/show controls). Renamed labels (e.g. `marhaba` → "Generators", from
+  `expert_settings.cat_labels`) now show in the Inventory category dropdowns — `getAllCats()` in
+  `admin/js/10-csv-import.js` applies the overrides, and a new `_onCatsChanged()` refreshes dropdowns and
+  the editor after create/rename/delete/save.
+- **Side banners rebuilt as pinned rails inside the products section** (supersedes the `position:fixed` /
+  `.banner-pinned` approach described in the 2026-10-11 block below). Markup: a `.side-banner-rail` +
+  `.side-banner-slot` pair at the top of `<section id="products">` in `index.html` (removed from
+  `#categories`). CSS: `#products{position:relative}`, rails absolutely positioned left/right, slot is
+  `position:sticky`. `_sizeSideBanners()` (`code/js/02-catalog-render.js`) sizes by viewport: width capped at
+  `max(300, 15% of window width)` (so 2560-wide screens get bigger banners), height limited to the available
+  viewport, banner narrows the page container if the gutter is too small, hides below ~150px of gutter
+  (~<1100px screens), and vertically centres the pinned banner in the viewport instead of hugging the header.
+  A `ResizeObserver` on `#products` re-measures when products finish loading.
+- **Sort-by dropdown and Arabic toggle are TEMPORARILY DISABLED at the owner's request.** `.sort-wrap`
+  hidden (`code/css/02-sections.css`); `.lang-btn` hidden (`code/css/06-lang-rtl.css`), `ARABIC_ENABLED =
+  false` (`code/js/04-i18n-order.js`, saved `ar` preference ignored), and the `hreflang="ar"` /
+  `og:locale:alternate ar_KW` tags were removed from `index.html`. Translations and RTL code are untouched.
+- **SEO pass.** Homepage title is now `Expert Hardware Kuwait | Tools, Welding & Fasteners` and the
+  description ~170 chars — changed in BOTH `index.html` and the Supabase `seo_settings` row (the storefront
+  overrides the tags at runtime from that row; keywords left intact). `scripts/generate-product-pages.js`
+  got `markDuplicateTitles()`: product pages whose title would collide (≈33 pages across 11 groups) get
+  ` (SKU-…)` appended; verified 0 duplicate titles across 964 generated pages. Audit findings deliberately
+  left alone: the per-product `keywords` strings are spammy ("cheap X Kuwait"…) but are owner-managed data;
+  most product pages have no `offers` block because prices are hidden (`hidden_prices`) by design.
+- **Claude Code permissions tightened.** `/ecc:security-scan` graded the config B (87). The committed
+  `.claude/settings.json` no longer sets `defaultMode: bypassPermissions`; it has a scoped `allow` list
+  (git, `node scripts/*`, `curl`, `ls`, file tools, Supabase `execute_sql`) and a `deny` list (force-push,
+  `reset --hard`, `rm -rf /*`, `.env` reads). The owner confirmed `ANTHROPIC_BASE_URL=127.0.0.1:8787` in the
+  git-ignored `settings.local.json` is their Headroom proxy (intentional). Claude could not add the bypass
+  line to `settings.local.json` itself (auto-mode classifier blocks self-modification) — see section 6.
+
+### Previous session — storefront UI/UX pass (2026-10-11)
 Visual/UX-only work on the public storefront; no catalog, admin, or backend changes. All pushed and
 live-verified, each push followed by a Supabase cache flush (see section 6 standing workflow).
 - **Product detail page (PDP) fully redesigned, desktop + phone, every feature kept.** Rebuilt
@@ -42,7 +81,8 @@ live-verified, each push followed by a Supabase cache flush (see section 6 stand
 - **Phone PDP is a compact one-frame card**: small photo left, title/SKU/stock/price beside it, quantity
   + Add to Cart underneath, plus a sticky bottom buy bar (`#pmSticky`) that slides in once the inline
   button scrolls away (IntersectionObserver in `openProduct`).
-- **Desktop side banners now stay pinned while scrolling.** `.side-banner-slot` (`code/css/02-sections.css`)
+- **[Superseded 2026-10-12 — banners are now sticky rails inside `#products`, see above.] Desktop side
+  banners now stay pinned while scrolling.** `.side-banner-slot` (`code/css/02-sections.css`)
   changed from `position:absolute` inside `#categories` to `position:fixed` in the viewport gutters,
   shown via a `.banner-pinned` class toggled by new `_updateBannerPin()` (`code/js/02-catalog-render.js`)
   on scroll: appears once the category section reaches the top (so it no longer overlaps the offers
@@ -167,7 +207,25 @@ live-verified, each push followed by a Supabase cache flush (see section 6 stand
   than a real product. No catalog writes were made — purely a report.
 
 ## 3) Active files
-**UI/UX session (most recent, 2026-10-11) — storefront visual/UX only:**
+**Categories / banners / SEO / permissions session (most recent, 2026-10-12/13):**
+- `admin/js/05-categories.js` — default image paths fixed; `_allCatDefs()`, `catDeleteCustom()`;
+  `renderCatEditor()` renders custom cards; `saveCatChanges()` invalidates the cats cache + refreshes selects.
+- `admin/js/10-csv-import.js` — `getAllCats()` applies `cat_labels`; `_onCatsChanged()`.
+- `index.html` — banner rails moved into `#products`; homepage title/description shortened; `hreflang="ar"` and
+  `og:locale:alternate ar_KW` removed.
+- `code/css/02-sections.css` — `.side-banner-rail` / `.side-banner-slot` (sticky) rules; `.sort-wrap` hidden.
+- `code/css/01-base.css` — `overflow-x: clip` on `html`/`body` (needed for sticky; `hidden` breaks it).
+- `code/css/06-lang-rtl.css` — `.lang-btn { display:none !important }` at the top.
+- `code/js/02-catalog-render.js` — `_sizeSideBanners()` rewritten (viewport-based sizing, centring, ResizeObserver).
+- `code/js/04-i18n-order.js` — `ARABIC_ENABLED = false` gate.
+- `scripts/generate-product-pages.js` — `markDuplicateTitles()` + SKU-suffixed titles.
+- `.claude/settings.json` — `bypassPermissions` removed; `allow`/`deny` lists added (PreToolUse image-folder
+  hook unchanged). `.claude/settings.local.json` (git-ignored) — Headroom proxy env + SessionStart hook.
+- `CLAUDE.md` — new gotchas (admin `<base href>`, sticky vs overflow, `seo_settings` override, duplicate-title
+  suffixes, disabled sort/Arabic) and a Permissions/GateGuard/local-preview workflow note.
+- Supabase `expert_settings`: `seo_settings` (title + description updated), `asset_version` (flushed).
+
+**UI/UX session (2026-10-11) — storefront visual/UX only:**
 - `code/js/03-product-cart-checkout.js` — PDP rebuilt (`openProduct`, `renderRelatedProducts`,
   `closeProduct`, `pmSelectVariant`, `pmAddToCart`, new `pmToggleWishlist`, `_pmSyncQty`, `_pmEsc`);
   phone sticky buy bar + IntersectionObserver.
@@ -249,7 +307,20 @@ reads/writes them). See prior version of this file for the rest of the Edge Func
   `_catalogLoadFailed` first (real "couldn't load, retry" message vs. genuine "no products found").
 
 ## 4) Changes made
-**Most recent session (UI/UX pass, 2026-10-11):**
+**Most recent session (categories / banners / SEO / permissions, 2026-10-12/13):**
+- Fixed admin Categories tab images; made new "+ Category" entries auto-create a card; made renamed labels
+  (Generators) appear in the Inventory dropdown.
+- Moved the side banners to start at the products section, sized per screen, kept sticky while products
+  scroll; enlarged for 2560×1440; changed to vertically centred pinning. Tested at 1920×1080, 2560×1300,
+  1440, 1280 and 900.
+- Hid the sort dropdown and Arabic toggle (temporary, owner request) — restore steps are in `CLAUDE.md`.
+- Ran `/ecc:model-route` (sonnet, fallback opus) and `/ecc:security-scan` (B, 87/100); fixed the one real
+  finding (committed `bypassPermissions`) by moving to an allow/deny list in `.claude/settings.json`.
+- Ran `/ecc:seo`: shortened homepage title/description (index.html + Supabase `seo_settings`), removed the
+  premature `hreflang="ar"`, de-duplicated product-page titles via SKU suffix. Pushed, live title confirmed.
+- Updated `CLAUDE.md` (new gotchas + permissions/workflow notes) and this file.
+
+**Previous session (UI/UX pass, 2026-10-11):**
 - Redesigned the product detail page for desktop and phone, keeping every feature; verified at 1440/375
   and across variant / sale / price-on-request / out-of-stock / wishlist / qty-limit states. Several
   pushes, each followed by a cache flush.
@@ -308,8 +379,28 @@ prior version of this file for full detail. This session's changes, roughly in o
   section 2), no catalog changes made.
 
 ## 5) Failed attempts
-*(Earlier history retained — see prior version of this file / git log for the full pre-session list. This
-session adds:)*
+**2026-10-12/13 session:**
+- **Admin category images 404'd** because paths were written `../expert-products/...` — `admin/index.html`'s
+  `<base href="../">` already resolves from the site root. Fix: drop the `../`.
+- **Sticky banners scrolled away** — `overflow-x: hidden` on `html`/`body` creates a scroll container that
+  defeats `position: sticky`. Fix: `overflow-x: clip` (kept `hidden` as a fallback line before it).
+- **First banner width was uncapped** — at 1920 it grew to ~502px and squeezed the product grid to 844px.
+  Fixed with a width cap, later made a fraction of window width (15%) so 2560 screens get larger banners.
+- **First banner measurement at 2560 was stale** (products hadn't loaded, so section height was tiny) —
+  fixed by re-measuring via a `ResizeObserver` on `#products`.
+- **Chrome extension wasn't connected**, so UI testing used the chrome-devtools MCP and a small `node` static
+  server on port 8123 (no Python on the machine).
+- **Pushes were rejected as diverged** several times because `generate-seo.yml` had committed in between —
+  each time `git fetch && git merge origin/main --no-edit` then push.
+- **Could not add `bypassPermissions` to `.claude/settings.local.json`** — the auto-mode classifier denied the
+  edit twice as self-modification (even when the owner asked). Did not work around it; the owner adds that
+  line themselves if they want prompts fully off. Offered and did the alternative: `execute_sql` in the
+  committed allow list so the cache flush doesn't prompt.
+- A background "usage" notification claimed nothing had been changed this session; it was wrong (checked
+  against git history) and ignored.
+
+*(Earlier history retained — see prior version of this file / git log for the full pre-session list. The
+2026-10-11 and prior session adds:)*
 - **`create or replace function` on an RPC with a changed parameter list does not remove the old
   overload.** Rewriting `admin_list_orders`/`admin_update_order_status`/`admin_delete_order` to drop the
   `p_token` parameter left the old, token-checking 2-/3-arg versions callable right alongside the new ones —
@@ -329,6 +420,22 @@ session adds:)*
   alone was sufficient. Fixed immediately with a proper integer-millisecond value.
 
 ## 6) Next steps
+- **Re-enable the sort dropdown and Arabic when the owner says so** — delete the `.sort-wrap` and `.lang-btn`
+  `display:none !important` rules, set `ARABIC_ENABLED = true`, and put back `hreflang="ar"` +
+  `og:locale:alternate ar_KW` in `index.html`. Then flush the cache.
+- **Owner's choice: fully turn permission prompts off** by adding `"permissions": {"defaultMode":
+  "bypassPermissions"}` to the git-ignored `.claude/settings.local.json` themselves (Claude can't). Until then,
+  commands outside the `.claude/settings.json` allow list may prompt.
+- **Confirm the nightly SEO Action regenerated product pages** with the SKU-suffixed duplicate titles after
+  the `5e849a72` push (`product/*.html` titles, 0 duplicates expected), and re-submit the sitemap in Search
+  Console if it still shows "Couldn't fetch".
+- **SEO items not actioned:** a custom domain (the `github.io/Hardware-Website/` path means `robots.txt` can't
+  be served from the host root); the spammy per-product `keywords` strings (owner-managed data); ~10 product
+  pages with very short descriptions; prices hidden on most product pages so no price rich results (by
+  design — ask before changing).
+- **Custom categories** (admin "+ Category") now show in the Categories tab but are still stored in
+  `localStorage.bahar_categories` (+ Supabase `custom_hidden_cats`), not fully synced — see the older item
+  below.
 - **85 catalog items in active categories (not the `cant-find-products` bucket) don't match anything on
   `expertshardware.com`'s current live catalog** — `door-handle` (41), `construction` (21), `household` (14),
   `tools` (5), `hand-tools` (4). Reported to the owner this session for their own review; nothing removed or
