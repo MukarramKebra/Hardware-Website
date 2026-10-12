@@ -228,10 +228,16 @@ function toggleLang() {
   setLang(_lang === 'en' ? 'ar' : 'en');
 }
 
+// Arabic is switched off for now: the toggle button is hidden (see .lang-btn at the top of
+// css/06-lang-rtl.css), so a visitor who picked Arabic earlier mustn't stay stuck in
+// it with no way back. Set ARABIC_ENABLED = true and remove that CSS rule to
+// bring it back.
+var ARABIC_ENABLED = false;
+
 // Apply saved language on load
 (function() {
   var saved = localStorage.getItem('bahar_lang');
-  if (saved === 'ar') setLang('ar');
+  if (saved === 'ar' && ARABIC_ENABLED) setLang('ar');
 })();
 
 // ── SAVE ORDER TO SUPABASE ────────────────────────────────────────────────────

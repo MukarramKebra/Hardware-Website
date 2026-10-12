@@ -1,3 +1,6 @@
+/* TEMPORARILY DISABLED: Arabic toggle hidden (also ARABIC_ENABLED in js/04-i18n-order.js). Delete this rule and set that flag to true to restore. */
+.lang-btn { display: none !important; }
+
 /* ── LANGUAGE TOGGLE BUTTON ──────────────────────────────────────────────── */
 .lang-btn {
   background: transparent;

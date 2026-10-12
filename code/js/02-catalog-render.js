@@ -418,11 +418,14 @@ function _sizeSideBanners() {
     width  = Math.round(available);
     height = Math.round(width * IMG_RATIO);
   }
+  // Pin it vertically centred in the space below the header, not flush to the top.
+  const headerH  = header ? header.offsetHeight : 68;
+  const stickTop = Math.max(STICK_TOP, Math.round(headerH + (window.innerHeight - headerH - height) / 2));
   rails.forEach(function(r) { r.style.display = 'block'; r.style.width = width + 'px'; });
   slots.forEach(function(s) {
     s.style.width  = width  + 'px';
     s.style.height = height + 'px';
-    s.style.top    = STICK_TOP + 'px';
+    s.style.top    = stickTop + 'px';
   });
 }
 window.addEventListener('resize', function() {
