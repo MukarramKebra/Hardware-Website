@@ -421,6 +421,29 @@ async function loadSiteStatus() {
     renderSiteStatus(false); // not set yet = enabled
   }
 }
+// ── MAX UNITS PER ORDER LINE (ultimate15 only) ───────────────────────────────
+// expert_settings key 'max_order_qty' is read by the decrement_stock RPC in
+// Postgres (not by the storefront JS): it rejects any single deduction that is
+// below 1 or above this cap. Unset/invalid falls back to 1000 server-side.
+async function loadMaxOrderQty() {
+  var input = document.getElementById('maxOrderQtyInput');
+  if (!input) return;
+  var r = await sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.max_order_qty&select=value', { headers: SB_HDRS });
+  if (r.data && r.data.length && /^[0-9]{1,6}$/.test(r.data[0].value)) input.value = r.data[0].value;
+}
+async function saveMaxOrderQty() {
+  var input = document.getElementById('maxOrderQtyInput');
+  var n = parseInt(input.value, 10);
+  if (!(n >= 1 && n <= 100000)) { showToast('Enter a whole number between 1 and 100000'); return; }
+  var r = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'max_order_qty', value: String(n) }])
+  });
+  if (r.error) { showToast('⚠️ Could not save — check Supabase expert_settings table'); return; }
+  input.value = n;
+  showToast('Max units per order line set to ' + n + ' ✅');
+}
 function renderSuperAdmin() {
   var isDisabled = localStorage.getItem('jain_user_disabled') === '1';
   // Update both the legacy standalone panel and the new inline ownerSection (bahar row)
@@ -439,7 +462,7 @@ function renderSuperAdmin() {
   if (b15StatusEl) { b15StatusEl.textContent = b15Disabled ? '🔴 Disabled' : '🟢 Active'; b15StatusEl.style.color = b15Disabled ? 'var(--red)' : 'var(--green)'; }
   if (b15Btn)      { b15Btn.textContent = b15Disabled ? 'Enable' : 'Disable'; b15Btn.className = 'su-toggle-btn ' + (b15Disabled ? 'enable' : 'disable'); }
   // Load site status from Supabase (for ultimate15)
-  if (localStorage.getItem('jain_auth') === 'super') { loadSiteStatus(); }
+  if (localStorage.getItem('jain_auth') === 'super') { loadSiteStatus(); loadMaxOrderQty(); }
   var log     = getLogInRange(_suRangeDays).slice().reverse();
   var logEl   = document.getElementById('suAuditLog');
   var logEl2  = document.getElementById('suAuditLog2');

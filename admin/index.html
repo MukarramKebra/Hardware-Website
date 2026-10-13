@@ -674,6 +674,27 @@
         </div>
       </div>
 
+      <!-- Max order quantity card — ultimate15 only -->
+      <div class="su-card owner-only-row">
+        <div class="su-card-h"><i class="fa fa-boxes"></i> Max Units Per Order Line</div>
+        <div class="su-user-row">
+          <div>
+            <div style="font-weight:800;font-size:14px;color:var(--dark)">Safety limit on stock deductions</div>
+            <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px">Applies to every product at checkout</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="maxOrderQtyInput" min="1" max="100000" step="1" value="1000" style="width:100px;padding:8px;border:1px solid #ddd;border-radius:8px">
+            <button class="su-toggle-btn" style="background:var(--orange)" onclick="saveMaxOrderQty()"><i class="fa fa-save"></i> Save</button>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--gray);padding:8px 12px;background:var(--light);border-radius:8px">
+          <i class="fa fa-info-circle" style="color:var(--orange)"></i>
+          The database refuses any single stock deduction above this number (and any zero or negative one), so nobody
+          can call the checkout stock function directly to inflate or wipe stock. Raise it if a customer legitimately
+          needs to buy more than this of one item in a single order. Default: 1000.
+        </div>
+      </div>
+
       <!-- Team Accounts card — ultimate15 only -->
       <div class="su-card owner-only-row">
         <div class="su-card-h"><i class="fa fa-user-friends"></i> Team Accounts</div>

@@ -156,9 +156,19 @@ Deno.serve(async (req: Request) => {
       return json({ ok: true, id: authUser.id });
     }
 
+    // update/delete only ever apply to Team Accounts (role "custom") — that's
+    // all the admin UI manages. Without this, a manager could reset or delete
+    // the owner (or any built-in account) by POSTing that account's id.
+    async function isTeamAccount(id: string): Promise<boolean> {
+      if (!/^[0-9a-f-]{36}$/i.test(id)) return false;
+      const rows = await adminFetch(`/rest/v1/expert_admin_profiles?id=eq.${id}&select=role`);
+      return Array.isArray(rows) && rows.length === 1 && rows[0].role === "custom";
+    }
+
     if (action === "update") {
       const id = String(body.id || "");
       if (!id) return json({ ok: false, error: "missing_id" }, 400);
+      if (!(await isTeamAccount(id))) return json({ ok: false, error: "forbidden_target" }, 403);
 
       if (body.password) {
         await adminFetch(`/auth/v1/admin/users/${id}`, {
@@ -184,6 +194,7 @@ Deno.serve(async (req: Request) => {
     if (action === "delete") {
       const id = String(body.id || "");
       if (!id) return json({ ok: false, error: "missing_id" }, 400);
+      if (id === callerId || !(await isTeamAccount(id))) return json({ ok: false, error: "forbidden_target" }, 403);
       // Deleting the auth user cascades to expert_admin_profiles (FK on delete cascade).
       await adminFetch(`/auth/v1/admin/users/${id}`, { method: "DELETE" });
       return json({ ok: true });
