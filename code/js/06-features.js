@@ -293,7 +293,9 @@ function sendBulkQuote() {
 function openOrderTracker() {
   var overlay = document.getElementById('trackOverlay');
   if (!overlay) return;
-  document.getElementById('trackPhone').value = '';
+  document.getElementById('trackOrderId').value = '';
+  document.getElementById('cancelOrderId').value = '';
+  document.getElementById('cancelResults').innerHTML = '';
   document.getElementById('trackResults').innerHTML = '';
   document.getElementById('trackErr').textContent = '';
   switchOrderTab('track');
@@ -311,21 +313,28 @@ function switchOrderTab(tab) {
   document.getElementById('tabTrack').classList.toggle('active',  tab === 'track');
   document.getElementById('tabCancel').classList.toggle('active', tab === 'cancel');
 }
+// Pulls a UUID out of whatever the customer pasted (tolerates surrounding
+// spaces, a leading "Order ID:" label, or being copied with extra text).
+function _parseOrderId(raw) {
+  var m = String(raw || '').match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  return m ? m[0].toLowerCase() : null;
+}
 async function findCancelOrders() {
-  var phone = (document.getElementById('cancelPhone').value || '').trim().replace(/\s+/g,'');
+  var inputEl = document.getElementById('cancelOrderId');
+  var orderId = _parseOrderId(inputEl && inputEl.value);
   var errEl = document.getElementById('cancelErr');
   var resultsEl = document.getElementById('cancelResults');
-  if (!phone) { errEl.textContent = 'Please enter your WhatsApp number.'; return; }
+  if (!orderId) { errEl.textContent = 'Please paste your full Order ID (from your confirmation email).'; resultsEl.innerHTML = ''; return; }
   errEl.textContent = '';
   resultsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/rpc/get_orders_by_phone', {
+    var res = await sbFetch(SB_URL + '/rest/v1/rpc/get_order_by_id', {
       method: 'POST',
       headers: Object.assign({}, SB_H, { 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ p_phone: phone })
+      body: JSON.stringify({ p_id: orderId })
     });
     if (res.error || !res.data || !res.data.length) {
-      resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No orders found for this number.</p></div>';
+      resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No order found with that Order ID.<br><small>Check you pasted the whole ID from your confirmation email.</small></p></div>';
       return;
     }
     var now = Date.now();
@@ -356,7 +365,7 @@ async function findCancelOrders() {
         )+
       '</div>';
     }).join('');
-    resultsEl.innerHTML = '<p style="font-size:12px;color:#888;margin-bottom:12px">Found '+res.data.length+' order(s)</p>' + html;
+    resultsEl.innerHTML = html;
   } catch(e) {
     resultsEl.innerHTML = '<p style="color:#dc2626;text-align:center">Could not load orders. Try again.</p>';
   }
@@ -380,26 +389,26 @@ async function cancelOrder(orderId, btn) {
   }
 }
 async function trackOrder() {
-  var phone = (document.getElementById('trackPhone').value || '').trim().replace(/\s+/g,'');
+  var inputEl = document.getElementById('trackOrderId');
+  var orderId = _parseOrderId(inputEl && inputEl.value);
   var errEl = document.getElementById('trackErr');
   var resultsEl = document.getElementById('trackResults');
-  if (!phone) { errEl.textContent = 'Please enter your WhatsApp number.'; return; }
+  if (!orderId) { errEl.textContent = 'Please paste your full Order ID (from your confirmation email).'; resultsEl.innerHTML = ''; return; }
   errEl.textContent = '';
   resultsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/rpc/get_orders_by_phone', {
+    var res = await sbFetch(SB_URL + '/rest/v1/rpc/get_order_by_id', {
       method: 'POST',
       headers: Object.assign({}, SB_H, { 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ p_phone: phone })
+      body: JSON.stringify({ p_id: orderId })
     });
     if (res.error || !res.data || !res.data.length) {
-      resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No orders found for this number.<br><small>Make sure you enter the number used during checkout.</small></p></div>';
+      resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No order found with that Order ID.<br><small>Check you pasted the whole ID from your confirmation email.</small></p></div>';
       return;
     }
     var statusIcon = { pending:'fa-clock', confirmed:'fa-check-circle', delivered:'fa-truck', cancelled:'fa-times-circle' };
     var statusColor = { pending:'#f59e0b', confirmed:'#3b82f6', delivered:'#16a34a', cancelled:'#dc2626' };
-    resultsEl.innerHTML = '<p style="font-size:12px;color:#888;margin-bottom:12px">Found '+res.data.length+' order(s)</p>' +
-      res.data.map(function(o) {
+    resultsEl.innerHTML = res.data.map(function(o) {
         var dt = o.created_at ? new Date(o.created_at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
         var items = '';
         try { var arr = typeof o.items==='string' ? JSON.parse(o.items) : (o.items||[]); items = arr.map(function(it){ return it.name+' ×'+it.qty; }).join(', '); } catch(e){}

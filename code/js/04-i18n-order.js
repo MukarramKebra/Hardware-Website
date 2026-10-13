@@ -257,6 +257,7 @@ async function saveOrderToSupabase(order) {
     id:             newOrderId,
     customer_name:  order.name,
     customer_phone: order.phone,
+    customer_email: order.email || null,
     address:        order.address,
     notes:          order.notes || '',
     items:          order.items,

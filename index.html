@@ -781,6 +781,7 @@
             <div class="co-field"><label data-i18n="co_full_name" for="coName">Full Name *</label><input type="text" id="coName" placeholder="Ahmed Al-Mutairi" /></div>
             <div class="co-field"><label data-i18n="co_wa_num" for="coPhone">WhatsApp Number *</label><input type="tel" id="coPhone" placeholder="+965 XXXX XXXX" /></div>
           </div>
+          <div class="co-field"><label for="coEmail">Email * <small style="font-weight:400;color:#888">— we'll send your order summary and Order ID here</small></label><input type="email" id="coEmail" placeholder="you@example.com" autocomplete="email" /></div>
         </div>
         <!-- FULFILMENT TOGGLE -->
         <div class="co-section">
@@ -1168,9 +1169,9 @@
       </div>
       <!-- TRACK PANEL -->
       <div class="track-body" id="panelTrack">
-        <p style="font-size:13px;color:#666;margin-bottom:16px">Enter the WhatsApp number you used during checkout to find your orders.</p>
+        <p style="font-size:13px;color:#666;margin-bottom:16px">Paste the Order ID from your confirmation email (or the order confirmation screen) to see what you ordered.</p>
         <div style="display:flex;gap:8px;margin-bottom:8px">
-          <input type="tel" id="trackPhone" placeholder="+965 XXXX XXXX" class="track-input" autocomplete="off" onkeydown="if(event.key==='Enter')trackOrder()" />
+          <input type="text" id="trackOrderId" placeholder="Order ID  (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)" class="track-input" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')trackOrder()" />
           <button class="track-btn" onclick="trackOrder()"><i class="fa fa-search"></i> Find</button>
         </div>
         <div class="track-err" id="trackErr"></div>
@@ -1182,9 +1183,9 @@
           <i class="fa fa-clock"></i>
           <span>You can only cancel orders placed <strong>within the last hour</strong>. After that, please contact us on WhatsApp.</span>
         </div>
-        <p style="font-size:13px;color:#666;margin-bottom:16px;margin-top:12px">Enter the WhatsApp number you used at checkout.</p>
+        <p style="font-size:13px;color:#666;margin-bottom:16px;margin-top:12px">Paste the Order ID from your confirmation email.</p>
         <div style="display:flex;gap:8px;margin-bottom:8px">
-          <input type="tel" id="cancelPhone" placeholder="+965 XXXX XXXX" class="track-input" autocomplete="off" onkeydown="if(event.key==='Enter')findCancelOrders()" />
+          <input type="text" id="cancelOrderId" placeholder="Order ID  (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)" class="track-input" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')findCancelOrders()" />
           <button class="track-btn" onclick="findCancelOrders()"><i class="fa fa-search"></i> Find</button>
         </div>
         <div class="track-err" id="cancelErr"></div>

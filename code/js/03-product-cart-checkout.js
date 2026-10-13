@@ -566,6 +566,8 @@ function renderCheckoutForm() {
   const total = cart.reduce((s,c) => s+c.price*c.qty, 0);
   document.getElementById('coTotal').textContent = total.toFixed(3) + ' KWD';
   // Pre-fill from saved profile if user is logged in
+  const _coEmailEl = document.getElementById('coEmail');
+  if (_coEmailEl && typeof _authUser !== 'undefined' && _authUser && _authUser.email) _coEmailEl.value = _authUser.email;
   if (_userProfile) {
     if (_userProfile.name)  document.getElementById('coName').value  = _userProfile.name;
     if (_userProfile.phone) document.getElementById('coPhone').value = _userProfile.phone;
@@ -601,6 +603,10 @@ function setFulfilment(mode) {
 function handleCheckoutSubmit() {
   const name  = document.getElementById('coName').value.trim();
   const phone = document.getElementById('coPhone').value.trim();
+  // coEmail can be missing for a visitor still holding a cached copy of
+  // index.html from before the field existed — treat that as "no email".
+  const emailEl = document.getElementById('coEmail');
+  const email = emailEl ? emailEl.value.trim() : '';
   const isPickup = _fulfilment === 'pickup';
 
   // Validate required fields
@@ -610,12 +616,18 @@ function handleCheckoutSubmit() {
     if (!el.value.trim()) { el.classList.add('err'); valid = false; }
     else el.classList.remove('err');
   });
+  // Email is how the customer gets their Order ID (needed to track/cancel later).
+  if (emailEl) {
+    const emailOk = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(email) && email.length <= 254;
+    emailEl.classList.toggle('err', !emailOk);
+    if (!emailOk) valid = false;
+  }
   if (!isPickup) {
     const areaEl = document.getElementById('coArea');
     if (!areaEl.value) { areaEl.classList.add('err'); valid = false; }
     else areaEl.classList.remove('err');
   }
-  if (!valid) { alert('Please fill in your name and WhatsApp number' + (isPickup ? '.' : ', and select your area.')); return; }
+  if (!valid) { alert('Please fill in your name, WhatsApp number and a valid email address' + (isPickup ? '.' : ', and select your area.')); return; }
 
   const notes  = document.getElementById('coNotes').value.trim();
   const total  = cart.reduce((s,c) => s+c.price*c.qty, 0);
@@ -641,6 +653,7 @@ function handleCheckoutSubmit() {
   const msg = [
     '🔧 *Expert Hardware Order* 🔧',
     '📋 *Ref:* ' + orderRef,
+    '🆔 *Order ID:* ' + orderId,
     '',
     '👤 *Name:* ' + name,
     '📞 *WhatsApp:* ' + phone,
@@ -659,7 +672,7 @@ function handleCheckoutSubmit() {
   deductStock(cart);
 
   // Save order to Supabase (fire-and-forget — see orderId comment above)
-  saveOrderToSupabase({ id: orderId, name, phone, address: isPickup ? 'PICK UP' : address, notes, items: cart.map(c=>({name:c.name,sku:c.sku||getProductSku(c.id),qty:c.qty,price:c.price})), total });
+  saveOrderToSupabase({ id: orderId, name, phone, email, address: isPickup ? 'PICK UP' : address, notes, items: cart.map(c=>({name:c.name,sku:c.sku||getProductSku(c.id),qty:c.qty,price:c.price})), total });
 
   // Open WhatsApp
   window.open('https://wa.me/96597656372?text=' + encodeURIComponent(msg), '_blank');
@@ -679,6 +692,11 @@ function handleCheckoutSubmit() {
       <h3>Order Sent!</h3>
       <p>Your order has been sent to Expert Hardware on WhatsApp.<br/>We will confirm and arrange ${isPickup ? 'pick up' : 'delivery'} shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
       <div class="co-success-ref">Order Reference <strong>${orderRef}</strong></div>
+      <div class="co-success-ref" style="margin-top:8px">Order ID — keep this to track or cancel your order<br/>
+        <strong style="font-size:12px;word-break:break-all;user-select:all">${orderId}</strong><br/>
+        <button class="btn btn-outline" style="margin-top:6px;padding:4px 12px;font-size:12px" onclick="copyLastOrderId(this)"><i class="fa fa-copy"></i> Copy Order ID</button>
+        ${email ? `<div style="font-size:12px;margin-top:6px;color:#666">We're also emailing it, with your order summary, to <strong>${email.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</strong>.</div>` : ''}
+      </div>
       <div class="co-success-summary">
         ${orderItemsHtml}
         <div class="co-item co-success-total"><span>Total</span><span>${total.toFixed(3)} KWD</span></div>
@@ -688,19 +706,22 @@ function handleCheckoutSubmit() {
         <button class="btn btn-primary" onclick="document.getElementById('checkoutOverlay').classList.remove('open');document.getElementById('coBody').innerHTML=origCoBody">Continue Shopping</button>
       </div>
     </div>`;
-  // Read by trackJustPlacedOrder() below — kept off the HTML attribute
-  // above since phone is free-typed user input and doesn't belong
-  // interpolated into an inline onclick string.
-  _lastCheckoutPhone = phone;
+  // Read by trackJustPlacedOrder()/copyLastOrderId() below — kept off the
+  // inline onclick attributes above so nothing is interpolated into them.
+  _lastCheckoutOrderId = orderId;
 }
 
 function trackJustPlacedOrder() {
   document.getElementById('checkoutOverlay').classList.remove('open');
   openOrderTracker();
-  const tp = document.getElementById('trackPhone');
-  if (tp) tp.value = _lastCheckoutPhone || '';
+  const tp = document.getElementById('trackOrderId');
+  if (tp && _lastCheckoutOrderId) { tp.value = _lastCheckoutOrderId; if (typeof trackOrder === 'function') trackOrder(); }
 }
-let _lastCheckoutPhone = '';
+function copyLastOrderId(btn) {
+  const done = () => { if (btn) btn.innerHTML = '<i class="fa fa-check"></i> Copied'; };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(_lastCheckoutOrderId).then(done, () => {});
+}
+let _lastCheckoutOrderId = '';
 
 // Store original checkout body to reset it
 let origCoBody = '';

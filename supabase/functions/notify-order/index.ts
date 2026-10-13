@@ -99,6 +99,7 @@ Deno.serve(async (req) => {
           <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px">
             <tr><td style="padding:4px 0;color:#888;width:110px">Customer</td><td style="font-weight:700">${esc(o.customer_name)}</td></tr>
             <tr><td style="padding:4px 0;color:#888">Phone</td><td>${esc(o.customer_phone)}</td></tr>
+            ${o.customer_email ? `<tr><td style="padding:4px 0;color:#888">Email</td><td>${esc(o.customer_email)}</td></tr>` : ""}
             <tr><td style="padding:4px 0;color:#888">${o.address === "PICK UP" ? "Fulfilment" : "Address"}</td><td>${o.address === "PICK UP" ? "Store Pick Up" : esc(o.address)}</td></tr>
             ${o.notes ? `<tr><td style="padding:4px 0;color:#888">Notes</td><td>${esc(o.notes)}</td></tr>` : ""}
           </table>
@@ -133,7 +134,65 @@ Deno.serve(async (req) => {
     });
     if (!sendRes.ok) throw new Error(`Resend ${sendRes.status}: ${await sendRes.text()}`);
 
-    return json({ ok: true, order_id: o.id, invoice_url: invoiceUrl });
+    // Customer confirmation: what they ordered + the full Order ID they paste
+    // into "My Orders" on the site to track or cancel. Sent separately from the
+    // owner alert above and never allowed to fail the request, so an
+    // undeliverable customer address can't mask a successfully-sent owner email.
+    let customerEmailed = false;
+    const custEmail = String(o.customer_email || "").trim();
+    if (custEmail.length <= 254 && /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(custEmail)) {
+      try {
+        const ref = `EH-${shortId}`;
+        const custHtml = `<!DOCTYPE html><html><body style="margin:0;background:#f6f7f9;font-family:Arial,Helvetica,sans-serif;color:#1f2937">
+          <div style="max-width:600px;margin:0 auto;background:#fff">
+            <div style="background:#d20d17;padding:18px 24px"><span style="color:#fff;font-size:18px;font-weight:800">Thank you for your order, ${esc(o.customer_name)}!</span></div>
+            <div style="padding:24px">
+              <p style="margin:0 0 14px;font-size:14px">We received your order on ${esc(created.toLocaleString())} and will confirm it on WhatsApp shortly.</p>
+              <div style="background:#f6f7f9;border:1px dashed #d20d17;border-radius:10px;padding:14px 16px;margin-bottom:18px">
+                <div style="font-size:12px;color:#888">Order Reference</div>
+                <div style="font-size:16px;font-weight:800;margin-bottom:10px">${esc(ref)}</div>
+                <div style="font-size:12px;color:#888">Your Order ID — keep this to track or cancel your order</div>
+                <div style="font-family:Consolas,Menlo,monospace;font-size:14px;font-weight:700;word-break:break-all;margin-top:2px">${esc(o.id)}</div>
+              </div>
+              <table style="width:100%;border-collapse:collapse;font-size:13px">
+                <thead><tr style="border-bottom:2px solid #111827">
+                  <th style="padding:8px 6px;text-align:left">Item</th>
+                  <th style="padding:8px 6px;text-align:center">Qty</th>
+                  <th style="padding:8px 6px;text-align:right">Price</th>
+                  <th style="padding:8px 6px;text-align:right">Total</th>
+                </tr></thead>
+                <tbody>${rowsHtml}</tbody>
+              </table>
+              <div style="text-align:right;margin-top:10px;font-size:16px;font-weight:900;color:#d20d17">Total: ${money(Number(o.total) || 0)}</div>
+              <p style="margin:18px 0 4px;font-size:13px"><b>${o.address === "PICK UP" ? "Store Pick Up" : "Delivery to"}</b>${o.address === "PICK UP" ? "" : `: ${esc(o.address)}`}</p>
+              <p style="margin:14px 0 0;font-size:13px;color:#444">To see this order again, or to cancel it (possible within 1 hour of ordering), open <b>My Orders</b> on our website and paste the Order ID above.</p>
+              <div style="text-align:center;margin-top:24px">
+                <a href="${invoiceUrl}" style="display:inline-block;background:#d20d17;color:#fff;text-decoration:none;font-weight:800;padding:12px 26px;border-radius:9px;font-size:14px">View Invoice</a>
+              </div>
+            </div>
+            <div style="padding:14px 24px;border-top:1px solid #eee;font-size:11px;color:#999;text-align:center">
+              <a href="${SITE_BASE}" style="color:#999">Expert Hardware Kuwait</a>
+            </div>
+          </div></body></html>`;
+        const custRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: FROM,
+            to: custEmail,
+            reply_to: OWNER_EMAIL,
+            subject: `Your Expert Hardware order ${ref}`,
+            html: custHtml,
+          }),
+        });
+        if (custRes.ok) customerEmailed = true;
+        else console.error(`[notify-order] customer email -> Resend ${custRes.status}: ${await custRes.text()}`);
+      } catch (e) {
+        console.error("[notify-order] customer email failed:", e);
+      }
+    }
+
+    return json({ ok: true, order_id: o.id, invoice_url: invoiceUrl, customer_emailed: customerEmailed });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
