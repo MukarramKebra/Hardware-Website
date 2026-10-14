@@ -64,12 +64,12 @@ Deno.serve(async (req) => {
   if (!orderId) return json({ error: "order_id required" }, 400);
 
   try {
-    const rows = await db(`expert_orders?id=eq.${orderId}&select=*`);
+    const rows = await db(`expert_orders?id=eq.${encodeURIComponent(orderId)}&select=*`);
     if (!rows?.length) return json({ error: "Order not found" }, 404);
     const o = rows[0];
 
     // Atomic claim: only proceed if we're the one flipping notified false -> true.
-    const claimed = await db(`expert_orders?id=eq.${orderId}&notified=eq.false`, {
+    const claimed = await db(`expert_orders?id=eq.${encodeURIComponent(orderId)}&notified=eq.false`, {
       method: "PATCH",
       headers: { Prefer: "return=representation" },
       body: JSON.stringify({ notified: true }),
@@ -87,7 +87,9 @@ Deno.serve(async (req) => {
         <td style="padding:8px 6px;border-bottom:1px solid #eee;text-align:right;font-weight:700">${money((Number(it.price) || 0) * (Number(it.qty) || 0))}</td>
       </tr>`).join("");
 
-    const shortId = String(o.id).slice(0, 8).toUpperCase();
+    // Customer-facing Order ID: the 10-char short_code shown as XXXXX-XXXXX. Orders
+    // placed before short codes existed fall back to the full id.
+    const shortId = o.short_code ? `${o.short_code.slice(0, 5)}-${o.short_code.slice(5)}` : String(o.id);
     const invoiceUrl = `${SITE_BASE}order-invoice.html?id=${o.id}`;
     const created = o.created_at ? new Date(o.created_at) : new Date();
 
@@ -142,17 +144,14 @@ Deno.serve(async (req) => {
     const custEmail = String(o.customer_email || "").trim();
     if (custEmail.length <= 254 && /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(custEmail)) {
       try {
-        const ref = `EH-${shortId}`;
         const custHtml = `<!DOCTYPE html><html><body style="margin:0;background:#f6f7f9;font-family:Arial,Helvetica,sans-serif;color:#1f2937">
           <div style="max-width:600px;margin:0 auto;background:#fff">
             <div style="background:#d20d17;padding:18px 24px"><span style="color:#fff;font-size:18px;font-weight:800">Thank you for your order, ${esc(o.customer_name)}!</span></div>
             <div style="padding:24px">
               <p style="margin:0 0 14px;font-size:14px">We received your order on ${esc(created.toLocaleString())} and will confirm it on WhatsApp shortly.</p>
               <div style="background:#f6f7f9;border:1px dashed #d20d17;border-radius:10px;padding:14px 16px;margin-bottom:18px">
-                <div style="font-size:12px;color:#888">Order Reference</div>
-                <div style="font-size:16px;font-weight:800;margin-bottom:10px">${esc(ref)}</div>
                 <div style="font-size:12px;color:#888">Your Order ID — keep this to track or cancel your order</div>
-                <div style="font-family:Consolas,Menlo,monospace;font-size:14px;font-weight:700;word-break:break-all;margin-top:2px">${esc(o.id)}</div>
+                <div style="font-family:Consolas,Menlo,monospace;font-size:24px;font-weight:800;letter-spacing:2px;margin-top:4px">${esc(shortId)}</div>
               </div>
               <table style="width:100%;border-collapse:collapse;font-size:13px">
                 <thead><tr style="border-bottom:2px solid #111827">
@@ -181,7 +180,7 @@ Deno.serve(async (req) => {
             from: FROM,
             to: custEmail,
             reply_to: OWNER_EMAIL,
-            subject: `Your Expert Hardware order ${ref}`,
+            subject: `Your Expert Hardware order ${shortId}`,
             html: custHtml,
           }),
         });

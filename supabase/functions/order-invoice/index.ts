@@ -52,6 +52,7 @@ Deno.serve(async (req) => {
 
     return json({
       id: o.id,
+      short_code: o.short_code,
       customer_name: o.customer_name,
       customer_phone: o.customer_phone,
       customer_email: o.customer_email,

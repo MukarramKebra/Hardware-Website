@@ -638,7 +638,12 @@ function handleCheckoutSubmit() {
   // window.open() past the click's user-gesture window and risk it being
   // popup-blocked.
   const orderId  = crypto.randomUUID();
-  const orderRef = 'EH-' + orderId.slice(0, 8).toUpperCase();
+  // The short code is the customer-facing Order ID (what they paste into My Orders).
+  // 10 chars from a 32-letter alphabet without look-alikes (no 0/O/1/I) — still ~10^15
+  // combinations, so it can't be guessed the way a short sequential number could.
+  const _alpha = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const orderCode = Array.from(crypto.getRandomValues(new Uint8Array(10)), b => _alpha[b % 32]).join('');
+  const orderCodeShown = orderCode.slice(0, 5) + '-' + orderCode.slice(5);
 
   let address = '';
   if (!isPickup) {
@@ -652,8 +657,7 @@ function handleCheckoutSubmit() {
 
   const msg = [
     '🔧 *Expert Hardware Order* 🔧',
-    '📋 *Ref:* ' + orderRef,
-    '🆔 *Order ID:* ' + orderId,
+    '🆔 *Order ID:* ' + orderCodeShown,
     '',
     '👤 *Name:* ' + name,
     '📞 *WhatsApp:* ' + phone,
@@ -672,7 +676,7 @@ function handleCheckoutSubmit() {
   deductStock(cart);
 
   // Save order to Supabase (fire-and-forget — see orderId comment above)
-  saveOrderToSupabase({ id: orderId, name, phone, email, address: isPickup ? 'PICK UP' : address, notes, items: cart.map(c=>({name:c.name,sku:c.sku||getProductSku(c.id),qty:c.qty,price:c.price})), total });
+  saveOrderToSupabase({ id: orderId, short_code: orderCode, name, phone, email, address: isPickup ? 'PICK UP' : address, notes, items: cart.map(c=>({name:c.name,sku:c.sku||getProductSku(c.id),qty:c.qty,price:c.price})), total });
 
   // Open WhatsApp
   window.open('https://wa.me/96597656372?text=' + encodeURIComponent(msg), '_blank');
@@ -691,9 +695,8 @@ function handleCheckoutSubmit() {
       <i class="fab fa-whatsapp"></i>
       <h3>Order Sent!</h3>
       <p>Your order has been sent to Expert Hardware on WhatsApp.<br/>We will confirm and arrange ${isPickup ? 'pick up' : 'delivery'} shortly.<br/><br/><strong>Thank you, ${name}!</strong></p>
-      <div class="co-success-ref">Order Reference <strong>${orderRef}</strong></div>
-      <div class="co-success-ref" style="margin-top:8px">Order ID — keep this to track or cancel your order<br/>
-        <strong style="font-size:12px;word-break:break-all;user-select:all">${orderId}</strong><br/>
+      <div class="co-success-ref">Order ID — keep this to track or cancel your order<br/>
+        <strong style="font-size:22px;letter-spacing:2px;user-select:all">${orderCodeShown}</strong><br/>
         <button class="btn btn-outline" style="margin-top:6px;padding:4px 12px;font-size:12px" onclick="copyLastOrderId(this)"><i class="fa fa-copy"></i> Copy Order ID</button>
         ${email ? `<div style="font-size:12px;margin-top:6px;color:#666">We're also emailing it, with your order summary, to <strong>${email.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</strong>.</div>` : ''}
       </div>
@@ -708,7 +711,7 @@ function handleCheckoutSubmit() {
     </div>`;
   // Read by trackJustPlacedOrder()/copyLastOrderId() below — kept off the
   // inline onclick attributes above so nothing is interpolated into them.
-  _lastCheckoutOrderId = orderId;
+  _lastCheckoutOrderId = orderCodeShown;
 }
 
 function trackJustPlacedOrder() {

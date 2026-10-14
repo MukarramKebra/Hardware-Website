@@ -1171,7 +1171,7 @@
       <div class="track-body" id="panelTrack">
         <p style="font-size:13px;color:#666;margin-bottom:16px">Paste the Order ID from your confirmation email (or the order confirmation screen) to see what you ordered.</p>
         <div style="display:flex;gap:8px;margin-bottom:8px">
-          <input type="text" id="trackOrderId" placeholder="Order ID  (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)" class="track-input" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')trackOrder()" />
+          <input type="text" id="trackOrderId" placeholder="Order ID  (e.g. K7MQ4-XR2PT)" class="track-input" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')trackOrder()" />
           <button class="track-btn" onclick="trackOrder()"><i class="fa fa-search"></i> Find</button>
         </div>
         <div class="track-err" id="trackErr"></div>
@@ -1185,7 +1185,7 @@
         </div>
         <p style="font-size:13px;color:#666;margin-bottom:16px;margin-top:12px">Paste the Order ID from your confirmation email.</p>
         <div style="display:flex;gap:8px;margin-bottom:8px">
-          <input type="text" id="cancelOrderId" placeholder="Order ID  (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)" class="track-input" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')findCancelOrders()" />
+          <input type="text" id="cancelOrderId" placeholder="Order ID  (e.g. K7MQ4-XR2PT)" class="track-input" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')findCancelOrders()" />
           <button class="track-btn" onclick="findCancelOrders()"><i class="fa fa-search"></i> Find</button>
         </div>
         <div class="track-err" id="cancelErr"></div>

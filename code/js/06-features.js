@@ -313,28 +313,33 @@ function switchOrderTab(tab) {
   document.getElementById('tabTrack').classList.toggle('active',  tab === 'track');
   document.getElementById('tabCancel').classList.toggle('active', tab === 'cancel');
 }
-// Pulls a UUID out of whatever the customer pasted (tolerates surrounding
+// Pulls an Order ID out of whatever the customer pasted (tolerates surrounding
 // spaces, a leading "Order ID:" label, or being copied with extra text).
+// New orders have a 10-char code ("K7MQ4-XR2PT", dash optional); orders placed
+// before that have the long UUID form, which is still accepted.
 function _parseOrderId(raw) {
-  var m = String(raw || '').match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
-  return m ? m[0].toLowerCase() : null;
+  var s = String(raw || '');
+  var u = s.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  if (u) return u[0].toLowerCase();
+  var c = s.match(/\b([A-Z0-9]{5})[-\s]?([A-Z0-9]{5})\b/i);
+  return c ? (c[1] + c[2]).toUpperCase() : null;
 }
 async function findCancelOrders() {
   var inputEl = document.getElementById('cancelOrderId');
   var orderId = _parseOrderId(inputEl && inputEl.value);
   var errEl = document.getElementById('cancelErr');
   var resultsEl = document.getElementById('cancelResults');
-  if (!orderId) { errEl.textContent = 'Please paste your full Order ID (from your confirmation email).'; resultsEl.innerHTML = ''; return; }
+  if (!orderId) { errEl.textContent = 'Please enter your Order ID (from your confirmation email).'; resultsEl.innerHTML = ''; return; }
   errEl.textContent = '';
   resultsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/rpc/get_order_by_id', {
+    var res = await sbFetch(SB_URL + '/rest/v1/rpc/get_order_by_code', {
       method: 'POST',
       headers: Object.assign({}, SB_H, { 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ p_id: orderId })
+      body: JSON.stringify({ p_code: orderId })
     });
     if (res.error || !res.data || !res.data.length) {
-      resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No order found with that Order ID.<br><small>Check you pasted the whole ID from your confirmation email.</small></p></div>';
+      resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No order found with that Order ID.<br><small>Check you typed the whole ID from your confirmation email.</small></p></div>';
       return;
     }
     var now = Date.now();
@@ -393,17 +398,17 @@ async function trackOrder() {
   var orderId = _parseOrderId(inputEl && inputEl.value);
   var errEl = document.getElementById('trackErr');
   var resultsEl = document.getElementById('trackResults');
-  if (!orderId) { errEl.textContent = 'Please paste your full Order ID (from your confirmation email).'; resultsEl.innerHTML = ''; return; }
+  if (!orderId) { errEl.textContent = 'Please enter your Order ID (from your confirmation email).'; resultsEl.innerHTML = ''; return; }
   errEl.textContent = '';
   resultsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
   try {
-    var res = await sbFetch(SB_URL + '/rest/v1/rpc/get_order_by_id', {
+    var res = await sbFetch(SB_URL + '/rest/v1/rpc/get_order_by_code', {
       method: 'POST',
       headers: Object.assign({}, SB_H, { 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ p_id: orderId })
+      body: JSON.stringify({ p_code: orderId })
     });
     if (res.error || !res.data || !res.data.length) {
-      resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No order found with that Order ID.<br><small>Check you pasted the whole ID from your confirmation email.</small></p></div>';
+      resultsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-search" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i><p>No order found with that Order ID.<br><small>Check you typed the whole ID from your confirmation email.</small></p></div>';
       return;
     }
     var statusIcon = { pending:'fa-clock', confirmed:'fa-check-circle', delivered:'fa-truck', cancelled:'fa-times-circle' };

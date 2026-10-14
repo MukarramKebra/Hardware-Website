@@ -68,7 +68,7 @@
     }).join('');
 
     var created = o.created_at ? new Date(o.created_at) : new Date();
-    var shortId = String(o.id).slice(0, 8).toUpperCase();
+    var shortId = o.short_code ? (o.short_code.slice(0, 5) + '-' + o.short_code.slice(5)) : String(o.id).slice(0, 8).toUpperCase();
     document.title = 'Invoice #' + shortId + ' — Expert Hardware';
 
     el.innerHTML =

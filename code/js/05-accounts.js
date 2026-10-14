@@ -499,7 +499,7 @@ async function renderMyOrders() {
       : '';
     const status   = (o.status || 'pending').toLowerCase();
     const statusCls = statusClass[status] || 'myo-pending';
-    const shortId  = String(o.id || '').slice(-6).toUpperCase();
+    const shortId  = o.short_code ? (o.short_code.slice(0, 5) + '-' + o.short_code.slice(5)) : String(o.id || '').slice(-6).toUpperCase();
     return `
       <div class="myo-card">
         <div class="myo-top">

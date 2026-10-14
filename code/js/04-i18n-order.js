@@ -255,6 +255,7 @@ async function saveOrderToSupabase(order) {
   const newOrderId = order.id || crypto.randomUUID();
   const payload = [{
     id:             newOrderId,
+    short_code:     order.short_code || null,
     customer_name:  order.name,
     customer_phone: order.phone,
     customer_email: order.email || null,
@@ -266,14 +267,23 @@ async function saveOrderToSupabase(order) {
     user_id:        (_authUser ? _authUser.id : null)   // link to account if logged in
   }];
   console.log('[JainHardware] Saving order:', payload);
-  const result = await sbFetch(SB_URL + '/rest/v1/expert_orders', {
+  // A logged-in customer's row carries their user_id, which RLS only accepts from
+  // the `authenticated` role — so it must be sent with their token, not the anon
+  // key (anon inserts require user_id IS NULL). If that still fails (e.g. an
+  // expired token), retry as a guest order so the order and its email aren't lost.
+  const _post = (rows, hdrs) => sbFetch(SB_URL + '/rest/v1/expert_orders', {
     method: 'POST',
-    headers: Object.assign({}, SB_H, {
+    headers: Object.assign({}, hdrs, {
       'Content-Type': 'application/json',
       'Prefer': 'return=minimal'
     }),
-    body: JSON.stringify(payload)
+    body: JSON.stringify(rows)
   });
+  let result = await _post(payload, (_authUser && _authToken) ? getAuthHeaders() : SB_H);
+  if (result.error && payload[0].user_id) {
+    payload[0].user_id = null;
+    result = await _post(payload, SB_H);
+  }
   if (result.error) {
     console.error('[JainHardware] Order save FAILED:', result.error);
     // Still save to localStorage as a fallback
@@ -285,6 +295,7 @@ async function saveOrderToSupabase(order) {
   if (!_authUser) {
     const guestOrder = {
       id: result.error ? ('guest-' + Date.now()) : newOrderId,
+      short_code:     result.error ? null : (order.short_code || null),
       customer_name:  order.name,
       customer_phone: order.phone,
       address:        order.address,
