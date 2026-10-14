@@ -289,8 +289,8 @@ function updateHeaderForAuth() {
 }
 
 // ── Header button click ────────────────────────────────────────────────────────
-function onAccountBtnClick() {
-  if (_authUser) openAcctModal();
+function onAccountBtnClick(tab) {
+  if (_authUser) openAcctModal(tab);
   else openAuthModal('login');
 }
 
@@ -418,7 +418,7 @@ async function doAuthForgot() {
 }
 
 // ── Account Modal (Profile + My Orders) ───────────────────────────────────────
-async function openAcctModal() {
+async function openAcctModal(tab) {
   if (!_authUser) { openAuthModal('login'); return; }
   // Fill in header info
   const initial = (_userProfile && _userProfile.name)
@@ -433,8 +433,9 @@ async function openAcctModal() {
     document.getElementById('profPhone').value   = _userProfile.phone   || '';
     document.getElementById('profAddress').value = _userProfile.address || '';
   }
-  switchAcctTab('profile');
+  switchAcctTab(tab === 'orders' ? 'orders' : 'profile');
   document.getElementById('acctOverlay').classList.add('open');
+  if (tab !== 'orders') loadMyOrders().then(_updateActiveOrdersBadge);
 }
 function closeAcctModal() {
   document.getElementById('acctOverlay').classList.remove('open');
@@ -476,46 +477,68 @@ async function doSignOut() {
   closeAcctModal();
 }
 
+// Orders still in progress vs finished — shown as two sections in My Orders.
+function _isActiveOrder(o) {
+  var st = String(o.status || 'pending').toLowerCase();
+  return st !== 'delivered' && st !== 'cancelled' && st !== 'canceled';
+}
+function _orderCardHtml(o) {
+  var statusClass = { pending:'myo-pending', confirmed:'myo-confirmed', delivered:'myo-delivered', cancelled:'myo-cancelled', canceled:'myo-cancelled' };
+  var items = Array.isArray(o.items)
+    ? o.items.map(function(i) { return encodeHtml(String(i.name == null ? '' : i.name)) + ' &times;' + encodeHtml(String(i.qty == null ? '' : i.qty)); }).join('<br>')
+    : encodeHtml(o.items || '');
+  var date = o.created_at
+    ? new Date(o.created_at).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
+    : '';
+  var status = String(o.status || 'pending').toLowerCase();
+  var shortId = o.short_code ? (o.short_code.slice(0, 5) + '-' + o.short_code.slice(5)) : String(o.id || '').slice(-6).toUpperCase();
+  var invoiceId = o.short_code || o.id;
+  var invoice = (invoiceId && o.user_id)
+    ? '<a class="myo-invoice" href="order-invoice.html?id=' + encodeURIComponent(invoiceId) + '" target="_blank" rel="noopener"><i class="fa fa-file-invoice"></i> Invoice</a>'
+    : '';
+  return '<div class="myo-card">' +
+      '<div class="myo-top">' +
+        '<div class="myo-meta"><span class="myo-id">Order #' + shortId + '</span><span class="myo-date">' + date + '</span></div>' +
+        '<span class="myo-status ' + (statusClass[status] || 'myo-pending') + '">' + encodeHtml(status) + '</span>' +
+      '</div>' +
+      '<div class="myo-items">' + items + '</div>' +
+      '<div class="myo-footer">' +
+        '<span class="myo-total">' + parseFloat(o.total || 0).toFixed(3) + ' KWD</span>' +
+        invoice +
+        '<span class="myo-addr">' + encodeHtml(o.address || '') + '</span>' +
+      '</div>' +
+    '</div>';
+}
 async function renderMyOrders() {
-  const container = document.getElementById('myOrdersList');
+  var container = document.getElementById('myOrdersList');
   container.innerHTML = '<div class="myo-loading"><i class="fa fa-spinner fa-spin"></i> Loading orders…</div>';
-  const orders = await loadMyOrders();
+  var orders = await loadMyOrders();
+  _updateActiveOrdersBadge(orders);
   if (!orders || !orders.length) {
-    container.innerHTML = `
-      <div class="myo-empty">
-        <i class="fa fa-receipt"></i>
-        <p>No orders yet</p>
-        <small>Your order history will appear here after you place an order.</small>
-      </div>`;
+    container.innerHTML =
+      '<div class="myo-empty"><i class="fa fa-receipt"></i><p>No orders yet</p>' +
+      '<small>Orders you place while signed in are saved to your account and will appear here.</small></div>';
     return;
   }
-  const statusClass = { pending:'myo-pending', confirmed:'myo-confirmed', delivered:'myo-delivered', cancelled:'myo-cancelled' };
-  container.innerHTML = orders.map(function(o) {
-    const items = Array.isArray(o.items)
-      ? o.items.map(i => i.name + ' &times;' + i.qty).join('<br>')
-      : (o.items || '');
-    const date = o.created_at
-      ? new Date(o.created_at).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
-      : '';
-    const status   = (o.status || 'pending').toLowerCase();
-    const statusCls = statusClass[status] || 'myo-pending';
-    const shortId  = o.short_code ? (o.short_code.slice(0, 5) + '-' + o.short_code.slice(5)) : String(o.id || '').slice(-6).toUpperCase();
-    return `
-      <div class="myo-card">
-        <div class="myo-top">
-          <div class="myo-meta">
-            <span class="myo-id">Order #${shortId}</span>
-            <span class="myo-date">${date}</span>
-          </div>
-          <span class="myo-status ${statusCls}">${status}</span>
-        </div>
-        <div class="myo-items">${items}</div>
-        <div class="myo-footer">
-          <span class="myo-total">${parseFloat(o.total || 0).toFixed(3)} KWD</span>
-          <span class="myo-addr">${o.address || ''}</span>
-        </div>
-      </div>`;
-  }).join('');
+  var active = orders.filter(_isActiveOrder);
+  var past = orders.filter(function(o) { return !_isActiveOrder(o); });
+  var section = function(title, icon, list, emptyMsg) {
+    return '<div class="myo-section-title"><i class="fa ' + icon + '"></i> ' + title + ' <span class="myo-count">' + list.length + '</span></div>' +
+      (list.length ? list.map(_orderCardHtml).join('') : '<div class="myo-none">' + emptyMsg + '</div>');
+  };
+  container.innerHTML =
+    section('Active orders', 'fa-truck', active, 'No active orders right now.') +
+    section('Past orders', 'fa-clock-rotate-left', past, 'No past orders yet.');
+}
+// Small red count on the "My Orders" tab so customers can see in-progress orders at a glance.
+function _updateActiveOrdersBadge(orders) {
+  var tab = document.getElementById('acctTabOrders');
+  if (!tab) return;
+  var n = (orders || []).filter(_isActiveOrder).length;
+  var b = tab.querySelector('.myo-tab-badge');
+  if (!n) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement('span'); b.className = 'myo-tab-badge'; tab.appendChild(b); }
+  b.textContent = n;
 }
 
 // ── Kick off auth on page load ─────────────────────────────────────────────────
