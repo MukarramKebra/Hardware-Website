@@ -112,10 +112,24 @@ async function sbFetch(url, options) {
 // missing from the live site with no error. sbFetchAll() pages through with
 // limit/offset until a page comes back short, and returns the same
 // { data, error } shape as sbFetch() so every existing call site keeps working.
-async function sbFetchAll(baseUrl, headers) {
+async function sbFetchAll(baseUrl, headers, parallelFirst) {
   const pageSize = 1000;
   let offset = 0;
   let all = [];
+  // The big tables (catalog, stock) are known to span 2+ pages, so ask for the
+  // first two at once instead of paying a full round trip for each in turn.
+  if (parallelFirst) {
+    const sep0 = baseUrl.includes('?') ? '&' : '?';
+    const pages = await Promise.all([0, 1].map(function(i) {
+      return sbFetch(baseUrl + sep0 + 'limit=' + pageSize + '&offset=' + (i * pageSize), { headers });
+    }));
+    if (pages[0].error) return { data: null, error: pages[0].error };
+    if (pages[1].error) return { data: null, error: pages[1].error };
+    if (!Array.isArray(pages[0].data)) return { data: pages[0].data, error: null };
+    all = pages[0].data.concat(Array.isArray(pages[1].data) ? pages[1].data : []);
+    if (pages[0].data.length < pageSize || (pages[1].data || []).length < pageSize) return { data: all, error: null };
+    offset = pageSize * 2;
+  }
   while (true) {
     const sep = baseUrl.includes('?') ? '&' : '?';
     const { data, error } = await sbFetch(baseUrl + sep + 'limit=' + pageSize + '&offset=' + offset, { headers });
@@ -138,7 +152,7 @@ async function sbFetchAllWithRetry(baseUrl, headers, retries) {
   retries = retries === undefined ? 2 : retries;
   let last;
   for (let attempt = 0; attempt <= retries; attempt++) {
-    last = await sbFetchAll(baseUrl, headers);
+    last = await sbFetchAll(baseUrl, headers, true);
     if (!last.error) return last;
     if (attempt < retries) await new Promise(r => setTimeout(r, 600 * (attempt + 1)));
   }
@@ -211,14 +225,19 @@ async function loadSBData() {
   // (700ms-1.7s measured), and the browser's ~6-connection cap per origin
   // meant most of them queued behind each other instead of truly running in
   // parallel. One key=in.(...) request returns all of them in a single trip.
+  // What gates the first paint of the product grid is kept small on purpose.
+  // Three things used to sit in this critical path and together weighed ~5MB
+  // (measured Oct 2026): product_keywords (a 2.6MB settings blob — only
+  // search/SEO schema use it), the ~50 base64 uploaded photos in expert_photos
+  // (2.6MB — the plain-URL photos are only ~3KB), and the side banners. Those
+  // are now fetched AFTER the grid has rendered (see the end of this function);
+  // returning visitors already have the photos from localStorage.
   const productsP = sbFetchAllWithRetry(SB_URL + '/rest/v1/expert_products?select=*', SB_H);
-  const photosP   = sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=*',   SB_H);
-  const settingsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(hidden_prices,featured_offers,sku_map,brand_map,multi_cats,product_keywords,qty_limits,product_variants,cat_labels,cat_hidden,cat_order,banner_sides)&select=key,value', { headers: SB_H });
+  const photosP   = sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=product_id,img_url&img_url=not.like.data:*', SB_H);
+  const settingsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(hidden_prices,featured_offers,sku_map,brand_map,multi_cats,qty_limits,product_variants,cat_labels,cat_hidden,cat_order,banner_sides)&select=key,value', { headers: SB_H });
 
-  const stockP   = sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',           SB_H);
+  const stockP   = sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',           SB_H, true);
   const hiddenP  = sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id', SB_H);
-  const bannersP = sbFetchAll(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc', SB_H);
-  const reviewsP  = sbFetchAll(SB_URL + '/rest/v1/expert_reviews?select=product_id,rating', SB_H);
 
   // The offers ticker used to wait on the SAME Promise.all as the full
   // 1577+ row product catalog below (productsP) — by far the slowest of the
@@ -261,7 +280,7 @@ async function loadSBData() {
   _invalidateAllProductsCache();
   if (Array.isArray(ph.data)) {
         ph.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });
-        localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos));
+        try { localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos)); } catch(e) {}
   }
   const _settingsByKey = {};
   if (!st.error && Array.isArray(st.data)) {
@@ -282,7 +301,6 @@ async function loadSBData() {
   _sbSkuMap = _settingJSON('sku_map', {});
   _sbBrandMap = _settingJSON('brand_map', {});
   window._sbMultiCats = _settingJSON('multi_cats', {});
-  _sbProductKeywords = _settingJSON('product_keywords', {});
   window._sbQtyLimits = _settingJSON('qty_limits', {});
   window._sbVariants = _settingJSON('product_variants', {});
   // Per-banner Left/Right pin from the admin's Banners editor (id -> 'left'|
@@ -307,22 +325,11 @@ async function loadSBData() {
   try { localStorage.setItem('cat_order_cache', JSON.stringify(catOrder)); } catch(e) {}
   try { localStorage.setItem('cat_labels_cache', JSON.stringify(_settingJSON('cat_labels', {}))); } catch(e) {}
 
-  const [s, h, b, rv] = await Promise.all([stockP, hiddenP, bannersP, reviewsP]);
-  // Bulk review stats (avg + count per product) for the Product schema's
-  // aggregateRating — fetched once here instead of per-product like
-  // getAvgRating() in js/06-features.js, which is fine for the review-modal's
-  // single lookup but would be one request per product for the whole catalog.
+  // Stock + hidden are small and decide what the grid shows, so they gate the
+  // render. Banners, reviews, keywords and the base64 photos do NOT — they're
+  // fetched below once the grid is already on screen.
+  const [s, h] = await Promise.all([stockP, hiddenP]);
   window._sbReviewStats = {};
-    if (Array.isArray(rv.data)) {
-          var sums = {};
-          rv.data.forEach(function(r) {
-                  var s = sums[r.product_id] || (sums[r.product_id] = { total: 0, count: 0 });
-                  s.total += r.rating; s.count++;
-          });
-          Object.keys(sums).forEach(function(id) {
-                  window._sbReviewStats[id] = { avg: sums[id].total / sums[id].count, count: sums[id].count };
-          });
-    }
     if (s.error) {
           console.warn('Supabase offline — using localStorage fallback');
           try { _sbStock  = JSON.parse(localStorage.getItem('jain_stock')  || '{}'); } catch(_) {}
@@ -333,7 +340,6 @@ async function loadSBData() {
                   // Safety: if more than 55 of the 60 base products are "hidden", ignore — likely stale data
             if (hidSet.size < 55) _hiddenIds = hidSet;
           }
-          if (Array.isArray(b.data) && b.data.length > 0) _sbBanners = b.data;
     }
     // _sbBrandMap and _hiddenIds may have changed since the cache was last
     // built above — invalidate once more before the first real grid render.
@@ -347,10 +353,67 @@ async function loadSBData() {
     // before it did.
     window._catalogReady = true;
     renderProducts();
-    if (typeof initSideBanners === 'function') initSideBanners();
-    if (typeof _injectProductSchema === 'function') _injectProductSchema();
 
   checkAssetVersion();
+  _loadDeferredStorefrontData();
+}
+
+// Everything the first paint of the product grid does not need. Started only
+// after renderProducts() has run so these downloads (~4MB combined before
+// compression: the product_keywords blob, base64 uploaded photos, side
+// banners, review ratings) never compete with the catalog for bandwidth.
+function _loadDeferredStorefrontData() {
+  // Side banners
+  sbFetchAll(SB_URL + '/rest/v1/expert_banners?select=*&order=id.asc', SB_H).then(function(b) {
+    if (Array.isArray(b.data) && b.data.length > 0) _sbBanners = b.data;
+    if (typeof initSideBanners === 'function') initSideBanners();
+  });
+
+  // Search keywords (2.6MB of text) — search just matches name/brand/description
+  // until they land; the search vocabulary is rebuilt once they do.
+  const kwP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.product_keywords&select=value', { headers: SB_H }).then(function(r) {
+    if (r.error || !Array.isArray(r.data) || !r.data[0]) return;
+    try { _sbProductKeywords = JSON.parse(r.data[0].value) || {}; } catch(e) {}
+    if (typeof _vocabCache !== 'undefined') _vocabCache = null;
+  });
+
+  // Bulk review stats (avg + count per product) for the Product schema's
+  // aggregateRating — fetched once here instead of per-product like
+  // getAvgRating() in js/06-features.js, which is fine for the review-modal's
+  // single lookup but would be one request per product for the whole catalog.
+  const rvP = sbFetchAll(SB_URL + '/rest/v1/expert_reviews?select=product_id,rating', SB_H).then(function(rv) {
+    if (!Array.isArray(rv.data)) return;
+    var sums = {};
+    rv.data.forEach(function(r) {
+      var s = sums[r.product_id] || (sums[r.product_id] = { total: 0, count: 0 });
+      s.total += r.rating; s.count++;
+    });
+    Object.keys(sums).forEach(function(id) {
+      window._sbReviewStats[id] = { avg: sums[id].total / sums[id].count, count: sums[id].count };
+    });
+  });
+
+  // Photos uploaded straight from the admin are stored as base64 (~50KB each).
+  // Returning visitors already have them from localStorage; for everyone else
+  // the cards show the placeholder/default image first and swap in the upload.
+  sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=product_id,img_url&img_url=like.data:*', SB_H).then(function(ph) {
+    if (!Array.isArray(ph.data)) return;
+    var changed = false;
+    ph.data.forEach(function(r) {
+      if (_sbPhotos[r.product_id] !== r.img_url) { _sbPhotos[r.product_id] = r.img_url; changed = true; }
+    });
+    if (!changed) return;
+    try { localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos)); } catch(e) {}
+    var y = window.scrollY;
+    renderProducts();
+    if (typeof initOffersTicker === 'function') initOffersTicker();
+    window.scrollTo(0, y);
+  });
+
+  // The structured-data block needs keywords + ratings, so build it once both are in.
+  Promise.all([kwP, rvP]).then(function() {
+    if (typeof _injectProductSchema === 'function') _injectProductSchema();
+  });
 }
 
 // ── ASSET VERSION CHECK ─────────────────────────────────────────────────────
@@ -358,19 +421,14 @@ async function loadSBData() {
 // not just the admin's own browser: the current version lives in Supabase
 // (expert_settings, key 'asset_version'). Each page load compares it in the
 // background against what this browser last used; a mismatch means new
-// files were deployed and flushed, so we save the new version and reload
-// once to pick them up. No-op (just records the version) on a visitor's
-// very first load, so nobody gets an unnecessary reload.
+// files were deployed and flushed, so we save the new version — the NEXT
+// page load then fetches the fresh files. We deliberately do NOT reload the
+// page here: a reload after the catalog has already painted showed visitors
+// the site loading, restyling and then refreshing itself a second time.
 function checkAssetVersion() {
     sbFetch(SB_URL + '/rest/v1/expert_settings?key=eq.asset_version&select=value', { headers: SB_H }).then(function(r) {
           if (r.error || !r.data || !r.data[0] || !r.data[0].value) return;
-          var serverV = r.data[0].value;
-          var localV  = localStorage.getItem('expert_asset_v');
-          if (!localV) { localStorage.setItem('expert_asset_v', serverV); return; }
-          if (serverV !== localV) {
-                  localStorage.setItem('expert_asset_v', serverV);
-                  window.location.reload();
-          }
+          try { localStorage.setItem('expert_asset_v', r.data[0].value); } catch (e) {}
     });
 }
 
