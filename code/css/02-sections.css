@@ -195,3 +195,9 @@
 .cat-crumb-link:hover { color:var(--orange); }
 .cat-crumb-link .fa-home { font-size:16px; margin-right:4px; }
 .cat-crumb-cur { color:#777; text-transform:uppercase; font-weight:600; }
+/* Zoom / resize performance: ~1,500 product cards are in the DOM at once, so
+   every resize (each browser-zoom step fires one) re-laid-out all of them
+   (~100ms+, the page froze while zooming). content-visibility lets the browser
+   skip layout/paint for cards that are off-screen; 'auto' remembers each
+   card's real height once it has been seen, so the scrollbar stays accurate. */
+#productsGrid > .product-card { content-visibility: auto; contain-intrinsic-size: auto 430px; }

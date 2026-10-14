@@ -7,13 +7,20 @@
   .about-img-wrap { max-width: 300px; margin: 0 auto; }
 }
 
-/* ── TABLET ── */
-@media (max-width: 768px) {
-  /* Header */
+/* ── NARROW DESKTOP / ZOOMED IN ──
+   The full nav row (8 links + Sign In) needs ~1150px. Below that, browser zoom
+   (e.g. 175% on a 1920 screen = ~1100px) made the labels wrap mid-word, so the
+   menu collapses into the hamburger dropdown earlier than the tablet layout. */
+@media (max-width: 1150px) {
   #nav { display: none; flex-direction: column; position: absolute; top: 68px; left: 0; right: 0; background: #d20d17; padding: 18px 24px; border-bottom: 1px solid rgba(0,0,0,0.14); gap: 14px; box-shadow: var(--shadow); }
   #nav.open { display: flex; }
   #nav a { color: #fff; font-size: 15px; padding: 4px 0; }
   .hamburger { display: block; }
+}
+
+/* ── TABLET ── */
+@media (max-width: 768px) {
+  /* Header */
   /* Search icon stays visible in the fixed header (was display:none — no
      search entry point existed on mobile short of scrolling all the way
      down to the grid's own search box). The dropdown itself switches from
