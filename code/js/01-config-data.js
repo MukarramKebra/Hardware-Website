@@ -234,7 +234,7 @@ async function loadSBData() {
   // returning visitors already have the photos from localStorage.
   const productsP = sbFetchAllWithRetry(SB_URL + '/rest/v1/expert_products?select=*', SB_H);
   const photosP   = sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=product_id,img_url&img_url=not.like.data:*', SB_H);
-  const settingsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(hidden_prices,featured_offers,sku_map,brand_map,multi_cats,qty_limits,product_variants,cat_labels,cat_hidden,cat_order,banner_sides)&select=key,value', { headers: SB_H });
+  const settingsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(hidden_prices,featured_offers,sku_map,brand_map,multi_cats,qty_limits,product_variants,cat_labels,cat_hidden,cat_order,banner_sides,custom_visible_cats)&select=key,value', { headers: SB_H });
 
   const stockP   = sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',           SB_H, true);
   const hiddenP  = sbFetchAll(SB_URL + '/rest/v1/expert_hidden?select=product_id', SB_H);
@@ -311,6 +311,9 @@ async function loadSBData() {
   // click a name to rename — see admin/js/05-categories.js) apply here too,
   // patching whatever static label is already in the page rather than
   // requiring the whole category nav to be rebuilt from JS.
+  // Admin-created categories the owner has switched on get a pill + tile first,
+  // so the order/rename/hide overrides below treat them like any other category.
+  applyCustomVisibleCats(_settingJSON('custom_visible_cats', []), true);
   const catOrder = _settingJSON('cat_order', []);
   applyCatOrderOverride(catOrder);
   applyCatLabelOverrides(_settingJSON('cat_labels', {}));

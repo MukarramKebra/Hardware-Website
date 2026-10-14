@@ -500,6 +500,8 @@ function updateCartUI() {
   if (cc) cc.textContent = count;
   const fab = document.getElementById('mobCartCount');
   if (fab) fab.textContent = count;
+  const navBadge = document.getElementById('navCartBadge');
+  if (navBadge) { navBadge.textContent = count; navBadge.style.display = count ? 'inline-block' : 'none'; }
   const body  = document.getElementById('cartItems');
   const total = cart.reduce((s,c) => s+c.price*c.qty, 0);
   document.getElementById('cartTotal').textContent = total.toFixed(3) + ' KWD';
@@ -741,7 +743,7 @@ $on('cartModal',       'click', e => { if (e.target === document.getElementById(
 $on('checkoutBtn',     'click', openCheckout);
 $on('closeCheckout',   'click', () => document.getElementById('checkoutOverlay').classList.remove('open'));
 $on('checkoutOverlay', 'click', e => { if (e.target === document.getElementById('checkoutOverlay')) document.getElementById('checkoutOverlay').classList.remove('open'); });
-document.querySelectorAll('.pill').forEach(pill => {
+document.querySelectorAll('.pill:not([data-custom])').forEach(pill => {
   pill.addEventListener('click', () => {
     activeFilter = pill.dataset.filter;
     syncCatNav(activeFilter);

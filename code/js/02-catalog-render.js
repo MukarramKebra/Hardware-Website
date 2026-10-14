@@ -113,6 +113,62 @@ function applyCatLabelOverrides(labels) {
     if (card) card.textContent = label;
   });
 }
+// Admin-created categories (Inventory "+ Category") are admin-only by default —
+// the pill row / tile grid are static HTML. When the owner flips "Show on
+// storefront" in the admin's Categories tab, the list lands in expert_settings
+// 'custom_visible_cats' ([{slug,label}]) and this adds a pill + tile for each,
+// the same markup the hardcoded ones use, so rename/reorder/hide keep working.
+// Also cached so the next visit paints them without waiting for the fetch.
+function applyCustomVisibleCats(list, fetchImages) {
+  if (!Array.isArray(list)) return;
+  try { localStorage.setItem('custom_visible_cats_cache', JSON.stringify(list)); } catch (e) {}
+  var pills = document.querySelector('.filter-pills');
+  var grid = document.getElementById('categoriesGrid');
+  var live = {};
+  list.forEach(function(c) {
+    if (!c || !c.slug) return;
+    live[c.slug] = true;
+    if (pills && !pills.querySelector('.pill[data-filter="' + c.slug + '"]')) {
+      var b = document.createElement('button');
+      b.className = 'pill';
+      b.dataset.filter = c.slug;
+      b.dataset.custom = '1';
+      b.textContent = c.label;
+      b.addEventListener('click', function() { activeFilter = c.slug; syncCatNav(activeFilter); renderProducts(); });
+      pills.appendChild(b);
+    }
+    if (grid && !grid.querySelector('.cat-card[data-cat="' + c.slug + '"]')) {
+      var d = document.createElement('div');
+      d.className = 'cat-card cat-card-custom';
+      d.dataset.cat = c.slug;
+      d.addEventListener('click', function() { filterProducts(c.slug); });
+      var h = document.createElement('h3'); h.textContent = c.label;
+      var p = document.createElement('p'); p.textContent = 'Browse products';
+      d.appendChild(h); d.appendChild(p);
+      grid.appendChild(d);
+    }
+  });
+  // Switched back to admin-only since the cached copy was made
+  document.querySelectorAll('.pill[data-custom], .cat-card-custom').forEach(function(el) {
+    var slug = el.dataset.filter || el.dataset.cat;
+    if (!live[slug]) el.remove();
+  });
+  if (typeof applyCatBgs === 'function') applyCatBgs();
+  // The tile photo the admin uploaded lives in expert_cat_bgs (base64), so it's
+  // only fetched for these few categories, not for everyone's page load.
+  if (fetchImages && list.length) {
+    var slugs = list.map(function(c) { return encodeURIComponent(c.slug); }).join(',');
+    sbFetch(SB_URL + '/rest/v1/expert_cat_bgs?slug=in.(' + slugs + ')&select=slug,img_url', { headers: SB_H }).then(function(r) {
+      if (!Array.isArray(r.data)) return;
+      r.data.forEach(function(row) {
+        var card = document.querySelector('.cat-card[data-cat="' + row.slug + '"]');
+        if (card && row.img_url) card.style.backgroundImage = "url('" + row.img_url + "')";
+      });
+    });
+  }
+}
+try { applyCustomVisibleCats(JSON.parse(localStorage.getItem('custom_visible_cats_cache') || 'null')); } catch (e) {}
+
 // Display name for a category slug — the admin's custom rename (e.g.
 // "marhaba" -> "Generators") if one's been set, else the slug title-cased.
 // Anywhere a category name is shown outside the pill/tile nav itself (which
@@ -567,6 +623,29 @@ function renderSubFilters() {
     '</div>';
 }
 
+// Breadcrumb above the product grid — Home › Products › Category (› Subcategory)
+// — shown only while a category is open, so there's always a way back out.
+function renderCatCrumbs() {
+  var el = document.getElementById('catCrumbs');
+  if (!el) return;
+  if (activeFilter === 'all') { el.classList.remove('show'); el.innerHTML = ''; return; }
+  var pill = document.querySelector('.pill[data-filter="' + activeFilter + '"]');
+  var label = (pill && pill.textContent.trim()) || catLabel(activeFilter);
+  var hasSub = activeSubFilter && activeSubFilter !== 'all';
+  var sep = '<i class="fa fa-chevron-right" aria-hidden="true"></i>';
+  var html =
+    '<button type="button" class="cat-crumb-link" onclick="goHome(event)"><i class="fa fa-home" aria-hidden="true"></i> Home</button>' + sep +
+    '<button type="button" class="cat-crumb-link" onclick="filterProducts(\'all\')">Products</button>' + sep;
+  if (hasSub) {
+    html += '<button type="button" class="cat-crumb-link" onclick="selectSubFilter(activeSubFilter)">' + encodeHtml(label) + '</button>' + sep +
+            '<span class="cat-crumb-cur" aria-current="page">' + encodeHtml(subcatLabel(activeSubFilter)) + '</span>';
+  } else {
+    html += '<span class="cat-crumb-cur" aria-current="page">' + encodeHtml(label) + '</span>';
+  }
+  el.innerHTML = html;
+  el.classList.add('show');
+}
+
 // Covers the screen with a brief loading flash BEFORE touching the grid or
 // scroll position — the products render and the jump to #products both
 // happen while hidden behind the overlay, so what the visitor sees is
@@ -909,6 +988,7 @@ function renderProducts() {
   const empty = document.getElementById('productsEmpty');
   const correctionNotice = document.getElementById('searchCorrectionNotice');
   renderSubFilters();
+  renderCatCrumbs();
 
   let filtered = _filterProductsBy(query);
   // Typo tolerance: an exact-spelling miss doesn't have to be a dead end —

@@ -296,6 +296,30 @@ function _allCatDefs() {
   });
   return CAT_DEFS.concat(extra);
 }
+// "Show on storefront" for an admin-created category. Saved straight away (like
+// the Inventory panel's hide/unhide, not staged behind Save Changes) to
+// expert_settings 'custom_visible_cats' as [{slug,label}] — the storefront reads
+// that list and adds a pill + tile for each (applyCustomVisibleCats() in
+// code/js/02-catalog-render.js). Name/order edits still go through cat_labels/cat_order.
+function _customVisibleList() { return Array.isArray(window._sbCustomVisibleCats) ? window._sbCustomVisibleCats : []; }
+async function catToggleCustomVisible(slug) {
+  var def = _allCatDefs().find(function(c) { return c.slug === slug; });
+  if (!def) return;
+  var list = _customVisibleList();
+  var isOn = list.some(function(c) { return c.slug === slug; });
+  var next = isOn
+    ? list.filter(function(c) { return c.slug !== slug; })
+    : list.concat([{ slug: slug, label: _catPendingLabels[slug] || def.label }]);
+  var res = await sbFetch(SB_URL + '/rest/v1/expert_settings', {
+    method: 'POST',
+    headers: Object.assign({}, SB_HDRS, { 'Prefer': 'resolution=merge-duplicates' }),
+    body: JSON.stringify([{ key: 'custom_visible_cats', value: JSON.stringify(next) }])
+  });
+  if (res.error) { showToast('Failed to save — check Supabase expert_settings table'); return; }
+  window._sbCustomVisibleCats = next;
+  renderCatEditor();
+  showToast(isOn ? 'Category is admin-only again' : 'Category is now visible on the storefront');
+}
 // Delete button on a custom card — the category lives in one of two lists
 // depending on which "create" surface made it.
 function catDeleteCustom(slug) {
@@ -317,7 +341,8 @@ function _orderedCatDefs() {
     // code/js/02-catalog-render.js and getAllProducts() in
     // code/js/01-config-data.js).
     var h = _catPendingHidden[c.slug];
-    return Object.assign({}, c, { label: _catPendingLabels[c.slug] || c.label, hidden: !!h, hiddenAll: h === 'all' });
+    var live = c.custom && _customVisibleList().some(function(v) { return v.slug === c.slug; });
+    return Object.assign({}, c, { label: _catPendingLabels[c.slug] || c.label, hidden: !!h, hiddenAll: h === 'all', live: !!live });
   });
 }
 
@@ -459,7 +484,7 @@ function renderCatEditor() {
         'style="background:#fff;border:1px solid #e2e4e8;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.07)">' +
       '<div class="cat-edit-drag-handle" title="Drag to reorder"><i class="fa fa-grip-lines"></i></div>' +
       (cat.hidden ? '<div class="cat-edit-hidden-badge"><i class="fa fa-eye-slash"></i> ' + (cat.hiddenAll ? 'Hidden + products' : 'Hidden') + '</div>' : '') +
-      (cat.custom ? '<div class="cat-edit-hidden-badge"><i class="fa fa-tag"></i> New · admin only</div>' : '') +
+      (cat.custom ? '<div class="cat-edit-hidden-badge"><i class="fa fa-tag"></i> ' + (cat.live ? 'New · live on storefront' : 'New · admin only') + '</div>' : '') +
       (img
         ? '<div style="height:150px;background:url(\'' + img + '\') center/cover no-repeat"></div>'
         : '<div style="height:150px;background:#f1f2f4;display:flex;align-items:center;justify-content:center;color:#c3c6cc;font-size:38px"><i class="fa ' + cat.icon + '"></i></div>') +
@@ -474,6 +499,9 @@ function renderCatEditor() {
         '</label>' +
         (cat.slug !== 'all'
           ? '<button onclick="openCatProducts(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid var(--orange);border-radius:6px;padding:7px;font-size:11px;font-weight:700;color:var(--orange);cursor:pointer"><i class="fa fa-boxes"></i> Products</button>'
+          : '') +
+        (cat.custom
+          ? '<button onclick="catToggleCustomVisible(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid ' + (cat.live ? '#e2e4e8' : 'var(--green,#1c7a52)') + ';border-radius:6px;padding:6px;font-size:11px;font-weight:700;color:' + (cat.live ? '#888' : 'var(--green,#1c7a52)') + ';cursor:pointer"><i class="fa ' + (cat.live ? 'fa-eye-slash' : 'fa-eye') + '"></i> ' + (cat.live ? 'Make admin-only again' : 'Show on storefront') + '</button>'
           : '') +
         (cat.custom
           ? '<button onclick="catDeleteCustom(\'' + cat.slug + '\')" style="width:100%;margin-top:6px;background:none;border:1px solid var(--red);border-radius:6px;padding:6px;font-size:11px;font-weight:700;color:var(--red);cursor:pointer"><i class="fa fa-trash"></i> Delete category</button>'
