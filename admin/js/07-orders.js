@@ -22,7 +22,7 @@ async function loadOrders(showToastMsg) {
     showToast('❌ Orders error: ' + res.error);
     if (document.getElementById('ordTblBody')) {
       document.getElementById('ordTblBody').innerHTML =
-        '<tr><td colspan="7" style="padding:20px;color:var(--red);font-weight:700;text-align:center"><i class="fa fa-exclamation-triangle"></i> Load error: ' + res.error + '</td></tr>';
+        '<tr><td colspan="7" style="padding:20px;color:var(--red);font-weight:700;text-align:center"><i class="fa fa-exclamation-triangle"></i> Load error: ' + encodeHtml(res.error) + '</td></tr>';
     }
     return;
   }
@@ -69,10 +69,10 @@ function renderOrdersTab() {
     var items = '';
     try {
       var arr = typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []);
-      items = arr.map(function(it){ return '<span style="display:block">• '+encodeHtml(it.name)+' ×'+it.qty+' — '+parseFloat(it.price).toFixed(3)+' KWD</span>'; }).join('');
+      items = arr.map(function(it){ return '<span style="display:block">• '+encodeHtml(it.name)+' ×'+encodeHtml(Number(it.qty)||0)+' — '+(parseFloat(it.price)||0).toFixed(3)+' KWD</span>'; }).join('');
     } catch(e){ items = encodeHtml(String(o.items||'')); }
     var statusOpts = ['pending','confirmed','delivered','cancelled'];
-    var statusSel  = '<select class="ord-status '+o.status+'" onchange="updateOrderStatus('+o.id+',this.value,this)">'
+    var statusSel  = '<select class="ord-status '+(statusOpts.indexOf(o.status)>-1?o.status:'pending')+'" onchange="updateOrderStatus('+o.id+',this.value,this)">'
       + statusOpts.map(function(s){ return '<option value="'+s+'"'+(s===o.status?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1)+'</option>'; }).join('')
       + '</select>';
     return '<tr>'+
@@ -177,9 +177,9 @@ function renderOrdersReport() {
     var itemStr = '';
     try {
       var arr = typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []);
-      itemStr = arr.map(function(it){ return it.name+' ×'+it.qty; }).join('<br>');
-    } catch(e){ itemStr = String(o.items||''); }
-    var sc = o.status||'pending';
+      itemStr = arr.map(function(it){ return encodeHtml(it.name)+' ×'+encodeHtml(Number(it.qty)||0); }).join('<br>');
+    } catch(e){ itemStr = encodeHtml(String(o.items||'')); }
+    var sc = encodeHtml(o.status||'pending');
     return '<tr>'+
       '<td style="color:#aaa;font-size:11px;font-weight:700">'+(i+1)+'</td>'+
       '<td style="white-space:nowrap;font-size:11px">'+dt+'</td>'+

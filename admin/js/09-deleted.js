@@ -214,7 +214,7 @@ function renderDeletedOrdersTab() {
     var items = '';
     try {
       var arr = typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []);
-      items = arr.map(function(it){ return '<span style="display:block;opacity:0.65">• '+encodeHtml(it.name)+' ×'+it.qty+'</span>'; }).join('');
+      items = arr.map(function(it){ return '<span style="display:block;opacity:0.65">• '+encodeHtml(it.name)+' ×'+encodeHtml(Number(it.qty)||0)+'</span>'; }).join('');
     } catch(e) { items = encodeHtml(String(o.items || '')); }
     return '<tr>' +
       '<td style="color:#aaa;font-size:11px;font-weight:700">#'+o.id+'</td>' +

@@ -85,8 +85,13 @@ async function isRealAdmin(authHeader: string | null): Promise<boolean> {
   });
   if (!userRes.ok) return false;
   const user = await userRes.json();
-  const profiles = await db(`expert_admin_profiles?id=eq.${user.id}&select=id`);
-  return Array.isArray(profiles) && profiles.length > 0;
+  // Restricted Team Accounts (role 'custom') have no Offers permission in the
+  // UI, so they must not reach the subscriber list or mass-mailer through the
+  // API either. Only the three built-in roles may use this function.
+  if (typeof user?.id !== "string" || !/^[0-9a-f-]{36}$/i.test(user.id)) return false;
+  const profiles = await db(`expert_admin_profiles?id=eq.${user.id}&select=role`);
+  return Array.isArray(profiles) && profiles.length > 0 &&
+    ["super", "bahar15", "1"].includes(profiles[0].role);
 }
 
 function unsubscribeUrl(token: string) {

@@ -169,6 +169,8 @@ function resetAccountPermissions() {
   });
   var statsGrid = document.getElementById('statsGrid');
   if (statsGrid) statsGrid.style.display = '';
+  var offersBtn = document.getElementById('tabOffers');
+  if (offersBtn) offersBtn.style.display = '';
 }
 
 function applyAccountPermissions(perms) {
@@ -183,6 +185,10 @@ function applyAccountPermissions(perms) {
   var statsGrid = document.getElementById('statsGrid');
   if (statsGrid) statsGrid.style.display = perms.hideValueStats ? 'none' : '';
   document.getElementById('tabOwner').style.display = 'none';
+  // Offers has no per-tab permission key, and send-offers now rejects 'custom'
+  // roles server-side — don't show a tab that can only error.
+  var offersBtn = document.getElementById('tabOffers');
+  if (offersBtn) offersBtn.style.display = 'none';
 }
 
 function showCustomAdmin(perms) {
