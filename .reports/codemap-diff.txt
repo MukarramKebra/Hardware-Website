@@ -1,0 +1,56 @@
+Codemap generation summary — 2026-10-11
+=========================================
+
+Prior codemaps: none (first-time generation; no docs/CODEMAPS/ or .reports/codemaps/ existed).
+Diff: N/A (fresh baseline).
+
+Files scanned
+-------------
+Storefront JS:    code/js/01-config-data.js, 02-catalog-render.js, 03-product-cart-checkout.js,
+                  04-i18n-order.js, 05-accounts.js, 06-features.js, 07-subscribe.js
+Storefront CSS:   code/css/01-base.css through 09-widgets.css (9 files)
+Admin JS:         admin/js/01-core-data.js through 14-product-view.js (14 files)
+Admin CSS:        admin/css/01-layout.css through 05-modals-forms.css (5 files)
+Edge Functions:   supabase/functions/{admin-login,admin-manage-accounts,notify-order,
+                  order-invoice,send-offers,unsubscribe}/index.ts
+SQL:              expert-hardware-supabase.sql, expert-hardware-offers.sql,
+                  expert-hardware-rls-hardening.sql, expert-hardware-fix-id-sequence.sql
+CI:               .github/workflows/generate-seo.yml
+Scripts:          scripts/*.js (10 files)
+Entry pages:      index.html, admin/index.html, 404.html, order-invoice.html,
+                  unsubscribed.html, accessibility.html, terms.html
+
+External dependencies detected
+------------------------------
+- Supabase project qhebhvllkovfbkqrcnmm (Postgres + Auth + Edge Functions)
+- Resend (via RESEND_API_KEY in 3 Edge Functions)
+- Font Awesome 6.5.0 via cdnjs
+- Google Fonts (Inter)
+- Unsplash (placeholder images via U(id) helper)
+- expertshardware.com (legacy Magento site hotlinked for many product images — fragility point)
+- GitHub Actions (generate-seo workflow, nightly 03:17 UTC + on push)
+
+Architecture notes worth flagging
+---------------------------------
+- No build step, no package.json; all JS/CSS loaded at runtime with cache-bust via
+  localStorage.expert_asset_v synced from expert_settings.asset_version.
+- product/*.html is CI-generated — never hand-edit; .github/workflows/generate-seo.yml owns it.
+- Admin auth uses synthetic emails <username>@expert-admin.internal; writes gated by
+  is_admin(auth.uid()) in RLS. Account CRUD routes through admin-manage-accounts Edge Fn
+  (service-role; the only path that can create Auth users).
+- Checkout's stock write is anon-callable but goes through decrement_stock RPC (subtract-only)
+  rather than a direct expert_stock write.
+- offer_subscribers intentionally has no anon SELECT policy — avoid on_conflict upserts there.
+
+Staleness warnings
+------------------
+None (first generation). Re-run /ecc:update-codemaps after structural changes:
+new tabs in admin, new Edge Functions, new expert_settings keys, or new scripts/.
+
+Codemaps written
+----------------
+docs/CODEMAPS/architecture.md
+docs/CODEMAPS/backend.md
+docs/CODEMAPS/frontend.md
+docs/CODEMAPS/data.md
+docs/CODEMAPS/dependencies.md
