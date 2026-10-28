@@ -279,8 +279,23 @@ async function loadSBData() {
   window._catalogLoadFailed = !!c.error && !_customProds.length;
   _invalidateAllProductsCache();
   if (Array.isArray(ph.data)) {
-        ph.data.forEach(function(r) { _sbPhotos[r.product_id] = r.img_url; });
-        try { localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos)); } catch(e) {}
+    // Rebuild this slice instead of merging into it. _sbPhotos starts out as
+    // whatever this browser cached in jain_photos, and a merge can only ever
+    // ADD keys — so a photo the admin DELETED stayed in the cache and kept
+    // overriding that product's real image forever, on that one device, with
+    // nothing on the server left to explain it. This request is authoritative
+    // for every non-base64 photo (img_url=not.like.data:*), so drop the cached
+    // entries of that kind and take the server's set as the truth.
+    // Cached data: entries are deliberately carried over: they belong to the
+    // deferred fetch at the end of this function, which prunes them the same
+    // way, and dropping them here would show the wrong image until it lands.
+    var freshPhotos = {};
+    Object.keys(_sbPhotos).forEach(function(k) {
+      if (String(_sbPhotos[k]).indexOf('data:') === 0) freshPhotos[k] = _sbPhotos[k];
+    });
+    ph.data.forEach(function(r) { freshPhotos[r.product_id] = r.img_url; });
+    _sbPhotos = freshPhotos;
+    try { localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos)); } catch(e) {}
   }
   const _settingsByKey = {};
   if (!st.error && Array.isArray(st.data)) {
@@ -405,11 +420,21 @@ function _loadDeferredStorefrontData() {
   // the cards show the placeholder/default image first and swap in the upload.
   sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=product_id,img_url&img_url=like.data:*', SB_H).then(function(ph) {
     if (!Array.isArray(ph.data)) return;
-    var changed = false;
-    ph.data.forEach(function(r) {
-      if (_sbPhotos[r.product_id] !== r.img_url) { _sbPhotos[r.product_id] = r.img_url; changed = true; }
+    // Authoritative for every base64 photo, so rebuild that slice rather than
+    // merging — same deleted-upload problem as the plain-URL fetch above, and
+    // this is the half that actually hits it, since uploading through the
+    // admin produces a data: URL. Non-data: entries are left as the fetch
+    // above set them.
+    var nextPhotos = {};
+    Object.keys(_sbPhotos).forEach(function(k) {
+      if (String(_sbPhotos[k]).indexOf('data:') !== 0) nextPhotos[k] = _sbPhotos[k];
     });
+    ph.data.forEach(function(r) { nextPhotos[r.product_id] = r.img_url; });
+    var prevKeys = Object.keys(_sbPhotos);
+    var changed = prevKeys.length !== Object.keys(nextPhotos).length ||
+                  prevKeys.some(function(k) { return _sbPhotos[k] !== nextPhotos[k]; });
     if (!changed) return;
+    _sbPhotos = nextPhotos;
     try { localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos)); } catch(e) {}
     // true = hold the visitor's place — both the batches already scrolled
     // through and the scroll offset, which renderProducts() restores itself
