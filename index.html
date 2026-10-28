@@ -138,9 +138,30 @@
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Font Awesome is ~110KB of CSS defining thousands of icon classes, of
+       which this site uses a few dozen. As a plain stylesheet it was the
+       single worst item on the critical path: 1.8s total / 1.2s download on
+       a throttled 4G phone, with first paint blocked behind all of it
+       (measured Oct 2026). media="print" makes the browser fetch it at low
+       priority WITHOUT blocking render; the onload handler flips it to
+       media="all" so the icons apply as soon as it lands. Icons therefore
+       appear a beat after the text — they sit inside fixed-size buttons and
+       flex rows, so this costs no measurable layout shift.
+       rel=preload would start it sooner but is what made it block before. -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        media="print" onload="this.media='all';this.onload=null" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <!-- Cairo is the Arabic face, and the Arabic toggle is currently disabled on
+       purpose (see CLAUDE.md — ARABIC_ENABLED in js/04-i18n-order.js and the
+       .lang-btn rule in css/06-lang-rtl.css), so nothing on the page can
+       render in it right now. Kept here, rather than deleted, so Arabic is
+       restored as one piece; loaded non-blocking so a font no visitor can
+       currently see is not sitting on the critical path. -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"
+        media="print" onload="this.media='all';this.onload=null" />
+  <noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  </noscript>
 </head>
 <body>
 
@@ -151,7 +172,7 @@
   <style>
     #pagePreloader { position: fixed; inset: 0; z-index: 99999; background: #fef9eb; display: flex; align-items: center; justify-content: center; transition: opacity .35s ease, visibility .35s ease; }
     #pagePreloader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
-    #pagePreloader .preloader-gear { width: 100px; height: 100px; background-image: url('loader-gear.png'); background-repeat: no-repeat; background-size: 100% 100%; animation: preloader-spin 1.4s linear infinite; }
+    #pagePreloader .preloader-gear { width: 100px; height: 100px; background-image: url('loader-gear.webp'); background-repeat: no-repeat; background-size: 100% 100%; animation: preloader-spin 1.4s linear infinite; }
     @keyframes preloader-spin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { #pagePreloader .preloader-gear { animation: none; } }
     #pagePreloader .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
@@ -197,7 +218,7 @@
   <header id="header">
     <div class="container header-inner">
       <a href="#header" class="logo-wrap" onclick="goHome(event)">
-        <img src="logo.png" alt="Expert Hardware" class="logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+        <img src="logo.webp" width="800" height="353" alt="Expert Hardware" class="logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
         <div class="logo-text-fallback" style="display:none"><span class="logo-dhow" style="font-size:0.8em;letter-spacing:2px">EXPERT<br>HARDWARE</span></div>
       </a>
       <nav id="nav">
@@ -293,83 +314,83 @@
         <span class="section-tag" data-i18n="cat_tag">Browse by Type</span>
       </div>
       <div class="categories-grid" id="categoriesGrid">
-        <div class="cat-card" data-cat="tools"            onclick="filterProducts('tools')"            style="background-image:url('expert-products/cat-images/tools.jpg')">
+        <div class="cat-card" data-cat="tools"            onclick="filterProducts('tools')"            style="background-image:url('expert-products/cat-images/tools.webp')">
           <h3>DCK Power Tools</h3>
           <p>Drills, Grinders, Saws & More</p>
         </div>
-        <div class="cat-card" data-cat="hand-tools"       onclick="filterProducts('hand-tools')"       style="background-image:url('expert-products/cat-images/hand-tools.png')">
+        <div class="cat-card" data-cat="hand-tools"       onclick="filterProducts('hand-tools')"       style="background-image:url('expert-products/cat-images/hand-tools.webp')">
           <h3>Hand Tools</h3>
           <p>Hammers, Pliers, Spanners</p>
         </div>
-        <div class="cat-card" data-cat="fastener"         onclick="filterProducts('fastener')"         style="background-image:url('expert-products/cat-images/fastener.png')">
+        <div class="cat-card" data-cat="fastener"         onclick="filterProducts('fastener')"         style="background-image:url('expert-products/cat-images/fastener.webp')">
           <h3>Fasteners</h3>
           <p>Screws, Bolts & Anchors</p>
         </div>
-        <div class="cat-card" data-cat="construction"     onclick="filterProducts('construction')"     style="background-image:url('expert-products/cat-images/construction.png')">
+        <div class="cat-card" data-cat="construction"     onclick="filterProducts('construction')"     style="background-image:url('expert-products/cat-images/construction.webp')">
           <h3>Nails/Wires</h3>
           <p>Nails, Wires, Mesh & Tarps</p>
         </div>
-        <div class="cat-card" data-cat="safety"           onclick="filterProducts('safety')"           style="background-image:url('expert-products/cat-images/safety.jpg')">
+        <div class="cat-card" data-cat="safety"           onclick="filterProducts('safety')"           style="background-image:url('expert-products/cat-images/safety.webp')">
           <h3>Safety</h3>
           <p>Helmets, Gloves, Hi-Vis</p>
         </div>
-        <div class="cat-card" data-cat="spray-adhesive"   onclick="filterProducts('spray-adhesive')"   style="background-image:url('expert-products/cat-images/spray-adhesive.png')">
+        <div class="cat-card" data-cat="spray-adhesive"   onclick="filterProducts('spray-adhesive')"   style="background-image:url('expert-products/cat-images/spray-adhesive.webp')">
           <h3>Adhesives</h3>
           <p>Silicone, Sealants & Glue</p>
         </div>
-        <div class="cat-card" data-cat="tape"             onclick="filterProducts('tape')"             style="background-image:url('expert-products/cat-images/tape.png')">
+        <div class="cat-card" data-cat="tape"             onclick="filterProducts('tape')"             style="background-image:url('expert-products/cat-images/tape.webp')">
           <h3>Tapes</h3>
           <p>Clear, Duct & Masking Tape</p>
         </div>
-        <div class="cat-card" data-cat="door-handle"      onclick="filterProducts('door-handle')"      style="background-image:url('expert-products/cat-images/door-handle.png')">
+        <div class="cat-card" data-cat="door-handle"      onclick="filterProducts('door-handle')"      style="background-image:url('expert-products/cat-images/door-handle.webp')">
           <h3>Door Handles</h3>
           <p>Handles, Locks & Knobs</p>
         </div>
-        <div class="cat-card" data-cat="hardware"         onclick="filterProducts('hardware')"         style="background-image:url('expert-products/cat-images/hardware.png')">
+        <div class="cat-card" data-cat="hardware"         onclick="filterProducts('hardware')"         style="background-image:url('expert-products/cat-images/hardware.webp')">
           <h3>Hardware</h3>
           <p>Hinges, Slides & Fittings</p>
         </div>
-        <div class="cat-card" data-cat="paint-tool"       onclick="filterProducts('paint-tool')"       style="background-image:url('expert-products/cat-images/paint-tool.jpg')">
+        <div class="cat-card" data-cat="paint-tool"       onclick="filterProducts('paint-tool')"       style="background-image:url('expert-products/cat-images/paint-tool.webp')">
           <h3>Paint Tools</h3>
           <p>Rollers, Brushes & Trays</p>
         </div>
-        <div class="cat-card" data-cat="gardening"        onclick="filterProducts('gardening')"        style="background-image:url('expert-products/cat-images/gardening.png')">
+        <div class="cat-card" data-cat="gardening"        onclick="filterProducts('gardening')"        style="background-image:url('expert-products/cat-images/gardening.webp')">
           <h3>Garden Tools</h3>
           <p>Hoses, Trimmers & Garden Kit</p>
         </div>
-        <div class="cat-card" data-cat="disc"             onclick="filterProducts('disc')"             style="background-image:url('expert-products/cat-images/disc.jpg')">
+        <div class="cat-card" data-cat="disc"             onclick="filterProducts('disc')"             style="background-image:url('expert-products/cat-images/disc.webp')">
           <h3>Discs</h3>
           <p>Cutting & Grinding Discs</p>
         </div>
-        <div class="cat-card" data-cat="trolley-caster"   onclick="filterProducts('trolley-caster')"   style="background-image:url('expert-products/cat-images/trolley-caster.png')">
+        <div class="cat-card" data-cat="trolley-caster"   onclick="filterProducts('trolley-caster')"   style="background-image:url('expert-products/cat-images/trolley-caster.webp')">
           <h3>Wheel Barrow</h3>
           <p>Wheelbarrows, Trolleys & Casters</p>
         </div>
-        <div class="cat-card" data-cat="household"        onclick="filterProducts('household')"        style="background-image:url('expert-products/cat-images/household.png')">
+        <div class="cat-card" data-cat="household"        onclick="filterProducts('household')"        style="background-image:url('expert-products/cat-images/household.webp')">
           <h3>Cleaning</h3>
           <p>Brooms, Mops & Cleaning</p>
         </div>
-        <div class="cat-card" data-cat="plumbing-fitting" onclick="filterProducts('plumbing-fitting')" style="background-image:url('expert-products/cat-images/plumbing-fitting.png')">
+        <div class="cat-card" data-cat="plumbing-fitting" onclick="filterProducts('plumbing-fitting')" style="background-image:url('expert-products/cat-images/plumbing-fitting.webp')">
           <h3>Fittings</h3>
           <p>Plumbing Pipes & Fittings</p>
         </div>
-        <div class="cat-card" data-cat="sanitary"         onclick="filterProducts('sanitary')"         style="background-image:url('expert-products/cat-images/sanitary.png')">
+        <div class="cat-card" data-cat="sanitary"         onclick="filterProducts('sanitary')"         style="background-image:url('expert-products/cat-images/sanitary.webp')">
           <h3>Sanitary Ware</h3>
           <p>Taps, Showers & Sanitary</p>
         </div>
-        <div class="cat-card" data-cat="filter"           onclick="filterProducts('filter')"           style="background-image:url('expert-products/cat-images/filter.png')">
+        <div class="cat-card" data-cat="filter"           onclick="filterProducts('filter')"           style="background-image:url('expert-products/cat-images/filter.webp')">
           <h3>Filters</h3>
           <p>Water & Air Filters</p>
         </div>
-        <div class="cat-card" data-cat="marhaba"          onclick="filterProducts('marhaba')"          style="background-image:url('expert-products/cat-images/marhaba.jpg')">
+        <div class="cat-card" data-cat="marhaba"          onclick="filterProducts('marhaba')"          style="background-image:url('expert-products/cat-images/marhaba.webp')">
           <h3>Marhaba</h3>
           <p>Generators &amp; Voltage Regulators</p>
         </div>
-        <div class="cat-card" data-cat="big-red"          onclick="filterProducts('big-red')"          style="background-image:url('expert-products/cat-images/big-red-jack.jpg')">
+        <div class="cat-card" data-cat="big-red"          onclick="filterProducts('big-red')"          style="background-image:url('expert-products/cat-images/big-red-jack.webp')">
           <h3>Big Red</h3>
           <p>Torin Big Red Jacks</p>
         </div>
-        <div class="cat-card" data-cat="all"              onclick="filterProducts('all')"              style="background-image:url('Bahar-Products/SKU-0015.jpg')">
+        <div class="cat-card" data-cat="all"              onclick="filterProducts('all')"              style="background-image:url('Bahar-Products/SKU-0015.webp')">
           <h3>All Products</h3>
           <p>Browse our full catalog</p>
         </div>
@@ -480,10 +501,29 @@
            grid below is already showing the corrected results, not a dead end. -->
       <div class="search-correction-notice" id="searchCorrectionNotice" style="display:none"></div>
       <div class="products-grid" id="productsGrid"></div>
+      <!-- The grid renders in batches instead of all ~1,550 matching cards at
+           once (that was ~30,000 DOM nodes / 1,700 <img> elements on a phone,
+           which made the first paint and every scroll genuinely slow). This
+           sentinel sits below the last rendered batch; _gridWatchScroll in
+           js/02-catalog-render.js watches it on scroll and appends the next
+           batch once it nears the viewport, so scrolling still feels like one
+           continuous grid. The button is the explicit fallback for the case
+           where scroll events never arrive, and is what shows for a moment if
+           a visitor lands right on the sentinel. -->
+      <div class="grid-sentinel" id="gridSentinel" style="display:none">
+        <button class="btn btn-primary grid-more-btn" id="gridMoreBtn" onclick="_gridAppendBatch()" data-i18n="load_more">Load more products</button>
+      </div>
       <div class="products-empty" id="productsEmpty" style="display:none">
         <i class="fa fa-box-open"></i>
         <p data-i18n="no_results">No products found. Try a different search.</p>
       </div>
+      <!-- Every matching product still gets a real crawlable <a> here, because
+           the grid above now only renders the first batch. display:none keeps
+           it out of layout/paint entirely (~2 nodes per product, no images, no
+           observers) while preserving the internal links Google used to reach
+           the per-product pages from the homepage. Built once, by
+           _renderSeoProductLinks() in js/02-catalog-render.js. -->
+      <div id="seoProductLinks" style="display:none" aria-hidden="true"></div>
     </div>
   </section>
 
@@ -491,7 +531,7 @@
     <div class="modal">
       <div class="modal-header">
         <h3>
-          <img src="logo.png" alt="Expert Hardware" class="modal-logo" onerror="this.style.display='none'" />
+          <img src="logo.webp" width="800" height="353" alt="Expert Hardware" class="modal-logo" onerror="this.style.display='none'" />
           <i class="fa fa-shopping-cart"></i> <span data-i18n="cart_title">Your Cart</span>
         </h3>
         <button id="closeCart" aria-label="Close cart"><i class="fa fa-times"></i></button>
@@ -578,7 +618,7 @@
     <div class="container contact-grid">
       <div class="contact-info">
         <div class="contact-logo-row">
-          <img src="logo.png" alt="Expert Hardware" class="contact-logo-img" onerror="this.style.display='none'" />
+          <img src="logo.webp" width="800" height="353" alt="Expert Hardware" class="contact-logo-img" onerror="this.style.display='none'" />
           <span class="contact-brand-txt" style="font-size:0.85em">EXPERT HARDWARE</span>
         </div>
         <span class="section-tag" data-i18n="contact_tag">Get In Touch</span>
@@ -646,7 +686,7 @@
     <div class="container about-grid">
       <div class="about-img-wrap">
         <div class="about-img-card">
-          <img src="logo.png" alt="Expert Hardware" onerror="this.style.display='none'" />
+          <img src="logo.webp" width="800" height="353" alt="Expert Hardware" onerror="this.style.display='none'" />
         </div>
         <div class="about-badge"><i class="fa fa-hammer"></i> <span data-i18n="about_badge">Kuwait</span></div>
       </div>
@@ -675,7 +715,7 @@
     <div class="container footer-grid">
       <div class="footer-brand">
         <div class="footer-brand-wrap">
-          <img src="logo.png" alt="Expert Hardware" class="footer-logo" onerror="this.style.display='none'" />
+          <img src="logo.webp" width="800" height="353" alt="Expert Hardware" class="footer-logo" onerror="this.style.display='none'" />
           <div class="footer-brand-name-text">Expert<span>Hardware</span></div>
         </div>
         <p data-i18n="footer_desc">Kuwait's trusted supplier of quality hardware, power tools and construction materials since 2024.</p>
@@ -744,7 +784,7 @@
   <section id="intro">
     <div class="container intro-inner">
       <div class="intro-logo-row">
-        <img src="logo.png" alt="Expert Hardware" class="intro-logo-img" onerror="this.style.display='none'" />
+        <img src="logo.webp" width="800" height="353" alt="Expert Hardware" class="intro-logo-img" onerror="this.style.display='none'" />
         <span class="intro-brand-txt" style="font-size:0.85em">EXPERT HARDWARE</span>
       </div>
       <span class="section-tag intro-tag" data-i18n="intro_tag">Welcome to Expert Hardware</span>
@@ -771,7 +811,7 @@
     <div class="checkout-box">
       <div class="co-header">
         <h3>
-          <img src="logo.png" alt="Expert Hardware" class="modal-logo" onerror="this.style.display='none'" />
+          <img src="logo.webp" width="800" height="353" alt="Expert Hardware" class="modal-logo" onerror="this.style.display='none'" />
           <i class="fab fa-whatsapp"></i> <span data-i18n="co_title">Complete Your Order</span>
         </h3>
         <button class="co-close" id="closeCheckout" aria-label="Close checkout"><i class="fa fa-times"></i></button>
@@ -872,7 +912,7 @@
       <div class="prod-modal-topbar">
         <div class="prod-modal-topbar-inner">
           <button class="pm-home-btn" onclick="closeProduct()" title="Expert Hardware home" aria-label="Expert Hardware home">
-            <img src="logo.png" alt="Expert Hardware" onerror="this.style.display='none'" />
+            <img src="logo.webp" width="800" height="353" alt="Expert Hardware" onerror="this.style.display='none'" />
           </button>
           <button class="prod-back-btn" onclick="closeProduct()">
             <i class="fa fa-arrow-left"></i> <span data-i18n="back_btn">Back to Products</span>
@@ -942,7 +982,7 @@
       <div class="auth-head">
         <button class="auth-close-x" onclick="closeAuthModal()" aria-label="Close sign in"><i class="fa fa-times"></i></button>
         <div class="auth-logo-row">
-          <img src="logo.png" alt="Expert Hardware" onerror="this.style.display='none'" />
+          <img src="logo.webp" width="800" height="353" alt="Expert Hardware" onerror="this.style.display='none'" />
           <span style="font-size:0.85em">EXPERT HARDWARE<br>FOR WHOLESALE &amp; RETAIL TRADE</span>
         </div>
         <div class="auth-tabs">

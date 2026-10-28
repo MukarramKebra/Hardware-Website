@@ -246,7 +246,8 @@ function openProduct(id, _fromHistory) {
 }
 
 // Save/unsave from the product page — also flips this button's own state
-// (toggleWishlist only refreshes the grid cards behind the popup)
+// (toggleWishlist only syncs the matching card's heart in the grid behind the
+// popup, which is a different button from this one)
 function pmToggleWishlist(id, event) {
   toggleWishlist(id, event);
   const btn = document.getElementById('pmWlBtn');
@@ -691,7 +692,11 @@ function handleCheckoutSubmit() {
       </div>`).join('');
   cart = [];
   updateCartUI();
-  renderProducts();
+  // true = keep the batches already scrolled through. This re-render exists to
+  // refresh the stock badges the order just changed, on the same result set —
+  // collapsing back to the first batch would move the visitor somewhere else
+  // in the catalog the moment they close the success panel.
+  renderProducts(true);
   document.getElementById('coBody').innerHTML = `
     <div class="co-success">
       <i class="fab fa-whatsapp"></i>

@@ -982,7 +982,22 @@ function _filterProductsBy(query) {
   });
 }
 
-function renderProducts() {
+// preserveShown: hold the visitor's place in the grid — both the number of
+// batches they have scrolled through (instead of collapsing back to the first
+// one) and the scroll offset itself. Passed by the re-renders that re-paint
+// the SAME result set because something other than the filter changed: the
+// late base64 photo swap in js/01-config-data.js, the stock badges after an
+// order in js/03-product-cart-checkout.js, and the language switch in
+// js/04-i18n-order.js. Without it the cards below them vanish mid-scroll.
+// The scroll restore is needed as well as the batch count, because rebuilding
+// the grid resets every card's content-visibility intrinsic size back to the
+// 430px placeholder, so the page is briefly much shorter than it was and the
+// browser clamps the scroll position down with it.
+// Category clicks, searches and sorts deliberately omit the flag, since those
+// are genuinely new result sets and should start at the top.
+function renderProducts(preserveShown) {
+  const keepShown = preserveShown ? _gridShown : 0;
+  const keepY     = preserveShown ? window.scrollY : null;
   const query = document.getElementById('searchInput').value.trim();
   const grid  = document.getElementById('productsGrid');
   const empty = document.getElementById('productsEmpty');
@@ -1016,6 +1031,13 @@ function renderProducts() {
   }
   if (!filtered.length) {
     grid.innerHTML = '';
+    // Batched rendering state has to be cleared too, or the sentinel left
+    // over from the previous (non-empty) result set keeps sitting under the
+    // empty-state message offering to load more of nothing.
+    _gridResults = [];
+    _gridShown   = 0;
+    var _sentEmpty = document.getElementById('gridSentinel');
+    if (_sentEmpty) _sentEmpty.style.display = 'none';
     empty.style.display = 'block';
     // The very first render (before the Supabase fetch in loadSBData() has
     // resolved) and any category click made before it resolves both hit
@@ -1069,11 +1091,99 @@ function renderProducts() {
     }, 700);
   }
 
-  // custom photos set by admin (loaded from Supabase)
-  const customPhotos = _sbPhotos;
+  // Progressive render. The whole result set is parked in _gridResults and
+  // handed to the DOM a batch at a time by _gridAppendBatch() below, instead
+  // of being turned into one giant innerHTML string. With the catalog past
+  // 1,500 products that string was building ~30,000 nodes and ~1,700 <img>
+  // elements on every render — seconds of blocked main thread on a mid-range
+  // phone for the first paint, and it made every later scroll, category
+  // switch and search re-render slow as well, because all of it had to be
+  // thrown away and rebuilt. content-visibility (css/02-sections.css) already
+  // skips layout/paint for off-screen cards, but it can't avoid the cost of
+  // creating the nodes in the first place, which is what this does.
+  _gridResults = filtered;
+  _gridShown   = 0;
+  grid.innerHTML = '';
+  _gridAppendBatch();
+  // Re-fill up to what was already on screen (see preserveShown above). Each
+  // call appends one batch, so this walks back up to the previous count
+  // rather than jumping straight there, and stops early if the new result
+  // set is shorter than the old one.
+  while (_gridShown < keepShown && _gridShown < _gridResults.length) _gridAppendBatch();
+  if (keepY !== null && window.scrollY !== keepY) window.scrollTo(0, keepY);
+}
 
-  const isAr = _lang === 'ar';
-  grid.innerHTML = filtered.map(p => {
+// How many cards each batch adds. 48 fills well past the first screen on both
+// the 2-column phone layout and the widest desktop grid, so a finished batch
+// never leaves the sentinel already in view (which would chain batches
+// back-to-back and defeat the point).
+const GRID_BATCH = 48;
+// How far below the fold the next batch starts loading.
+const GRID_PRELOAD_PX = 800;
+let _gridResults = [];
+let _gridShown   = 0;
+let _gridWatching = false;
+
+// Appends the next GRID_BATCH cards and re-arms the sentinel. Also the onclick
+// target of the "Load more products" button in index.html, so the grid is
+// still fully reachable if scroll events never arrive.
+function _gridAppendBatch() {
+  const grid     = document.getElementById('productsGrid');
+  const sentinel = document.getElementById('gridSentinel');
+  if (!grid) return;
+  const next = _gridResults.slice(_gridShown, _gridShown + GRID_BATCH);
+  if (next.length) {
+    grid.insertAdjacentHTML('beforeend', next.map(_productCardHTML).join(''));
+    _gridShown += next.length;
+  }
+  if (!sentinel) return;
+  const more = _gridShown < _gridResults.length;
+  sentinel.style.display = more ? 'flex' : 'none';
+  if (!more) return;
+  _gridWatchScroll();
+  // Keep going if this batch did not actually push the sentinel out of reach
+  // (it normally does — one batch is ~24 rows of cards — but a very tall
+  // viewport or a short final batch can leave it in range).
+  requestAnimationFrame(_gridEnsureFilled);
+}
+
+// Appends while the sentinel sits at or above the bottom of the preload band.
+// Deliberately one-sided rather than an "is it inside the band" test: the
+// viewport can jump clean PAST the sentinel between two frames — an anchor
+// jump, filterProducts()/viewAllSearchResults() scrolling to the grid, a
+// restored scroll position, or just a hard flick on a phone — and an
+// IntersectionObserver correctly reports no change in that case (not
+// intersecting before, not intersecting after), which used to leave the
+// visitor parked at the bottom of the page with the rest of the catalog
+// unrendered and nothing able to trigger it.
+function _gridEnsureFilled() {
+  const sentinel = document.getElementById('gridSentinel');
+  if (!sentinel || _gridShown >= _gridResults.length) return;
+  if (sentinel.getBoundingClientRect().top < window.innerHeight + GRID_PRELOAD_PX) _gridAppendBatch();
+}
+
+// One passive, frame-throttled scroll/resize listener, attached the first time
+// a result set is bigger than one batch. At most one getBoundingClientRect per
+// frame while scrolling, and only while cards remain unrendered.
+function _gridWatchScroll() {
+  if (_gridWatching) return;
+  _gridWatching = true;
+  let queued = false;
+  const tick = function() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(function() { queued = false; _gridEnsureFilled(); });
+  };
+  window.addEventListener('scroll', tick, { passive: true });
+  window.addEventListener('resize', tick, { passive: true });
+}
+
+// One product card's markup. Split out of renderProducts() so batches can be
+// built independently; reads the same globals it always did.
+function _productCardHTML(p) {
+    // custom photos set by admin (loaded from Supabase)
+    const customPhotos = _sbPhotos;
+    const isAr = _lang === 'ar';
     const liveStatus = getLiveStock(p.id) || p.stock;
     const liveQty    = getLiveQty(p.id);
     const isOut      = liveStatus === 'out-of-stock';
@@ -1104,7 +1214,7 @@ function renderProducts() {
         <div class="product-img-wrap ${photo ? '' : 'img-ready'}">
           ${hasCardSale ? `<span class="product-badge product-badge-sale">-${cardSale}%</span>` : (p.badge ? `<span class="product-badge">${p.badge}</span>` : '')}
           ${showOut ? `<span class="out-badge">${isAr ? 'نفد المخزون' : 'OUT OF STOCK'}</span>` : ''}
-          <button class="card-wl-btn ${isWishlisted(p.id)?'wishlisted':''}" onclick="toggleWishlist(${p.id}, event)" title="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}" aria-label="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}"><i class="fa fa-heart"></i></button>
+          <button class="card-wl-btn ${isWishlisted(p.id)?'wishlisted':''}" id="cardWl${p.id}" onclick="toggleWishlist(${p.id}, event)" title="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}" aria-label="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}"><i class="fa fa-heart"></i></button>
           ${photo
             ? `<img src="${photo}" data-local="${p.img}" alt="${pName}" loading="lazy" onerror="imgError(this)" onload="this.parentElement.classList.add('img-ready')" />
                <div class="product-img-fallback" style="display:none"><i class="fa fa-tools"></i></div>`
@@ -1141,13 +1251,50 @@ function renderProducts() {
           </div>
         </div>
       </div>`;
+}
+
+// Flips one card's heart in place. The heart is the ONLY thing in a card that
+// depends on wishlist state, so toggleWishlist() used to call renderProducts()
+// purely to repaint it — which now throws away every batch the visitor had
+// scrolled through and rebuilds from the first one. That left them metres from
+// where they tapped (the grid collapses, the browser clamps the scroll to the
+// suddenly-shorter page, then the batches re-append underneath them), on top of
+// rebuilding hundreds of cards for a one-class change. A missing element is the
+// normal case, not an error: the product may be in a batch that has not been
+// rendered, and a card built later reads isWishlisted() itself.
+function _syncCardWishlistBtn(id) {
+  const btn = document.getElementById('cardWl' + id);
+  if (!btn) return;
+  const on  = isWishlisted(id);
+  const lbl = on ? 'Remove from wishlist' : 'Save to wishlist';
+  btn.classList.toggle('wishlisted', on);
+  btn.title = lbl;
+  btn.setAttribute('aria-label', lbl);
+}
+
+// Every matching product still needs a crawlable internal link from the
+// homepage, which the cards used to provide via their hidden .pc-details
+// anchor — but only the first batch of cards exists in the DOM now. This
+// builds the full anchor list once into #seoProductLinks (display:none, so
+// zero layout/paint cost, ~2 nodes per product instead of ~20). Called once
+// the catalog has actually loaded; re-running it is a cheap no-op rebuild.
+function _renderSeoProductLinks() {
+  const box = document.getElementById('seoProductLinks');
+  if (!box || typeof getAllProducts !== 'function') return;
+  const all = getAllProducts();
+  if (!all || !all.length) return;
+  box.innerHTML = all.map(function(p) {
+    return '<a href="product/' + productSlug(p) + '.html">' +
+           String(p.name || '').replace(/</g, '&lt;') + '</a>';
   }).join('');
 }
 
-// renderProducts() rebuilds the whole grid (up to ~800+ cards) via innerHTML,
-// so calling it on every raw keystroke (both the grid's own search box and
-// the header search dropdown do this) made fast typing feel laggy — most
-// noticeable on desktop, where people type quicker than on a phone keyboard.
+// renderProducts() re-filters the whole catalog and rebuilds the grid from its
+// first batch, so calling it on every raw keystroke (both the grid's own search
+// box and the header search dropdown do this) made fast typing feel laggy —
+// most noticeable on desktop, where people type quicker than on a phone
+// keyboard. Batching cut the DOM work a lot, but the filter pass over ~1,550
+// products per keystroke is reason enough to keep this.
 // 180ms is short enough to still feel instant once typing pauses.
 var _renderProductsDebounceTimer;
 function debouncedRenderProducts() {

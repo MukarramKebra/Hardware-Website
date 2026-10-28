@@ -10,8 +10,8 @@
 .wl-hdr-badge { position:absolute; top:0; right:0; background:var(--orange); color:#fff; border-radius:50%; width:15px; height:15px; font-size:9px; font-weight:900; display:flex; align-items:center; justify-content:center; pointer-events:none; }
 
 /* ── WISHLIST MODAL ──────────────────────────────────────────────────────── */
-.wl-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.25s; }
-.wl-overlay.open { opacity:1; pointer-events:all; }
+.wl-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9000; display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; pointer-events:none; transition:opacity 0.25s, visibility 0.25s; }
+.wl-overlay.open { opacity:1; visibility:visible; pointer-events:all; }
 .wl-modal { background:#fff; border-radius:14px; width:calc(100% - 32px); max-width:520px; max-height:85vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.25); border-top:4px solid var(--orange); }
 .wl-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #f0f0f0; }
 .wl-head h3 { font-size:16px; font-weight:900; color:var(--dark); display:flex; align-items:center; gap:8px; }
@@ -43,8 +43,8 @@
 @media(max-width:600px){ .rv-grid { grid-template-columns:repeat(3,1fr); } }
 
 /* ── REVIEWS MODAL ───────────────────────────────────────────────────────── */
-.review-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9100; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.25s; }
-.review-overlay.open { opacity:1; pointer-events:all; }
+.review-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9100; display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; pointer-events:none; transition:opacity 0.25s, visibility 0.25s; }
+.review-overlay.open { opacity:1; visibility:visible; pointer-events:all; }
 .review-modal { background:#fff; border-radius:14px; width:calc(100% - 32px); max-width:600px; max-height:88vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.25); border-top:4px solid #f5c518; }
 .review-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #f0f0f0; flex-shrink:0; }
 .review-head h3 { font-size:15px; font-weight:900; color:var(--dark); }
@@ -67,8 +67,8 @@
 @media(max-width:600px){ .review-body { grid-template-columns:1fr; } .rev-write-section { border-right:none; border-bottom:1px solid #f0f0f0; } }
 
 /* ── BULK QUOTE MODAL ────────────────────────────────────────────────────── */
-.bulk-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9100; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.25s; }
-.bulk-overlay.open { opacity:1; pointer-events:all; }
+.bulk-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9100; display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; pointer-events:none; transition:opacity 0.25s, visibility 0.25s; }
+.bulk-overlay.open { opacity:1; visibility:visible; pointer-events:all; }
 .bulk-modal { background:#fff; border-radius:14px; width:calc(100% - 32px); max-width:540px; max-height:88vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.25); border-top:4px solid var(--orange); }
 .bulk-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #f0f0f0; flex-shrink:0; }
 .bulk-head h3 { font-size:15px; font-weight:900; color:var(--dark); }
@@ -91,8 +91,8 @@
 @media(max-width:500px){ .bulk-name-row { grid-template-columns:1fr; } }
 
 /* ── ORDER TRACKING MODAL ────────────────────────────────────────────────── */
-.track-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9100; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.25s; }
-.track-overlay.open { opacity:1; pointer-events:all; }
+.track-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9100; display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; pointer-events:none; transition:opacity 0.25s, visibility 0.25s; }
+.track-overlay.open { opacity:1; visibility:visible; pointer-events:all; }
 .track-modal { background:#fff; border-radius:14px; width:calc(100% - 32px); max-width:500px; max-height:88vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.25); border-top:4px solid var(--orange); }
 .track-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #f0f0f0; flex-shrink:0; }
 .track-head h3 { font-size:15px; font-weight:900; color:var(--dark); }

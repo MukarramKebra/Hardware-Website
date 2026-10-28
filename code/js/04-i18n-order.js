@@ -48,7 +48,7 @@ var _T = {
     pill_all:'All', pill_safety:'Safety', pill_cutting:'Cutting', pill_storage:'Accessories',
     prod_tag:'Full Catalog', prod_h2:'Our <span class="orange">Products</span>',
     prod_search:'Search power tools, hand tools, fasteners...',
-    no_results:'No products found. Try a different search.',
+    no_results:'No products found. Try a different search.', load_more:'Load more products',
     cart_title:'Your Cart', cart_empty:'Your cart is empty.',
     cart_total_label:'Total:', cart_wa:'Request Quote on WhatsApp',
     feat_delivery_h:'Fast Delivery', feat_delivery_p:'Same-day delivery in Kuwait City. GCC shipping in 3-5 business days.',
@@ -123,7 +123,7 @@ var _T = {
     pill_all:'الكل', pill_safety:'سلامة', pill_cutting:'قطع', pill_storage:'إكسسوارات',
     prod_tag:'الكتالوج الكامل', prod_h2:'<span class="orange">منتجاتنا</span>',
     prod_search:'ابحث عن أدوات كهربائية، أدوات يدوية، مثبتات...',
-    no_results:'لا توجد منتجات. جرب بحثاً مختلفاً.',
+    no_results:'لا توجد منتجات. جرب بحثاً مختلفاً.', load_more:'تحميل المزيد من المنتجات',
     cart_title:'سلة التسوق', cart_empty:'سلة التسوق فارغة.',
     cart_total_label:'المجموع:', cart_wa:'طلب عرض سعر عبر واتساب',
     feat_delivery_h:'توصيل سريع', feat_delivery_p:'توصيل في نفس اليوم داخل مدينة الكويت. الشحن الخليجي خلال 3-5 أيام عمل.',
@@ -211,8 +211,11 @@ function setLang(lang) {
     if (t[k] !== undefined) el.placeholder = t[k];
   });
 
-  // Re-render product cards with translated names/descriptions
-  if (typeof renderProducts === 'function') renderProducts();
+  // Re-render product cards with translated names/descriptions. true = keep
+  // the batches already scrolled through (see renderProducts()'s preserveShown
+  // in js/02-catalog-render.js) — switching language is the same result set in
+  // another language, not a new one, so it shouldn't also move the visitor.
+  if (typeof renderProducts === 'function') renderProducts(true);
 
   // Rebuild marquee with translated items
   var track = document.querySelector('.marquee-track');

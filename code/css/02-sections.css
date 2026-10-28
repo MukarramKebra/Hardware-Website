@@ -182,7 +182,7 @@
 .search-correction-notice strong { color: var(--orange); }
 .products-loading { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; padding: 100px 0; }
 .products-loading i { font-size: 40px; color: var(--orange); }
-.loading-gear { display: inline-block; width: 56px; height: 56px; margin-bottom: 14px; background-image: url('../../loader-gear.png'); background-repeat: no-repeat; background-size: 100% 100%; animation: loading-gear-spin 1.4s linear infinite; }
+.loading-gear { display: inline-block; width: 56px; height: 56px; margin-bottom: 14px; background-image: url('../../loader-gear.webp'); background-repeat: no-repeat; background-size: 100% 100%; animation: loading-gear-spin 1.4s linear infinite; }
 @keyframes loading-gear-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .loading-gear { animation: none; } }
 /* Cart link in the header nav (sits beside Track Order) */
@@ -195,9 +195,19 @@
 .cat-crumb-link:hover { color:var(--orange); }
 .cat-crumb-link .fa-home { font-size:16px; margin-right:4px; }
 .cat-crumb-cur { color:#777; text-transform:uppercase; font-weight:600; }
-/* Zoom / resize performance: ~1,500 product cards are in the DOM at once, so
-   every resize (each browser-zoom step fires one) re-laid-out all of them
-   (~100ms+, the page froze while zooming). content-visibility lets the browser
-   skip layout/paint for cards that are off-screen; 'auto' remembers each
-   card's real height once it has been seen, so the scrollbar stays accurate. */
+/* Zoom / resize performance. The grid now only holds the batches the visitor
+   has actually scrolled through (_gridAppendBatch in js/02-catalog-render.js)
+   rather than all ~1,500 matches, but a deep scroll still accumulates plenty
+   of cards, and every resize (each browser-zoom step fires one) re-lays-out
+   all of them. content-visibility lets the browser skip layout/paint for
+   off-screen cards; 'auto' remembers each card's real height once it has been
+   seen, so the scrollbar stays accurate. */
 #productsGrid > .product-card { content-visibility: auto; contain-intrinsic-size: auto 430px; }
+
+/* Sits under the last rendered batch. Normally the scroll watcher
+   (_gridWatchScroll in js/02-catalog-render.js) appends the next batch while
+   this is still 800px below the fold, so the button is only really seen if
+   scroll events never arrive. Reserving height keeps the page from twitching
+   as batches land. */
+.grid-sentinel { display: none; justify-content: center; align-items: center; min-height: 60px; padding: 18px 0 4px; }
+.grid-more-btn { min-width: 220px; }

@@ -55,7 +55,9 @@ function toggleWishlist(id, event) {
   }
   localStorage.setItem('jain_wishlist', JSON.stringify(list));
   renderWishlistCount();
-  renderProducts();
+  // Repaint just this product's heart rather than the whole grid — see
+  // _syncCardWishlistBtn in js/02-catalog-render.js for why.
+  _syncCardWishlistBtn(id);
   renderRecentlyViewed();
 }
 function renderWishlistCount() {
@@ -543,7 +545,15 @@ renderProducts();
 // already recovers from on its own), this still flips the flag so a
 // category with no matching hardcoded/base products doesn't show "Loading
 // products..." forever.
-loadSBData().catch(function() { window._catalogReady = true; window._catalogLoadFailed = true; renderProducts(); });
+loadSBData().catch(function() {
+  window._catalogReady = true;
+  window._catalogLoadFailed = true;
+  renderProducts();
+  // Also build the crawlable link list on this path — the grid only renders
+  // its first batch now, so without this a failed fetch leaves the homepage
+  // linking to ~48 product pages instead of every product it does know about.
+  if (typeof _renderSeoProductLinks === 'function') _renderSeoProductLinks();
+});
 if (new URLSearchParams(window.location.search).get('q')) {
   setTimeout(scrollToProducts, 300);
 }

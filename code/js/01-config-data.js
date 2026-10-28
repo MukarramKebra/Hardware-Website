@@ -356,6 +356,10 @@ async function loadSBData() {
     // before it did.
     window._catalogReady = true;
     renderProducts();
+    // The grid only renders its first batch now, so the crawlable per-product
+    // links that used to come from every card are built separately, once, into
+    // a display:none list (see _renderSeoProductLinks in js/02-catalog-render.js).
+    if (typeof _renderSeoProductLinks === 'function') _renderSeoProductLinks();
 
   checkAssetVersion();
   _loadDeferredStorefrontData();
@@ -407,10 +411,13 @@ function _loadDeferredStorefrontData() {
     });
     if (!changed) return;
     try { localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos)); } catch(e) {}
-    var y = window.scrollY;
-    renderProducts();
+    // true = hold the visitor's place — both the batches already scrolled
+    // through and the scroll offset, which renderProducts() restores itself
+    // (see its preserveShown in js/02-catalog-render.js). This fires whenever
+    // the admin's uploaded photos land, which can be seconds in, so it must
+    // not move anyone who has started browsing.
+    renderProducts(true);
     if (typeof initOffersTicker === 'function') initOffersTicker();
-    window.scrollTo(0, y);
   });
 
   // The structured-data block needs keywords + ratings, so build it once both are in.
