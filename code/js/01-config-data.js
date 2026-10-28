@@ -234,6 +234,13 @@ async function loadSBData() {
   // returning visitors already have the photos from localStorage.
   const productsP = sbFetchAllWithRetry(SB_URL + '/rest/v1/expert_products?select=*', SB_H);
   const photosP   = sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=product_id,img_url&img_url=not.like.data:*', SB_H);
+  // Just the IDs of products whose photo is a base64 upload — ~50 integers,
+  // well under a kilobyte, so it rides along in the critical batch while the
+  // uploads themselves (~2.6MB) stay deferred. Without this the first render
+  // has no way to know an upload is coming and paints the product's OTHER
+  // image, which a throttled-4G measurement put 44s ahead of the real one.
+  // See uploadPending()/productPhoto() in js/02-catalog-render.js.
+  const pendingP  = sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=product_id&img_url=like.data:*', SB_H);
   const settingsP = sbFetch(SB_URL + '/rest/v1/expert_settings?key=in.(hidden_prices,featured_offers,sku_map,brand_map,multi_cats,qty_limits,product_variants,cat_labels,cat_hidden,cat_order,banner_sides,custom_visible_cats)&select=key,value', { headers: SB_H });
 
   const stockP   = sbFetchAll(SB_URL + '/rest/v1/expert_stock?select=*',           SB_H, true);
@@ -269,7 +276,20 @@ async function loadSBData() {
     }
   });
 
-  const [c, ph, st] = await Promise.all([productsP, photosP, settingsP]);
+  const [c, ph, st, pend] = await Promise.all([productsP, photosP, settingsP, pendingP]);
+
+  // Products that have an upload still downloading show a loading skeleton
+  // instead of a different image. Seeded from the cached photos first so a
+  // returning visitor never flashes a skeleton for one they already have.
+  window._sbUploadPending = new Set();
+  if (Array.isArray(pend.data)) {
+    pend.data.forEach(function(r) {
+      var cached = _sbPhotos[r.product_id];
+      if (!(cached && String(cached).indexOf('data:') === 0)) {
+        window._sbUploadPending.add(Number(r.product_id));
+      }
+    });
+  }
 
   if (Array.isArray(c.data) && c.data.length > 0) _customProds = c.data.filter(r => !r.hidden);
   // Still empty after sbFetchAllWithRetry's retries — a real, distinct state
@@ -415,40 +435,91 @@ function _loadDeferredStorefrontData() {
     });
   });
 
-  // Photos uploaded straight from the admin are stored as base64 (~50KB each).
-  // Returning visitors already have them from localStorage; for everyone else
-  // the cards show the placeholder/default image first and swap in the upload.
-  sbFetchAll(SB_URL + '/rest/v1/expert_photos?select=product_id,img_url&img_url=like.data:*', SB_H).then(function(ph) {
-    if (!Array.isArray(ph.data)) return;
-    // Authoritative for every base64 photo, so rebuild that slice rather than
-    // merging — same deleted-upload problem as the plain-URL fetch above, and
-    // this is the half that actually hits it, since uploading through the
-    // admin produces a data: URL. Non-data: entries are left as the fetch
-    // above set them.
-    var nextPhotos = {};
-    Object.keys(_sbPhotos).forEach(function(k) {
-      if (String(_sbPhotos[k]).indexOf('data:') !== 0) nextPhotos[k] = _sbPhotos[k];
-    });
-    ph.data.forEach(function(r) { nextPhotos[r.product_id] = r.img_url; });
-    var prevKeys = Object.keys(_sbPhotos);
-    var changed = prevKeys.length !== Object.keys(nextPhotos).length ||
-                  prevKeys.some(function(k) { return _sbPhotos[k] !== nextPhotos[k]; });
-    if (!changed) return;
-    _sbPhotos = nextPhotos;
-    try { localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos)); } catch(e) {}
-    // true = hold the visitor's place — both the batches already scrolled
-    // through and the scroll offset, which renderProducts() restores itself
-    // (see its preserveShown in js/02-catalog-render.js). This fires whenever
-    // the admin's uploaded photos land, which can be seconds in, so it must
-    // not move anyone who has started browsing.
-    renderProducts(true);
-    if (typeof initOffersTicker === 'function') initOffersTicker();
-  });
+  _loadUploadedPhotos();
 
   // The structured-data block needs keywords + ratings, so build it once both are in.
+  // (see _loadUploadedPhotos below for the uploaded-photo loading itself)
   Promise.all([kwP, rvP]).then(function() {
     if (typeof _injectProductSchema === 'function') _injectProductSchema();
   });
+}
+
+// ── UPLOADED (BASE64) PHOTOS ────────────────────────────────────────────────
+// Photos uploaded straight from the admin are stored as base64, ~50KB each
+// and ~2.6MB for all of them — far too heavy for the critical path, so they
+// are fetched after the first render. They used to come down as ONE request
+// for all 50: on a throttled 4G phone that started at 12.9s and took 31.4s,
+// so the uploaded photo only appeared 44s in. All-or-nothing, and until it
+// landed the cards showed a different image entirely.
+//
+// Now they arrive in small chunks, nearest-first: the products actually on
+// screen (the offers ticker and the rendered grid batch) are fetched before
+// everything else, so the photos a visitor can see turn up in the first
+// chunk instead of after the whole 2.6MB. Each chunk paints as it lands.
+// The first chunk is deliberately tiny and the rest are bigger. Only the
+// photos on the first screen are actually being waited on, so that request
+// should be as small as possible (measured: a chunk of 8 was ~400KB and took
+// ~10s on throttled 4G, a chunk of 3 lands in a fraction of that). Once
+// those are in, nothing is visibly waiting any more, so the remainder goes
+// in larger chunks to keep the request count — and its latency — down.
+const UPLOAD_CHUNK_FIRST = 3;
+const UPLOAD_CHUNK = 10;
+
+function _loadUploadedPhotos() {
+  var pending = Array.from(window._sbUploadPending || []);
+  if (!pending.length) return Promise.resolve();
+
+  // On-screen first: ticker products, then the grid cards already rendered.
+  var priority = [];
+  (window._sbFeaturedOffers || []).forEach(function(o) { priority.push(Number(o.id)); });
+  if (typeof _gridResults !== 'undefined' && Array.isArray(_gridResults)) {
+    _gridResults.slice(0, (typeof _gridShown !== 'undefined' ? _gridShown : 0) || 48)
+      .forEach(function(p) { priority.push(Number(p.id)); });
+  }
+  var seen = {}, order = [];
+  priority.concat(pending).forEach(function(id) {
+    if (!seen[id] && window._sbUploadPending.has(id)) { seen[id] = 1; order.push(id); }
+  });
+
+  var chunks = [];
+  if (order.length) chunks.push(order.slice(0, UPLOAD_CHUNK_FIRST));
+  for (var i = UPLOAD_CHUNK_FIRST; i < order.length; i += UPLOAD_CHUNK) {
+    chunks.push(order.slice(i, i + UPLOAD_CHUNK));
+  }
+
+  // Sequential, not parallel: these are big responses and firing all of them
+  // at once just makes every chunk slow instead of the first one fast.
+  return chunks.reduce(function(chain, ids) {
+    return chain.then(function() {
+      return sbFetch(SB_URL + '/rest/v1/expert_photos?select=product_id,img_url&product_id=in.(' +
+                     ids.join(',') + ')', { headers: SB_H })
+        .then(function(r) { _applyUploadedPhotos(r, ids); })
+        .catch(function() { /* one bad chunk shouldn't stop the rest */ });
+    });
+  }, Promise.resolve());
+}
+
+// Folds one chunk into _sbPhotos and repaints. Ids that came back with no
+// row are cleared from the pending set too, otherwise a product whose upload
+// was deleted between the id fetch and this one would shimmer forever.
+function _applyUploadedPhotos(r, requestedIds) {
+  if (!r || r.error || !Array.isArray(r.data)) return;
+  var changed = false;
+  r.data.forEach(function(row) {
+    if (_sbPhotos[row.product_id] !== row.img_url) { _sbPhotos[row.product_id] = row.img_url; changed = true; }
+    window._sbUploadPending.delete(Number(row.product_id));
+  });
+  requestedIds.forEach(function(id) {
+    if (window._sbUploadPending.delete(Number(id))) changed = true;
+  });
+  if (!changed) return;
+  try { localStorage.setItem('jain_photos', JSON.stringify(_sbPhotos)); } catch(e) {}
+  // true = hold the visitor's place — both the batches already scrolled
+  // through and the scroll offset, which renderProducts() restores itself
+  // (see its preserveShown in js/02-catalog-render.js). Chunks land seconds
+  // apart, so this must never move someone who has started browsing.
+  renderProducts(true);
+  if (typeof initOffersTicker === 'function') initOffersTicker();
 }
 
 // ── ASSET VERSION CHECK ─────────────────────────────────────────────────────

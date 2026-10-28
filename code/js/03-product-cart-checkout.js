@@ -95,12 +95,7 @@ function openProduct(id, _fromHistory) {
   const liveQty     = getLiveQty(id);
   const isOut       = liveStatus === 'out-of-stock';
   const isLow       = liveStatus === 'low-stock';
-  const customPhotos = _sbPhotos;
-  // Only use a stored photo if it's a real URL (http/data:) — otherwise use the local Bahar-Products image
-  const rawPhoto = customPhotos[id];
-  const bigImg = (rawPhoto && (rawPhoto.startsWith('http') || rawPhoto.startsWith('data:')))
-    ? rawPhoto
-    : p.img;
+  const bigImg = productPhoto(p);
   _pmBaseImg = bigImg; // remembered so pmSelectVariant can fall back to it
   const hasPrice = hasVisiblePrice(p);
   const variants = getVariants(id);
@@ -269,13 +264,11 @@ function renderRelatedProducts(currentId, category) {
   const others  = all.filter(p => p.category !== category);
   const picks   = sameCat.concat(others).slice(0, 6);
   if (!picks.length) { section.innerHTML = ''; return; }
-  const customPhotos = _sbPhotos || {};
   section.innerHTML =
     '<div class="pm-related-head"><i class="fa fa-thumbs-up" aria-hidden="true"></i> Customers Also Bought</div>' +
     '<div class="rv-grid pm-rel-grid">' +
     picks.map(p => {
-      const raw   = customPhotos[p.id];
-      const photo = (raw && (raw.startsWith('http') || raw.startsWith('data:'))) ? raw : p.img;
+      const photo = productPhoto(p);
       return '<button type="button" class="rv-card pm-rel-card" onclick="openProduct(' + p.id + ')">' +
         '<span class="pm-rel-img"><img src="' + photo + '" alt="' + _pmEsc(p.name) + '" loading="lazy" onerror="imgError(this)" /></span>' +
         '<span class="rv-name">' + p.name + '</span>' +
@@ -506,12 +499,10 @@ function updateCartUI() {
   const body  = document.getElementById('cartItems');
   const total = cart.reduce((s,c) => s+c.price*c.qty, 0);
   document.getElementById('cartTotal').textContent = total.toFixed(3) + ' KWD';
-  const customPhotos = _sbPhotos;
   if (!cart.length) { body.innerHTML = '<p class="empty-cart">Your cart is empty.</p>'; return; }
   body.innerHTML = cart.map((c, idx) => {
     // Only use stored photo if it's a real URL — otherwise fall back to local image
-    const rawPh = customPhotos[c.id];
-    const imgSrc = (rawPh && (rawPh.startsWith('http') || rawPh.startsWith('data:'))) ? rawPh : c.img;
+    const imgSrc = productPhoto(c);
     return `
     <div class="cart-item">
       <div class="cart-item-icon"><img src="${imgSrc}" alt="${c.name}" onerror="imgError(this)" /></div>

@@ -16,10 +16,8 @@ function renderRecentlyViewed() {
   var products = list.map(function(id){ return all.find(function(p){ return p.id === id; }); }).filter(Boolean);
   if (products.length < 2) { section.style.display = 'none'; return; }
   section.style.display = 'block';
-  var customPhotos = _sbPhotos || {};
   document.getElementById('recentlyViewedGrid').innerHTML = products.map(function(p) {
-    var raw = customPhotos[p.id];
-    var photo = (raw && (raw.startsWith('http') || raw.startsWith('data:'))) ? raw : p.img;
+    var photo = productPhoto(p);
     var wishlisted = isWishlisted(p.id);
     return '<div class="rv-card" onclick="openProduct('+p.id+')">' +
       '<img src="'+photo+'" alt="'+p.name+'" onerror="imgError(this)" />' +
@@ -77,10 +75,8 @@ function openWishlist() {
   if (!products.length) {
     body.innerHTML = '<div style="text-align:center;padding:40px;color:#999"><i class="fa fa-heart" style="font-size:40px;margin-bottom:12px;display:block;opacity:0.3"></i><p>No saved items yet.<br>Tap the ❤️ on any product to save it.</p></div>';
   } else {
-    var customPhotos = _sbPhotos || {};
     body.innerHTML = products.map(function(p) {
-      var raw = customPhotos[p.id];
-      var photo = (raw && (raw.startsWith('http') || raw.startsWith('data:'))) ? raw : p.img;
+      var photo = productPhoto(p);
       return '<div class="wl-item">' +
         '<img src="'+photo+'" alt="'+p.name+'" onclick="closeWishlist();openProduct('+p.id+')" onerror="imgError(this)" />' +
         '<div class="wl-info" onclick="closeWishlist();openProduct('+p.id+')">' +

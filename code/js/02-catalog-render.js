@@ -21,6 +21,36 @@ function getWishlist() {
 }
 function isWishlisted(id) { return getWishlist().includes(id); }
 
+// ── WHICH IMAGE A PRODUCT SHOWS ───────────────────────────────────────────
+// An uploaded photo always wins, and nothing else is ever shown in its place.
+// The catch is that admin uploads are base64 (~50KB each, ~2.6MB for all of
+// them), so they can't sit on the critical path and are fetched after the
+// first render. That used to mean the card painted the product's OTHER image
+// first and swapped the upload in when it arrived — measured 44s apart on a
+// throttled 4G phone, long enough to look like the wrong product rather than
+// a slow load, and long enough for someone to order from the wrong picture.
+//
+// So the critical batch now fetches just the IDs that have an upload coming
+// (_sbUploadPending, ~50 integers), and until the real photo lands those
+// cards render their loading skeleton instead of a different image.
+// Returning visitors skip all of this: their uploads come straight out of
+// localStorage before the first paint.
+// The uploaded photo itself, or '' when there isn't a usable one.
+function uploadedPhoto(p) {
+  var raw = (typeof _sbPhotos !== 'undefined' && _sbPhotos) ? _sbPhotos[p.id] : null;
+  return (raw && (String(raw).indexOf('http') === 0 || String(raw).indexOf('data:') === 0)) ? raw : '';
+}
+// True while an upload is known to exist for this product but hasn't arrived.
+function uploadPending(p) {
+  if (uploadedPhoto(p)) return false;
+  return !!(window._sbUploadPending && window._sbUploadPending.has(Number(p.id)));
+}
+// The image to render: the upload if it's here, '' if one is still coming
+// (the caller shows a skeleton), otherwise the product's own image.
+function productPhoto(p) {
+  return uploadedPhoto(p) || (uploadPending(p) ? '' : (p.img || ''));
+}
+
 function imgError(el) {
   // Step 1: try the local Bahar-Products fallback path if we haven't yet
   const local = el.dataset.local;
@@ -285,10 +315,8 @@ function initOffersTicker() {
   // variety than anyone scrolls a marquee to see.
   const TICKER_MAX = 40;
   if (offers.length > TICKER_MAX) offers.length = TICKER_MAX;
-  const customPhotos = _sbPhotos || {};
   const cards = offers.map(({ p, sale }) => {
-    const raw   = customPhotos[p.id];
-    const photo = (raw && (raw.startsWith('http') || raw.startsWith('data:'))) ? raw : p.img;
+    const photo = productPhoto(p);
     const priceHidden = !!window._sbPriceHidden[p.id];
     const hasSale = sale > 0 && p.price > 0 && !priceHidden;
     const offerPrice = hasSale ? p.price * (1 - sale / 100) : p.price;
@@ -324,12 +352,25 @@ function initOffersTicker() {
   track.innerHTML = cards;
   const singleW = track.scrollWidth;
   if (!singleW) { track.innerHTML = cards + cards; return; }
-  const vw     = window.innerWidth || 1280;
-  const copies = Math.max(2, Math.ceil(vw / singleW) + 1);
+  const vw = window.innerWidth || 1280;
+  // The loop needs ONE run of cards wider than the viewport: the track is
+  // that run twice over and the animation shifts it by exactly half, so the
+  // second run is sitting where the first was when it restarts. It used to
+  // ask for an extra copy on top of a minimum of two, which on a phone meant
+  // 160 cards (and 160 <img> tags) for 40 actual products, since one run of
+  // 40 cards is already ~14x the width of a phone screen. Half the tags for
+  // the same scroll, so half as many images the browser has to load.
+  const copies = Math.max(1, Math.ceil(vw / singleW));
   let half = '';
   for (let i = 0; i < copies; i++) half += cards;
   track.innerHTML = half + half;
-  track.style.animationDuration = Math.round((singleW * copies) / 70) + 's';
+  // Scroll speed in px/sec. Lowered from 70: at 70 a new card crossed into
+  // view roughly every 2s, and each one that arrives is another image the
+  // browser starts fetching. Slower means fewer of them being loaded at the
+  // same moment, which is what actually hurts on a weak connection — and the
+  // strip still reads as moving rather than static.
+  const TICKER_PX_PER_SEC = 45;
+  track.style.animationDuration = Math.round((singleW * copies) / TICKER_PX_PER_SEC) + 's';
 }
 
 // ── SIDE BANNERS ──────────────────────────────────────────────────────────
@@ -594,17 +635,14 @@ function renderSubFilters() {
     container.innerHTML = '';
     return;
   }
-  const customPhotos = _sbPhotos;
   function tilePhoto(sub) {
     const withPhoto = inCat.find(function(p) {
       if (p.subcategory !== sub) return false;
-      const rawCustom = customPhotos[p.id];
-      const photo = (rawCustom && (rawCustom.startsWith('http') || rawCustom.startsWith('data:'))) ? rawCustom : p.img;
+      const photo = productPhoto(p);
       return !!photo;
     });
     if (!withPhoto) return null;
-    const rawCustom = customPhotos[withPhoto.id];
-    return (rawCustom && (rawCustom.startsWith('http') || rawCustom.startsWith('data:'))) ? rawCustom : withPhoto.img;
+    return productPhoto(withPhoto);
   }
   container.classList.add('show');
   container.innerHTML =
@@ -856,7 +894,12 @@ function _injectProductSchema() {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     'itemListElement': products.map(function(p, i) {
-      const photo = (_sbPhotos[p.id] && (_sbPhotos[p.id].startsWith('http') || _sbPhotos[p.id].startsWith('data:'))) ? _sbPhotos[p.id] : p.img;
+      // Deliberately NOT productPhoto(): that returns '' while an upload is
+      // still downloading, which is right for a card (show a skeleton, never
+      // a different picture) but wrong here — structured data wants the best
+      // real URL we have, and a base64 upload is unusable in schema anyway,
+      // so the 'image' line below keeps only http(s) regardless.
+      const photo = uploadedPhoto(p) || p.img;
       const liveStatus = getLiveStock(p.id) || p.stock;
       const rs = reviewStats[p.id];
       return {
@@ -1181,16 +1224,15 @@ function _gridWatchScroll() {
 // One product card's markup. Split out of renderProducts() so batches can be
 // built independently; reads the same globals it always did.
 function _productCardHTML(p) {
-    // custom photos set by admin (loaded from Supabase)
-    const customPhotos = _sbPhotos;
     const isAr = _lang === 'ar';
     const liveStatus = getLiveStock(p.id) || p.stock;
     const liveQty    = getLiveQty(p.id);
     const isOut      = liveStatus === 'out-of-stock';
     const isLow      = liveStatus === 'low-stock';
     // Use custom admin photo only if it's a valid http/https URL or data URL — not a broken local path
-    const rawCustom  = customPhotos[p.id];
-    const photo      = (rawCustom && (rawCustom.startsWith('http') || rawCustom.startsWith('data:'))) ? rawCustom : p.img;
+    const photo         = productPhoto(p);
+    // '' from productPhoto() has two meanings — this separates them.
+    const pendingUpload = !photo && uploadPending(p);
     // Arabic product name/desc
     const arP = isAr && _AR_PRODUCTS[p.id];
     const pName = arP ? arP.name : p.name;
@@ -1211,14 +1253,20 @@ function _productCardHTML(p) {
     const hasCardSale = cardSale > 0 && p.price > 0 && !priceHidden;
     return `
       <div class="product-card ${showOut ? 'card-out' : ''}" onclick="openProduct(${p.id})">
-        <div class="product-img-wrap ${photo ? '' : 'img-ready'}">
+        <div class="product-img-wrap ${(photo || pendingUpload) ? '' : 'img-ready'}">
           ${hasCardSale ? `<span class="product-badge product-badge-sale">-${cardSale}%</span>` : (p.badge ? `<span class="product-badge">${p.badge}</span>` : '')}
           ${showOut ? `<span class="out-badge">${isAr ? 'نفد المخزون' : 'OUT OF STOCK'}</span>` : ''}
           <button class="card-wl-btn ${isWishlisted(p.id)?'wishlisted':''}" id="cardWl${p.id}" onclick="toggleWishlist(${p.id}, event)" title="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}" aria-label="${isWishlisted(p.id)?'Remove from wishlist':'Save to wishlist'}"><i class="fa fa-heart"></i></button>
           ${photo
             ? `<img src="${photo}" data-local="${p.img}" alt="${pName}" loading="lazy" onerror="imgError(this)" onload="this.parentElement.classList.add('img-ready')" />
                <div class="product-img-fallback" style="display:none"><i class="fa fa-tools"></i></div>`
-            : `<div class="product-img-fallback" style="display:flex"><i class="fa fa-tools"></i></div>`}
+            : pendingUpload
+              // An upload is on its way for this product. Render nothing at
+              // all, so the wrap keeps its shimmer (it only stops once
+              // 'img-ready' is set) and reads as "loading" — showing the
+              // tools icon here would read as "this product has no picture".
+              ? ''
+              : `<div class="product-img-fallback" style="display:flex"><i class="fa fa-tools"></i></div>`}
         </div>
         <div class="product-info">
           <div class="product-cat">${pCat}</div>
@@ -1362,7 +1410,6 @@ function updateSearchOverlay(query) {
   const moreBtn = document.getElementById('searchOverlayMore');
   const SHOWN   = 24;
   const top     = results.slice(0, SHOWN);
-  const customPhotos = _sbPhotos || {};
 
   if (!top.length) {
     grid.innerHTML = '';
@@ -1373,8 +1420,7 @@ function updateSearchOverlay(query) {
   } else {
     emptyEl.style.display = 'none';
     grid.innerHTML = top.map(function(p) {
-      const raw   = customPhotos[p.id];
-      const photo = (raw && (raw.startsWith('http') || raw.startsWith('data:'))) ? raw : p.img;
+      const photo = productPhoto(p);
       const priceHtml = hasVisiblePrice(p)
         ? applySale(p.price, p.id).toFixed(3) + ' KWD'
         : (isAr ? 'السعر عند الطلب' : 'Price on request');
